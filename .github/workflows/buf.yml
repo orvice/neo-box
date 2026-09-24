@@ -1,0 +1,31 @@
+name: Buf
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+  delete:
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  buf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bufbuild/buf-action@v1
+        with:
+          input: proto
+          token: ${{ secrets.BUF_TOKEN }}
+          # Change setup_only to true if you only want to set up the Action and not execute other commands.
+          # Otherwise, you can delete this line--the default is false.
+          setup_only: false
+          # Optional GitHub token for API requests. Ensures requests aren't rate limited.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # A first push to a new branch has an all-zero "before" SHA, which buf cannot clone as a baseline.
+          breaking: >-
+            ${{
+              (github.event_name != 'pull_request' && github.event.before != '0000000000000000000000000000000000000000') ||
+              (github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'proto-breaking-ok'))
+            }}
+          push: ${{ github.event_name == 'push' && github.ref_name == github.event.repository.default_branch }}

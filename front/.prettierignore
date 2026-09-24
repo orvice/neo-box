@@ -1,0 +1,8 @@
+node_modules
+dist
+.vite
+*.log
+.DS_Store
+src/gen
+src/routeTree.gen.ts
+package-lock.json

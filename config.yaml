@@ -1,0 +1,32 @@
+# Neo Box sample configuration
+# Copy to config/neobox.yaml and set BUTTERFLY_CONFIG_FILE_PATH=config/neobox.yaml
+
+# User authentication. On first startup with an empty users collection,
+# Neo Box creates this initial admin user. Change the password before deploying.
+auth:
+  initial_admin_username: "admin"
+  initial_admin_password: "change-me"
+  session_ttl: 168h
+  # Local-dev only. When true, requests are admin-equivalent while no auth
+  # repo is wired. Production deployments must leave this false.
+  allow_unauthenticated: false
+  # Third-party OAuth login providers. Providers with empty credentials are
+  # skipped at startup and not exposed via ListOAuthProviders. redirect_url
+  # must match the callback URL registered with the provider's OAuth app.
+  oauth_providers: {}
+  #   github:
+  #     client_id: "${GITHUB_OAUTH_CLIENT_ID}"
+  #     client_secret: "${GITHUB_OAUTH_CLIENT_SECRET}"
+  #     redirect_url: "http://localhost:5173/auth/oauth/callback/github"
+  #     scopes: ["read:user", "user:email"]
+  #     display_name: "GitHub"
+  #   google:
+  #     client_id: "${GOOGLE_OAUTH_CLIENT_ID}"
+  #     client_secret: "${GOOGLE_OAUTH_CLIENT_SECRET}"
+  #     redirect_url: "http://localhost:5173/auth/oauth/callback/google"
+  #     scopes: ["openid", "email", "profile"]
+  #     display_name: "Google"
+
+# MongoDB for users, sessions, and resource data
+mongo_uri: "mongodb://localhost:27017"
+mongo_db: "neobox"
