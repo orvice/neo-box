@@ -13,7 +13,12 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command'
-import { accountNav, adminNav, generalNav } from './layout/data/sidebar-data'
+import {
+  accountNav,
+  adminNav,
+  generalNav,
+  resourcesNav,
+} from './layout/data/sidebar-data'
 import { ScrollArea } from './ui/scroll-area'
 
 export function CommandMenu() {
@@ -22,8 +27,8 @@ export function CommandMenu() {
   const { open, setOpen } = useSearch()
   const isAdmin = useIsAdmin()
   const navGroups = isAdmin
-    ? [generalNav, adminNav, accountNav]
-    : [generalNav, accountNav]
+    ? [generalNav, resourcesNav, adminNav, accountNav]
+    : [generalNav, resourcesNav, accountNav]
 
   const runCommand = React.useCallback(
     (command: () => unknown) => {

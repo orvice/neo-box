@@ -27,6 +27,9 @@ func main() {
 				return handlers.Bootstrap(context.Background())
 			},
 		},
+		TeardownFunc: []func() error{
+			handlers.Shutdown,
+		},
 	})
 
 	slog.Info("starting butterfly service", "service", serviceName, "commit", serverBuildCommit())

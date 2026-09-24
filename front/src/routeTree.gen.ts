@@ -20,9 +20,12 @@ import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
+import { Route as AuthenticatedNocodbIndexRouteImport } from './routes/_authenticated/nocodb/index'
+import { Route as AuthenticatedNocodbConnectionIdRouteImport } from './routes/_authenticated/nocodb/$connectionId'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
+import { Route as AuthenticatedNocodbSnapshotsSnapshotIdRouteImport } from './routes/_authenticated/nocodb/snapshots/$snapshotId'
 import { Route as authAuthOauthCallbackProviderRouteImport } from './routes/(auth)/auth.oauth.callback.$provider'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -80,6 +83,18 @@ const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedNocodbIndexRoute =
+  AuthenticatedNocodbIndexRouteImport.update({
+    id: '/nocodb/',
+    path: '/nocodb/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedNocodbConnectionIdRoute =
+  AuthenticatedNocodbConnectionIdRouteImport.update({
+    id: '/nocodb/$connectionId',
+    path: '/nocodb/$connectionId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSettingsIndexRoute =
   AuthenticatedSettingsIndexRouteImport.update({
     id: '/',
@@ -97,6 +112,12 @@ const AuthenticatedSettingsDisplayRoute =
     id: '/display',
     path: '/display',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
+const AuthenticatedNocodbSnapshotsSnapshotIdRoute =
+  AuthenticatedNocodbSnapshotsSnapshotIdRouteImport.update({
+    id: '/nocodb/snapshots/$snapshotId',
+    path: '/nocodb/snapshots/$snapshotId',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const authAuthOauthCallbackProviderRoute =
   authAuthOauthCallbackProviderRouteImport.update({
@@ -116,9 +137,12 @@ export interface FileRoutesByFullPath {
   '/503': typeof errors503Route
   '/profile': typeof AuthenticatedProfileRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/nocodb/$connectionId': typeof AuthenticatedNocodbConnectionIdRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
+  '/nocodb/': typeof AuthenticatedNocodbIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/nocodb/snapshots/$snapshotId': typeof AuthenticatedNocodbSnapshotsSnapshotIdRoute
   '/auth/oauth/callback/$provider': typeof authAuthOauthCallbackProviderRoute
 }
 export interface FileRoutesByTo {
@@ -131,9 +155,12 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRoute
   '/users': typeof AuthenticatedUsersRoute
   '/': typeof AuthenticatedIndexRoute
+  '/nocodb/$connectionId': typeof AuthenticatedNocodbConnectionIdRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
+  '/nocodb': typeof AuthenticatedNocodbIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
+  '/nocodb/snapshots/$snapshotId': typeof AuthenticatedNocodbSnapshotsSnapshotIdRoute
   '/auth/oauth/callback/$provider': typeof authAuthOauthCallbackProviderRoute
 }
 export interface FileRoutesById {
@@ -149,9 +176,12 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/nocodb/$connectionId': typeof AuthenticatedNocodbConnectionIdRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
+  '/_authenticated/nocodb/': typeof AuthenticatedNocodbIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/_authenticated/nocodb/snapshots/$snapshotId': typeof AuthenticatedNocodbSnapshotsSnapshotIdRoute
   '/(auth)/auth/oauth/callback/$provider': typeof authAuthOauthCallbackProviderRoute
 }
 export interface FileRouteTypes {
@@ -167,9 +197,12 @@ export interface FileRouteTypes {
     | '/503'
     | '/profile'
     | '/users'
+    | '/nocodb/$connectionId'
     | '/settings/appearance'
     | '/settings/display'
+    | '/nocodb/'
     | '/settings/'
+    | '/nocodb/snapshots/$snapshotId'
     | '/auth/oauth/callback/$provider'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -182,9 +215,12 @@ export interface FileRouteTypes {
     | '/profile'
     | '/users'
     | '/'
+    | '/nocodb/$connectionId'
     | '/settings/appearance'
     | '/settings/display'
+    | '/nocodb'
     | '/settings'
+    | '/nocodb/snapshots/$snapshotId'
     | '/auth/oauth/callback/$provider'
   id:
     | '__root__'
@@ -199,9 +235,12 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/users'
     | '/_authenticated/'
+    | '/_authenticated/nocodb/$connectionId'
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
+    | '/_authenticated/nocodb/'
     | '/_authenticated/settings/'
+    | '/_authenticated/nocodb/snapshots/$snapshotId'
     | '/(auth)/auth/oauth/callback/$provider'
   fileRoutesById: FileRoutesById
 }
@@ -295,6 +334,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/nocodb/': {
+      id: '/_authenticated/nocodb/'
+      path: '/nocodb'
+      fullPath: '/nocodb/'
+      preLoaderRoute: typeof AuthenticatedNocodbIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/nocodb/$connectionId': {
+      id: '/_authenticated/nocodb/$connectionId'
+      path: '/nocodb/$connectionId'
+      fullPath: '/nocodb/$connectionId'
+      preLoaderRoute: typeof AuthenticatedNocodbConnectionIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings/': {
       id: '/_authenticated/settings/'
       path: '/'
@@ -315,6 +368,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/display'
       preLoaderRoute: typeof AuthenticatedSettingsDisplayRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
+    '/_authenticated/nocodb/snapshots/$snapshotId': {
+      id: '/_authenticated/nocodb/snapshots/$snapshotId'
+      path: '/nocodb/snapshots/$snapshotId'
+      fullPath: '/nocodb/snapshots/$snapshotId'
+      preLoaderRoute: typeof AuthenticatedNocodbSnapshotsSnapshotIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/(auth)/auth/oauth/callback/$provider': {
       id: '/(auth)/auth/oauth/callback/$provider'
@@ -349,6 +409,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedNocodbConnectionIdRoute: typeof AuthenticatedNocodbConnectionIdRoute
+  AuthenticatedNocodbIndexRoute: typeof AuthenticatedNocodbIndexRoute
+  AuthenticatedNocodbSnapshotsSnapshotIdRoute: typeof AuthenticatedNocodbSnapshotsSnapshotIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -356,6 +419,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedNocodbConnectionIdRoute: AuthenticatedNocodbConnectionIdRoute,
+  AuthenticatedNocodbIndexRoute: AuthenticatedNocodbIndexRoute,
+  AuthenticatedNocodbSnapshotsSnapshotIdRoute:
+    AuthenticatedNocodbSnapshotsSnapshotIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

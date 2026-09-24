@@ -13,3 +13,4 @@ front/pnpm-lock.yaml
 front/yarn.lock
 front/pnpm-workspace.yaml
 front/.vite/
+data/

@@ -1,4 +1,10 @@
-import { LayoutDashboard, Settings, UserRound, Users } from 'lucide-react'
+import {
+  DatabaseBackup,
+  LayoutDashboard,
+  Settings,
+  UserRound,
+  Users,
+} from 'lucide-react'
 import { type NavGroup } from '../types'
 
 export const generalNav: NavGroup = {
@@ -8,6 +14,17 @@ export const generalNav: NavGroup = {
       title: 'Dashboard',
       url: '/',
       icon: LayoutDashboard,
+    },
+  ],
+}
+
+export const resourcesNav: NavGroup = {
+  title: 'Resources',
+  items: [
+    {
+      title: 'NocoDB',
+      url: '/nocodb',
+      icon: DatabaseBackup,
     },
   ],
 }
