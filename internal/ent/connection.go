@@ -3,8 +3,6 @@
 package ent
 
 import (
-	"encoding/json"
-	"encoding/json/jsontext"
 	"fmt"
 	"strings"
 	"time"
@@ -26,7 +24,7 @@ type Connection struct {
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Config holds the value of the "config" field.
-	Config jsontext.Value `json:"config,omitempty"`
+	Config string `json:"config,omitempty"`
 	// SecretCiphertext holds the value of the "secret_ciphertext" field.
 	SecretCiphertext string `json:"-"`
 	// Status holds the value of the "status" field.
@@ -47,9 +45,7 @@ func (*Connection) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case connection.FieldConfig:
-			values[i] = new([]byte)
-		case connection.FieldID, connection.FieldUserID, connection.FieldProvider, connection.FieldName, connection.FieldSecretCiphertext, connection.FieldStatus, connection.FieldStatusMessage:
+		case connection.FieldID, connection.FieldUserID, connection.FieldProvider, connection.FieldName, connection.FieldConfig, connection.FieldSecretCiphertext, connection.FieldStatus, connection.FieldStatusMessage:
 			values[i] = new(sql.NullString)
 		case connection.FieldStatusCheckedAt, connection.FieldCreatedAt, connection.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -93,12 +89,10 @@ func (_m *Connection) assignValues(columns []string, values []any) error {
 				_m.Name = value.String
 			}
 		case connection.FieldConfig:
-			if value, ok := values[i].(*[]byte); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field config", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Config); err != nil {
-					return fmt.Errorf("unmarshal field config: %w", err)
-				}
+			} else if value.Valid {
+				_m.Config = value.String
 			}
 		case connection.FieldSecretCiphertext:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -183,7 +177,7 @@ func (_m *Connection) String() string {
 	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("config=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Config))
+	builder.WriteString(_m.Config)
 	builder.WriteString(", ")
 	builder.WriteString("secret_ciphertext=<sensitive>")
 	builder.WriteString(", ")

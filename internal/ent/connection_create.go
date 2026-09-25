@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"encoding/json/jsontext"
 	"errors"
 	"fmt"
 	"time"
@@ -43,7 +42,7 @@ func (_c *ConnectionCreate) SetName(v string) *ConnectionCreate {
 }
 
 // SetConfig sets the "config" field.
-func (_c *ConnectionCreate) SetConfig(v jsontext.Value) *ConnectionCreate {
+func (_c *ConnectionCreate) SetConfig(v string) *ConnectionCreate {
 	_c.mutation.SetConfig(v)
 	return _c
 }
@@ -237,7 +236,7 @@ func (_c *ConnectionCreate) createSpec() (*Connection, *sqlgraph.CreateSpec) {
 		_node.Name = value
 	}
 	if value, ok := _c.mutation.Config(); ok {
-		_spec.SetField(connection.FieldConfig, field.TypeJSON, value)
+		_spec.SetField(connection.FieldConfig, field.TypeString, value)
 		_node.Config = value
 	}
 	if value, ok := _c.mutation.SecretCiphertext(); ok {
@@ -329,7 +328,7 @@ func (u *ConnectionUpsert) UpdateName() *ConnectionUpsert {
 }
 
 // SetConfig sets the "config" field.
-func (u *ConnectionUpsert) SetConfig(v jsontext.Value) *ConnectionUpsert {
+func (u *ConnectionUpsert) SetConfig(v string) *ConnectionUpsert {
 	u.Set(connection.FieldConfig, v)
 	return u
 }
@@ -478,7 +477,7 @@ func (u *ConnectionUpsertOne) UpdateName() *ConnectionUpsertOne {
 }
 
 // SetConfig sets the "config" field.
-func (u *ConnectionUpsertOne) SetConfig(v jsontext.Value) *ConnectionUpsertOne {
+func (u *ConnectionUpsertOne) SetConfig(v string) *ConnectionUpsertOne {
 	return u.Update(func(s *ConnectionUpsert) {
 		s.SetConfig(v)
 	})
@@ -807,7 +806,7 @@ func (u *ConnectionUpsertBulk) UpdateName() *ConnectionUpsertBulk {
 }
 
 // SetConfig sets the "config" field.
-func (u *ConnectionUpsertBulk) SetConfig(v jsontext.Value) *ConnectionUpsertBulk {
+func (u *ConnectionUpsertBulk) SetConfig(v string) *ConnectionUpsertBulk {
 	return u.Update(func(s *ConnectionUpsert) {
 		s.SetConfig(v)
 	})

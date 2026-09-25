@@ -15,7 +15,7 @@ var (
 		{Name: "user_id", Type: field.TypeString},
 		{Name: "provider", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
-		{Name: "config", Type: field.TypeJSON},
+		{Name: "config", Type: field.TypeString, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "secret_ciphertext", Type: field.TypeString},
 		{Name: "status", Type: field.TypeString, Default: "unknown"},
 		{Name: "status_message", Type: field.TypeString, Default: ""},

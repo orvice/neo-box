@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"encoding/json/jsontext"
 	"errors"
 	"fmt"
 	"sync"
@@ -48,8 +47,7 @@ type ConnectionMutation struct {
 	user_id           *string
 	provider          *string
 	name              *string
-	_config           *jsontext.Value
-	append_config     jsontext.Value
+	_config           *string
 	secret_ciphertext *string
 	status            *string
 	status_message    *string
@@ -275,13 +273,12 @@ func (m *ConnectionMutation) ResetName() {
 }
 
 // SetConfig sets the "config" field.
-func (m *ConnectionMutation) SetConfig(j jsontext.Value) {
-	m._config = &j
-	m.append_config = nil
+func (m *ConnectionMutation) SetConfig(s string) {
+	m._config = &s
 }
 
 // Config returns the value of the "config" field in the mutation.
-func (m *ConnectionMutation) Config() (r jsontext.Value, exists bool) {
+func (m *ConnectionMutation) Config() (r string, exists bool) {
 	v := m._config
 	if v == nil {
 		return
@@ -292,7 +289,7 @@ func (m *ConnectionMutation) Config() (r jsontext.Value, exists bool) {
 // OldConfig returns the old "config" field's value of the Connection entity.
 // If the Connection object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ConnectionMutation) OldConfig(ctx context.Context) (v jsontext.Value, err error) {
+func (m *ConnectionMutation) OldConfig(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldConfig is only allowed on UpdateOne operations")
 	}
@@ -306,23 +303,9 @@ func (m *ConnectionMutation) OldConfig(ctx context.Context) (v jsontext.Value, e
 	return oldValue.Config, nil
 }
 
-// AppendConfig adds j to the "config" field.
-func (m *ConnectionMutation) AppendConfig(j jsontext.Value) {
-	m.append_config = append(m.append_config, j...)
-}
-
-// AppendedConfig returns the list of values that were appended to the "config" field in this mutation.
-func (m *ConnectionMutation) AppendedConfig() (jsontext.Value, bool) {
-	if len(m.append_config) == 0 {
-		return nil, false
-	}
-	return m.append_config, true
-}
-
 // ResetConfig resets all changes to the "config" field.
 func (m *ConnectionMutation) ResetConfig() {
 	m._config = nil
-	m.append_config = nil
 }
 
 // SetSecretCiphertext sets the "secret_ciphertext" field.
@@ -707,7 +690,7 @@ func (m *ConnectionMutation) SetField(name string, value ent.Value) error {
 		m.SetName(v)
 		return nil
 	case connection.FieldConfig:
-		v, ok := value.(jsontext.Value)
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

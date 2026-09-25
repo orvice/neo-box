@@ -1,9 +1,8 @@
 package schema
 
 import (
-	"encoding/json"
-
 	"entgo.io/ent"
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/field"
@@ -27,8 +26,11 @@ func (Connection) Fields() []ent.Field {
 		// provider is the provider key, e.g. "nocodb".
 		field.String("provider").Immutable(),
 		field.String("name"),
-		// config holds the provider's non-secret settings.
-		field.JSON("config", json.RawMessage{}),
+		// config holds the provider's non-secret settings as JSON. It is a
+		// string field rather than field.JSON(json.RawMessage): on Go 1.27
+		// RawMessage aliases encoding/json/jsontext, and the generated code
+		// would not build on Go 1.26.
+		field.String("config").SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
 		// secret_ciphertext is the provider's secret settings (JSON), sealed
 		// with secretbox.
 		field.String("secret_ciphertext").Sensitive(),

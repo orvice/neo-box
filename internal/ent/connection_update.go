@@ -4,14 +4,12 @@ package ent
 
 import (
 	"context"
-	"encoding/json/jsontext"
 	"errors"
 	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"go.orx.me/apps/neo-box/internal/ent/connection"
 	"go.orx.me/apps/neo-box/internal/ent/predicate"
@@ -45,14 +43,16 @@ func (_u *ConnectionUpdate) SetNillableName(v *string) *ConnectionUpdate {
 }
 
 // SetConfig sets the "config" field.
-func (_u *ConnectionUpdate) SetConfig(v jsontext.Value) *ConnectionUpdate {
+func (_u *ConnectionUpdate) SetConfig(v string) *ConnectionUpdate {
 	_u.mutation.SetConfig(v)
 	return _u
 }
 
-// AppendConfig appends value to the "config" field.
-func (_u *ConnectionUpdate) AppendConfig(v jsontext.Value) *ConnectionUpdate {
-	_u.mutation.AppendConfig(v)
+// SetNillableConfig sets the "config" field if the given value is not nil.
+func (_u *ConnectionUpdate) SetNillableConfig(v *string) *ConnectionUpdate {
+	if v != nil {
+		_u.SetConfig(*v)
+	}
 	return _u
 }
 
@@ -177,12 +177,7 @@ func (_u *ConnectionUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 		_spec.SetField(connection.FieldName, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Config(); ok {
-		_spec.SetField(connection.FieldConfig, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedConfig(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, connection.FieldConfig, value)
-		})
+		_spec.SetField(connection.FieldConfig, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.SecretCiphertext(); ok {
 		_spec.SetField(connection.FieldSecretCiphertext, field.TypeString, value)
@@ -237,14 +232,16 @@ func (_u *ConnectionUpdateOne) SetNillableName(v *string) *ConnectionUpdateOne {
 }
 
 // SetConfig sets the "config" field.
-func (_u *ConnectionUpdateOne) SetConfig(v jsontext.Value) *ConnectionUpdateOne {
+func (_u *ConnectionUpdateOne) SetConfig(v string) *ConnectionUpdateOne {
 	_u.mutation.SetConfig(v)
 	return _u
 }
 
-// AppendConfig appends value to the "config" field.
-func (_u *ConnectionUpdateOne) AppendConfig(v jsontext.Value) *ConnectionUpdateOne {
-	_u.mutation.AppendConfig(v)
+// SetNillableConfig sets the "config" field if the given value is not nil.
+func (_u *ConnectionUpdateOne) SetNillableConfig(v *string) *ConnectionUpdateOne {
+	if v != nil {
+		_u.SetConfig(*v)
+	}
 	return _u
 }
 
@@ -399,12 +396,7 @@ func (_u *ConnectionUpdateOne) sqlSave(ctx context.Context) (_node *Connection, 
 		_spec.SetField(connection.FieldName, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Config(); ok {
-		_spec.SetField(connection.FieldConfig, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedConfig(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, connection.FieldConfig, value)
-		})
+		_spec.SetField(connection.FieldConfig, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.SecretCiphertext(); ok {
 		_spec.SetField(connection.FieldSecretCiphertext, field.TypeString, value)

@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -27,7 +28,7 @@ func (s *Store) Create(ctx context.Context, c *repo.Connection) error {
 		SetUserID(c.UserID).
 		SetProvider(c.Provider).
 		SetName(c.Name).
-		SetConfig(c.Config).
+		SetConfig(string(c.Config)).
 		SetSecretCiphertext(c.SecretCiphertext).
 		SetStatus(string(c.Status)).
 		SetStatusMessage(c.StatusMessage).
@@ -83,7 +84,7 @@ func (s *Store) Update(ctx context.Context, c *repo.Connection) error {
 	u := s.client.Connection.Update().
 		Where(entconnection.ID(c.ID), entconnection.UserID(c.UserID)).
 		SetName(c.Name).
-		SetConfig(c.Config).
+		SetConfig(string(c.Config)).
 		SetSecretCiphertext(c.SecretCiphertext).
 		SetStatus(string(c.Status)).
 		SetStatusMessage(c.StatusMessage).
@@ -135,7 +136,7 @@ func (s *Store) Delete(ctx context.Context, userID, id string) error {
 func fromRow(r *ent.Connection) *repo.Connection {
 	c := &repo.Connection{
 		ID: r.ID, UserID: r.UserID, Provider: r.Provider, Name: r.Name,
-		Config: r.Config, SecretCiphertext: r.SecretCiphertext,
+		Config: json.RawMessage(r.Config), SecretCiphertext: r.SecretCiphertext,
 		Status: repo.Status(r.Status), StatusMessage: r.StatusMessage,
 		CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt,
 	}

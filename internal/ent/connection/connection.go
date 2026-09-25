@@ -90,6 +90,11 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
+// ByConfig orders the results by the config field.
+func ByConfig(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldConfig, opts...).ToFunc()
+}
+
 // BySecretCiphertext orders the results by the secret_ciphertext field.
 func BySecretCiphertext(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSecretCiphertext, opts...).ToFunc()
