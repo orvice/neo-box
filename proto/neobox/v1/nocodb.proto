@@ -1,0 +1,239 @@
+syntax = "proto3";
+
+package neobox.v1;
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+import "validate/validate.proto";
+
+option go_package = "go.orx.me/apps/neo-box/pkg/proto/neobox/v1;neoboxv1";
+
+// NocoDBService manages connections to self-hosted NocoDB instances and
+// point-in-time Snapshots of their Bases (schema + records + links).
+// Every resource is owned by the calling user.
+service NocoDBService {
+  // Connections
+  rpc CreateNocoDBConnection(CreateNocoDBConnectionRequest) returns (CreateNocoDBConnectionResponse);
+  rpc ListNocoDBConnections(ListNocoDBConnectionsRequest) returns (ListNocoDBConnectionsResponse);
+  rpc UpdateNocoDBConnection(UpdateNocoDBConnectionRequest) returns (UpdateNocoDBConnectionResponse);
+  // DeleteNocoDBConnection removes the connection, its backup policies, and
+  // all of its snapshots (including stored snapshot content).
+  rpc DeleteNocoDBConnection(DeleteNocoDBConnectionRequest) returns (DeleteNocoDBConnectionResponse);
+  // TestNocoDBConnection checks that the stored URL + token can list bases.
+  rpc TestNocoDBConnection(TestNocoDBConnectionRequest) returns (TestNocoDBConnectionResponse);
+
+  // ListNocoDBBases lists the Bases visible to the connection's token, each
+  // joined with its backup policy and latest snapshot.
+  rpc ListNocoDBBases(ListNocoDBBasesRequest) returns (ListNocoDBBasesResponse);
+
+  // Backup policies
+  rpc UpsertBackupPolicy(UpsertBackupPolicyRequest) returns (UpsertBackupPolicyResponse);
+
+  // Snapshots
+  // CreateSnapshot queues a manual snapshot and returns immediately with a
+  // PENDING snapshot; poll GetSnapshot for progress.
+  rpc CreateSnapshot(CreateSnapshotRequest) returns (CreateSnapshotResponse);
+  rpc ListSnapshots(ListSnapshotsRequest) returns (ListSnapshotsResponse);
+  rpc GetSnapshot(GetSnapshotRequest) returns (GetSnapshotResponse);
+  rpc DeleteSnapshot(DeleteSnapshotRequest) returns (DeleteSnapshotResponse);
+  // ListSnapshotRecords pages through the records of one table inside a
+  // succeeded snapshot.
+  rpc ListSnapshotRecords(ListSnapshotRecordsRequest) returns (ListSnapshotRecordsResponse);
+}
+
+message NocoDBConnection {
+  string id = 1;
+  string name = 2;
+  // Base URL of the NocoDB instance, e.g. https://nocodb.example.com.
+  string base_url = 3;
+  // Whether an API token is stored. The token itself is never returned.
+  bool has_token = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message CreateNocoDBConnectionRequest {
+  string name = 1 [(validate.rules).string.min_len = 1];
+  string base_url = 2 [(validate.rules).string.min_len = 1];
+  string api_token = 3 [(validate.rules).string.min_len = 1];
+}
+
+message CreateNocoDBConnectionResponse {
+  NocoDBConnection connection = 1;
+}
+
+message ListNocoDBConnectionsRequest {}
+
+message ListNocoDBConnectionsResponse {
+  repeated NocoDBConnection connections = 1;
+}
+
+message UpdateNocoDBConnectionRequest {
+  string id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  string base_url = 3 [(validate.rules).string.min_len = 1];
+  // When unset the stored token is kept.
+  optional string api_token = 4;
+}
+
+message UpdateNocoDBConnectionResponse {
+  NocoDBConnection connection = 1;
+}
+
+message DeleteNocoDBConnectionRequest {
+  string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message DeleteNocoDBConnectionResponse {}
+
+message TestNocoDBConnectionRequest {
+  string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message TestNocoDBConnectionResponse {
+  bool ok = 1;
+  // Error detail when ok is false.
+  string error = 2;
+  int32 base_count = 3;
+}
+
+// BackupPolicy controls scheduled snapshots of one Base.
+message BackupPolicy {
+  string connection_id = 1;
+  string base_id = 2;
+  bool enabled = 3;
+  // Standard 5-field cron expression evaluated in the server's time zone,
+  // e.g. "0 3 * * *" for daily at 03:00.
+  string cron = 4;
+  // Number of scheduled snapshots to keep; older ones are deleted after a
+  // new scheduled snapshot succeeds. 0 keeps everything. Manual snapshots
+  // are never pruned.
+  int32 retention = 5;
+  google.protobuf.Timestamp updated_at = 6;
+  // Next scheduled run, when enabled.
+  google.protobuf.Timestamp next_run_at = 7;
+}
+
+message NocoDBBase {
+  string id = 1;
+  string title = 2;
+  BackupPolicy policy = 3;
+  Snapshot latest_snapshot = 4;
+}
+
+message ListNocoDBBasesRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message ListNocoDBBasesResponse {
+  repeated NocoDBBase bases = 1;
+}
+
+message UpsertBackupPolicyRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string base_id = 2 [(validate.rules).string.min_len = 1];
+  bool enabled = 3;
+  string cron = 4;
+  int32 retention = 5 [(validate.rules).int32.gte = 0];
+}
+
+message UpsertBackupPolicyResponse {
+  BackupPolicy policy = 1;
+}
+
+enum SnapshotStatus {
+  SNAPSHOT_STATUS_UNSPECIFIED = 0;
+  SNAPSHOT_STATUS_PENDING = 1;
+  SNAPSHOT_STATUS_RUNNING = 2;
+  SNAPSHOT_STATUS_SUCCEEDED = 3;
+  SNAPSHOT_STATUS_FAILED = 4;
+}
+
+enum SnapshotTrigger {
+  SNAPSHOT_TRIGGER_UNSPECIFIED = 0;
+  SNAPSHOT_TRIGGER_MANUAL = 1;
+  SNAPSHOT_TRIGGER_SCHEDULED = 2;
+}
+
+message SnapshotTable {
+  string id = 1;
+  string title = 2;
+  int64 record_count = 3;
+  int32 field_count = 4;
+  int64 link_count = 5;
+}
+
+message Snapshot {
+  string id = 1;
+  string connection_id = 2;
+  string base_id = 3;
+  string base_title = 4;
+  SnapshotStatus status = 5;
+  SnapshotTrigger trigger = 6;
+  string error = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp started_at = 9;
+  google.protobuf.Timestamp finished_at = 10;
+  // Compressed size of the stored snapshot content.
+  int64 size_bytes = 11;
+  int64 record_count = 12;
+  int64 link_count = 13;
+  repeated SnapshotTable tables = 14;
+  // Human-readable progress while RUNNING, e.g. "Orders: 1200 records".
+  string progress = 15;
+}
+
+message CreateSnapshotRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string base_id = 2 [(validate.rules).string.min_len = 1];
+}
+
+message CreateSnapshotResponse {
+  Snapshot snapshot = 1;
+}
+
+message ListSnapshotsRequest {
+  // Optional filters.
+  string connection_id = 1;
+  string base_id = 2;
+  int32 limit = 3;
+}
+
+message ListSnapshotsResponse {
+  repeated Snapshot snapshots = 1;
+}
+
+message GetSnapshotRequest {
+  string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetSnapshotResponse {
+  Snapshot snapshot = 1;
+}
+
+message DeleteSnapshotRequest {
+  string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message DeleteSnapshotResponse {}
+
+message SnapshotField {
+  string id = 1;
+  string title = 2;
+  string type = 3;
+}
+
+message ListSnapshotRecordsRequest {
+  string snapshot_id = 1 [(validate.rules).string.min_len = 1];
+  string table_id = 2 [(validate.rules).string.min_len = 1];
+  // 1-based page number.
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message ListSnapshotRecordsResponse {
+  repeated SnapshotField fields = 1;
+  // Each record is {"id": ..., "fields": {...}} as returned by NocoDB.
+  repeated google.protobuf.Struct records = 2;
+  int64 total = 3;
+}

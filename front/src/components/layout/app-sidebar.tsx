@@ -12,7 +12,12 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar'
 import { BrandMark } from '@/components/brand-mark'
-import { accountNav, adminNav, generalNav } from './data/sidebar-data'
+import {
+  accountNav,
+  adminNav,
+  generalNav,
+  resourcesNav,
+} from './data/sidebar-data'
 import { NavGroup } from './nav-group'
 import { NavUser } from './nav-user'
 
@@ -48,6 +53,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <NavGroup {...generalNav} />
+        <NavGroup {...resourcesNav} />
         {isAdmin && <NavGroup {...adminNav} />}
         <NavGroup {...accountNav} />
       </SidebarContent>

@@ -54,6 +54,16 @@ Connect-Web on the frontend.
   `mongo/` subpackages.
 - `internal/auth/provider/` — OAuth login providers (GitHub, Google) behind a
   `Provider` interface and `Registry`.
+- `internal/secretbox/` — AES-GCM for stored credentials (key from
+  `crypto.encryption_key`).
+- `internal/blobstore/` — object storage: S3 (butterfly `store.s3`, selected
+  by `storage.s3_store`) or a local directory fallback for development.
+- `internal/nocodb/` — NocoDB REST client (v2 base list, v3 meta/data),
+  `xc-token` auth, rate limiting, 429/5xx retry.
+- `internal/snapshot/` — builds and reads the Snapshot document (streaming
+  gzip JSON; format in `format.go`, rationale in `docs/adr/0001`).
+- `internal/backup/` — `Manager`: worker queue running snapshots, in-process
+  cron for Backup Policies, retention, and one-snapshot-per-Base guarding.
 
 **User center** (`proto/neobox/v1/auth.proto`, `AuthService`): password
 login, OAuth login (`BeginOAuthFlow` → provider → `CompleteOAuthFlow`, CSRF
@@ -61,6 +71,13 @@ state single-use in `oauth_states`), `Me`, `Logout`, self-service
 `UpdateProfile` / `ChangePassword`, and admin-only `ListUsers` /
 `CreateUser` / `UpdateUserPassword` / `SetUserDisabled`. Roles are `admin`
 and `user`. Sessions live in the `auth_sessions` collection with a TTL index.
+
+**NocoDB backups** (`proto/neobox/v1/nocodb.proto`, `NocoDBService`):
+Connections (URL + encrypted token, verified on save), live Base listing
+joined with policy + latest snapshot, `UpsertBackupPolicy`, async
+`CreateSnapshot` (poll `GetSnapshot`), `ListSnapshotRecords` for browsing,
+and `GET /api/nocodb/snapshots/:id/download` for the raw `.json.gz`. All
+scoped to the calling user.
 
 **Frontend** (`front/`): `src/api/transport.ts` is the Connect transport
 (binary protobuf, Bearer interceptor, redirect to `/sign-in` on
@@ -81,4 +98,4 @@ hooks. `src/stores/auth-store.ts` (Zustand) holds token + user. Routes under
 
 ## Domain
 
-See `CONTEXT.md` for the domain language.
+See `CONTEXT.md` for the domain language and `docs/adr/` for decisions.

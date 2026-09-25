@@ -12,11 +12,28 @@ one place.
 - **Session** — a bearer token issued at sign-in. Only its sha256 is stored;
   it expires after `auth.session_ttl`.
 
+### NocoDB
+
+- **NocoDB Connection** — one self-hosted NocoDB instance (base URL) plus an
+  API token, owned by one User. The token is encrypted with
+  `crypto.encryption_key` and never returned by the API.
+- **Base** — NocoDB's top-level container of tables (a "project"; IDs start
+  with `p`). Neo Box does not store Bases; it lists them live from NocoDB.
+- **Snapshot** — a point-in-time, read-only capture of one Base: the base
+  meta, every table's schema (fields), every record, and every link between
+  records. Content is a gzip JSON document in blob storage; metadata
+  (status, counts, size) is in MongoDB. Attachments are captured as their
+  metadata/URLs only, not file bytes. Views are not captured (OSS NocoDB has
+  no v3 views API).
+- **Snapshot trigger** — `manual` (user clicked "Snapshot now") or
+  `scheduled` (fired by a Backup Policy).
+- **Backup Policy** — per (Connection, Base): enabled flag, cron expression,
+  and retention N. After a scheduled Snapshot succeeds, scheduled Snapshots
+  beyond the newest N are deleted. Manual Snapshots are never pruned.
+
+A Base has at most one Snapshot pending or running at a time.
+
 ## Planned (not yet modeled)
 
-- **Provider** — a kind of third-party service Neo Box knows how to talk to.
-- **Connection** — a user's credentials for one Provider account.
-- **Resource** — one item fetched through a Connection (e.g. a server, a
-  domain, a subscription), shown and tracked in the dashboard.
-
-Define these precisely here before implementing them.
+- **Restore** — rebuild a Snapshot into a new Base (never overwrite).
+- Other third-party **Providers** beyond NocoDB.
