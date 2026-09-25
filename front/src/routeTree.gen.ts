@@ -26,6 +26,7 @@ import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_a
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedConnectionsConnectionIdIndexRouteImport } from './routes/_authenticated/connections/$connectionId/index'
 import { Route as authAuthOauthCallbackProviderRouteImport } from './routes/(auth)/auth.oauth.callback.$provider'
+import { Route as AuthenticatedConnectionsConnectionIdBucketsBucketRouteImport } from './routes/_authenticated/connections/$connectionId/buckets/$bucket'
 import { Route as AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRouteImport } from './routes/_authenticated/connections/$connectionId/snapshots/$snapshotId'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -119,6 +120,12 @@ const authAuthOauthCallbackProviderRoute =
     path: '/auth/oauth/callback/$provider',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedConnectionsConnectionIdBucketsBucketRoute =
+  AuthenticatedConnectionsConnectionIdBucketsBucketRouteImport.update({
+    id: '/connections/$connectionId/buckets/$bucket',
+    path: '/connections/$connectionId/buckets/$bucket',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRoute =
   AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRouteImport.update({
     id: '/connections/$connectionId/snapshots/$snapshotId',
@@ -143,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/connections/$connectionId/': typeof AuthenticatedConnectionsConnectionIdIndexRoute
   '/auth/oauth/callback/$provider': typeof authAuthOauthCallbackProviderRoute
+  '/connections/$connectionId/buckets/$bucket': typeof AuthenticatedConnectionsConnectionIdBucketsBucketRoute
   '/connections/$connectionId/snapshots/$snapshotId': typeof AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRoute
 }
 export interface FileRoutesByTo {
@@ -161,6 +169,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/connections/$connectionId': typeof AuthenticatedConnectionsConnectionIdIndexRoute
   '/auth/oauth/callback/$provider': typeof authAuthOauthCallbackProviderRoute
+  '/connections/$connectionId/buckets/$bucket': typeof AuthenticatedConnectionsConnectionIdBucketsBucketRoute
   '/connections/$connectionId/snapshots/$snapshotId': typeof AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRoute
 }
 export interface FileRoutesById {
@@ -182,6 +191,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/connections/$connectionId/': typeof AuthenticatedConnectionsConnectionIdIndexRoute
   '/(auth)/auth/oauth/callback/$provider': typeof authAuthOauthCallbackProviderRoute
+  '/_authenticated/connections/$connectionId/buckets/$bucket': typeof AuthenticatedConnectionsConnectionIdBucketsBucketRoute
   '/_authenticated/connections/$connectionId/snapshots/$snapshotId': typeof AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRoute
 }
 export interface FileRouteTypes {
@@ -203,6 +213,7 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/connections/$connectionId/'
     | '/auth/oauth/callback/$provider'
+    | '/connections/$connectionId/buckets/$bucket'
     | '/connections/$connectionId/snapshots/$snapshotId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -221,6 +232,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/connections/$connectionId'
     | '/auth/oauth/callback/$provider'
+    | '/connections/$connectionId/buckets/$bucket'
     | '/connections/$connectionId/snapshots/$snapshotId'
   id:
     | '__root__'
@@ -241,6 +253,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/'
     | '/_authenticated/connections/$connectionId/'
     | '/(auth)/auth/oauth/callback/$provider'
+    | '/_authenticated/connections/$connectionId/buckets/$bucket'
     | '/_authenticated/connections/$connectionId/snapshots/$snapshotId'
   fileRoutesById: FileRoutesById
 }
@@ -376,6 +389,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authAuthOauthCallbackProviderRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/connections/$connectionId/buckets/$bucket': {
+      id: '/_authenticated/connections/$connectionId/buckets/$bucket'
+      path: '/connections/$connectionId/buckets/$bucket'
+      fullPath: '/connections/$connectionId/buckets/$bucket'
+      preLoaderRoute: typeof AuthenticatedConnectionsConnectionIdBucketsBucketRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/connections/$connectionId/snapshots/$snapshotId': {
       id: '/_authenticated/connections/$connectionId/snapshots/$snapshotId'
       path: '/connections/$connectionId/snapshots/$snapshotId'
@@ -411,6 +431,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedConnectionsIndexRoute: typeof AuthenticatedConnectionsIndexRoute
   AuthenticatedConnectionsConnectionIdIndexRoute: typeof AuthenticatedConnectionsConnectionIdIndexRoute
+  AuthenticatedConnectionsConnectionIdBucketsBucketRoute: typeof AuthenticatedConnectionsConnectionIdBucketsBucketRoute
   AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRoute: typeof AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRoute
 }
 
@@ -422,6 +443,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConnectionsIndexRoute: AuthenticatedConnectionsIndexRoute,
   AuthenticatedConnectionsConnectionIdIndexRoute:
     AuthenticatedConnectionsConnectionIdIndexRoute,
+  AuthenticatedConnectionsConnectionIdBucketsBucketRoute:
+    AuthenticatedConnectionsConnectionIdBucketsBucketRoute,
   AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRoute:
     AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRoute,
 }
