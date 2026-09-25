@@ -81,6 +81,30 @@ func (f UserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserMutation", m)
 }
 
+// The WasabiDailyUsageFunc type is an adapter to allow the use of ordinary
+// function as WasabiDailyUsage mutator.
+type WasabiDailyUsageFunc func(context.Context, *ent.WasabiDailyUsageMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WasabiDailyUsageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.WasabiDailyUsageMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WasabiDailyUsageMutation", m)
+}
+
+// The WasabiSyncStateFunc type is an adapter to allow the use of ordinary
+// function as WasabiSyncState mutator.
+type WasabiSyncStateFunc func(context.Context, *ent.WasabiSyncStateMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WasabiSyncStateFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.WasabiSyncStateMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WasabiSyncStateMutation", m)
+}
+
 // Condition is a hook condition function.
 type Condition func(context.Context, ent.Mutation) bool
 

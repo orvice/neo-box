@@ -183,6 +183,62 @@ var (
 			},
 		},
 	}
+	// WasabiDailyUsageColumns holds the columns for the "wasabi_daily_usage" table.
+	WasabiDailyUsageColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "connection_id", Type: field.TypeString},
+		{Name: "bucket", Type: field.TypeString, Default: ""},
+		{Name: "day", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "date"}},
+		{Name: "region", Type: field.TypeString, Default: ""},
+		{Name: "num_billable_objects", Type: field.TypeInt64, Default: 0},
+		{Name: "num_billable_deleted_objects", Type: field.TypeInt64, Default: 0},
+		{Name: "raw_storage_size_bytes", Type: field.TypeInt64, Default: 0},
+		{Name: "padded_storage_size_bytes", Type: field.TypeInt64, Default: 0},
+		{Name: "metadata_storage_size_bytes", Type: field.TypeInt64, Default: 0},
+		{Name: "deleted_storage_size_bytes", Type: field.TypeInt64, Default: 0},
+		{Name: "orphaned_storage_size_bytes", Type: field.TypeInt64, Default: 0},
+		{Name: "min_storage_charge_bytes", Type: field.TypeInt64, Default: 0},
+		{Name: "num_api_calls", Type: field.TypeInt64, Default: 0},
+		{Name: "upload_bytes", Type: field.TypeInt64, Default: 0},
+		{Name: "download_bytes", Type: field.TypeInt64, Default: 0},
+		{Name: "storage_wrote_bytes", Type: field.TypeInt64, Default: 0},
+		{Name: "storage_read_bytes", Type: field.TypeInt64, Default: 0},
+		{Name: "delete_bytes", Type: field.TypeInt64, Default: 0},
+		{Name: "num_get_calls", Type: field.TypeInt64, Default: 0},
+		{Name: "num_put_calls", Type: field.TypeInt64, Default: 0},
+		{Name: "num_delete_calls", Type: field.TypeInt64, Default: 0},
+		{Name: "num_list_calls", Type: field.TypeInt64, Default: 0},
+		{Name: "num_head_calls", Type: field.TypeInt64, Default: 0},
+	}
+	// WasabiDailyUsageTable holds the schema information for the "wasabi_daily_usage" table.
+	WasabiDailyUsageTable = &schema.Table{
+		Name:       "wasabi_daily_usage",
+		Columns:    WasabiDailyUsageColumns,
+		PrimaryKey: []*schema.Column{WasabiDailyUsageColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "wasabidailyusage_connection_id_bucket_day",
+				Unique:  true,
+				Columns: []*schema.Column{WasabiDailyUsageColumns[1], WasabiDailyUsageColumns[2], WasabiDailyUsageColumns[3]},
+			},
+		},
+	}
+	// WasabiSyncStatesColumns holds the columns for the "wasabi_sync_states" table.
+	WasabiSyncStatesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "last_synced_day", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "date"}},
+		{Name: "last_success_at", Type: field.TypeTime, Nullable: true},
+		{Name: "backfill_from", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "date"}},
+		{Name: "backfill_through", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "date"}},
+		{Name: "backfill_completed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// WasabiSyncStatesTable holds the schema information for the "wasabi_sync_states" table.
+	WasabiSyncStatesTable = &schema.Table{
+		Name:       "wasabi_sync_states",
+		Columns:    WasabiSyncStatesColumns,
+		PrimaryKey: []*schema.Column{WasabiSyncStatesColumns[0]},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ConnectionsTable,
@@ -191,6 +247,8 @@ var (
 		OauthStatesTable,
 		AuthSessionsTable,
 		UsersTable,
+		WasabiDailyUsageTable,
+		WasabiSyncStatesTable,
 	}
 )
 
@@ -212,5 +270,11 @@ func init() {
 	}
 	UsersTable.Annotation = &entsql.Annotation{
 		Table: "users",
+	}
+	WasabiDailyUsageTable.Annotation = &entsql.Annotation{
+		Table: "wasabi_daily_usage",
+	}
+	WasabiSyncStatesTable.Annotation = &entsql.Annotation{
+		Table: "wasabi_sync_states",
 	}
 }

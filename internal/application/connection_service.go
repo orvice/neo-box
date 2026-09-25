@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"math"
 	"strings"
 	"sync"
+	"time"
 
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -15,6 +17,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/repo/auth"
 	connrepo "go.orx.me/apps/neo-box/internal/repo/connection"
 	"go.orx.me/apps/neo-box/internal/transport/connectx"
+	"go.orx.me/apps/neo-box/internal/wasabi"
 	neoboxv1 "go.orx.me/apps/neo-box/pkg/proto/neobox/v1"
 )
 
@@ -183,6 +186,8 @@ func createSettings(m *neoboxv1.CreateConnectionRequest) (*providerSettings, err
 	switch v := m.GetSettings().(type) {
 	case *neoboxv1.CreateConnectionRequest_Nocodb:
 		return nocodbSettings(v.Nocodb)
+	case *neoboxv1.CreateConnectionRequest_Wasabi:
+		return wasabiSettings(v.Wasabi)
 	}
 	return nil, connectx.RequiredArgument("settings")
 }
@@ -191,6 +196,8 @@ func updateSettings(m *neoboxv1.UpdateConnectionRequest) (*providerSettings, err
 	switch v := m.GetSettings().(type) {
 	case *neoboxv1.UpdateConnectionRequest_Nocodb:
 		return nocodbSettings(v.Nocodb)
+	case *neoboxv1.UpdateConnectionRequest_Wasabi:
+		return wasabiSettings(v.Wasabi)
 	}
 	return nil, connectx.RequiredArgument("settings")
 }
@@ -211,12 +218,49 @@ func nocodbSettings(in *neoboxv1.NocoDBConnectionSettings) (*providerSettings, e
 	return out, nil
 }
 
+func wasabiSettings(in *neoboxv1.WasabiConnectionSettings) (*providerSettings, error) {
+	keyID := strings.TrimSpace(in.GetAccessKeyId())
+	if keyID == "" {
+		return nil, connectx.RequiredArgument("access_key_id")
+	}
+	price := in.GetPricePerTbMonth()
+	if price < 0 || math.IsNaN(price) || math.IsInf(price, 0) {
+		return nil, connectx.InvalidArgument("price_per_tb_month", "must be a non-negative number")
+	}
+	cfg := wasabi.ConnectionConfig{
+		AccessKeyID:         keyID,
+		PricePerTBMonth:     price,
+		BillingCycleAnchor:  strings.TrimSpace(in.GetBillingCycleAnchor()),
+		CostEstimateEnabled: in.GetCostEstimateEnabled(),
+	}
+	anchor, err := cfg.Anchor()
+	if err != nil {
+		return nil, connectx.InvalidArgument("billing_cycle_anchor", "must be a YYYY-MM-DD day")
+	}
+	if anchor.After(time.Now()) {
+		return nil, connectx.InvalidArgument("billing_cycle_anchor", "must not be in the future")
+	}
+	out := &providerSettings{provider: wasabi.ProviderType, config: cfg, secretField: "secret_key"}
+	if sk := strings.TrimSpace(in.GetSecretKey()); sk != "" {
+		out.secret = wasabi.ConnectionSecret{SecretKey: sk}
+	}
+	return out, nil
+}
+
 func configToProto(c *connrepo.Connection, out *neoboxv1.Connection) {
 	switch c.Provider {
 	case nocodb.ProviderType:
 		var cfg nocodb.ConnectionConfig
 		if json.Unmarshal(c.Config, &cfg) == nil {
 			out.Config = &neoboxv1.Connection_Nocodb{Nocodb: &neoboxv1.NocoDBConnectionConfig{BaseUrl: cfg.BaseURL}}
+		}
+	case wasabi.ProviderType:
+		var cfg wasabi.ConnectionConfig
+		if json.Unmarshal(c.Config, &cfg) == nil {
+			out.Config = &neoboxv1.Connection_Wasabi{Wasabi: &neoboxv1.WasabiConnectionConfig{
+				AccessKeyId: cfg.AccessKeyID, PricePerTbMonth: cfg.Price(),
+				BillingCycleAnchor: cfg.BillingCycleAnchor, CostEstimateEnabled: cfg.CostEstimateEnabled,
+			}}
 		}
 	}
 }
@@ -225,6 +269,8 @@ func providerKey(p neoboxv1.Provider) (string, bool) {
 	switch p {
 	case neoboxv1.Provider_PROVIDER_NOCODB:
 		return nocodb.ProviderType, true
+	case neoboxv1.Provider_PROVIDER_WASABI:
+		return wasabi.ProviderType, true
 	}
 	return "", false
 }
@@ -233,6 +279,8 @@ func providerToProto(key string) neoboxv1.Provider {
 	switch key {
 	case nocodb.ProviderType:
 		return neoboxv1.Provider_PROVIDER_NOCODB
+	case wasabi.ProviderType:
+		return neoboxv1.Provider_PROVIDER_WASABI
 	}
 	return neoboxv1.Provider_PROVIDER_UNSPECIFIED
 }

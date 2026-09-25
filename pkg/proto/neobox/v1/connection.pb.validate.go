@@ -196,6 +196,47 @@ func (m *Connection) validate(all bool) error {
 			}
 		}
 
+	case *Connection_Wasabi:
+		if v == nil {
+			err := ConnectionValidationError{
+				field:  "Config",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetWasabi()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ConnectionValidationError{
+						field:  "Wasabi",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ConnectionValidationError{
+						field:  "Wasabi",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetWasabi()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ConnectionValidationError{
+					field:  "Wasabi",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	default:
 		_ = v // ensures v is used
 	}
@@ -495,6 +536,246 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = NocoDBConnectionSettingsValidationError{}
+
+// Validate checks the field values on WasabiConnectionConfig with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WasabiConnectionConfig) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WasabiConnectionConfig with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WasabiConnectionConfigMultiError, or nil if none found.
+func (m *WasabiConnectionConfig) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WasabiConnectionConfig) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for AccessKeyId
+
+	// no validation rules for PricePerTbMonth
+
+	// no validation rules for BillingCycleAnchor
+
+	// no validation rules for CostEstimateEnabled
+
+	if len(errors) > 0 {
+		return WasabiConnectionConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// WasabiConnectionConfigMultiError is an error wrapping multiple validation
+// errors returned by WasabiConnectionConfig.ValidateAll() if the designated
+// constraints aren't met.
+type WasabiConnectionConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WasabiConnectionConfigMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WasabiConnectionConfigMultiError) AllErrors() []error { return m }
+
+// WasabiConnectionConfigValidationError is the validation error returned by
+// WasabiConnectionConfig.Validate if the designated constraints aren't met.
+type WasabiConnectionConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WasabiConnectionConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WasabiConnectionConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WasabiConnectionConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WasabiConnectionConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WasabiConnectionConfigValidationError) ErrorName() string {
+	return "WasabiConnectionConfigValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WasabiConnectionConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWasabiConnectionConfig.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WasabiConnectionConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WasabiConnectionConfigValidationError{}
+
+// Validate checks the field values on WasabiConnectionSettings with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WasabiConnectionSettings) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WasabiConnectionSettings with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WasabiConnectionSettingsMultiError, or nil if none found.
+func (m *WasabiConnectionSettings) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WasabiConnectionSettings) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetAccessKeyId()) < 1 {
+		err := WasabiConnectionSettingsValidationError{
+			field:  "AccessKeyId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for SecretKey
+
+	if m.GetPricePerTbMonth() < 0 {
+		err := WasabiConnectionSettingsValidationError{
+			field:  "PricePerTbMonth",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for BillingCycleAnchor
+
+	// no validation rules for CostEstimateEnabled
+
+	if len(errors) > 0 {
+		return WasabiConnectionSettingsMultiError(errors)
+	}
+
+	return nil
+}
+
+// WasabiConnectionSettingsMultiError is an error wrapping multiple validation
+// errors returned by WasabiConnectionSettings.ValidateAll() if the designated
+// constraints aren't met.
+type WasabiConnectionSettingsMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WasabiConnectionSettingsMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WasabiConnectionSettingsMultiError) AllErrors() []error { return m }
+
+// WasabiConnectionSettingsValidationError is the validation error returned by
+// WasabiConnectionSettings.Validate if the designated constraints aren't met.
+type WasabiConnectionSettingsValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WasabiConnectionSettingsValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WasabiConnectionSettingsValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WasabiConnectionSettingsValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WasabiConnectionSettingsValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WasabiConnectionSettingsValidationError) ErrorName() string {
+	return "WasabiConnectionSettingsValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WasabiConnectionSettingsValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWasabiConnectionSettings.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WasabiConnectionSettingsValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WasabiConnectionSettingsValidationError{}
 
 // Validate checks the field values on ListConnectionsRequest with the rules
 // defined in the proto definition for this message. If any rules are
@@ -1057,6 +1338,48 @@ func (m *CreateConnectionRequest) validate(all bool) error {
 			}
 		}
 
+	case *CreateConnectionRequest_Wasabi:
+		if v == nil {
+			err := CreateConnectionRequestValidationError{
+				field:  "Settings",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+		oneofSettingsPresent = true
+
+		if all {
+			switch v := interface{}(m.GetWasabi()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, CreateConnectionRequestValidationError{
+						field:  "Wasabi",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, CreateConnectionRequestValidationError{
+						field:  "Wasabi",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetWasabi()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return CreateConnectionRequestValidationError{
+					field:  "Wasabi",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	default:
 		_ = v // ensures v is used
 	}
@@ -1364,6 +1687,48 @@ func (m *UpdateConnectionRequest) validate(all bool) error {
 			if err := v.Validate(); err != nil {
 				return UpdateConnectionRequestValidationError{
 					field:  "Nocodb",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *UpdateConnectionRequest_Wasabi:
+		if v == nil {
+			err := UpdateConnectionRequestValidationError{
+				field:  "Settings",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+		oneofSettingsPresent = true
+
+		if all {
+			switch v := interface{}(m.GetWasabi()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, UpdateConnectionRequestValidationError{
+						field:  "Wasabi",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, UpdateConnectionRequestValidationError{
+						field:  "Wasabi",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetWasabi()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return UpdateConnectionRequestValidationError{
+					field:  "Wasabi",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}

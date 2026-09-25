@@ -23,3 +23,9 @@ type Session func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)
+
+// WasabiDailyUsage is the predicate function for wasabidailyusage builders.
+type WasabiDailyUsage func(*sql.Selector)
+
+// WasabiSyncState is the predicate function for wasabisyncstate builders.
+type WasabiSyncState func(*sql.Selector)

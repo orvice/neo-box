@@ -14,6 +14,14 @@ type AppConfig struct {
 	Crypto  CryptoConfig  `yaml:"crypto"`
 	Storage StorageConfig `yaml:"storage"`
 	NocoDB  NocoDBConfig  `yaml:"nocodb"`
+	Wasabi  WasabiConfig  `yaml:"wasabi"`
+}
+
+// WasabiConfig tunes Wasabi usage syncs.
+type WasabiConfig struct {
+	// StatsEndpoint overrides the Stats API host
+	// (https://stats.wasabisys.com).
+	StatsEndpoint string `yaml:"stats_endpoint"`
 }
 
 func (c *AppConfig) EffectiveDBStore() string {

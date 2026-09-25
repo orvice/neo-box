@@ -9,6 +9,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent/schema"
 	"go.orx.me/apps/neo-box/internal/ent/session"
 	"go.orx.me/apps/neo-box/internal/ent/user"
+	"go.orx.me/apps/neo-box/internal/ent/wasabidailyusage"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -101,4 +102,90 @@ func init() {
 	userDescDisabled := userFields[9].Descriptor()
 	// user.DefaultDisabled holds the default value on creation for the disabled field.
 	user.DefaultDisabled = userDescDisabled.Default.(bool)
+	wasabidailyusageFields := schema.WasabiDailyUsage{}.Fields()
+	_ = wasabidailyusageFields
+	// wasabidailyusageDescBucket is the schema descriptor for bucket field.
+	wasabidailyusageDescBucket := wasabidailyusageFields[1].Descriptor()
+	// wasabidailyusage.DefaultBucket holds the default value on creation for the bucket field.
+	wasabidailyusage.DefaultBucket = wasabidailyusageDescBucket.Default.(string)
+	// wasabidailyusageDescRegion is the schema descriptor for region field.
+	wasabidailyusageDescRegion := wasabidailyusageFields[3].Descriptor()
+	// wasabidailyusage.DefaultRegion holds the default value on creation for the region field.
+	wasabidailyusage.DefaultRegion = wasabidailyusageDescRegion.Default.(string)
+	// wasabidailyusageDescNumBillableObjects is the schema descriptor for num_billable_objects field.
+	wasabidailyusageDescNumBillableObjects := wasabidailyusageFields[4].Descriptor()
+	// wasabidailyusage.DefaultNumBillableObjects holds the default value on creation for the num_billable_objects field.
+	wasabidailyusage.DefaultNumBillableObjects = wasabidailyusageDescNumBillableObjects.Default.(int64)
+	// wasabidailyusageDescNumBillableDeletedObjects is the schema descriptor for num_billable_deleted_objects field.
+	wasabidailyusageDescNumBillableDeletedObjects := wasabidailyusageFields[5].Descriptor()
+	// wasabidailyusage.DefaultNumBillableDeletedObjects holds the default value on creation for the num_billable_deleted_objects field.
+	wasabidailyusage.DefaultNumBillableDeletedObjects = wasabidailyusageDescNumBillableDeletedObjects.Default.(int64)
+	// wasabidailyusageDescRawStorageSizeBytes is the schema descriptor for raw_storage_size_bytes field.
+	wasabidailyusageDescRawStorageSizeBytes := wasabidailyusageFields[6].Descriptor()
+	// wasabidailyusage.DefaultRawStorageSizeBytes holds the default value on creation for the raw_storage_size_bytes field.
+	wasabidailyusage.DefaultRawStorageSizeBytes = wasabidailyusageDescRawStorageSizeBytes.Default.(int64)
+	// wasabidailyusageDescPaddedStorageSizeBytes is the schema descriptor for padded_storage_size_bytes field.
+	wasabidailyusageDescPaddedStorageSizeBytes := wasabidailyusageFields[7].Descriptor()
+	// wasabidailyusage.DefaultPaddedStorageSizeBytes holds the default value on creation for the padded_storage_size_bytes field.
+	wasabidailyusage.DefaultPaddedStorageSizeBytes = wasabidailyusageDescPaddedStorageSizeBytes.Default.(int64)
+	// wasabidailyusageDescMetadataStorageSizeBytes is the schema descriptor for metadata_storage_size_bytes field.
+	wasabidailyusageDescMetadataStorageSizeBytes := wasabidailyusageFields[8].Descriptor()
+	// wasabidailyusage.DefaultMetadataStorageSizeBytes holds the default value on creation for the metadata_storage_size_bytes field.
+	wasabidailyusage.DefaultMetadataStorageSizeBytes = wasabidailyusageDescMetadataStorageSizeBytes.Default.(int64)
+	// wasabidailyusageDescDeletedStorageSizeBytes is the schema descriptor for deleted_storage_size_bytes field.
+	wasabidailyusageDescDeletedStorageSizeBytes := wasabidailyusageFields[9].Descriptor()
+	// wasabidailyusage.DefaultDeletedStorageSizeBytes holds the default value on creation for the deleted_storage_size_bytes field.
+	wasabidailyusage.DefaultDeletedStorageSizeBytes = wasabidailyusageDescDeletedStorageSizeBytes.Default.(int64)
+	// wasabidailyusageDescOrphanedStorageSizeBytes is the schema descriptor for orphaned_storage_size_bytes field.
+	wasabidailyusageDescOrphanedStorageSizeBytes := wasabidailyusageFields[10].Descriptor()
+	// wasabidailyusage.DefaultOrphanedStorageSizeBytes holds the default value on creation for the orphaned_storage_size_bytes field.
+	wasabidailyusage.DefaultOrphanedStorageSizeBytes = wasabidailyusageDescOrphanedStorageSizeBytes.Default.(int64)
+	// wasabidailyusageDescMinStorageChargeBytes is the schema descriptor for min_storage_charge_bytes field.
+	wasabidailyusageDescMinStorageChargeBytes := wasabidailyusageFields[11].Descriptor()
+	// wasabidailyusage.DefaultMinStorageChargeBytes holds the default value on creation for the min_storage_charge_bytes field.
+	wasabidailyusage.DefaultMinStorageChargeBytes = wasabidailyusageDescMinStorageChargeBytes.Default.(int64)
+	// wasabidailyusageDescNumAPICalls is the schema descriptor for num_api_calls field.
+	wasabidailyusageDescNumAPICalls := wasabidailyusageFields[12].Descriptor()
+	// wasabidailyusage.DefaultNumAPICalls holds the default value on creation for the num_api_calls field.
+	wasabidailyusage.DefaultNumAPICalls = wasabidailyusageDescNumAPICalls.Default.(int64)
+	// wasabidailyusageDescUploadBytes is the schema descriptor for upload_bytes field.
+	wasabidailyusageDescUploadBytes := wasabidailyusageFields[13].Descriptor()
+	// wasabidailyusage.DefaultUploadBytes holds the default value on creation for the upload_bytes field.
+	wasabidailyusage.DefaultUploadBytes = wasabidailyusageDescUploadBytes.Default.(int64)
+	// wasabidailyusageDescDownloadBytes is the schema descriptor for download_bytes field.
+	wasabidailyusageDescDownloadBytes := wasabidailyusageFields[14].Descriptor()
+	// wasabidailyusage.DefaultDownloadBytes holds the default value on creation for the download_bytes field.
+	wasabidailyusage.DefaultDownloadBytes = wasabidailyusageDescDownloadBytes.Default.(int64)
+	// wasabidailyusageDescStorageWroteBytes is the schema descriptor for storage_wrote_bytes field.
+	wasabidailyusageDescStorageWroteBytes := wasabidailyusageFields[15].Descriptor()
+	// wasabidailyusage.DefaultStorageWroteBytes holds the default value on creation for the storage_wrote_bytes field.
+	wasabidailyusage.DefaultStorageWroteBytes = wasabidailyusageDescStorageWroteBytes.Default.(int64)
+	// wasabidailyusageDescStorageReadBytes is the schema descriptor for storage_read_bytes field.
+	wasabidailyusageDescStorageReadBytes := wasabidailyusageFields[16].Descriptor()
+	// wasabidailyusage.DefaultStorageReadBytes holds the default value on creation for the storage_read_bytes field.
+	wasabidailyusage.DefaultStorageReadBytes = wasabidailyusageDescStorageReadBytes.Default.(int64)
+	// wasabidailyusageDescDeleteBytes is the schema descriptor for delete_bytes field.
+	wasabidailyusageDescDeleteBytes := wasabidailyusageFields[17].Descriptor()
+	// wasabidailyusage.DefaultDeleteBytes holds the default value on creation for the delete_bytes field.
+	wasabidailyusage.DefaultDeleteBytes = wasabidailyusageDescDeleteBytes.Default.(int64)
+	// wasabidailyusageDescNumGetCalls is the schema descriptor for num_get_calls field.
+	wasabidailyusageDescNumGetCalls := wasabidailyusageFields[18].Descriptor()
+	// wasabidailyusage.DefaultNumGetCalls holds the default value on creation for the num_get_calls field.
+	wasabidailyusage.DefaultNumGetCalls = wasabidailyusageDescNumGetCalls.Default.(int64)
+	// wasabidailyusageDescNumPutCalls is the schema descriptor for num_put_calls field.
+	wasabidailyusageDescNumPutCalls := wasabidailyusageFields[19].Descriptor()
+	// wasabidailyusage.DefaultNumPutCalls holds the default value on creation for the num_put_calls field.
+	wasabidailyusage.DefaultNumPutCalls = wasabidailyusageDescNumPutCalls.Default.(int64)
+	// wasabidailyusageDescNumDeleteCalls is the schema descriptor for num_delete_calls field.
+	wasabidailyusageDescNumDeleteCalls := wasabidailyusageFields[20].Descriptor()
+	// wasabidailyusage.DefaultNumDeleteCalls holds the default value on creation for the num_delete_calls field.
+	wasabidailyusage.DefaultNumDeleteCalls = wasabidailyusageDescNumDeleteCalls.Default.(int64)
+	// wasabidailyusageDescNumListCalls is the schema descriptor for num_list_calls field.
+	wasabidailyusageDescNumListCalls := wasabidailyusageFields[21].Descriptor()
+	// wasabidailyusage.DefaultNumListCalls holds the default value on creation for the num_list_calls field.
+	wasabidailyusage.DefaultNumListCalls = wasabidailyusageDescNumListCalls.Default.(int64)
+	// wasabidailyusageDescNumHeadCalls is the schema descriptor for num_head_calls field.
+	wasabidailyusageDescNumHeadCalls := wasabidailyusageFields[22].Descriptor()
+	// wasabidailyusage.DefaultNumHeadCalls holds the default value on creation for the num_head_calls field.
+	wasabidailyusage.DefaultNumHeadCalls = wasabidailyusageDescNumHeadCalls.Default.(int64)
 }

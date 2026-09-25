@@ -32,6 +32,13 @@ type Provider interface {
 	Cleanup(ctx context.Context, c *repo.Connection) error
 }
 
+// Activator is implemented by a Provider that starts background work for a
+// connection, e.g. an initial sync. Activate is called after a connection is
+// created and after its settings change; it must not block.
+type Activator interface {
+	Activate(ctx context.Context, c *repo.Connection)
+}
+
 var (
 	// ErrNoCipher means the server has no crypto.encryption_key, so
 	// secrets can be neither sealed nor opened.
@@ -120,7 +127,14 @@ func (s *Service) Create(ctx context.Context, userID, provider, name string, con
 	if err := s.repo.Create(ctx, c); err != nil {
 		return nil, err
 	}
+	activate(ctx, p, c)
 	return c, nil
+}
+
+func activate(ctx context.Context, p Provider, c *repo.Connection) {
+	if a, ok := p.(Activator); ok {
+		a.Activate(ctx, c)
+	}
 }
 
 // Update sets c's name and config, and its secret unless secret is nil.
@@ -136,7 +150,8 @@ func (s *Service) Update(ctx context.Context, c *repo.Connection, name string, c
 		return fmt.Errorf("marshal config: %w", err)
 	}
 	sealed := c.SecretCiphertext
-	if secret != nil || !sameJSON(cfgJSON, c.Config) {
+	changed := secret != nil || !sameJSON(cfgJSON, c.Config)
+	if changed {
 		var secJSON json.RawMessage
 		if secret != nil {
 			if secJSON, err = json.Marshal(secret); err != nil {
@@ -155,7 +170,13 @@ func (s *Service) Update(ctx context.Context, c *repo.Connection, name string, c
 	}
 	c.Name, c.Config, c.SecretCiphertext = name, cfgJSON, sealed
 	c.UpdatedAt = s.now().UTC()
-	return s.repo.Update(ctx, c)
+	if err := s.repo.Update(ctx, c); err != nil {
+		return err
+	}
+	if changed {
+		activate(ctx, p, c)
+	}
+	return nil
 }
 
 // Test verifies the stored settings and records the outcome as c's
