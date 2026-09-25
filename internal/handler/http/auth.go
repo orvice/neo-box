@@ -32,7 +32,7 @@ const (
 type AuthRepoProvider func() auth.Repository
 
 // AuthMiddleware authenticates every non-public request against the
-// Mongo-backed session store and attaches the user and session to the
+// database-backed session store and attaches the user and session to the
 // request context for ConnectRPC services.
 func AuthMiddleware(cfg *config.AppConfig, authProvider AuthRepoProvider) gin.HandlerFunc {
 	return func(c *gin.Context) {

@@ -351,12 +351,6 @@ func BootstrapInitialAdmin(ctx context.Context, repo auth.Repository, cfg config
 		"initial_admin_password_set", password != "",
 	)
 
-	if err := repo.EnsureIndexes(ctx); err != nil {
-		logger.Error("failed to ensure auth indexes", "err", err)
-		return err
-	}
-	logger.Debug("auth indexes ensured")
-
 	count, err := repo.CountUsers(ctx)
 	if err != nil {
 		logger.Error("failed to count auth users", "err", err)

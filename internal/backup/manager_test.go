@@ -27,7 +27,6 @@ func newMemRepo() *memRepo {
 	return &memRepo{conns: map[string]*repo.Connection{}, policies: map[string]*repo.Policy{}, snaps: map[string]*repo.Snapshot{}}
 }
 
-func (r *memRepo) EnsureIndexes(context.Context) error { return nil }
 func (r *memRepo) CreateConnection(_ context.Context, c *repo.Connection) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()

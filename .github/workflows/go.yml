@@ -28,6 +28,20 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: neobox
+          POSTGRES_PASSWORD: neobox
+          POSTGRES_DB: neobox
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U neobox"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
     - uses: actions/checkout@v4
 
@@ -40,4 +54,6 @@ jobs:
       run: go build -v ./...
 
     - name: Test
+      env:
+        NEOBOX_TEST_POSTGRES_DSN: postgres://neobox:neobox@localhost:5432/neobox?sslmode=disable
       run: go test -v ./...

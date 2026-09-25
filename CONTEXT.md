@@ -22,7 +22,7 @@ one place.
 - **Snapshot** — a point-in-time, read-only capture of one Base: the base
   meta, every table's schema (fields), every record, and every link between
   records. Content is a gzip JSON document in blob storage; metadata
-  (status, counts, size) is in MongoDB. Attachments are captured as their
+  (status, counts, size) is in PostgreSQL. Attachments are captured as their
   metadata/URLs only, not file bytes. Views are not captured (OSS NocoDB has
   no v3 views API).
 - **Snapshot trigger** — `manual` (user clicked "Snapshot now") or

@@ -2,7 +2,7 @@
 // snapshot jobs, a cron scheduler enqueues them from Backup Policies, and
 // retention prunes old scheduled snapshots.
 //
-// State lives in MongoDB (snapshot metadata) and the blob store (content).
+// State lives in PostgreSQL (snapshot metadata) and the blob store (content).
 // Nothing in-flight survives a restart: Start marks leftover pending/running
 // snapshots failed. The scheduler assumes a single neo-box process.
 package backup

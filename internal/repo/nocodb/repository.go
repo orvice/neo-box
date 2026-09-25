@@ -53,11 +53,11 @@ const (
 )
 
 type SnapshotTable struct {
-	ID          string `bson:"id"`
-	Title       string `bson:"title"`
-	RecordCount int64  `bson:"record_count"`
-	FieldCount  int    `bson:"field_count"`
-	LinkCount   int64  `bson:"link_count"`
+	ID          string `json:"id"`
+	Title       string `json:"title"`
+	RecordCount int64  `json:"record_count"`
+	FieldCount  int    `json:"field_count"`
+	LinkCount   int64  `json:"link_count"`
 }
 
 // Snapshot is the metadata of one capture of a Base.
@@ -92,8 +92,6 @@ type SnapshotFilter struct {
 }
 
 type Repository interface {
-	EnsureIndexes(ctx context.Context) error
-
 	CreateConnection(ctx context.Context, c *Connection) error
 	GetConnection(ctx context.Context, userID, id string) (*Connection, error)
 	// GetConnectionByID bypasses owner scoping; used by the scheduler.
