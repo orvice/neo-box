@@ -118,6 +118,14 @@ func IsNotFound(err error) bool {
 	return errors.As(err, &apiErr) && apiErr.StatusCode == http.StatusNotFound
 }
 
+// IsAuthError reports whether err is a 401 or 403 from NocoDB: the API token
+// is invalid or lacks access.
+func IsAuthError(err error) bool {
+	var apiErr *APIError
+	return errors.As(err, &apiErr) &&
+		(apiErr.StatusCode == http.StatusUnauthorized || apiErr.StatusCode == http.StatusForbidden)
+}
+
 // Base is a NocoDB Base as listed by the v2 API.
 type Base struct {
 	ID    string `json:"id"`

@@ -16,6 +16,7 @@ import {
   useSnapshot,
   useSnapshotRecords,
 } from '@/api/nocodb'
+import { formatBytes, formatCount, formatTime } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -37,20 +38,14 @@ import {
 import { Page, PageHeader, PageScroll } from '@/components/common/page-parts'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { EmptyState } from '@/components/empty-state'
-import {
-  formatBytes,
-  formatCount,
-  formatDuration,
-  formatTime,
-  triggerLabel,
-} from './format'
+import { formatDuration, triggerLabel } from './format'
 import { SnapshotStatusBadge } from './status-badge'
 
 const PAGE_SIZE = 50
 
 export function SnapshotDetailPage() {
-  const { snapshotId } = useParams({
-    from: '/_authenticated/nocodb/snapshots/$snapshotId',
+  const { connectionId, snapshotId } = useParams({
+    from: '/_authenticated/connections/$connectionId/snapshots/$snapshotId',
   })
   const navigate = useNavigate()
   const { data: snap, isLoading, error } = useSnapshot(snapshotId)
@@ -59,17 +54,13 @@ export function SnapshotDetailPage() {
   const [tableId, setTableId] = useState<string>()
   const activeTableId = tableId ?? snap?.tables[0]?.id
 
-  const back = snap ? (
+  const back = (
     <Link
-      to='/nocodb/$connectionId'
-      params={{ connectionId: snap.connectionId }}
+      to='/connections/$connectionId'
+      params={{ connectionId }}
       className='inline-flex items-center gap-1'
     >
       <ChevronLeft className='h-3 w-3' /> Back to bases
-    </Link>
-  ) : (
-    <Link to='/nocodb' className='inline-flex items-center gap-1'>
-      <ChevronLeft className='h-3 w-3' /> NocoDB
     </Link>
   )
 
@@ -217,8 +208,8 @@ export function SnapshotDetailPage() {
             onSuccess: () => {
               toast.success('Snapshot deleted')
               navigate({
-                to: '/nocodb/$connectionId',
-                params: { connectionId: snap.connectionId },
+                to: '/connections/$connectionId',
+                params: { connectionId },
               })
             },
             onError: (e) => toast.error(e.message),

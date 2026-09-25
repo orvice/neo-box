@@ -19,6 +19,7 @@ import {
   generalNav,
   resourcesNav,
 } from './layout/data/sidebar-data'
+import { navSearch } from './layout/types'
 import { ScrollArea } from './ui/scroll-area'
 
 export function CommandMenu() {
@@ -65,10 +66,15 @@ export function CommandMenu() {
 
                 return navItem.items?.map((subItem, i) => (
                   <CommandItem
-                    key={`${navItem.title}-${subItem.url}-${i}`}
-                    value={`${navItem.title}-${subItem.url}`}
+                    key={`${navItem.title}-${subItem.title}-${i}`}
+                    value={`${navItem.title}-${subItem.title}`}
                     onSelect={() => {
-                      runCommand(() => navigate({ to: subItem.url }))
+                      runCommand(() =>
+                        navigate({
+                          to: subItem.url,
+                          search: navSearch(subItem.search),
+                        })
+                      )
                     }}
                   >
                     <div className='flex size-4 items-center justify-center'>

@@ -9,10 +9,11 @@ import {
   useDeleteSnapshot,
   type Snapshot,
 } from '@/api/nocodb'
+import { formatBytes, formatCount, formatTime } from '@/lib/format'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { DataTable, type Column } from '@/components/data-table'
-import { formatBytes, formatCount, formatTime, triggerLabel } from './format'
+import { triggerLabel } from './format'
 import { SnapshotStatusBadge } from './status-badge'
 
 export function SnapshotTable({
@@ -83,8 +84,8 @@ export function SnapshotTable({
         <div className='flex flex-wrap gap-1'>
           <Button asChild size='sm' variant='ghost'>
             <Link
-              to='/nocodb/snapshots/$snapshotId'
-              params={{ snapshotId: s.id }}
+              to='/connections/$connectionId/snapshots/$snapshotId'
+              params={{ connectionId: s.connectionId, snapshotId: s.id }}
             >
               <Eye />
               View

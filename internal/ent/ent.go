@@ -12,8 +12,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"go.orx.me/apps/neo-box/internal/ent/connection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
-	"go.orx.me/apps/neo-box/internal/ent/nocodbconnection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbsnapshot"
 	"go.orx.me/apps/neo-box/internal/ent/oauthstate"
 	"go.orx.me/apps/neo-box/internal/ent/session"
@@ -78,8 +78,8 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			connection.Table:         connection.ValidColumn,
 			nocodbbackuppolicy.Table: nocodbbackuppolicy.ValidColumn,
-			nocodbconnection.Table:   nocodbconnection.ValidColumn,
 			nocodbsnapshot.Table:     nocodbsnapshot.ValidColumn,
 			oauthstate.Table:         oauthstate.ValidColumn,
 			session.Table:            session.ValidColumn,

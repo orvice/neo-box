@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"encoding/json/jsontext"
 	"errors"
 	"fmt"
 	"sync"
@@ -11,8 +12,8 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"go.orx.me/apps/neo-box/internal/ent/connection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
-	"go.orx.me/apps/neo-box/internal/ent/nocodbconnection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbsnapshot"
 	"go.orx.me/apps/neo-box/internal/ent/oauthstate"
 	"go.orx.me/apps/neo-box/internal/ent/predicate"
@@ -30,13 +31,869 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
+	TypeConnection         = "Connection"
 	TypeNocoDBBackupPolicy = "NocoDBBackupPolicy"
-	TypeNocoDBConnection   = "NocoDBConnection"
 	TypeNocoDBSnapshot     = "NocoDBSnapshot"
 	TypeOAuthState         = "OAuthState"
 	TypeSession            = "Session"
 	TypeUser               = "User"
 )
+
+// ConnectionMutation represents an operation that mutates the Connection nodes in the graph.
+type ConnectionMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *string
+	user_id           *string
+	provider          *string
+	name              *string
+	_config           *jsontext.Value
+	append_config     jsontext.Value
+	secret_ciphertext *string
+	status            *string
+	status_message    *string
+	status_checked_at *time.Time
+	created_at        *time.Time
+	updated_at        *time.Time
+	clearedFields     map[string]struct{}
+	done              bool
+	oldValue          func(context.Context) (*Connection, error)
+	predicates        []predicate.Connection
+}
+
+var _ ent.Mutation = (*ConnectionMutation)(nil)
+
+// connectionOption allows management of the mutation configuration using functional options.
+type connectionOption func(*ConnectionMutation)
+
+// newConnectionMutation creates new mutation for the Connection entity.
+func newConnectionMutation(c config, op Op, opts ...connectionOption) *ConnectionMutation {
+	m := &ConnectionMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeConnection,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withConnectionID sets the ID field of the mutation.
+func withConnectionID(id string) connectionOption {
+	return func(m *ConnectionMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Connection
+		)
+		m.oldValue = func(ctx context.Context) (*Connection, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Connection.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withConnection sets the old Connection of the mutation.
+func withConnection(node *Connection) connectionOption {
+	return func(m *ConnectionMutation) {
+		m.oldValue = func(context.Context) (*Connection, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ConnectionMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ConnectionMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Connection entities.
+func (m *ConnectionMutation) SetID(id string) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ConnectionMutation) ID() (id string, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ConnectionMutation) IDs(ctx context.Context) ([]string, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []string{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Connection.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetUserID sets the "user_id" field.
+func (m *ConnectionMutation) SetUserID(s string) {
+	m.user_id = &s
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *ConnectionMutation) UserID() (r string, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the Connection entity.
+// If the Connection object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ConnectionMutation) OldUserID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *ConnectionMutation) ResetUserID() {
+	m.user_id = nil
+}
+
+// SetProvider sets the "provider" field.
+func (m *ConnectionMutation) SetProvider(s string) {
+	m.provider = &s
+}
+
+// Provider returns the value of the "provider" field in the mutation.
+func (m *ConnectionMutation) Provider() (r string, exists bool) {
+	v := m.provider
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProvider returns the old "provider" field's value of the Connection entity.
+// If the Connection object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ConnectionMutation) OldProvider(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProvider is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProvider requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProvider: %w", err)
+	}
+	return oldValue.Provider, nil
+}
+
+// ResetProvider resets all changes to the "provider" field.
+func (m *ConnectionMutation) ResetProvider() {
+	m.provider = nil
+}
+
+// SetName sets the "name" field.
+func (m *ConnectionMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *ConnectionMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the Connection entity.
+// If the Connection object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ConnectionMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *ConnectionMutation) ResetName() {
+	m.name = nil
+}
+
+// SetConfig sets the "config" field.
+func (m *ConnectionMutation) SetConfig(j jsontext.Value) {
+	m._config = &j
+	m.append_config = nil
+}
+
+// Config returns the value of the "config" field in the mutation.
+func (m *ConnectionMutation) Config() (r jsontext.Value, exists bool) {
+	v := m._config
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConfig returns the old "config" field's value of the Connection entity.
+// If the Connection object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ConnectionMutation) OldConfig(ctx context.Context) (v jsontext.Value, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConfig is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConfig requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConfig: %w", err)
+	}
+	return oldValue.Config, nil
+}
+
+// AppendConfig adds j to the "config" field.
+func (m *ConnectionMutation) AppendConfig(j jsontext.Value) {
+	m.append_config = append(m.append_config, j...)
+}
+
+// AppendedConfig returns the list of values that were appended to the "config" field in this mutation.
+func (m *ConnectionMutation) AppendedConfig() (jsontext.Value, bool) {
+	if len(m.append_config) == 0 {
+		return nil, false
+	}
+	return m.append_config, true
+}
+
+// ResetConfig resets all changes to the "config" field.
+func (m *ConnectionMutation) ResetConfig() {
+	m._config = nil
+	m.append_config = nil
+}
+
+// SetSecretCiphertext sets the "secret_ciphertext" field.
+func (m *ConnectionMutation) SetSecretCiphertext(s string) {
+	m.secret_ciphertext = &s
+}
+
+// SecretCiphertext returns the value of the "secret_ciphertext" field in the mutation.
+func (m *ConnectionMutation) SecretCiphertext() (r string, exists bool) {
+	v := m.secret_ciphertext
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSecretCiphertext returns the old "secret_ciphertext" field's value of the Connection entity.
+// If the Connection object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ConnectionMutation) OldSecretCiphertext(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSecretCiphertext is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSecretCiphertext requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSecretCiphertext: %w", err)
+	}
+	return oldValue.SecretCiphertext, nil
+}
+
+// ResetSecretCiphertext resets all changes to the "secret_ciphertext" field.
+func (m *ConnectionMutation) ResetSecretCiphertext() {
+	m.secret_ciphertext = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *ConnectionMutation) SetStatus(s string) {
+	m.status = &s
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *ConnectionMutation) Status() (r string, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the Connection entity.
+// If the Connection object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ConnectionMutation) OldStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *ConnectionMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetStatusMessage sets the "status_message" field.
+func (m *ConnectionMutation) SetStatusMessage(s string) {
+	m.status_message = &s
+}
+
+// StatusMessage returns the value of the "status_message" field in the mutation.
+func (m *ConnectionMutation) StatusMessage() (r string, exists bool) {
+	v := m.status_message
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatusMessage returns the old "status_message" field's value of the Connection entity.
+// If the Connection object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ConnectionMutation) OldStatusMessage(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatusMessage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatusMessage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatusMessage: %w", err)
+	}
+	return oldValue.StatusMessage, nil
+}
+
+// ResetStatusMessage resets all changes to the "status_message" field.
+func (m *ConnectionMutation) ResetStatusMessage() {
+	m.status_message = nil
+}
+
+// SetStatusCheckedAt sets the "status_checked_at" field.
+func (m *ConnectionMutation) SetStatusCheckedAt(t time.Time) {
+	m.status_checked_at = &t
+}
+
+// StatusCheckedAt returns the value of the "status_checked_at" field in the mutation.
+func (m *ConnectionMutation) StatusCheckedAt() (r time.Time, exists bool) {
+	v := m.status_checked_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatusCheckedAt returns the old "status_checked_at" field's value of the Connection entity.
+// If the Connection object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ConnectionMutation) OldStatusCheckedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatusCheckedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatusCheckedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatusCheckedAt: %w", err)
+	}
+	return oldValue.StatusCheckedAt, nil
+}
+
+// ClearStatusCheckedAt clears the value of the "status_checked_at" field.
+func (m *ConnectionMutation) ClearStatusCheckedAt() {
+	m.status_checked_at = nil
+	m.clearedFields[connection.FieldStatusCheckedAt] = struct{}{}
+}
+
+// StatusCheckedAtCleared returns if the "status_checked_at" field was cleared in this mutation.
+func (m *ConnectionMutation) StatusCheckedAtCleared() bool {
+	_, ok := m.clearedFields[connection.FieldStatusCheckedAt]
+	return ok
+}
+
+// ResetStatusCheckedAt resets all changes to the "status_checked_at" field.
+func (m *ConnectionMutation) ResetStatusCheckedAt() {
+	m.status_checked_at = nil
+	delete(m.clearedFields, connection.FieldStatusCheckedAt)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *ConnectionMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *ConnectionMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Connection entity.
+// If the Connection object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ConnectionMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *ConnectionMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *ConnectionMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *ConnectionMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Connection entity.
+// If the Connection object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ConnectionMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *ConnectionMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the ConnectionMutation builder.
+func (m *ConnectionMutation) Where(ps ...predicate.Connection) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ConnectionMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ConnectionMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Connection, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ConnectionMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ConnectionMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Connection).
+func (m *ConnectionMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ConnectionMutation) Fields() []string {
+	fields := make([]string, 0, 10)
+	if m.user_id != nil {
+		fields = append(fields, connection.FieldUserID)
+	}
+	if m.provider != nil {
+		fields = append(fields, connection.FieldProvider)
+	}
+	if m.name != nil {
+		fields = append(fields, connection.FieldName)
+	}
+	if m._config != nil {
+		fields = append(fields, connection.FieldConfig)
+	}
+	if m.secret_ciphertext != nil {
+		fields = append(fields, connection.FieldSecretCiphertext)
+	}
+	if m.status != nil {
+		fields = append(fields, connection.FieldStatus)
+	}
+	if m.status_message != nil {
+		fields = append(fields, connection.FieldStatusMessage)
+	}
+	if m.status_checked_at != nil {
+		fields = append(fields, connection.FieldStatusCheckedAt)
+	}
+	if m.created_at != nil {
+		fields = append(fields, connection.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, connection.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ConnectionMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case connection.FieldUserID:
+		return m.UserID()
+	case connection.FieldProvider:
+		return m.Provider()
+	case connection.FieldName:
+		return m.Name()
+	case connection.FieldConfig:
+		return m.Config()
+	case connection.FieldSecretCiphertext:
+		return m.SecretCiphertext()
+	case connection.FieldStatus:
+		return m.Status()
+	case connection.FieldStatusMessage:
+		return m.StatusMessage()
+	case connection.FieldStatusCheckedAt:
+		return m.StatusCheckedAt()
+	case connection.FieldCreatedAt:
+		return m.CreatedAt()
+	case connection.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ConnectionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case connection.FieldUserID:
+		return m.OldUserID(ctx)
+	case connection.FieldProvider:
+		return m.OldProvider(ctx)
+	case connection.FieldName:
+		return m.OldName(ctx)
+	case connection.FieldConfig:
+		return m.OldConfig(ctx)
+	case connection.FieldSecretCiphertext:
+		return m.OldSecretCiphertext(ctx)
+	case connection.FieldStatus:
+		return m.OldStatus(ctx)
+	case connection.FieldStatusMessage:
+		return m.OldStatusMessage(ctx)
+	case connection.FieldStatusCheckedAt:
+		return m.OldStatusCheckedAt(ctx)
+	case connection.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case connection.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Connection field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ConnectionMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case connection.FieldUserID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case connection.FieldProvider:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProvider(v)
+		return nil
+	case connection.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case connection.FieldConfig:
+		v, ok := value.(jsontext.Value)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConfig(v)
+		return nil
+	case connection.FieldSecretCiphertext:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSecretCiphertext(v)
+		return nil
+	case connection.FieldStatus:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case connection.FieldStatusMessage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatusMessage(v)
+		return nil
+	case connection.FieldStatusCheckedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatusCheckedAt(v)
+		return nil
+	case connection.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case connection.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Connection field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ConnectionMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ConnectionMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ConnectionMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Connection numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ConnectionMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(connection.FieldStatusCheckedAt) {
+		fields = append(fields, connection.FieldStatusCheckedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ConnectionMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ConnectionMutation) ClearField(name string) error {
+	switch name {
+	case connection.FieldStatusCheckedAt:
+		m.ClearStatusCheckedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Connection nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ConnectionMutation) ResetField(name string) error {
+	switch name {
+	case connection.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case connection.FieldProvider:
+		m.ResetProvider()
+		return nil
+	case connection.FieldName:
+		m.ResetName()
+		return nil
+	case connection.FieldConfig:
+		m.ResetConfig()
+		return nil
+	case connection.FieldSecretCiphertext:
+		m.ResetSecretCiphertext()
+		return nil
+	case connection.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case connection.FieldStatusMessage:
+		m.ResetStatusMessage()
+		return nil
+	case connection.FieldStatusCheckedAt:
+		m.ResetStatusCheckedAt()
+		return nil
+	case connection.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case connection.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Connection field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ConnectionMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ConnectionMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ConnectionMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ConnectionMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ConnectionMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ConnectionMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ConnectionMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Connection unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ConnectionMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Connection edge %s", name)
+}
 
 // NocoDBBackupPolicyMutation represents an operation that mutates the NocoDBBackupPolicy nodes in the graph.
 type NocoDBBackupPolicyMutation struct {
@@ -722,608 +1579,6 @@ func (m *NocoDBBackupPolicyMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *NocoDBBackupPolicyMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown NocoDBBackupPolicy edge %s", name)
-}
-
-// NocoDBConnectionMutation represents an operation that mutates the NocoDBConnection nodes in the graph.
-type NocoDBConnectionMutation struct {
-	config
-	op               Op
-	typ              string
-	id               *string
-	user_id          *string
-	name             *string
-	base_url         *string
-	token_ciphertext *string
-	created_at       *time.Time
-	updated_at       *time.Time
-	clearedFields    map[string]struct{}
-	done             bool
-	oldValue         func(context.Context) (*NocoDBConnection, error)
-	predicates       []predicate.NocoDBConnection
-}
-
-var _ ent.Mutation = (*NocoDBConnectionMutation)(nil)
-
-// nocodbconnectionOption allows management of the mutation configuration using functional options.
-type nocodbconnectionOption func(*NocoDBConnectionMutation)
-
-// newNocoDBConnectionMutation creates new mutation for the NocoDBConnection entity.
-func newNocoDBConnectionMutation(c config, op Op, opts ...nocodbconnectionOption) *NocoDBConnectionMutation {
-	m := &NocoDBConnectionMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeNocoDBConnection,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withNocoDBConnectionID sets the ID field of the mutation.
-func withNocoDBConnectionID(id string) nocodbconnectionOption {
-	return func(m *NocoDBConnectionMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *NocoDBConnection
-		)
-		m.oldValue = func(ctx context.Context) (*NocoDBConnection, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().NocoDBConnection.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withNocoDBConnection sets the old NocoDBConnection of the mutation.
-func withNocoDBConnection(node *NocoDBConnection) nocodbconnectionOption {
-	return func(m *NocoDBConnectionMutation) {
-		m.oldValue = func(context.Context) (*NocoDBConnection, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m NocoDBConnectionMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m NocoDBConnectionMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of NocoDBConnection entities.
-func (m *NocoDBConnectionMutation) SetID(id string) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *NocoDBConnectionMutation) ID() (id string, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *NocoDBConnectionMutation) IDs(ctx context.Context) ([]string, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []string{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().NocoDBConnection.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetUserID sets the "user_id" field.
-func (m *NocoDBConnectionMutation) SetUserID(s string) {
-	m.user_id = &s
-}
-
-// UserID returns the value of the "user_id" field in the mutation.
-func (m *NocoDBConnectionMutation) UserID() (r string, exists bool) {
-	v := m.user_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUserID returns the old "user_id" field's value of the NocoDBConnection entity.
-// If the NocoDBConnection object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NocoDBConnectionMutation) OldUserID(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUserID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
-	}
-	return oldValue.UserID, nil
-}
-
-// ResetUserID resets all changes to the "user_id" field.
-func (m *NocoDBConnectionMutation) ResetUserID() {
-	m.user_id = nil
-}
-
-// SetName sets the "name" field.
-func (m *NocoDBConnectionMutation) SetName(s string) {
-	m.name = &s
-}
-
-// Name returns the value of the "name" field in the mutation.
-func (m *NocoDBConnectionMutation) Name() (r string, exists bool) {
-	v := m.name
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldName returns the old "name" field's value of the NocoDBConnection entity.
-// If the NocoDBConnection object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NocoDBConnectionMutation) OldName(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldName is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldName requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldName: %w", err)
-	}
-	return oldValue.Name, nil
-}
-
-// ResetName resets all changes to the "name" field.
-func (m *NocoDBConnectionMutation) ResetName() {
-	m.name = nil
-}
-
-// SetBaseURL sets the "base_url" field.
-func (m *NocoDBConnectionMutation) SetBaseURL(s string) {
-	m.base_url = &s
-}
-
-// BaseURL returns the value of the "base_url" field in the mutation.
-func (m *NocoDBConnectionMutation) BaseURL() (r string, exists bool) {
-	v := m.base_url
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldBaseURL returns the old "base_url" field's value of the NocoDBConnection entity.
-// If the NocoDBConnection object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NocoDBConnectionMutation) OldBaseURL(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldBaseURL is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldBaseURL requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldBaseURL: %w", err)
-	}
-	return oldValue.BaseURL, nil
-}
-
-// ResetBaseURL resets all changes to the "base_url" field.
-func (m *NocoDBConnectionMutation) ResetBaseURL() {
-	m.base_url = nil
-}
-
-// SetTokenCiphertext sets the "token_ciphertext" field.
-func (m *NocoDBConnectionMutation) SetTokenCiphertext(s string) {
-	m.token_ciphertext = &s
-}
-
-// TokenCiphertext returns the value of the "token_ciphertext" field in the mutation.
-func (m *NocoDBConnectionMutation) TokenCiphertext() (r string, exists bool) {
-	v := m.token_ciphertext
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTokenCiphertext returns the old "token_ciphertext" field's value of the NocoDBConnection entity.
-// If the NocoDBConnection object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NocoDBConnectionMutation) OldTokenCiphertext(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTokenCiphertext is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTokenCiphertext requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTokenCiphertext: %w", err)
-	}
-	return oldValue.TokenCiphertext, nil
-}
-
-// ResetTokenCiphertext resets all changes to the "token_ciphertext" field.
-func (m *NocoDBConnectionMutation) ResetTokenCiphertext() {
-	m.token_ciphertext = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *NocoDBConnectionMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *NocoDBConnectionMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the NocoDBConnection entity.
-// If the NocoDBConnection object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NocoDBConnectionMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *NocoDBConnectionMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *NocoDBConnectionMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *NocoDBConnectionMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the NocoDBConnection entity.
-// If the NocoDBConnection object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NocoDBConnectionMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *NocoDBConnectionMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
-// Where appends a list predicates to the NocoDBConnectionMutation builder.
-func (m *NocoDBConnectionMutation) Where(ps ...predicate.NocoDBConnection) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the NocoDBConnectionMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *NocoDBConnectionMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.NocoDBConnection, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *NocoDBConnectionMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *NocoDBConnectionMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (NocoDBConnection).
-func (m *NocoDBConnectionMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *NocoDBConnectionMutation) Fields() []string {
-	fields := make([]string, 0, 6)
-	if m.user_id != nil {
-		fields = append(fields, nocodbconnection.FieldUserID)
-	}
-	if m.name != nil {
-		fields = append(fields, nocodbconnection.FieldName)
-	}
-	if m.base_url != nil {
-		fields = append(fields, nocodbconnection.FieldBaseURL)
-	}
-	if m.token_ciphertext != nil {
-		fields = append(fields, nocodbconnection.FieldTokenCiphertext)
-	}
-	if m.created_at != nil {
-		fields = append(fields, nocodbconnection.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, nocodbconnection.FieldUpdatedAt)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *NocoDBConnectionMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case nocodbconnection.FieldUserID:
-		return m.UserID()
-	case nocodbconnection.FieldName:
-		return m.Name()
-	case nocodbconnection.FieldBaseURL:
-		return m.BaseURL()
-	case nocodbconnection.FieldTokenCiphertext:
-		return m.TokenCiphertext()
-	case nocodbconnection.FieldCreatedAt:
-		return m.CreatedAt()
-	case nocodbconnection.FieldUpdatedAt:
-		return m.UpdatedAt()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *NocoDBConnectionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case nocodbconnection.FieldUserID:
-		return m.OldUserID(ctx)
-	case nocodbconnection.FieldName:
-		return m.OldName(ctx)
-	case nocodbconnection.FieldBaseURL:
-		return m.OldBaseURL(ctx)
-	case nocodbconnection.FieldTokenCiphertext:
-		return m.OldTokenCiphertext(ctx)
-	case nocodbconnection.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case nocodbconnection.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
-	}
-	return nil, fmt.Errorf("unknown NocoDBConnection field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *NocoDBConnectionMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case nocodbconnection.FieldUserID:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUserID(v)
-		return nil
-	case nocodbconnection.FieldName:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetName(v)
-		return nil
-	case nocodbconnection.FieldBaseURL:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetBaseURL(v)
-		return nil
-	case nocodbconnection.FieldTokenCiphertext:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTokenCiphertext(v)
-		return nil
-	case nocodbconnection.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case nocodbconnection.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
-	}
-	return fmt.Errorf("unknown NocoDBConnection field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *NocoDBConnectionMutation) AddedFields() []string {
-	return nil
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *NocoDBConnectionMutation) AddedField(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *NocoDBConnectionMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown NocoDBConnection numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *NocoDBConnectionMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *NocoDBConnectionMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *NocoDBConnectionMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown NocoDBConnection nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *NocoDBConnectionMutation) ResetField(name string) error {
-	switch name {
-	case nocodbconnection.FieldUserID:
-		m.ResetUserID()
-		return nil
-	case nocodbconnection.FieldName:
-		m.ResetName()
-		return nil
-	case nocodbconnection.FieldBaseURL:
-		m.ResetBaseURL()
-		return nil
-	case nocodbconnection.FieldTokenCiphertext:
-		m.ResetTokenCiphertext()
-		return nil
-	case nocodbconnection.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case nocodbconnection.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
-	}
-	return fmt.Errorf("unknown NocoDBConnection field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *NocoDBConnectionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *NocoDBConnectionMutation) AddedIDs(name string) []ent.Value {
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *NocoDBConnectionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *NocoDBConnectionMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *NocoDBConnectionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *NocoDBConnectionMutation) EdgeCleared(name string) bool {
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *NocoDBConnectionMutation) ClearEdge(name string) error {
-	return fmt.Errorf("unknown NocoDBConnection unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *NocoDBConnectionMutation) ResetEdge(name string) error {
-	return fmt.Errorf("unknown NocoDBConnection edge %s", name)
 }
 
 // NocoDBSnapshotMutation represents an operation that mutates the NocoDBSnapshot nodes in the graph.

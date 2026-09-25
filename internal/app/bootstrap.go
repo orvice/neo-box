@@ -16,8 +16,10 @@ import (
 	"go.orx.me/apps/neo-box/internal/backup"
 	"go.orx.me/apps/neo-box/internal/blobstore"
 	"go.orx.me/apps/neo-box/internal/config"
+	"go.orx.me/apps/neo-box/internal/connection"
 	"go.orx.me/apps/neo-box/internal/ent"
 	authpg "go.orx.me/apps/neo-box/internal/repo/auth/postgres"
+	connectionpg "go.orx.me/apps/neo-box/internal/repo/connection/postgres"
 	nocodbpg "go.orx.me/apps/neo-box/internal/repo/nocodb/postgres"
 	oauthstatepg "go.orx.me/apps/neo-box/internal/repo/oauthstate/postgres"
 	"go.orx.me/apps/neo-box/internal/secretbox"
@@ -44,8 +46,15 @@ func (h *Handlers) Bootstrap(ctx context.Context) error {
 	h.authSvcServer.SetProviderRegistry(provider.BuildRegistry(cfg.Auth))
 	h.authRepo.Store(authRepo)
 
+	cipher, err := setupCipher(ctx, cfg.Crypto)
+	if err != nil {
+		return err
+	}
+	conns := connection.NewService(connectionpg.New(client), cipher)
+	h.connectionSvcServer.SetService(conns)
+
 	runCtx, stop := context.WithCancel(context.Background())
-	if err := h.bootstrapNocoDB(ctx, runCtx, client); err != nil {
+	if err := h.bootstrapNocoDB(ctx, runCtx, client, conns); err != nil {
 		stop()
 		return err
 	}
@@ -54,20 +63,18 @@ func (h *Handlers) Bootstrap(ctx context.Context) error {
 	return nil
 }
 
-func (h *Handlers) bootstrapNocoDB(ctx, runCtx context.Context, client *ent.Client) error {
-	cfg := h.cfg
-	logger := log.FromContext(ctx)
-
-	var cipher *secretbox.Cipher
-	if cfg.Crypto.EncryptionKey == "" {
-		logger.Warn("crypto.encryption_key is not set; NocoDB connections cannot be created")
-	} else {
-		c, err := secretbox.NewCipher(cfg.Crypto.EncryptionKey)
-		if err != nil {
-			return err
-		}
-		cipher = c
+// setupCipher returns nil when no key is configured: connections then
+// cannot be created or used.
+func setupCipher(ctx context.Context, cfg config.CryptoConfig) (*secretbox.Cipher, error) {
+	if cfg.EncryptionKey == "" {
+		log.FromContext(ctx).Warn("crypto.encryption_key is not set; connections cannot be created")
+		return nil, nil
 	}
+	return secretbox.NewCipher(cfg.EncryptionKey)
+}
+
+func (h *Handlers) bootstrapNocoDB(ctx, runCtx context.Context, client *ent.Client, conns *connection.Service) error {
+	cfg := h.cfg
 
 	blobs, err := setupBlobStore(ctx, cfg.Storage)
 	if err != nil {
@@ -80,14 +87,15 @@ func (h *Handlers) bootstrapNocoDB(ctx, runCtx context.Context, client *ent.Clie
 		RequestsPerSecond: cfg.NocoDB.RequestsPerSecond,
 		PageSize:          cfg.NocoDB.PageSize,
 		SnapshotTimeout:   cfg.NocoDB.SnapshotTimeout,
-	}, nocodbRepo, blobs, cipher)
+	}, nocodbRepo, conns, blobs)
+	conns.Register(manager.ConnectionProvider())
 
 	if err := manager.Start(runCtx); err != nil {
 		return err
 	}
 	h.manager = manager
 
-	h.nocodbSvcServer.SetDeps(nocodbRepo, manager, cipher)
+	h.nocodbSvcServer.SetDeps(nocodbRepo, manager, conns)
 	h.snapshots.Store(&snapshotContent{repo: nocodbRepo, manager: manager})
 	return nil
 }

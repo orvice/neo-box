@@ -33,21 +33,6 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// NocoDBServiceCreateNocoDBConnectionProcedure is the fully-qualified name of the NocoDBService's
-	// CreateNocoDBConnection RPC.
-	NocoDBServiceCreateNocoDBConnectionProcedure = "/neobox.v1.NocoDBService/CreateNocoDBConnection"
-	// NocoDBServiceListNocoDBConnectionsProcedure is the fully-qualified name of the NocoDBService's
-	// ListNocoDBConnections RPC.
-	NocoDBServiceListNocoDBConnectionsProcedure = "/neobox.v1.NocoDBService/ListNocoDBConnections"
-	// NocoDBServiceUpdateNocoDBConnectionProcedure is the fully-qualified name of the NocoDBService's
-	// UpdateNocoDBConnection RPC.
-	NocoDBServiceUpdateNocoDBConnectionProcedure = "/neobox.v1.NocoDBService/UpdateNocoDBConnection"
-	// NocoDBServiceDeleteNocoDBConnectionProcedure is the fully-qualified name of the NocoDBService's
-	// DeleteNocoDBConnection RPC.
-	NocoDBServiceDeleteNocoDBConnectionProcedure = "/neobox.v1.NocoDBService/DeleteNocoDBConnection"
-	// NocoDBServiceTestNocoDBConnectionProcedure is the fully-qualified name of the NocoDBService's
-	// TestNocoDBConnection RPC.
-	NocoDBServiceTestNocoDBConnectionProcedure = "/neobox.v1.NocoDBService/TestNocoDBConnection"
 	// NocoDBServiceListNocoDBBasesProcedure is the fully-qualified name of the NocoDBService's
 	// ListNocoDBBases RPC.
 	NocoDBServiceListNocoDBBasesProcedure = "/neobox.v1.NocoDBService/ListNocoDBBases"
@@ -73,15 +58,6 @@ const (
 
 // NocoDBServiceClient is a client for the neobox.v1.NocoDBService service.
 type NocoDBServiceClient interface {
-	// Connections
-	CreateNocoDBConnection(context.Context, *connect.Request[v1.CreateNocoDBConnectionRequest]) (*connect.Response[v1.CreateNocoDBConnectionResponse], error)
-	ListNocoDBConnections(context.Context, *connect.Request[v1.ListNocoDBConnectionsRequest]) (*connect.Response[v1.ListNocoDBConnectionsResponse], error)
-	UpdateNocoDBConnection(context.Context, *connect.Request[v1.UpdateNocoDBConnectionRequest]) (*connect.Response[v1.UpdateNocoDBConnectionResponse], error)
-	// DeleteNocoDBConnection removes the connection, its backup policies, and
-	// all of its snapshots (including stored snapshot content).
-	DeleteNocoDBConnection(context.Context, *connect.Request[v1.DeleteNocoDBConnectionRequest]) (*connect.Response[v1.DeleteNocoDBConnectionResponse], error)
-	// TestNocoDBConnection checks that the stored URL + token can list bases.
-	TestNocoDBConnection(context.Context, *connect.Request[v1.TestNocoDBConnectionRequest]) (*connect.Response[v1.TestNocoDBConnectionResponse], error)
 	// ListNocoDBBases lists the Bases visible to the connection's token, each
 	// joined with its backup policy and latest snapshot.
 	ListNocoDBBases(context.Context, *connect.Request[v1.ListNocoDBBasesRequest]) (*connect.Response[v1.ListNocoDBBasesResponse], error)
@@ -110,36 +86,6 @@ func NewNocoDBServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 	baseURL = strings.TrimRight(baseURL, "/")
 	nocoDBServiceMethods := v1.File_neobox_v1_nocodb_proto.Services().ByName("NocoDBService").Methods()
 	return &nocoDBServiceClient{
-		createNocoDBConnection: connect.NewClient[v1.CreateNocoDBConnectionRequest, v1.CreateNocoDBConnectionResponse](
-			httpClient,
-			baseURL+NocoDBServiceCreateNocoDBConnectionProcedure,
-			connect.WithSchema(nocoDBServiceMethods.ByName("CreateNocoDBConnection")),
-			connect.WithClientOptions(opts...),
-		),
-		listNocoDBConnections: connect.NewClient[v1.ListNocoDBConnectionsRequest, v1.ListNocoDBConnectionsResponse](
-			httpClient,
-			baseURL+NocoDBServiceListNocoDBConnectionsProcedure,
-			connect.WithSchema(nocoDBServiceMethods.ByName("ListNocoDBConnections")),
-			connect.WithClientOptions(opts...),
-		),
-		updateNocoDBConnection: connect.NewClient[v1.UpdateNocoDBConnectionRequest, v1.UpdateNocoDBConnectionResponse](
-			httpClient,
-			baseURL+NocoDBServiceUpdateNocoDBConnectionProcedure,
-			connect.WithSchema(nocoDBServiceMethods.ByName("UpdateNocoDBConnection")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteNocoDBConnection: connect.NewClient[v1.DeleteNocoDBConnectionRequest, v1.DeleteNocoDBConnectionResponse](
-			httpClient,
-			baseURL+NocoDBServiceDeleteNocoDBConnectionProcedure,
-			connect.WithSchema(nocoDBServiceMethods.ByName("DeleteNocoDBConnection")),
-			connect.WithClientOptions(opts...),
-		),
-		testNocoDBConnection: connect.NewClient[v1.TestNocoDBConnectionRequest, v1.TestNocoDBConnectionResponse](
-			httpClient,
-			baseURL+NocoDBServiceTestNocoDBConnectionProcedure,
-			connect.WithSchema(nocoDBServiceMethods.ByName("TestNocoDBConnection")),
-			connect.WithClientOptions(opts...),
-		),
 		listNocoDBBases: connect.NewClient[v1.ListNocoDBBasesRequest, v1.ListNocoDBBasesResponse](
 			httpClient,
 			baseURL+NocoDBServiceListNocoDBBasesProcedure,
@@ -187,43 +133,13 @@ func NewNocoDBServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 
 // nocoDBServiceClient implements NocoDBServiceClient.
 type nocoDBServiceClient struct {
-	createNocoDBConnection *connect.Client[v1.CreateNocoDBConnectionRequest, v1.CreateNocoDBConnectionResponse]
-	listNocoDBConnections  *connect.Client[v1.ListNocoDBConnectionsRequest, v1.ListNocoDBConnectionsResponse]
-	updateNocoDBConnection *connect.Client[v1.UpdateNocoDBConnectionRequest, v1.UpdateNocoDBConnectionResponse]
-	deleteNocoDBConnection *connect.Client[v1.DeleteNocoDBConnectionRequest, v1.DeleteNocoDBConnectionResponse]
-	testNocoDBConnection   *connect.Client[v1.TestNocoDBConnectionRequest, v1.TestNocoDBConnectionResponse]
-	listNocoDBBases        *connect.Client[v1.ListNocoDBBasesRequest, v1.ListNocoDBBasesResponse]
-	upsertBackupPolicy     *connect.Client[v1.UpsertBackupPolicyRequest, v1.UpsertBackupPolicyResponse]
-	createSnapshot         *connect.Client[v1.CreateSnapshotRequest, v1.CreateSnapshotResponse]
-	listSnapshots          *connect.Client[v1.ListSnapshotsRequest, v1.ListSnapshotsResponse]
-	getSnapshot            *connect.Client[v1.GetSnapshotRequest, v1.GetSnapshotResponse]
-	deleteSnapshot         *connect.Client[v1.DeleteSnapshotRequest, v1.DeleteSnapshotResponse]
-	listSnapshotRecords    *connect.Client[v1.ListSnapshotRecordsRequest, v1.ListSnapshotRecordsResponse]
-}
-
-// CreateNocoDBConnection calls neobox.v1.NocoDBService.CreateNocoDBConnection.
-func (c *nocoDBServiceClient) CreateNocoDBConnection(ctx context.Context, req *connect.Request[v1.CreateNocoDBConnectionRequest]) (*connect.Response[v1.CreateNocoDBConnectionResponse], error) {
-	return c.createNocoDBConnection.CallUnary(ctx, req)
-}
-
-// ListNocoDBConnections calls neobox.v1.NocoDBService.ListNocoDBConnections.
-func (c *nocoDBServiceClient) ListNocoDBConnections(ctx context.Context, req *connect.Request[v1.ListNocoDBConnectionsRequest]) (*connect.Response[v1.ListNocoDBConnectionsResponse], error) {
-	return c.listNocoDBConnections.CallUnary(ctx, req)
-}
-
-// UpdateNocoDBConnection calls neobox.v1.NocoDBService.UpdateNocoDBConnection.
-func (c *nocoDBServiceClient) UpdateNocoDBConnection(ctx context.Context, req *connect.Request[v1.UpdateNocoDBConnectionRequest]) (*connect.Response[v1.UpdateNocoDBConnectionResponse], error) {
-	return c.updateNocoDBConnection.CallUnary(ctx, req)
-}
-
-// DeleteNocoDBConnection calls neobox.v1.NocoDBService.DeleteNocoDBConnection.
-func (c *nocoDBServiceClient) DeleteNocoDBConnection(ctx context.Context, req *connect.Request[v1.DeleteNocoDBConnectionRequest]) (*connect.Response[v1.DeleteNocoDBConnectionResponse], error) {
-	return c.deleteNocoDBConnection.CallUnary(ctx, req)
-}
-
-// TestNocoDBConnection calls neobox.v1.NocoDBService.TestNocoDBConnection.
-func (c *nocoDBServiceClient) TestNocoDBConnection(ctx context.Context, req *connect.Request[v1.TestNocoDBConnectionRequest]) (*connect.Response[v1.TestNocoDBConnectionResponse], error) {
-	return c.testNocoDBConnection.CallUnary(ctx, req)
+	listNocoDBBases     *connect.Client[v1.ListNocoDBBasesRequest, v1.ListNocoDBBasesResponse]
+	upsertBackupPolicy  *connect.Client[v1.UpsertBackupPolicyRequest, v1.UpsertBackupPolicyResponse]
+	createSnapshot      *connect.Client[v1.CreateSnapshotRequest, v1.CreateSnapshotResponse]
+	listSnapshots       *connect.Client[v1.ListSnapshotsRequest, v1.ListSnapshotsResponse]
+	getSnapshot         *connect.Client[v1.GetSnapshotRequest, v1.GetSnapshotResponse]
+	deleteSnapshot      *connect.Client[v1.DeleteSnapshotRequest, v1.DeleteSnapshotResponse]
+	listSnapshotRecords *connect.Client[v1.ListSnapshotRecordsRequest, v1.ListSnapshotRecordsResponse]
 }
 
 // ListNocoDBBases calls neobox.v1.NocoDBService.ListNocoDBBases.
@@ -263,15 +179,6 @@ func (c *nocoDBServiceClient) ListSnapshotRecords(ctx context.Context, req *conn
 
 // NocoDBServiceHandler is an implementation of the neobox.v1.NocoDBService service.
 type NocoDBServiceHandler interface {
-	// Connections
-	CreateNocoDBConnection(context.Context, *connect.Request[v1.CreateNocoDBConnectionRequest]) (*connect.Response[v1.CreateNocoDBConnectionResponse], error)
-	ListNocoDBConnections(context.Context, *connect.Request[v1.ListNocoDBConnectionsRequest]) (*connect.Response[v1.ListNocoDBConnectionsResponse], error)
-	UpdateNocoDBConnection(context.Context, *connect.Request[v1.UpdateNocoDBConnectionRequest]) (*connect.Response[v1.UpdateNocoDBConnectionResponse], error)
-	// DeleteNocoDBConnection removes the connection, its backup policies, and
-	// all of its snapshots (including stored snapshot content).
-	DeleteNocoDBConnection(context.Context, *connect.Request[v1.DeleteNocoDBConnectionRequest]) (*connect.Response[v1.DeleteNocoDBConnectionResponse], error)
-	// TestNocoDBConnection checks that the stored URL + token can list bases.
-	TestNocoDBConnection(context.Context, *connect.Request[v1.TestNocoDBConnectionRequest]) (*connect.Response[v1.TestNocoDBConnectionResponse], error)
 	// ListNocoDBBases lists the Bases visible to the connection's token, each
 	// joined with its backup policy and latest snapshot.
 	ListNocoDBBases(context.Context, *connect.Request[v1.ListNocoDBBasesRequest]) (*connect.Response[v1.ListNocoDBBasesResponse], error)
@@ -296,36 +203,6 @@ type NocoDBServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewNocoDBServiceHandler(svc NocoDBServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	nocoDBServiceMethods := v1.File_neobox_v1_nocodb_proto.Services().ByName("NocoDBService").Methods()
-	nocoDBServiceCreateNocoDBConnectionHandler := connect.NewUnaryHandler(
-		NocoDBServiceCreateNocoDBConnectionProcedure,
-		svc.CreateNocoDBConnection,
-		connect.WithSchema(nocoDBServiceMethods.ByName("CreateNocoDBConnection")),
-		connect.WithHandlerOptions(opts...),
-	)
-	nocoDBServiceListNocoDBConnectionsHandler := connect.NewUnaryHandler(
-		NocoDBServiceListNocoDBConnectionsProcedure,
-		svc.ListNocoDBConnections,
-		connect.WithSchema(nocoDBServiceMethods.ByName("ListNocoDBConnections")),
-		connect.WithHandlerOptions(opts...),
-	)
-	nocoDBServiceUpdateNocoDBConnectionHandler := connect.NewUnaryHandler(
-		NocoDBServiceUpdateNocoDBConnectionProcedure,
-		svc.UpdateNocoDBConnection,
-		connect.WithSchema(nocoDBServiceMethods.ByName("UpdateNocoDBConnection")),
-		connect.WithHandlerOptions(opts...),
-	)
-	nocoDBServiceDeleteNocoDBConnectionHandler := connect.NewUnaryHandler(
-		NocoDBServiceDeleteNocoDBConnectionProcedure,
-		svc.DeleteNocoDBConnection,
-		connect.WithSchema(nocoDBServiceMethods.ByName("DeleteNocoDBConnection")),
-		connect.WithHandlerOptions(opts...),
-	)
-	nocoDBServiceTestNocoDBConnectionHandler := connect.NewUnaryHandler(
-		NocoDBServiceTestNocoDBConnectionProcedure,
-		svc.TestNocoDBConnection,
-		connect.WithSchema(nocoDBServiceMethods.ByName("TestNocoDBConnection")),
-		connect.WithHandlerOptions(opts...),
-	)
 	nocoDBServiceListNocoDBBasesHandler := connect.NewUnaryHandler(
 		NocoDBServiceListNocoDBBasesProcedure,
 		svc.ListNocoDBBases,
@@ -370,16 +247,6 @@ func NewNocoDBServiceHandler(svc NocoDBServiceHandler, opts ...connect.HandlerOp
 	)
 	return "/neobox.v1.NocoDBService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case NocoDBServiceCreateNocoDBConnectionProcedure:
-			nocoDBServiceCreateNocoDBConnectionHandler.ServeHTTP(w, r)
-		case NocoDBServiceListNocoDBConnectionsProcedure:
-			nocoDBServiceListNocoDBConnectionsHandler.ServeHTTP(w, r)
-		case NocoDBServiceUpdateNocoDBConnectionProcedure:
-			nocoDBServiceUpdateNocoDBConnectionHandler.ServeHTTP(w, r)
-		case NocoDBServiceDeleteNocoDBConnectionProcedure:
-			nocoDBServiceDeleteNocoDBConnectionHandler.ServeHTTP(w, r)
-		case NocoDBServiceTestNocoDBConnectionProcedure:
-			nocoDBServiceTestNocoDBConnectionHandler.ServeHTTP(w, r)
 		case NocoDBServiceListNocoDBBasesProcedure:
 			nocoDBServiceListNocoDBBasesHandler.ServeHTTP(w, r)
 		case NocoDBServiceUpsertBackupPolicyProcedure:
@@ -402,26 +269,6 @@ func NewNocoDBServiceHandler(svc NocoDBServiceHandler, opts ...connect.HandlerOp
 
 // UnimplementedNocoDBServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedNocoDBServiceHandler struct{}
-
-func (UnimplementedNocoDBServiceHandler) CreateNocoDBConnection(context.Context, *connect.Request[v1.CreateNocoDBConnectionRequest]) (*connect.Response[v1.CreateNocoDBConnectionResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.NocoDBService.CreateNocoDBConnection is not implemented"))
-}
-
-func (UnimplementedNocoDBServiceHandler) ListNocoDBConnections(context.Context, *connect.Request[v1.ListNocoDBConnectionsRequest]) (*connect.Response[v1.ListNocoDBConnectionsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.NocoDBService.ListNocoDBConnections is not implemented"))
-}
-
-func (UnimplementedNocoDBServiceHandler) UpdateNocoDBConnection(context.Context, *connect.Request[v1.UpdateNocoDBConnectionRequest]) (*connect.Response[v1.UpdateNocoDBConnectionResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.NocoDBService.UpdateNocoDBConnection is not implemented"))
-}
-
-func (UnimplementedNocoDBServiceHandler) DeleteNocoDBConnection(context.Context, *connect.Request[v1.DeleteNocoDBConnectionRequest]) (*connect.Response[v1.DeleteNocoDBConnectionResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.NocoDBService.DeleteNocoDBConnection is not implemented"))
-}
-
-func (UnimplementedNocoDBServiceHandler) TestNocoDBConnection(context.Context, *connect.Request[v1.TestNocoDBConnectionRequest]) (*connect.Response[v1.TestNocoDBConnectionResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.NocoDBService.TestNocoDBConnection is not implemented"))
-}
 
 func (UnimplementedNocoDBServiceHandler) ListNocoDBBases(context.Context, *connect.Request[v1.ListNocoDBBasesRequest]) (*connect.Response[v1.ListNocoDBBasesResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.NocoDBService.ListNocoDBBases is not implemented"))

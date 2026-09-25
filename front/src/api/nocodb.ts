@@ -12,7 +12,6 @@ export {
   SnapshotTrigger,
   type BackupPolicy,
   type NocoDBBase,
-  type NocoDBConnection,
   type Snapshot,
   type SnapshotTable,
 } from '@/gen/neobox/v1/nocodb_pb'
@@ -20,7 +19,6 @@ export {
 const client = makeClient(NocoDBService)
 
 const keys = {
-  connections: ['nocodb', 'connections'] as const,
   bases: (connectionId: string) => ['nocodb', 'bases', connectionId] as const,
   snapshots: (connectionId?: string, baseId?: string) =>
     ['nocodb', 'snapshots', connectionId ?? '', baseId ?? ''] as const,
@@ -35,62 +33,13 @@ export function isSnapshotActive(s: Snapshot | undefined) {
   )
 }
 
-// --- connections ---
-
-export function useNocoDBConnections() {
-  return useQuery({
-    queryKey: keys.connections,
-    queryFn: async () => (await client.listNocoDBConnections({})).connections,
-  })
-}
-
-export function useCreateNocoDBConnection() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: async (input: {
-      name: string
-      baseUrl: string
-      apiToken: string
-    }) => (await client.createNocoDBConnection(input)).connection,
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.connections }),
-  })
-}
-
-export function useUpdateNocoDBConnection() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: async (input: {
-      id: string
-      name: string
-      baseUrl: string
-      apiToken?: string
-    }) => (await client.updateNocoDBConnection(input)).connection,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['nocodb'] }),
-  })
-}
-
-export function useDeleteNocoDBConnection() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: async (id: string) => {
-      await client.deleteNocoDBConnection({ id })
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['nocodb'] }),
-  })
-}
-
-export function useTestNocoDBConnection() {
-  return useMutation({
-    mutationFn: async (id: string) => await client.testNocoDBConnection({ id }),
-  })
-}
-
 // --- bases & policies ---
 
-export function useNocoDBBases(connectionId: string) {
+export function useNocoDBBases(connectionId: string, enabled = true) {
   return useQuery({
     queryKey: keys.bases(connectionId),
     queryFn: async () => (await client.listNocoDBBases({ connectionId })).bases,
+    enabled,
     // Keep latest-snapshot status fresh while a run is in progress.
     refetchInterval: (query) =>
       query.state.data?.some((b) => isSnapshotActive(b.latestSnapshot))

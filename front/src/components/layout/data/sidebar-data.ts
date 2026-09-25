@@ -1,10 +1,11 @@
 import {
-  DatabaseBackup,
+  Cable,
   LayoutDashboard,
   Settings,
   UserRound,
   Users,
 } from 'lucide-react'
+import { providerInfos } from '@/features/connections/provider-info'
 import { type NavGroup } from '../types'
 
 export const generalNav: NavGroup = {
@@ -22,9 +23,17 @@ export const resourcesNav: NavGroup = {
   title: 'Resources',
   items: [
     {
-      title: 'NocoDB',
-      url: '/nocodb',
-      icon: DatabaseBackup,
+      title: 'Connections',
+      icon: Cable,
+      items: [
+        { title: 'All connections', url: '/connections' },
+        ...providerInfos.map((p) => ({
+          title: p.label,
+          url: '/connections',
+          search: { provider: p.key },
+          icon: p.icon,
+        })),
+      ],
     },
   ],
 }

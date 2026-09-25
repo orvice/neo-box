@@ -11,12 +11,22 @@ one place.
   password or an OAuth provider (GitHub, Google).
 - **Session** — a bearer token issued at sign-in. Only its sha256 is stored;
   it expires after `auth.session_ttl`.
+- **Provider** — a kind of third-party service Neo Box integrates with
+  (today: NocoDB). Each Provider decides what it shows and does for a
+  Connection; Neo Box has no provider-independent model of resources. Not
+  to be confused with the OAuth sign-in providers above.
+- **Connection** — one account at a Provider, owned by one User: a name,
+  the Provider's settings, and its credentials. Credentials are encrypted
+  with `crypto.encryption_key` and never returned by the API. A Connection
+  has a health status (ok / error, with a message), set whenever its
+  credentials are checked and by the Provider's background work. Deleting a
+  Connection deletes everything the Provider stored for it.
 
 ### NocoDB
 
-- **NocoDB Connection** — one self-hosted NocoDB instance (base URL) plus an
-  API token, owned by one User. The token is encrypted with
-  `crypto.encryption_key` and never returned by the API.
+- **NocoDB Connection** — a Connection whose Provider is NocoDB: one
+  self-hosted NocoDB instance (base URL) plus an API token. A Snapshot run
+  rejected with 401/403 marks it error; a successful run marks it ok.
 - **Base** — NocoDB's top-level container of tables (a "project"; IDs start
   with `p`). Neo Box does not store Bases; it lists them live from NocoDB.
 - **Snapshot** — a point-in-time, read-only capture of one Base: the base
@@ -36,4 +46,4 @@ A Base has at most one Snapshot pending or running at a time.
 ## Planned (not yet modeled)
 
 - **Restore** — rebuild a Snapshot into a new Base (never overwrite).
-- Other third-party **Providers** beyond NocoDB.
+- More **Providers** beyond NocoDB (next: Wasabi, #5).

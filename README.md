@@ -9,6 +9,10 @@ protobuf contracts generated with buf, all in one monorepo.
 
 - **User center**: password and OAuth (GitHub, Google) sign-in, sessions,
   self-service profile and password, and admin user management.
+- **Connections**: link accounts at third-party services (Providers) and
+  manage them in one place. Credentials are verified before saving, stored
+  encrypted, and never returned; each connection shows whether it currently
+  works.
 - **NocoDB Base snapshots**: open-source NocoDB has no Base backup, so neo-box
   captures a Base's schema, records, and record links into point-in-time
   snapshots. You can take them manually or on a cron schedule with retention,
@@ -111,15 +115,15 @@ auth:
       display_name: "Google"
 
 # ── PostgreSQL ─────────────────────────────────────────────────────────
-# Users, sessions, OAuth state, NocoDB connections, policies, and snapshot
+# Users, sessions, OAuth state, connections, NocoDB policies, and snapshot
 # metadata. Name of a connection under store.db below; it must use driver
 # postgres. Tables are created and migrated automatically on startup.
 db_store: "main"                # default main
 
 # ── Credential encryption ──────────────────────────────────────────────
-# AES key protecting stored third-party credentials (NocoDB API tokens).
+# AES key protecting stored connection credentials (e.g. NocoDB API tokens).
 # 16/24/32 bytes, raw, hex, or base64, e.g. `openssl rand -hex 32`.
-# Required to create NocoDB connections. Changing it makes stored tokens
+# Required to create connections. Changing it makes stored credentials
 # unreadable, so keep it stable and back it up.
 crypto:
   encryption_key: "<64 hex chars>"
@@ -292,7 +296,8 @@ NEOBOX_TEST_POSTGRES_DSN='postgres://neobox:neobox@localhost:5432/neobox?sslmode
 cmd/neobox/            entry point
 internal/app/          route registration + bootstrap wiring
 internal/application/  ConnectRPC service implementations
-internal/backup/       snapshot queue, cron scheduling, retention
+internal/connection/   connections across providers (secrets, verify, health)
+internal/backup/       NocoDB snapshot queue, cron scheduling, retention
 internal/nocodb/       NocoDB REST client
 internal/snapshot/     snapshot document format
 internal/ent/          ent schema (schema/) + generated client (do not edit)

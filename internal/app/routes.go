@@ -22,11 +22,12 @@ import (
 // registered before Butterfly loads the YAML config and before PostgreSQL is
 // connected, so repositories are attached later by Bootstrap.
 type Handlers struct {
-	cfg             *config.AppConfig
-	authSvcServer   *application.AuthServiceServer
-	nocodbSvcServer *application.NocoDBServiceServer
-	authRepo        atomic.Value // auth.Repository
-	snapshots       atomic.Value // *snapshotContent
+	cfg                 *config.AppConfig
+	authSvcServer       *application.AuthServiceServer
+	connectionSvcServer *application.ConnectionServiceServer
+	nocodbSvcServer     *application.NocoDBServiceServer
+	authRepo            atomic.Value // auth.Repository
+	snapshots           atomic.Value // *snapshotContent
 
 	stop    context.CancelFunc
 	manager *backup.Manager
@@ -67,13 +68,16 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 	// Session TTL is read from cfg in Bootstrap, after YAML is loaded.
 	authSvcServer := application.NewAuthServiceServer(nil, 0)
 	authConnectPath, authConnectHandler := neoboxv1connect.NewAuthServiceHandler(authSvcServer, connectOpts...)
+	connectionSvcServer := application.NewConnectionServiceServer()
+	connectionConnectPath, connectionConnectHandler := neoboxv1connect.NewConnectionServiceHandler(connectionSvcServer, connectOpts...)
 	nocodbSvcServer := application.NewNocoDBServiceServer()
 	nocodbConnectPath, nocodbConnectHandler := neoboxv1connect.NewNocoDBServiceHandler(nocodbSvcServer, connectOpts...)
 
 	handlers := &Handlers{
-		cfg:             cfg,
-		authSvcServer:   authSvcServer,
-		nocodbSvcServer: nocodbSvcServer,
+		cfg:                 cfg,
+		authSvcServer:       authSvcServer,
+		connectionSvcServer: connectionSvcServer,
+		nocodbSvcServer:     nocodbSvcServer,
 	}
 
 	router := func(r *gin.Engine) {
@@ -82,6 +86,7 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 		httpHandler.RegisterSnapshotDownload(r, handlers.snapshotContentFromHolder)
 
 		r.Any("/api"+authConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", authConnectHandler)))
+		r.Any("/api"+connectionConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", connectionConnectHandler)))
 		r.Any("/api"+nocodbConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", nocodbConnectHandler)))
 	}
 

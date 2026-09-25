@@ -52,8 +52,8 @@ store:
   #     use_ssl: true
   #     use_path_style: false
 
-# Encrypts stored third-party credentials (NocoDB API tokens). 32 bytes, raw,
-# hex, or base64 — e.g. `openssl rand -hex 32`. Required for NocoDB backups.
+# Encrypts stored connection credentials (e.g. NocoDB API tokens). 32 bytes,
+# raw, hex, or base64 — e.g. `openssl rand -hex 32`. Required for connections.
 crypto:
   encryption_key: ""
 

@@ -1,16 +1,17 @@
 import { useState } from 'react'
-import { Link, useParams } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { CalendarClock, Camera, ChevronLeft, History } from 'lucide-react'
 import { toast } from 'sonner'
+import { type Connection } from '@/api/connections'
 import {
   isSnapshotActive,
   useCreateSnapshot,
   useNocoDBBases,
-  useNocoDBConnections,
   useSnapshots,
   useUpsertBackupPolicy,
   type NocoDBBase,
 } from '@/api/nocodb'
+import { formatTime } from '@/lib/format'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -33,16 +34,17 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Page, PageHeader, PageScroll } from '@/components/common/page-parts'
 import { DataTable, type Column } from '@/components/data-table'
-import { formatTime } from './format'
+import { nocodbBaseUrl } from './format'
 import { SnapshotTable } from './snapshot-table'
 import { SnapshotStatusBadge } from './status-badge'
 
-export function ConnectionDetailPage() {
-  const { connectionId } = useParams({
-    from: '/_authenticated/nocodb/$connectionId',
-  })
-  const { data: connections } = useNocoDBConnections()
-  const conn = connections?.find((c) => c.id === connectionId)
+/** The detail page of a NocoDB connection: its Bases and snapshots. */
+export function NocoDBConnectionDetail({
+  connection,
+}: {
+  connection: Connection
+}) {
+  const connectionId = connection.id
   const bases = useNocoDBBases(connectionId)
   const snapshots = useSnapshots(connectionId)
   const createSnapshot = useCreateSnapshot()
@@ -75,8 +77,8 @@ export function ConnectionDetailPage() {
         b.latestSnapshot ? (
           <div className='space-y-1'>
             <Link
-              to='/nocodb/snapshots/$snapshotId'
-              params={{ snapshotId: b.latestSnapshot.id }}
+              to='/connections/$connectionId/snapshots/$snapshotId'
+              params={{ connectionId, snapshotId: b.latestSnapshot.id }}
             >
               <SnapshotStatusBadge status={b.latestSnapshot.status} />
             </Link>
@@ -138,12 +140,16 @@ export function ConnectionDetailPage() {
     <Page>
       <PageHeader
         breadcrumb={
-          <Link to='/nocodb' className='inline-flex items-center gap-1'>
-            <ChevronLeft className='h-3 w-3' /> NocoDB
+          <Link
+            to='/connections'
+            search={{ provider: 'nocodb' }}
+            className='inline-flex items-center gap-1'
+          >
+            <ChevronLeft className='h-3 w-3' /> NocoDB connections
           </Link>
         }
-        title={conn?.name ?? 'Connection'}
-        subtitle={conn?.baseUrl}
+        title={connection.name}
+        subtitle={nocodbBaseUrl(connection)}
       />
       <PageScroll className='space-y-6'>
         <Card>
