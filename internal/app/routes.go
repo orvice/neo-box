@@ -19,7 +19,7 @@ import (
 )
 
 // Handlers holds the RPC services that need post-bootstrap wiring. Routes are
-// registered before Butterfly loads the YAML config and before MongoDB is
+// registered before Butterfly loads the YAML config and before PostgreSQL is
 // connected, so repositories are attached later by Bootstrap.
 type Handlers struct {
 	cfg             *config.AppConfig

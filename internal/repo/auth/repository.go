@@ -26,7 +26,6 @@ type Session struct {
 }
 
 type Repository interface {
-	EnsureIndexes(ctx context.Context) error
 	CountUsers(ctx context.Context) (int64, error)
 	ListUsers(ctx context.Context) ([]*neoboxv1.User, error)
 	CreateUser(ctx context.Context, user *neoboxv1.User, passwordHash string) error

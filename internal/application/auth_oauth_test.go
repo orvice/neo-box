@@ -78,7 +78,6 @@ func (f *fakeAuthRepo) GetUser(_ context.Context, id string) (*neoboxv1.User, er
 }
 
 // Unused methods — panic so misuse is loud.
-func (f *fakeAuthRepo) EnsureIndexes(context.Context) error { panic("not implemented") }
 func (f *fakeAuthRepo) CountUsers(context.Context) (int64, error) {
 	panic("not implemented")
 }
@@ -143,7 +142,7 @@ func newServerWithOAuth(t *testing.T, stub provider.Provider) (*AuthServiceServe
 }
 
 // oauthstateMemory wraps the in-memory store from the repo package so tests
-// don't depend on the mongo backend.
+// don't depend on a database.
 func oauthstateMemory() oauthstate.Repository {
 	return &memoryStateRepo{m: make(map[string]oauthstate.Entry)}
 }
@@ -153,7 +152,6 @@ type memoryStateRepo struct {
 	m  map[string]oauthstate.Entry
 }
 
-func (s *memoryStateRepo) EnsureIndexes(context.Context) error { return nil }
 func (s *memoryStateRepo) Create(_ context.Context, e *oauthstate.Entry) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()

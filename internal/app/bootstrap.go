@@ -6,37 +6,37 @@ import (
 
 	"butterfly.orx.me/core/log"
 	"butterfly.orx.me/core/store/s3"
-	"go.mongodb.org/mongo-driver/v2/mongo"
-	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"butterfly.orx.me/core/store/sqldb"
+	"entgo.io/ent/dialect"
+	entsql "entgo.io/ent/dialect/sql"
+	"github.com/jackc/pgx/v5/stdlib"
 
 	"go.orx.me/apps/neo-box/internal/application"
 	"go.orx.me/apps/neo-box/internal/auth/provider"
 	"go.orx.me/apps/neo-box/internal/backup"
 	"go.orx.me/apps/neo-box/internal/blobstore"
 	"go.orx.me/apps/neo-box/internal/config"
-	authmongo "go.orx.me/apps/neo-box/internal/repo/auth/mongo"
-	nocodbmongo "go.orx.me/apps/neo-box/internal/repo/nocodb/mongo"
-	oauthstatemongo "go.orx.me/apps/neo-box/internal/repo/oauthstate/mongo"
+	"go.orx.me/apps/neo-box/internal/ent"
+	authpg "go.orx.me/apps/neo-box/internal/repo/auth/postgres"
+	nocodbpg "go.orx.me/apps/neo-box/internal/repo/nocodb/postgres"
+	oauthstatepg "go.orx.me/apps/neo-box/internal/repo/oauthstate/postgres"
 	"go.orx.me/apps/neo-box/internal/secretbox"
 )
 
-// Bootstrap connects storage, ensures indexes, seeds the initial admin, and
-// wires repositories into the handlers built by SetupRoutes.
+// Bootstrap connects storage, migrates the schema, seeds the initial admin,
+// and wires repositories into the handlers built by SetupRoutes.
 func (h *Handlers) Bootstrap(ctx context.Context) error {
 	cfg := h.cfg
-	db, err := connectMongo(ctx, cfg)
+	client, err := openPostgres(ctx, cfg)
 	if err != nil {
 		return err
 	}
 
-	authRepo := authmongo.New(db)
+	authRepo := authpg.New(client)
 	if err := application.BootstrapInitialAdmin(ctx, authRepo, cfg.Auth); err != nil {
 		return err
 	}
-	stateRepo := oauthstatemongo.New(db)
-	if err := stateRepo.EnsureIndexes(ctx); err != nil {
-		return err
-	}
+	stateRepo := oauthstatepg.New(client)
 
 	h.authSvcServer.SetSessionTTL(cfg.Auth.EffectiveSessionTTL())
 	h.authSvcServer.SetRepo(authRepo)
@@ -44,10 +44,17 @@ func (h *Handlers) Bootstrap(ctx context.Context) error {
 	h.authSvcServer.SetProviderRegistry(provider.BuildRegistry(cfg.Auth))
 	h.authRepo.Store(authRepo)
 
-	return h.bootstrapNocoDB(ctx, db)
+	runCtx, stop := context.WithCancel(context.Background())
+	if err := h.bootstrapNocoDB(ctx, runCtx, client); err != nil {
+		stop()
+		return err
+	}
+	h.stop = stop
+	go purgeExpired(runCtx, authRepo, stateRepo)
+	return nil
 }
 
-func (h *Handlers) bootstrapNocoDB(ctx context.Context, db *mongo.Database) error {
+func (h *Handlers) bootstrapNocoDB(ctx, runCtx context.Context, client *ent.Client) error {
 	cfg := h.cfg
 	logger := log.FromContext(ctx)
 
@@ -67,10 +74,7 @@ func (h *Handlers) bootstrapNocoDB(ctx context.Context, db *mongo.Database) erro
 		return err
 	}
 
-	nocodbRepo := nocodbmongo.New(db)
-	if err := nocodbRepo.EnsureIndexes(ctx); err != nil {
-		return err
-	}
+	nocodbRepo := nocodbpg.New(client)
 	manager := backup.New(backup.Config{
 		Workers:           cfg.NocoDB.Workers,
 		RequestsPerSecond: cfg.NocoDB.RequestsPerSecond,
@@ -78,17 +82,40 @@ func (h *Handlers) bootstrapNocoDB(ctx context.Context, db *mongo.Database) erro
 		SnapshotTimeout:   cfg.NocoDB.SnapshotTimeout,
 	}, nocodbRepo, blobs, cipher)
 
-	runCtx, stop := context.WithCancel(context.Background())
 	if err := manager.Start(runCtx); err != nil {
-		stop()
 		return err
 	}
-	h.stop = stop
 	h.manager = manager
 
 	h.nocodbSvcServer.SetDeps(nocodbRepo, manager, cipher)
 	h.snapshots.Store(&snapshotContent{repo: nocodbRepo, manager: manager})
 	return nil
+}
+
+// purgeExpired deletes expired sessions and OAuth states every hour until ctx
+// is done. Lookups already ignore expired rows; this only keeps tables small.
+func purgeExpired(ctx context.Context, sessions *authpg.Store, states *oauthstatepg.Store) {
+	logger := log.FromContext(ctx)
+	ticker := time.NewTicker(time.Hour)
+	defer ticker.Stop()
+	for {
+		now := time.Now().UTC()
+		if n, err := sessions.DeleteExpiredSessions(ctx, now); err != nil {
+			logger.Warn("purge expired auth sessions failed", "err", err)
+		} else if n > 0 {
+			logger.Info("purged expired auth sessions", "count", n)
+		}
+		if n, err := states.DeleteExpired(ctx, now); err != nil {
+			logger.Warn("purge expired oauth states failed", "err", err)
+		} else if n > 0 {
+			logger.Info("purged expired oauth states", "count", n)
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
+	}
 }
 
 // Shutdown stops the backup scheduler and workers. In-flight snapshots are
@@ -129,31 +156,43 @@ func (e errS3NotRegistered) Error() string {
 	return "storage.s3_store " + string(e) + " is not registered under store.s3"
 }
 
-// connectMongo establishes a connection to MongoDB and returns the database handle.
-func connectMongo(ctx context.Context, cfg *config.AppConfig) (*mongo.Database, error) {
+type errDBNotRegistered string
+
+func (e errDBNotRegistered) Error() string {
+	return "db_store " + string(e) + " is not registered under store.db"
+}
+
+type errDBNotPostgres string
+
+func (e errDBNotPostgres) Error() string {
+	return "store.db." + string(e) + " must use driver: postgres"
+}
+
+// openPostgres wraps the butterfly store.db connection named by db_store in
+// an ent client and migrates the schema.
+func openPostgres(ctx context.Context, cfg *config.AppConfig) (*ent.Client, error) {
 	logger := log.FromContext(ctx)
 
-	mongoURI := cfg.MongoURI
-	if mongoURI == "" {
-		mongoURI = "mongodb://localhost:27017"
+	key := cfg.EffectiveDBStore()
+	db := sqldb.GetDB(key)
+	if db == nil {
+		logger.Error("db_store is not registered under store.db", "store_key", key)
+		return nil, errDBNotRegistered(key)
 	}
-	logger.Info("connecting to mongodb", "uri", mongoURI)
-
-	client, err := mongo.Connect(options.Client().ApplyURI(mongoURI))
-	if err != nil {
-		logger.Error("failed to connect to mongodb", "err", err)
+	if _, ok := db.Driver().(*stdlib.Driver); !ok {
+		logger.Error("store.db entry is not a postgres connection", "store_key", key)
+		return nil, errDBNotPostgres(key)
+	}
+	if err := db.PingContext(ctx); err != nil {
+		logger.Error("failed to ping postgres", "store_key", key, "err", err)
 		return nil, err
 	}
-	if err := client.Ping(ctx, nil); err != nil {
-		logger.Error("failed to ping mongodb", "err", err)
+
+	client := ent.NewClient(ent.Driver(entsql.OpenDB(dialect.Postgres, db)))
+	if err := client.Schema.Create(ctx); err != nil {
+		logger.Error("failed to migrate postgres schema", "store_key", key, "err", err)
 		return nil, err
 	}
-
-	dbName := cfg.MongoDB
-	if dbName == "" {
-		dbName = "neobox"
-	}
-	logger.Info("mongodb connected", "database", dbName)
-
-	return client.Database(dbName), nil
+	logger.Info("postgres connected", "store_key", key)
+	return client, nil
 }

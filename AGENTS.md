@@ -5,7 +5,7 @@ Guidance for coding agents working in this repository.
 ## Build & Run
 
 ```bash
-# Backend (needs MongoDB on localhost:27017)
+# Backend (needs PostgreSQL on localhost:5432, see store.db in config.yaml)
 cp .env.example .env && export $(grep -v '^#' .env | xargs)
 go run ./cmd/neobox          # HTTP on :8080
 
@@ -15,27 +15,35 @@ cd front && npm install && npm run dev   # :5173, proxies /api and /ping to :808
 make build   # bin/neobox
 make test    # go test ./...
 make buf     # buf generate + protoc-go-inject-tag
+make ent     # go generate ./internal/ent
 make lint    # buf lint + golangci-lint
 ```
 
 After changing any `.proto`, run `make buf` and commit the generated Go
-(`pkg/proto/`) and TypeScript (`front/src/gen/`) output. Never hand-edit
-generated code.
+(`pkg/proto/`) and TypeScript (`front/src/gen/`) output. After changing an
+ent schema (`internal/ent/schema/`), run `make ent` and commit
+`internal/ent/`. Never hand-edit generated code.
+
+Repository tests need `NEOBOX_TEST_POSTGRES_DSN` (e.g.
+`postgres://neobox:neobox@localhost:5432/neobox?sslmode=disable`) and skip
+without it; `internal/repo/internal/pgtest` gives each test its own schema.
 
 ## Architecture
 
 Module: `go.orx.me/apps/neo-box`. Monorepo: Go backend at the root, React
 dashboard in `front/`, protobuf contracts in `proto/`. The stack mirrors
 `orvice/butter`: Butterfly (`butterfly.orx.me/core`) + Gin + ConnectRPC +
-MongoDB on the backend, Vite + React 19 + TanStack Router/Query + shadcn/ui +
-Connect-Web on the frontend.
+PostgreSQL via ent on the backend, Vite + React 19 + TanStack Router/Query +
+shadcn/ui + Connect-Web on the frontend.
 
 **Backend layers:**
 - `cmd/neobox/main.go` — entry point. Builds routes, then hands Butterfly an
   `InitFunc` that runs `Handlers.Bootstrap` after YAML config is loaded.
 - `internal/app/` — wiring. `routes.go` registers Connect handlers under
-  `/api/<package>.<Service>/*`; `bootstrap.go` connects MongoDB, ensures
-  indexes, seeds the initial admin, and attaches repositories to services.
+  `/api/<package>.<Service>/*`; `bootstrap.go` wraps the butterfly
+  `store.db` connection named by `db_store` in an ent client, migrates the
+  schema, seeds the initial admin, attaches repositories to services, and
+  starts an hourly purge of expired sessions and OAuth states.
   Routes are registered before config/DB exist, so services receive repos
   through setters and the auth middleware reads the repo from an
   `atomic.Value`.
@@ -50,8 +58,10 @@ Connect-Web on the frontend.
   resolves `Authorization: Bearer <token>` to a session (sha256 of the token
   is stored, never the token) and puts user + session on the context. Public
   paths are listed in `isPublicPath`.
-- `internal/repo/` — repository interfaces with MongoDB implementations in
-  `mongo/` subpackages.
+- `internal/ent/` — ent schemas in `schema/`; everything else is generated.
+- `internal/repo/` — repository interfaces with ent/PostgreSQL
+  implementations in `postgres/` subpackages. Repositories return domain
+  types; generated ent types do not leave these packages.
 - `internal/auth/provider/` — OAuth login providers (GitHub, Google) behind a
   `Provider` interface and `Registry`.
 - `internal/secretbox/` — AES-GCM for stored credentials (key from
@@ -70,7 +80,8 @@ login, OAuth login (`BeginOAuthFlow` → provider → `CompleteOAuthFlow`, CSRF
 state single-use in `oauth_states`), `Me`, `Logout`, self-service
 `UpdateProfile` / `ChangePassword`, and admin-only `ListUsers` /
 `CreateUser` / `UpdateUserPassword` / `SetUserDisabled`. Roles are `admin`
-and `user`. Sessions live in the `auth_sessions` collection with a TTL index.
+and `user`. Sessions live in the `auth_sessions` table; expired rows are
+ignored by lookups and purged hourly.
 
 **NocoDB backups** (`proto/neobox/v1/nocodb.proto`, `NocoDBService`):
 Connections (URL + encrypted token, verified on save), live Base listing
@@ -89,8 +100,8 @@ hooks. `src/stores/auth-store.ts` (Zustand) holds token + user. Routes under
 
 - Proto package `neobox.v1`, Go package alias `neoboxv1`. `buf lint`
   STANDARD rules apply: each RPC gets its own request/response message.
-- Add `// @gotags: bson:"..."` comments on proto fields that are stored
-  directly; `make buf` injects them.
+- Storage has its own ent schema; don't persist proto messages directly or
+  add storage tags to `.proto` files.
 - Every new Connect service: implement in `internal/application`, register in
   `internal/app/routes.go`, add a typed client + hooks in `front/src/api/`.
 - Frontend uses npm (`package-lock.json` is tracked); prettier config in

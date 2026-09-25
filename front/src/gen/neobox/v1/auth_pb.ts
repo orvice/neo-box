@@ -20,63 +20,63 @@ export const file_neobox_v1_auth: GenFile = /*@__PURE__*/
  */
 export type User = Message<"neobox.v1.User"> & {
   /**
-   * @gotags: json:"id,omitempty" yaml:"id,omitempty" bson:"_id,omitempty"
+   * @gotags: json:"id,omitempty" yaml:"id,omitempty"
    *
    * @generated from field: string id = 1;
    */
   id: string;
 
   /**
-   * @gotags: json:"username,omitempty" yaml:"username,omitempty" bson:"username,omitempty"
+   * @gotags: json:"username,omitempty" yaml:"username,omitempty"
    *
    * @generated from field: string username = 2;
    */
   username: string;
 
   /**
-   * @gotags: json:"display_name,omitempty" yaml:"display_name,omitempty" bson:"display_name,omitempty"
+   * @gotags: json:"display_name,omitempty" yaml:"display_name,omitempty"
    *
    * @generated from field: string display_name = 3;
    */
   displayName: string;
 
   /**
-   * @gotags: json:"role,omitempty" yaml:"role,omitempty" bson:"role,omitempty"
+   * @gotags: json:"role,omitempty" yaml:"role,omitempty"
    *
    * @generated from field: string role = 4;
    */
   role: string;
 
   /**
-   * @gotags: json:"disabled,omitempty" yaml:"disabled,omitempty" bson:"disabled,omitempty"
+   * @gotags: json:"disabled,omitempty" yaml:"disabled,omitempty"
    *
    * @generated from field: bool disabled = 5;
    */
   disabled: boolean;
 
   /**
-   * @gotags: json:"created_at,omitempty" yaml:"created_at,omitempty" bson:"created_at,omitempty"
+   * @gotags: json:"created_at,omitempty" yaml:"created_at,omitempty"
    *
    * @generated from field: google.protobuf.Timestamp created_at = 6;
    */
   createdAt?: Timestamp;
 
   /**
-   * @gotags: json:"updated_at,omitempty" yaml:"updated_at,omitempty" bson:"updated_at,omitempty"
+   * @gotags: json:"updated_at,omitempty" yaml:"updated_at,omitempty"
    *
    * @generated from field: google.protobuf.Timestamp updated_at = 7;
    */
   updatedAt?: Timestamp;
 
   /**
-   * @gotags: json:"avatar_url,omitempty" yaml:"avatar_url,omitempty" bson:"avatar_url,omitempty"
+   * @gotags: json:"avatar_url,omitempty" yaml:"avatar_url,omitempty"
    *
    * @generated from field: string avatar_url = 8;
    */
   avatarUrl: string;
 
   /**
-   * @gotags: json:"email,omitempty" yaml:"email,omitempty" bson:"email,omitempty"
+   * @gotags: json:"email,omitempty" yaml:"email,omitempty"
    *
    * @generated from field: string email = 9;
    */
@@ -84,7 +84,7 @@ export type User = Message<"neobox.v1.User"> & {
 
   /**
    * OAuth provider name (e.g. "github"). Empty for password users.
-   * @gotags: json:"provider,omitempty" yaml:"provider,omitempty" bson:"provider,omitempty"
+   * @gotags: json:"provider,omitempty" yaml:"provider,omitempty"
    *
    * @generated from field: string provider = 10;
    */
@@ -92,7 +92,7 @@ export type User = Message<"neobox.v1.User"> & {
 
   /**
    * External (provider-issued) account ID. Stable across email changes.
-   * @gotags: json:"external_id,omitempty" yaml:"external_id,omitempty" bson:"external_id,omitempty"
+   * @gotags: json:"external_id,omitempty" yaml:"external_id,omitempty"
    *
    * @generated from field: string external_id = 11;
    */

@@ -25,8 +25,6 @@ type Entry struct {
 
 // Repository persists OAuth state tokens with a TTL.
 type Repository interface {
-	// EnsureIndexes creates any required storage indexes.
-	EnsureIndexes(ctx context.Context) error
 	// Create stores an entry. Implementations must reject duplicates.
 	Create(ctx context.Context, entry *Entry) error
 	// Consume atomically loads and deletes the entry for state. Returns

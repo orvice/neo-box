@@ -7,12 +7,20 @@ import "time"
 type AppConfig struct {
 	Auth AuthConfig `yaml:"auth"`
 
-	MongoURI string `yaml:"mongo_uri"`
-	MongoDB  string `yaml:"mongo_db"`
+	// DBStore is a key under butterfly's `store.db`. That entry must use
+	// driver postgres.
+	DBStore string `yaml:"db_store"`
 
 	Crypto  CryptoConfig  `yaml:"crypto"`
 	Storage StorageConfig `yaml:"storage"`
 	NocoDB  NocoDBConfig  `yaml:"nocodb"`
+}
+
+func (c *AppConfig) EffectiveDBStore() string {
+	if c.DBStore == "" {
+		return "main"
+	}
+	return c.DBStore
 }
 
 // CryptoConfig holds the key protecting stored third-party credentials.

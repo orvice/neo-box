@@ -41,29 +41,29 @@ service AuthService {
 }
 
 message User {
-  // @gotags: json:"id,omitempty" yaml:"id,omitempty" bson:"_id,omitempty"
+  // @gotags: json:"id,omitempty" yaml:"id,omitempty"
   string id = 1;
-  // @gotags: json:"username,omitempty" yaml:"username,omitempty" bson:"username,omitempty"
+  // @gotags: json:"username,omitempty" yaml:"username,omitempty"
   string username = 2;
-  // @gotags: json:"display_name,omitempty" yaml:"display_name,omitempty" bson:"display_name,omitempty"
+  // @gotags: json:"display_name,omitempty" yaml:"display_name,omitempty"
   string display_name = 3;
-  // @gotags: json:"role,omitempty" yaml:"role,omitempty" bson:"role,omitempty"
+  // @gotags: json:"role,omitempty" yaml:"role,omitempty"
   string role = 4;
-  // @gotags: json:"disabled,omitempty" yaml:"disabled,omitempty" bson:"disabled,omitempty"
+  // @gotags: json:"disabled,omitempty" yaml:"disabled,omitempty"
   bool disabled = 5;
-  // @gotags: json:"created_at,omitempty" yaml:"created_at,omitempty" bson:"created_at,omitempty"
+  // @gotags: json:"created_at,omitempty" yaml:"created_at,omitempty"
   google.protobuf.Timestamp created_at = 6;
-  // @gotags: json:"updated_at,omitempty" yaml:"updated_at,omitempty" bson:"updated_at,omitempty"
+  // @gotags: json:"updated_at,omitempty" yaml:"updated_at,omitempty"
   google.protobuf.Timestamp updated_at = 7;
-  // @gotags: json:"avatar_url,omitempty" yaml:"avatar_url,omitempty" bson:"avatar_url,omitempty"
+  // @gotags: json:"avatar_url,omitempty" yaml:"avatar_url,omitempty"
   string avatar_url = 8;
-  // @gotags: json:"email,omitempty" yaml:"email,omitempty" bson:"email,omitempty"
+  // @gotags: json:"email,omitempty" yaml:"email,omitempty"
   string email = 9;
   // OAuth provider name (e.g. "github"). Empty for password users.
-  // @gotags: json:"provider,omitempty" yaml:"provider,omitempty" bson:"provider,omitempty"
+  // @gotags: json:"provider,omitempty" yaml:"provider,omitempty"
   string provider = 10;
   // External (provider-issued) account ID. Stable across email changes.
-  // @gotags: json:"external_id,omitempty" yaml:"external_id,omitempty" bson:"external_id,omitempty"
+  // @gotags: json:"external_id,omitempty" yaml:"external_id,omitempty"
   string external_id = 11;
 }
 

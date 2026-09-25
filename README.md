@@ -13,7 +13,7 @@ protobuf contracts generated with buf, all in one monorepo.
   captures a Base's schema, records, and record links into point-in-time
   snapshots. You can take them manually or on a cron schedule with retention,
   browse them in the dashboard, and download them as gzip JSON.
-- Stores users, sessions, and metadata in MongoDB, and snapshot content in
+- Stores users, sessions, and metadata in PostgreSQL, and snapshot content in
   S3-compatible object storage.
 
 ## Getting Started
@@ -22,7 +22,7 @@ protobuf contracts generated with buf, all in one monorepo.
 
 - Go 1.26.5+
 - Node.js 22+ and npm (dashboard)
-- MongoDB
+- PostgreSQL
 - S3-compatible object storage for snapshot content (optional for local
   development; a local directory is used instead)
 - [buf CLI](https://buf.build/) and `protoc-go-inject-tag` when regenerating
@@ -44,10 +44,13 @@ below.
 ### Run
 
 ```bash
-# MongoDB
-docker run -d --name neobox-mongo -p 27017:27017 mongo:8
+# PostgreSQL (matches store.db.main in config.yaml)
+docker run -d --name neobox-pg -p 5432:5432 \
+  -e POSTGRES_USER=neobox -e POSTGRES_PASSWORD=neobox -e POSTGRES_DB=neobox \
+  postgres:17-alpine
 
-# Backend: creates the initial admin (admin / change-me) on first start
+# Backend: migrates the schema and creates the initial admin
+# (admin / change-me) on first start
 export $(grep -v '^#' .env | xargs)
 go run ./cmd/neobox
 
@@ -82,7 +85,7 @@ log:
 
 # ── Authentication ─────────────────────────────────────────────────────
 auth:
-  # Created on first start when the users collection is empty. Change the
+  # Created on first start when the users table is empty. Change the
   # password right after the first sign-in.
   initial_admin_username: "admin"
   initial_admin_password: "change-me"   # required on first start
@@ -107,11 +110,11 @@ auth:
       scopes: ["openid", "email", "profile"]  # default when omitted
       display_name: "Google"
 
-# ── MongoDB ────────────────────────────────────────────────────────────
+# ── PostgreSQL ─────────────────────────────────────────────────────────
 # Users, sessions, OAuth state, NocoDB connections, policies, and snapshot
-# metadata.
-mongo_uri: "mongodb://user:pass@mongo:27017/?authSource=admin"   # default mongodb://localhost:27017
-mongo_db: "neobox"
+# metadata. Name of a connection under store.db below; it must use driver
+# postgres. Tables are created and migrated automatically on startup.
+db_store: "main"                # default main
 
 # ── Credential encryption ──────────────────────────────────────────────
 # AES key protecting stored third-party credentials (NocoDB API tokens).
@@ -129,9 +132,20 @@ storage:
   key_prefix: "neobox"          # objects: <prefix>/nocodb/<user>/<conn>/<base>/<id>.json.gz
   local_dir: "./data/blobs"     # used only when s3_store is empty
 
-# S3 clients (Butterfly core). Each key registers a named client; the
-# bucket should be private.
 store:
+  # SQL connections (Butterfly core). Each key registers a named connection.
+  db:
+    main:
+      driver: postgres
+      host: "postgres"
+      port: 5432
+      user: "neobox"
+      # Inserted into the connection URL unescaped: avoid @ : / ? # % in it.
+      password: "..."
+      db_name: "neobox"
+      ssl_mode: "require"       # default disable
+  # S3 clients (Butterfly core). Each key registers a named client; the
+  # bucket should be private.
   s3:
     snapshots:
       # Host, or a full URL. Without a scheme, use_ssl picks https/http.
@@ -225,6 +239,9 @@ Backend notes:
 - Run **one replica with `strategy: Recreate`**. Snapshot schedules and the
   job queue run in-process; overlapping pods would double-fire schedules, and
   a starting pod marks unfinished snapshots failed.
+- The database user needs rights to create and alter tables: the schema is
+  migrated on every startup. Migration never drops tables, columns, or
+  indexes.
 - Mount the config file from a Secret and set `BUTTERFLY_CONFIG_TYPE=file`
   and `BUTTERFLY_CONFIG_FILE_PATH`.
 - Use `GET /ping` for readiness and liveness probes. The dashboard image
@@ -255,10 +272,19 @@ production with React Query devtools.
 go test ./...
 make build   # bin/neobox
 make buf     # buf generate + protoc-go-inject-tag
+make ent     # regenerate internal/ent from internal/ent/schema
 make lint    # buf lint + golangci-lint
 ```
 
-Commit regenerated code (`pkg/proto/`, `front/src/gen/`) with proto changes.
+Commit regenerated code (`pkg/proto/`, `front/src/gen/`, `internal/ent/`) with
+proto or schema changes.
+
+Repository tests run against a real PostgreSQL, each in its own throwaway
+schema, and are skipped unless `NEOBOX_TEST_POSTGRES_DSN` is set:
+
+```bash
+NEOBOX_TEST_POSTGRES_DSN='postgres://neobox:neobox@localhost:5432/neobox?sslmode=disable' go test ./...
+```
 
 ## Layout
 
@@ -269,7 +295,8 @@ internal/application/  ConnectRPC service implementations
 internal/backup/       snapshot queue, cron scheduling, retention
 internal/nocodb/       NocoDB REST client
 internal/snapshot/     snapshot document format
-internal/repo/         repositories (MongoDB)
+internal/ent/          ent schema (schema/) + generated client (do not edit)
+internal/repo/         repositories (PostgreSQL via ent)
 proto/neobox/v1/       protobuf API
 pkg/proto/             generated Go (do not edit)
 front/                 React dashboard (front/src/gen is generated)

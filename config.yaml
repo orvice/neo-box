@@ -28,32 +28,41 @@ auth:
   #     scopes: ["openid", "email", "profile"]
   #     display_name: "Google"
 
-# MongoDB for users, sessions, and resource data
-mongo_uri: "mongodb://localhost:27017"
-mongo_db: "neobox"
+# PostgreSQL for users, sessions, and resource data. db_store names an entry
+# under store.db below (default "main"); the schema is migrated on startup.
+db_store: "main"
+
+store:
+  db:
+    main:
+      driver: postgres
+      host: localhost
+      port: 5432
+      user: neobox
+      password: neobox
+      db_name: neobox
+      ssl_mode: disable
+  # s3:
+  #   snapshots:
+  #     endpoint: "s3.amazonaws.com"
+  #     ak: "..."
+  #     sk: "..."
+  #     region: "us-east-1"
+  #     bucket: "neobox-snapshots"
+  #     use_ssl: true
+  #     use_path_style: false
 
 # Encrypts stored third-party credentials (NocoDB API tokens). 32 bytes, raw,
 # hex, or base64 — e.g. `openssl rand -hex 32`. Required for NocoDB backups.
 crypto:
   encryption_key: ""
 
-# Snapshot content storage. Set s3_store to a key under store.s3 below;
+# Snapshot content storage. Set s3_store to a key under store.s3 above;
 # when empty, content is written to local_dir (development only).
 storage:
   s3_store: ""
   key_prefix: "neobox"
   local_dir: "./data/blobs"
-
-# store:
-#   s3:
-#     snapshots:
-#       endpoint: "s3.amazonaws.com"
-#       ak: "..."
-#       sk: "..."
-#       region: "us-east-1"
-#       bucket: "neobox-snapshots"
-#       use_ssl: true
-#       use_path_style: false
 
 # NocoDB Base snapshots.
 nocodb:
