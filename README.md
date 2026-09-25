@@ -1,36 +1,282 @@
 # neo-box
 
-A personal hub for managing and viewing third-party resources.
+neo-box is a personal hub for managing and viewing resources held in
+third-party services. It is built on the [Butterfly](https://butterfly.orx.me)
+framework: a Go backend exposing ConnectRPC APIs, a React dashboard, and
+protobuf contracts generated with buf, all in one monorepo.
 
-Monorepo: Go backend (Butterfly + Gin + ConnectRPC + MongoDB), React
-dashboard in `front/`, protobuf contracts in `proto/` generated with buf.
+## What It Does
 
-## Quick start
+- **User center**: password and OAuth (GitHub, Google) sign-in, sessions,
+  self-service profile and password, and admin user management.
+- **NocoDB Base snapshots**: open-source NocoDB has no Base backup, so neo-box
+  captures a Base's schema, records, and record links into point-in-time
+  snapshots. You can take them manually or on a cron schedule with retention,
+  browse them in the dashboard, and download them as gzip JSON.
+- Stores users, sessions, and metadata in MongoDB, and snapshot content in
+  S3-compatible object storage.
+
+## Getting Started
+
+### Prerequisites
+
+- Go 1.26.5+
+- Node.js 22+ and npm (dashboard)
+- MongoDB
+- S3-compatible object storage for snapshot content (optional for local
+  development; a local directory is used instead)
+- [buf CLI](https://buf.build/) and `protoc-go-inject-tag` when regenerating
+  protobuf code
+
+### Configure
+
+neo-box reads a single YAML file. Point Butterfly at it with environment
+variables:
+
+```bash
+cp .env.example .env   # BUTTERFLY_CONFIG_TYPE=file, BUTTERFLY_CONFIG_FILE_PATH=./config.yaml
+```
+
+The repository's [config.yaml](config.yaml) works for local development. For a
+deployment, start from the full sample in [Configuration](#configuration)
+below.
+
+### Run
 
 ```bash
 # MongoDB
 docker run -d --name neobox-mongo -p 27017:27017 mongo:8
 
-# Backend — creates admin / change-me on first start (see config.yaml)
-BUTTERFLY_CONFIG_TYPE=file BUTTERFLY_CONFIG_FILE_PATH=./config.yaml go run ./cmd/neobox
+# Backend: creates the initial admin (admin / change-me) on first start
+export $(grep -v '^#' .env | xargs)
+go run ./cmd/neobox
 
-# Frontend
+# Dashboard
 cd front && npm install && npm run dev
 ```
 
-Open http://localhost:5173 and sign in.
+Verify the backend is up:
+
+```bash
+curl http://127.0.0.1:8080/ping
+# {"message":"pong"}
+```
+
+Open http://localhost:5173 and sign in. API requests (everything under
+`/api/`) require `Authorization: Bearer <session token>`.
+
+## Configuration
+
+A complete sample with every supported key. Credentials, hosts, and bucket
+names are placeholders; comments note the default where a key has one. The
+file is plain YAML: `${VAR}` placeholders are **not** expanded, so render
+secrets into the file (e.g. from a Kubernetes Secret) rather than referencing
+environment variables.
+
+```yaml
+# ── Logging (Butterfly core) ────────────────────────────────────────────
+log:
+  level: info          # debug | info | warn | error
+  format: text         # text | json (json recommended in production)
+  add_source: false    # include source file:line in each entry
+
+# ── Authentication ─────────────────────────────────────────────────────
+auth:
+  # Created on first start when the users collection is empty. Change the
+  # password right after the first sign-in.
+  initial_admin_username: "admin"
+  initial_admin_password: "change-me"   # required on first start
+  session_ttl: 168h                     # bearer session lifetime (7 days)
+  # Local development only: when true, requests are treated as admin before
+  # the auth store is wired. Never enable in production.
+  allow_unauthenticated: false
+  # OAuth sign-in. A provider appears on the sign-in page only when both
+  # client_id and client_secret are set. redirect_url must be the dashboard's
+  # /auth/oauth/callback/<provider> route and must match the OAuth app.
+  oauth_providers:
+    github:
+      client_id: "Iv1.xxxxxxxxxxxxxxxx"
+      client_secret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      redirect_url: "https://neobox.example.com/auth/oauth/callback/github"
+      scopes: ["read:user", "user:email"]   # default when omitted
+      display_name: "GitHub"                # default when omitted
+    google:
+      client_id: "xxxxxxxx.apps.googleusercontent.com"
+      client_secret: "GOCSPX-xxxxxxxxxxxxxxxx"
+      redirect_url: "https://neobox.example.com/auth/oauth/callback/google"
+      scopes: ["openid", "email", "profile"]  # default when omitted
+      display_name: "Google"
+
+# ── MongoDB ────────────────────────────────────────────────────────────
+# Users, sessions, OAuth state, NocoDB connections, policies, and snapshot
+# metadata.
+mongo_uri: "mongodb://user:pass@mongo:27017/?authSource=admin"   # default mongodb://localhost:27017
+mongo_db: "neobox"
+
+# ── Credential encryption ──────────────────────────────────────────────
+# AES key protecting stored third-party credentials (NocoDB API tokens).
+# 16/24/32 bytes, raw, hex, or base64, e.g. `openssl rand -hex 32`.
+# Required to create NocoDB connections. Changing it makes stored tokens
+# unreadable, so keep it stable and back it up.
+crypto:
+  encryption_key: "<64 hex chars>"
+
+# ── Snapshot content storage ───────────────────────────────────────────
+storage:
+  # Name of a client under store.s3 below. When empty, content is written
+  # to local_dir instead (development only).
+  s3_store: "snapshots"
+  key_prefix: "neobox"          # objects: <prefix>/nocodb/<user>/<conn>/<base>/<id>.json.gz
+  local_dir: "./data/blobs"     # used only when s3_store is empty
+
+# S3 clients (Butterfly core). Each key registers a named client; the
+# bucket should be private.
+store:
+  s3:
+    snapshots:
+      # Host, or a full URL. Without a scheme, use_ssl picks https/http.
+      # Omit endpoint for AWS S3.
+      endpoint: "s3.us-east-1.amazonaws.com"
+      access_key_id: "AKIA..."      # or: ak
+      secret_access_key: "..."      # or: sk
+      session_token: ""             # optional (temporary credentials)
+      region: "us-east-1"           # default us-east-1
+      bucket: "neobox-snapshots"
+      use_ssl: true
+      use_path_style: false         # true for MinIO and most self-hosted S3
+    # MinIO example:
+    # minio:
+    #   endpoint: "minio:9000"
+    #   ak: "minioadmin"
+    #   sk: "minioadmin"
+    #   bucket: "neobox"
+    #   use_ssl: false
+    #   use_path_style: true
+    # Cloudflare R2 example:
+    # r2:
+    #   endpoint: "https://<account-id>.r2.cloudflarestorage.com"
+    #   ak: "..."
+    #   sk: "..."
+    #   region: "auto"
+    #   bucket: "neobox"
+    #   use_path_style: true
+
+# ── NocoDB snapshots ───────────────────────────────────────────────────
+nocodb:
+  # Request rate per NocoDB connection. NocoDB Cloud allows 5/s; self-hosted
+  # instances can usually go higher, which speeds up link-heavy Bases.
+  requests_per_second: 5
+  workers: 1              # snapshots running concurrently
+  page_size: 200          # records per page when reading tables
+  snapshot_timeout: 2h    # a run exceeding this is marked failed
+```
+
+Cron schedules are evaluated in the server's time zone. The container image is
+UTC, so prefix expressions with a zone when needed, e.g.
+`CRON_TZ=Asia/Shanghai 0 3 * * *`.
+
+### Environment variables
+
+| Variable | Purpose |
+|---|---|
+| `BUTTERFLY_CONFIG_TYPE` | `file` to load config from a YAML file |
+| `BUTTERFLY_CONFIG_FILE_PATH` | Path to the YAML config |
+| `BUTTERFLY_TRACING_PROVIDER` | `grpc` (default) or `http` OTLP exporter |
+| `BUTTERFLY_TRACING_ENDPOINT` | OTLP collector, e.g. `otel-collector:4317` |
+| `BUTTERFLY_TRACING_DISABLE` | `true` to turn tracing off |
+| `PORT` | HTTP port (default `8080`) |
+| `GIN_MODE` | Set to `release` in production |
+
+Prometheus metrics are served on `:2223/metrics`.
+
+## Deployment
+
+CI publishes two images on every push to `main` (`:main`) and on `vX.Y.Z` tags
+(`:X.Y.Z`, `:latest`):
+
+| Image | Serves | Port |
+|---|---|---|
+| `ghcr.io/orvice/neo-box` | backend API | `8080` (+ `2223` metrics) |
+| `ghcr.io/orvice/neo-box-front` | dashboard static files (nginx) | `80` |
+
+Route `/api` and `/ping` to the backend and everything else to the dashboard,
+for example with an Ingress:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: neobox
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: neobox.example.com
+      http:
+        paths:
+          - { path: /api,  pathType: Prefix, backend: { service: { name: neobox,       port: { number: 8080 } } } }
+          - { path: /ping, pathType: Exact,  backend: { service: { name: neobox,       port: { number: 8080 } } } }
+          - { path: /,     pathType: Prefix, backend: { service: { name: neobox-front, port: { number: 80 } } } }
+```
+
+Backend notes:
+
+- Run **one replica with `strategy: Recreate`**. Snapshot schedules and the
+  job queue run in-process; overlapping pods would double-fire schedules, and
+  a starting pod marks unfinished snapshots failed.
+- Mount the config file from a Secret and set `BUTTERFLY_CONFIG_TYPE=file`
+  and `BUTTERFLY_CONFIG_FILE_PATH`.
+- Use `GET /ping` for readiness and liveness probes. The dashboard image
+  answers `GET /healthz`.
+- Snapshots are staged in `/tmp` before upload. With a read-only root
+  filesystem, mount an `emptyDir` there.
+
+## Development
+
+### Frontend
+
+The dashboard lives in [front](front/). Keep `VITE_API_BASE_URL` empty and let
+the Vite dev server proxy `/api` and `/ping` to the backend:
+
+```bash
+cd front
+cp .env.example .env.local   # VITE_DEV_PROXY_TARGET=http://localhost:8080
+npm install
+npm run dev
+```
+
+Pointing `VITE_DEV_PROXY_TARGET` at a deployed backend is a handy way to debug
+production with React Query devtools.
+
+### Backend
+
+```bash
+go test ./...
+make build   # bin/neobox
+make buf     # buf generate + protoc-go-inject-tag
+make lint    # buf lint + golangci-lint
+```
+
+Commit regenerated code (`pkg/proto/`, `front/src/gen/`) with proto changes.
 
 ## Layout
 
 ```
-cmd/neobox/          entry point
-internal/app/        route registration + bootstrap wiring
-internal/application ConnectRPC service implementations
-internal/repo/       repositories (MongoDB)
-internal/auth/       OAuth providers
-proto/neobox/v1/     protobuf API
-pkg/proto/           generated Go (do not edit)
-front/               React dashboard (front/src/gen is generated)
+cmd/neobox/            entry point
+internal/app/          route registration + bootstrap wiring
+internal/application/  ConnectRPC service implementations
+internal/backup/       snapshot queue, cron scheduling, retention
+internal/nocodb/       NocoDB REST client
+internal/snapshot/     snapshot document format
+internal/repo/         repositories (MongoDB)
+proto/neobox/v1/       protobuf API
+pkg/proto/             generated Go (do not edit)
+front/                 React dashboard (front/src/gen is generated)
 ```
 
-`make buf` regenerates code after proto changes. See `AGENTS.md` for more.
+## Documentation
+
+- [AGENTS.md](AGENTS.md): architecture and conventions
+- [CONTEXT.md](CONTEXT.md): domain language
+- [docs/adr/](docs/adr/): architecture decision records
