@@ -20,6 +20,7 @@ test:
 
 lint:
 	buf lint
+	buf format --diff --exit-code
 	golangci-lint run --config=.golangci.yml
 
 front:

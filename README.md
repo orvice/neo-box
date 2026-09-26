@@ -312,7 +312,7 @@ go test ./...
 make build   # bin/neobox
 make buf     # buf generate + protoc-go-inject-tag
 make ent     # regenerate internal/ent from internal/ent/schema
-make lint    # buf lint + golangci-lint
+make lint    # buf lint + buf format check + golangci-lint
 ```
 
 Commit regenerated code (`pkg/proto/`, `front/src/gen/`, `internal/ent/`) with
