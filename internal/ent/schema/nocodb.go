@@ -10,34 +10,6 @@ import (
 	"go.orx.me/apps/neo-box/internal/repo/nocodb"
 )
 
-// NocoDBConnection is one NocoDB instance + encrypted API token owned by a
-// user.
-type NocoDBConnection struct {
-	ent.Schema
-}
-
-func (NocoDBConnection) Annotations() []schema.Annotation {
-	return []schema.Annotation{entsql.Annotation{Table: "nocodb_connections"}}
-}
-
-func (NocoDBConnection) Fields() []ent.Field {
-	return []ent.Field{
-		field.String("id").Immutable(),
-		field.String("user_id").Immutable(),
-		field.String("name"),
-		field.String("base_url"),
-		field.String("token_ciphertext").Sensitive(),
-		field.Time("created_at").Immutable(),
-		field.Time("updated_at"),
-	}
-}
-
-func (NocoDBConnection) Indexes() []ent.Index {
-	return []ent.Index{
-		index.Fields("user_id", "created_at"),
-	}
-}
-
 // NocoDBBackupPolicy schedules snapshots of one Base.
 type NocoDBBackupPolicy struct {
 	ent.Schema

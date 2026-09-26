@@ -27,9 +27,12 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
 import {
+  navSearch,
   type NavCollapsible,
   type NavItem,
   type NavLink,
+  type NavSearch,
+  type NavSubItem,
   type NavGroup as NavGroupProps,
 } from './types'
 
@@ -71,7 +74,11 @@ function SidebarMenuLink({ item, href }: { item: NavLink; href: string }) {
         isActive={checkIsActive(href, item)}
         tooltip={item.title}
       >
-        <Link to={item.url} onClick={() => setOpenMobile(false)}>
+        <Link
+          to={item.url}
+          search={navSearch(item.search)}
+          onClick={() => setOpenMobile(false)}
+        >
           {item.icon && <item.icon />}
           <span>{item.title}</span>
           {item.badge && <NavBadge>{item.badge}</NavBadge>}
@@ -110,9 +117,13 @@ function SidebarMenuCollapsible({
               <SidebarMenuSubItem key={subItem.title}>
                 <SidebarMenuSubButton
                   asChild
-                  isActive={checkIsActive(href, subItem)}
+                  isActive={checkIsSubActive(href, subItem)}
                 >
-                  <Link to={subItem.url} onClick={() => setOpenMobile(false)}>
+                  <Link
+                    to={subItem.url}
+                    search={navSearch(subItem.search)}
+                    onClick={() => setOpenMobile(false)}
+                  >
                     {subItem.icon && <subItem.icon />}
                     <span>{subItem.title}</span>
                     {subItem.badge && <NavBadge>{subItem.badge}</NavBadge>}
@@ -157,7 +168,8 @@ function SidebarMenuCollapsedDropdown({
             <DropdownMenuItem key={`${sub.title}-${sub.url}`} asChild>
               <Link
                 to={sub.url}
-                className={`${checkIsActive(href, sub) ? 'bg-secondary' : ''}`}
+                search={navSearch(sub.search)}
+                className={`${checkIsSubActive(href, sub) ? 'bg-secondary' : ''}`}
               >
                 {sub.icon && <sub.icon />}
                 <span className='max-w-52 text-wrap'>{sub.title}</span>
@@ -173,13 +185,27 @@ function SidebarMenuCollapsedDropdown({
   )
 }
 
+/** A link as it appears in location.href. */
+function hrefOf(item: { url?: string; search?: NavSearch }) {
+  const query = item.search ? `?${new URLSearchParams(item.search)}` : ''
+  return `${item.url}${query}`
+}
+
 function checkIsActive(href: string, item: NavItem, mainNav = false) {
+  const section = href.split('/')[1]
+  const urls = [item.url, ...(item.items ?? []).map((i) => i.url)]
   return (
     href === item.url || // /endpint?search=param
     href.split('?')[0] === item.url || // endpoint
-    !!item?.items?.filter((i) => i.url === href).length || // if child nav is active
+    !!item?.items?.filter((i) => hrefOf(i) === href).length || // if child nav is active
     (mainNav &&
-      href.split('/')[1] !== '' &&
-      href.split('/')[1] === item?.url?.split('/')[1])
+      section !== '' &&
+      urls.some((url) => url?.split('/')[1] === section))
   )
+}
+
+// Sub items match exactly, search included: "All connections" and
+// "NocoDB" share the /connections path.
+function checkIsSubActive(href: string, item: NavSubItem) {
+  return href === hrefOf(item)
 }

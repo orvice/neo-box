@@ -6,11 +6,11 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Connection is the predicate function for connection builders.
+type Connection func(*sql.Selector)
+
 // NocoDBBackupPolicy is the predicate function for nocodbbackuppolicy builders.
 type NocoDBBackupPolicy func(*sql.Selector)
-
-// NocoDBConnection is the predicate function for nocodbconnection builders.
-type NocoDBConnection func(*sql.Selector)
 
 // NocoDBSnapshot is the predicate function for nocodbsnapshot builders.
 type NocoDBSnapshot func(*sql.Selector)

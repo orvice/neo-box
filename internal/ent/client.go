@@ -14,8 +14,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"go.orx.me/apps/neo-box/internal/ent/connection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
-	"go.orx.me/apps/neo-box/internal/ent/nocodbconnection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbsnapshot"
 	"go.orx.me/apps/neo-box/internal/ent/oauthstate"
 	"go.orx.me/apps/neo-box/internal/ent/session"
@@ -27,10 +27,10 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Connection is the client for interacting with the Connection builders.
+	Connection *ConnectionClient
 	// NocoDBBackupPolicy is the client for interacting with the NocoDBBackupPolicy builders.
 	NocoDBBackupPolicy *NocoDBBackupPolicyClient
-	// NocoDBConnection is the client for interacting with the NocoDBConnection builders.
-	NocoDBConnection *NocoDBConnectionClient
 	// NocoDBSnapshot is the client for interacting with the NocoDBSnapshot builders.
 	NocoDBSnapshot *NocoDBSnapshotClient
 	// OAuthState is the client for interacting with the OAuthState builders.
@@ -50,8 +50,8 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Connection = NewConnectionClient(c.config)
 	c.NocoDBBackupPolicy = NewNocoDBBackupPolicyClient(c.config)
-	c.NocoDBConnection = NewNocoDBConnectionClient(c.config)
 	c.NocoDBSnapshot = NewNocoDBSnapshotClient(c.config)
 	c.OAuthState = NewOAuthStateClient(c.config)
 	c.Session = NewSessionClient(c.config)
@@ -148,8 +148,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:                ctx,
 		config:             cfg,
+		Connection:         NewConnectionClient(cfg),
 		NocoDBBackupPolicy: NewNocoDBBackupPolicyClient(cfg),
-		NocoDBConnection:   NewNocoDBConnectionClient(cfg),
 		NocoDBSnapshot:     NewNocoDBSnapshotClient(cfg),
 		OAuthState:         NewOAuthStateClient(cfg),
 		Session:            NewSessionClient(cfg),
@@ -173,8 +173,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:                ctx,
 		config:             cfg,
+		Connection:         NewConnectionClient(cfg),
 		NocoDBBackupPolicy: NewNocoDBBackupPolicyClient(cfg),
-		NocoDBConnection:   NewNocoDBConnectionClient(cfg),
 		NocoDBSnapshot:     NewNocoDBSnapshotClient(cfg),
 		OAuthState:         NewOAuthStateClient(cfg),
 		Session:            NewSessionClient(cfg),
@@ -185,7 +185,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		NocoDBBackupPolicy.
+//		Connection.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -208,8 +208,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.NocoDBBackupPolicy, c.NocoDBConnection, c.NocoDBSnapshot, c.OAuthState,
-		c.Session, c.User,
+		c.Connection, c.NocoDBBackupPolicy, c.NocoDBSnapshot, c.OAuthState, c.Session,
+		c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -219,8 +219,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.NocoDBBackupPolicy, c.NocoDBConnection, c.NocoDBSnapshot, c.OAuthState,
-		c.Session, c.User,
+		c.Connection, c.NocoDBBackupPolicy, c.NocoDBSnapshot, c.OAuthState, c.Session,
+		c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -229,10 +229,10 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *ConnectionMutation:
+		return c.Connection.mutate(ctx, m)
 	case *NocoDBBackupPolicyMutation:
 		return c.NocoDBBackupPolicy.mutate(ctx, m)
-	case *NocoDBConnectionMutation:
-		return c.NocoDBConnection.mutate(ctx, m)
 	case *NocoDBSnapshotMutation:
 		return c.NocoDBSnapshot.mutate(ctx, m)
 	case *OAuthStateMutation:
@@ -243,6 +243,139 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.User.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// ConnectionClient is a client for the Connection schema.
+type ConnectionClient struct {
+	config
+}
+
+// NewConnectionClient returns a client for the Connection from the given config.
+func NewConnectionClient(c config) *ConnectionClient {
+	return &ConnectionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `connection.Hooks(f(g(h())))`.
+func (c *ConnectionClient) Use(hooks ...Hook) {
+	c.hooks.Connection = append(c.hooks.Connection, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `connection.Intercept(f(g(h())))`.
+func (c *ConnectionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Connection = append(c.inters.Connection, interceptors...)
+}
+
+// Create returns a builder for creating a Connection entity.
+func (c *ConnectionClient) Create() *ConnectionCreate {
+	mutation := newConnectionMutation(c.config, OpCreate)
+	return &ConnectionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Connection entities.
+func (c *ConnectionClient) CreateBulk(builders ...*ConnectionCreate) *ConnectionCreateBulk {
+	return &ConnectionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ConnectionClient) MapCreateBulk(slice any, setFunc func(*ConnectionCreate, int)) *ConnectionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ConnectionCreateBulk{err: fmt.Errorf("calling to ConnectionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ConnectionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ConnectionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Connection.
+func (c *ConnectionClient) Update() *ConnectionUpdate {
+	mutation := newConnectionMutation(c.config, OpUpdate)
+	return &ConnectionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ConnectionClient) UpdateOne(_m *Connection) *ConnectionUpdateOne {
+	mutation := newConnectionMutation(c.config, OpUpdateOne, withConnection(_m))
+	return &ConnectionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ConnectionClient) UpdateOneID(id string) *ConnectionUpdateOne {
+	mutation := newConnectionMutation(c.config, OpUpdateOne, withConnectionID(id))
+	return &ConnectionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Connection.
+func (c *ConnectionClient) Delete() *ConnectionDelete {
+	mutation := newConnectionMutation(c.config, OpDelete)
+	return &ConnectionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ConnectionClient) DeleteOne(_m *Connection) *ConnectionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ConnectionClient) DeleteOneID(id string) *ConnectionDeleteOne {
+	builder := c.Delete().Where(connection.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ConnectionDeleteOne{builder}
+}
+
+// Query returns a query builder for Connection.
+func (c *ConnectionClient) Query() *ConnectionQuery {
+	return &ConnectionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeConnection},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Connection entity by its id.
+func (c *ConnectionClient) Get(ctx context.Context, id string) (*Connection, error) {
+	return c.Query().Where(connection.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ConnectionClient) GetX(ctx context.Context, id string) *Connection {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *ConnectionClient) Hooks() []Hook {
+	return c.hooks.Connection
+}
+
+// Interceptors returns the client interceptors.
+func (c *ConnectionClient) Interceptors() []Interceptor {
+	return c.inters.Connection
+}
+
+func (c *ConnectionClient) mutate(ctx context.Context, m *ConnectionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ConnectionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ConnectionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ConnectionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ConnectionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Connection mutation op: %q", m.Op())
 	}
 }
 
@@ -376,139 +509,6 @@ func (c *NocoDBBackupPolicyClient) mutate(ctx context.Context, m *NocoDBBackupPo
 		return (&NocoDBBackupPolicyDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown NocoDBBackupPolicy mutation op: %q", m.Op())
-	}
-}
-
-// NocoDBConnectionClient is a client for the NocoDBConnection schema.
-type NocoDBConnectionClient struct {
-	config
-}
-
-// NewNocoDBConnectionClient returns a client for the NocoDBConnection from the given config.
-func NewNocoDBConnectionClient(c config) *NocoDBConnectionClient {
-	return &NocoDBConnectionClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `nocodbconnection.Hooks(f(g(h())))`.
-func (c *NocoDBConnectionClient) Use(hooks ...Hook) {
-	c.hooks.NocoDBConnection = append(c.hooks.NocoDBConnection, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `nocodbconnection.Intercept(f(g(h())))`.
-func (c *NocoDBConnectionClient) Intercept(interceptors ...Interceptor) {
-	c.inters.NocoDBConnection = append(c.inters.NocoDBConnection, interceptors...)
-}
-
-// Create returns a builder for creating a NocoDBConnection entity.
-func (c *NocoDBConnectionClient) Create() *NocoDBConnectionCreate {
-	mutation := newNocoDBConnectionMutation(c.config, OpCreate)
-	return &NocoDBConnectionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of NocoDBConnection entities.
-func (c *NocoDBConnectionClient) CreateBulk(builders ...*NocoDBConnectionCreate) *NocoDBConnectionCreateBulk {
-	return &NocoDBConnectionCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *NocoDBConnectionClient) MapCreateBulk(slice any, setFunc func(*NocoDBConnectionCreate, int)) *NocoDBConnectionCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &NocoDBConnectionCreateBulk{err: fmt.Errorf("calling to NocoDBConnectionClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*NocoDBConnectionCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &NocoDBConnectionCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for NocoDBConnection.
-func (c *NocoDBConnectionClient) Update() *NocoDBConnectionUpdate {
-	mutation := newNocoDBConnectionMutation(c.config, OpUpdate)
-	return &NocoDBConnectionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *NocoDBConnectionClient) UpdateOne(_m *NocoDBConnection) *NocoDBConnectionUpdateOne {
-	mutation := newNocoDBConnectionMutation(c.config, OpUpdateOne, withNocoDBConnection(_m))
-	return &NocoDBConnectionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *NocoDBConnectionClient) UpdateOneID(id string) *NocoDBConnectionUpdateOne {
-	mutation := newNocoDBConnectionMutation(c.config, OpUpdateOne, withNocoDBConnectionID(id))
-	return &NocoDBConnectionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for NocoDBConnection.
-func (c *NocoDBConnectionClient) Delete() *NocoDBConnectionDelete {
-	mutation := newNocoDBConnectionMutation(c.config, OpDelete)
-	return &NocoDBConnectionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *NocoDBConnectionClient) DeleteOne(_m *NocoDBConnection) *NocoDBConnectionDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *NocoDBConnectionClient) DeleteOneID(id string) *NocoDBConnectionDeleteOne {
-	builder := c.Delete().Where(nocodbconnection.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &NocoDBConnectionDeleteOne{builder}
-}
-
-// Query returns a query builder for NocoDBConnection.
-func (c *NocoDBConnectionClient) Query() *NocoDBConnectionQuery {
-	return &NocoDBConnectionQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeNocoDBConnection},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a NocoDBConnection entity by its id.
-func (c *NocoDBConnectionClient) Get(ctx context.Context, id string) (*NocoDBConnection, error) {
-	return c.Query().Where(nocodbconnection.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *NocoDBConnectionClient) GetX(ctx context.Context, id string) *NocoDBConnection {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// Hooks returns the client hooks.
-func (c *NocoDBConnectionClient) Hooks() []Hook {
-	return c.hooks.NocoDBConnection
-}
-
-// Interceptors returns the client interceptors.
-func (c *NocoDBConnectionClient) Interceptors() []Interceptor {
-	return c.inters.NocoDBConnection
-}
-
-func (c *NocoDBConnectionClient) mutate(ctx context.Context, m *NocoDBConnectionMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&NocoDBConnectionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&NocoDBConnectionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&NocoDBConnectionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&NocoDBConnectionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown NocoDBConnection mutation op: %q", m.Op())
 	}
 }
 
@@ -1047,11 +1047,11 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		NocoDBBackupPolicy, NocoDBConnection, NocoDBSnapshot, OAuthState, Session,
+		Connection, NocoDBBackupPolicy, NocoDBSnapshot, OAuthState, Session,
 		User []ent.Hook
 	}
 	inters struct {
-		NocoDBBackupPolicy, NocoDBConnection, NocoDBSnapshot, OAuthState, Session,
+		Connection, NocoDBBackupPolicy, NocoDBSnapshot, OAuthState, Session,
 		User []ent.Interceptor
 	}
 )

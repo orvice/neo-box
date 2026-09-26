@@ -9,6 +9,18 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent"
 )
 
+// The ConnectionFunc type is an adapter to allow the use of ordinary
+// function as Connection mutator.
+type ConnectionFunc func(context.Context, *ent.ConnectionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ConnectionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ConnectionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ConnectionMutation", m)
+}
+
 // The NocoDBBackupPolicyFunc type is an adapter to allow the use of ordinary
 // function as NocoDBBackupPolicy mutator.
 type NocoDBBackupPolicyFunc func(context.Context, *ent.NocoDBBackupPolicyMutation) (ent.Value, error)
@@ -19,18 +31,6 @@ func (f NocoDBBackupPolicyFunc) Mutate(ctx context.Context, m ent.Mutation) (ent
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NocoDBBackupPolicyMutation", m)
-}
-
-// The NocoDBConnectionFunc type is an adapter to allow the use of ordinary
-// function as NocoDBConnection mutator.
-type NocoDBConnectionFunc func(context.Context, *ent.NocoDBConnectionMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f NocoDBConnectionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.NocoDBConnectionMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NocoDBConnectionMutation", m)
 }
 
 // The NocoDBSnapshotFunc type is an adapter to allow the use of ordinary

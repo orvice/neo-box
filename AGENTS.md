@@ -62,8 +62,13 @@ shadcn/ui + Connect-Web on the frontend.
 - `internal/repo/` — repository interfaces with ent/PostgreSQL
   implementations in `postgres/` subpackages. Repositories return domain
   types; generated ent types do not leave these packages.
+- `internal/connection/` — `Service` for Connections across Providers: seals
+  secrets, has the Provider verify settings, records health, runs the
+  Provider's `Cleanup` before delete. A Provider implements `Type`,
+  `Verify`, `Cleanup` (NocoDB's lives in `internal/backup/provider.go`).
+  Resources and scheduling stay per Provider (`docs/adr/0003`).
 - `internal/auth/provider/` — OAuth login providers (GitHub, Google) behind a
-  `Provider` interface and `Registry`.
+  `Provider` interface and `Registry`. Unrelated to connection Providers.
 - `internal/secretbox/` — AES-GCM for stored credentials (key from
   `crypto.encryption_key`).
 - `internal/blobstore/` — object storage: S3 (butterfly `store.s3`, selected
@@ -83,18 +88,26 @@ state single-use in `oauth_states`), `Me`, `Logout`, self-service
 and `user`. Sessions live in the `auth_sessions` table; expired rows are
 ignored by lookups and purged hourly.
 
-**NocoDB backups** (`proto/neobox/v1/nocodb.proto`, `NocoDBService`):
-Connections (URL + encrypted token, verified on save), live Base listing
-joined with policy + latest snapshot, `UpsertBackupPolicy`, async
-`CreateSnapshot` (poll `GetSnapshot`), `ListSnapshotRecords` for browsing,
-and `GET /api/nocodb/snapshots/:id/download` for the raw `.json.gz`. All
-scoped to the calling user.
+**Connections** (`proto/neobox/v1/connection.proto`, `ConnectionService`):
+list / get / create / update / delete / test for every Provider. Provider
+settings are typed oneofs (`NocoDBConnectionSettings` in, `...Config` out);
+secrets are write-only. Scoped to the calling user.
+
+**NocoDB backups** (`proto/neobox/v1/nocodb.proto`, `NocoDBService`): live
+Base listing joined with policy + latest snapshot, `UpsertBackupPolicy`,
+async `CreateSnapshot` (poll `GetSnapshot`), `ListSnapshotRecords` for
+browsing, and `GET /api/nocodb/snapshots/:id/download` for the raw
+`.json.gz`. `connection_id` must be the caller's NocoDB connection.
 
 **Frontend** (`front/`): `src/api/transport.ts` is the Connect transport
 (binary protobuf, Bearer interceptor, redirect to `/sign-in` on
 Unauthenticated). `src/api/*.ts` wrap generated clients with React Query
 hooks. `src/stores/auth-store.ts` (Zustand) holds token + user. Routes under
-`src/routes/_authenticated/` require a token.
+`src/routes/_authenticated/` require a token. Connections live under
+`/connections` (`?provider=` filters); `src/features/connections/` holds the
+Provider registry: `provider-info.ts` (key, label, icon; used by the sidebar)
+and `providers.ts` (each Provider's form, card summary, and detail page from
+its feature folder).
 
 ## Conventions
 
@@ -104,6 +117,10 @@ hooks. `src/stores/auth-store.ts` (Zustand) holds token + user. Routes under
   add storage tags to `.proto` files.
 - Every new Connect service: implement in `internal/application`, register in
   `internal/app/routes.go`, add a typed client + hooks in `front/src/api/`.
+- A new Provider: add its settings/config messages to the oneofs in
+  `connection.proto` (and a case in `internal/application/connection_service.go`),
+  implement `connection.Provider` and `Register` it in bootstrap, and add
+  entries to `provider-info.ts` and `providers.ts` in the frontend.
 - Frontend uses npm (`package-lock.json` is tracked); prettier config in
   `front/.prettierrc`.
 

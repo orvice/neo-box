@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"go.orx.me/apps/neo-box/internal/ent/connection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbsnapshot"
 	"go.orx.me/apps/neo-box/internal/ent/oauthstate"
 	"go.orx.me/apps/neo-box/internal/ent/schema"
@@ -14,6 +15,16 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	connectionFields := schema.Connection{}.Fields()
+	_ = connectionFields
+	// connectionDescStatus is the schema descriptor for status field.
+	connectionDescStatus := connectionFields[6].Descriptor()
+	// connection.DefaultStatus holds the default value on creation for the status field.
+	connection.DefaultStatus = connectionDescStatus.Default.(string)
+	// connectionDescStatusMessage is the schema descriptor for status_message field.
+	connectionDescStatusMessage := connectionFields[7].Descriptor()
+	// connection.DefaultStatusMessage holds the default value on creation for the status_message field.
+	connection.DefaultStatusMessage = connectionDescStatusMessage.Default.(string)
 	nocodbsnapshotFields := schema.NocoDBSnapshot{}.Fields()
 	_ = nocodbsnapshotFields
 	// nocodbsnapshotDescBaseTitle is the schema descriptor for base_title field.

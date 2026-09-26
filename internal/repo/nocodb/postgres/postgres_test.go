@@ -12,56 +12,6 @@ import (
 
 var t0 = time.Now().UTC().Truncate(time.Microsecond)
 
-func TestConnectionsAreOwnerScoped(t *testing.T) {
-	s := New(pgtest.NewClient(t))
-	ctx := context.Background()
-
-	c := &repo.Connection{ID: "c1", UserID: "u1", Name: "home", BaseURL: "https://noco", TokenCiphertext: "sealed", CreatedAt: t0, UpdatedAt: t0}
-	if err := s.CreateConnection(ctx, c); err != nil {
-		t.Fatalf("CreateConnection: %v", err)
-	}
-	if err := s.CreateConnection(ctx, &repo.Connection{ID: "c2", UserID: "u1", Name: "work", CreatedAt: t0.Add(time.Second), UpdatedAt: t0}); err != nil {
-		t.Fatalf("CreateConnection: %v", err)
-	}
-
-	got, err := s.GetConnection(ctx, "u1", "c1")
-	if err != nil || got.TokenCiphertext != "sealed" || !got.CreatedAt.Equal(t0) {
-		t.Fatalf("GetConnection = %+v, %v", got, err)
-	}
-	if _, err := s.GetConnection(ctx, "u2", "c1"); !errors.Is(err, repo.ErrNotFound) {
-		t.Fatalf("GetConnection(other user) = %v, want ErrNotFound", err)
-	}
-	if _, err := s.GetConnectionByID(ctx, "c1"); err != nil {
-		t.Fatalf("GetConnectionByID: %v", err)
-	}
-
-	list, err := s.ListConnections(ctx, "u1")
-	if err != nil || len(list) != 2 || list[0].ID != "c1" || list[1].ID != "c2" {
-		t.Fatalf("ListConnections = %+v, %v", list, err)
-	}
-
-	c.Name, c.UpdatedAt = "renamed", t0.Add(time.Minute)
-	if err := s.UpdateConnection(ctx, c); err != nil {
-		t.Fatalf("UpdateConnection: %v", err)
-	}
-	if got, _ = s.GetConnection(ctx, "u1", "c1"); got.Name != "renamed" {
-		t.Fatalf("name = %q, want renamed", got.Name)
-	}
-	if err := s.UpdateConnection(ctx, &repo.Connection{ID: "c1", UserID: "u2"}); !errors.Is(err, repo.ErrNotFound) {
-		t.Fatalf("UpdateConnection(other user) = %v, want ErrNotFound", err)
-	}
-
-	if err := s.DeleteConnection(ctx, "u2", "c1"); !errors.Is(err, repo.ErrNotFound) {
-		t.Fatalf("DeleteConnection(other user) = %v, want ErrNotFound", err)
-	}
-	if err := s.DeleteConnection(ctx, "u1", "c1"); err != nil {
-		t.Fatalf("DeleteConnection: %v", err)
-	}
-	if _, err := s.GetConnectionByID(ctx, "c1"); !errors.Is(err, repo.ErrNotFound) {
-		t.Fatalf("GetConnectionByID after delete = %v, want ErrNotFound", err)
-	}
-}
-
 func TestUpsertPolicy(t *testing.T) {
 	s := New(pgtest.NewClient(t))
 	ctx := context.Background()

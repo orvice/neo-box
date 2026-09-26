@@ -23,8 +23,8 @@ import (
 
 	"go.orx.me/apps/neo-box/internal/blobstore"
 	"go.orx.me/apps/neo-box/internal/nocodb"
+	connrepo "go.orx.me/apps/neo-box/internal/repo/connection"
 	repo "go.orx.me/apps/neo-box/internal/repo/nocodb"
-	"go.orx.me/apps/neo-box/internal/secretbox"
 	"go.orx.me/apps/neo-box/internal/snapshot"
 )
 
@@ -32,6 +32,16 @@ import (
 type NocoDB interface {
 	snapshot.API
 	ListBases(ctx context.Context) ([]nocodb.Base, error)
+}
+
+// Connections is what the manager needs from the generic connection
+// service (*connection.Service).
+type Connections interface {
+	GetByID(ctx context.Context, id string) (*connrepo.Connection, error)
+	// Open decodes the connection's config and decrypted secret.
+	Open(c *connrepo.Connection, config, secret any) error
+	// RecordStatus records the connection's health after background work.
+	RecordStatus(ctx context.Context, id string, err error)
 }
 
 // ErrSnapshotInProgress is returned when the Base already has a pending or
@@ -69,10 +79,10 @@ func (c Config) withDefaults() Config {
 
 // Manager owns snapshot execution and scheduling.
 type Manager struct {
-	cfg    Config
-	repo   repo.Repository
-	blobs  blobstore.Store
-	cipher *secretbox.Cipher
+	cfg   Config
+	repo  repo.Repository
+	conns Connections
+	blobs blobstore.Store
 
 	queue chan string
 	wg    sync.WaitGroup
@@ -88,13 +98,13 @@ type Manager struct {
 }
 
 // New builds a manager. Call Start before use.
-func New(cfg Config, r repo.Repository, blobs blobstore.Store, cipher *secretbox.Cipher) *Manager {
+func New(cfg Config, r repo.Repository, conns Connections, blobs blobstore.Store) *Manager {
 	cfg = cfg.withDefaults()
 	m := &Manager{
 		cfg:      cfg,
 		repo:     r,
+		conns:    conns,
 		blobs:    blobs,
-		cipher:   cipher,
 		queue:    make(chan string, cfg.QueueSize),
 		entries:  make(map[string]cron.EntryID),
 		inFlight: make(map[string]string),
@@ -196,7 +206,7 @@ func (m *Manager) ReloadSchedules(ctx context.Context) error {
 func (m *Manager) runScheduled(p *repo.Policy) {
 	ctx := context.Background()
 	logger := log.FromContext(ctx)
-	conn, err := m.repo.GetConnectionByID(ctx, p.ConnectionID)
+	conn, err := m.conns.GetByID(ctx, p.ConnectionID)
 	if err != nil {
 		logger.Warn("scheduled snapshot skipped: connection lookup failed", "connection_id", p.ConnectionID, "err", err)
 		return
@@ -212,17 +222,26 @@ func (m *Manager) NewClient(baseURL, token string) (NocoDB, error) {
 }
 
 // Client returns a NocoDB client for a stored connection.
-func (m *Manager) Client(conn *repo.Connection) (NocoDB, error) {
-	token, err := m.cipher.Decrypt(conn.TokenCiphertext)
-	if err != nil {
-		return nil, fmt.Errorf("decrypt api token: %w", err)
+func (m *Manager) Client(conn *connrepo.Connection) (NocoDB, error) {
+	api, _, err := m.open(conn)
+	return api, err
+}
+
+func (m *Manager) open(conn *connrepo.Connection) (NocoDB, nocodb.ConnectionConfig, error) {
+	var (
+		cfg    nocodb.ConnectionConfig
+		secret nocodb.ConnectionSecret
+	)
+	if err := m.conns.Open(conn, &cfg, &secret); err != nil {
+		return nil, cfg, err
 	}
-	return m.newClient(conn.BaseURL, string(token))
+	api, err := m.newClient(cfg.BaseURL, secret.APIToken)
+	return api, cfg, err
 }
 
 // Enqueue records a pending snapshot and queues it. baseTitle may be empty;
 // it is filled in when the run starts.
-func (m *Manager) Enqueue(ctx context.Context, conn *repo.Connection, baseID, baseTitle string, trigger repo.SnapshotTrigger) (*repo.Snapshot, error) {
+func (m *Manager) Enqueue(ctx context.Context, conn *connrepo.Connection, baseID, baseTitle string, trigger repo.SnapshotTrigger) (*repo.Snapshot, error) {
 	key := policyKey(conn.ID, baseID)
 	snap := &repo.Snapshot{
 		ID:           uuid.NewString(),
@@ -303,6 +322,11 @@ func (m *Manager) execute(parent context.Context, snapshotID string) {
 	// Persist the terminal state even if the run context expired.
 	finishCtx, finishCancel := context.WithTimeout(context.WithoutCancel(parent), 30*time.Second)
 	defer finishCancel()
+	// A run proves the token works; a 401/403 proves it doesn't. Other
+	// failures say nothing about the connection's health.
+	if runErr == nil || nocodb.IsAuthError(runErr) {
+		m.conns.RecordStatus(finishCtx, snap.ConnectionID, runErr)
+	}
 	snap.FinishedAt = m.now().UTC()
 	snap.Progress = ""
 	if runErr != nil {
@@ -326,11 +350,11 @@ func (m *Manager) execute(parent context.Context, snapshotID string) {
 }
 
 func (m *Manager) capture(ctx context.Context, snap *repo.Snapshot) error {
-	conn, err := m.repo.GetConnectionByID(ctx, snap.ConnectionID)
+	conn, err := m.conns.GetByID(ctx, snap.ConnectionID)
 	if err != nil {
 		return fmt.Errorf("load connection: %w", err)
 	}
-	api, err := m.Client(conn)
+	api, cfg, err := m.open(conn)
 	if err != nil {
 		return err
 	}
@@ -355,7 +379,7 @@ func (m *Manager) capture(ctx context.Context, snap *repo.Snapshot) error {
 		progressMu   sync.Mutex
 		lastProgress time.Time
 	)
-	stats, err := snapshot.Build(ctx, api, snapshot.Source{BaseURL: conn.BaseURL, BaseID: snap.BaseID}, tmp, snapshot.Options{
+	stats, err := snapshot.Build(ctx, api, snapshot.Source{BaseURL: cfg.BaseURL, BaseID: snap.BaseID}, tmp, snapshot.Options{
 		PageSize: m.cfg.PageSize,
 		// Called from concurrent link lookups; throttled because the UI
 		// only polls every few seconds.
@@ -407,7 +431,7 @@ func ObjectKey(s *repo.Snapshot) string {
 // applyRetention deletes the oldest succeeded scheduled snapshots beyond the
 // policy's retention count.
 func (m *Manager) applyRetention(ctx context.Context, connectionID, baseID string) error {
-	conn, err := m.repo.GetConnectionByID(ctx, connectionID)
+	conn, err := m.conns.GetByID(ctx, connectionID)
 	if err != nil {
 		return err
 	}

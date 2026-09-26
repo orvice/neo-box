@@ -13,254 +13,7 @@ import type { JsonObject, Message } from "@bufbuild/protobuf";
  * Describes the file neobox/v1/nocodb.proto.
  */
 export const file_neobox_v1_nocodb: GenFile = /*@__PURE__*/
-  fileDesc("ChZuZW9ib3gvdjEvbm9jb2RiLnByb3RvEgluZW9ib3gudjEisQEKEE5vY29EQkNvbm5lY3Rpb24SCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIQCghiYXNlX3VybBgDIAEoCRIRCgloYXNfdG9rZW4YBCABKAgSLgoKY3JlYXRlZF9hdBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAibQodQ3JlYXRlTm9jb0RCQ29ubmVjdGlvblJlcXVlc3QSFQoEbmFtZRgBIAEoCUIH+kIEcgIQARIZCghiYXNlX3VybBgCIAEoCUIH+kIEcgIQARIaCglhcGlfdG9rZW4YAyABKAlCB/pCBHICEAEiUQoeQ3JlYXRlTm9jb0RCQ29ubmVjdGlvblJlc3BvbnNlEi8KCmNvbm5lY3Rpb24YASABKAsyGy5uZW9ib3gudjEuTm9jb0RCQ29ubmVjdGlvbiIeChxMaXN0Tm9jb0RCQ29ubmVjdGlvbnNSZXF1ZXN0IlEKHUxpc3ROb2NvREJDb25uZWN0aW9uc1Jlc3BvbnNlEjAKC2Nvbm5lY3Rpb25zGAEgAygLMhsubmVvYm94LnYxLk5vY29EQkNvbm5lY3Rpb24ijAEKHVVwZGF0ZU5vY29EQkNvbm5lY3Rpb25SZXF1ZXN0EhMKAmlkGAEgASgJQgf6QgRyAhABEhUKBG5hbWUYAiABKAlCB/pCBHICEAESGQoIYmFzZV91cmwYAyABKAlCB/pCBHICEAESFgoJYXBpX3Rva2VuGAQgASgJSACIAQFCDAoKX2FwaV90b2tlbiJRCh5VcGRhdGVOb2NvREJDb25uZWN0aW9uUmVzcG9uc2USLwoKY29ubmVjdGlvbhgBIAEoCzIbLm5lb2JveC52MS5Ob2NvREJDb25uZWN0aW9uIjQKHURlbGV0ZU5vY29EQkNvbm5lY3Rpb25SZXF1ZXN0EhMKAmlkGAEgASgJQgf6QgRyAhABIiAKHkRlbGV0ZU5vY29EQkNvbm5lY3Rpb25SZXNwb25zZSIyChtUZXN0Tm9jb0RCQ29ubmVjdGlvblJlcXVlc3QSEwoCaWQYASABKAlCB/pCBHICEAEiTQocVGVzdE5vY29EQkNvbm5lY3Rpb25SZXNwb25zZRIKCgJvaxgBIAEoCBINCgVlcnJvchgCIAEoCRISCgpiYXNlX2NvdW50GAMgASgFIskBCgxCYWNrdXBQb2xpY3kSFQoNY29ubmVjdGlvbl9pZBgBIAEoCRIPCgdiYXNlX2lkGAIgASgJEg8KB2VuYWJsZWQYAyABKAgSDAoEY3JvbhgEIAEoCRIRCglyZXRlbnRpb24YBSABKAUSLgoKdXBkYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLwoLbmV4dF9ydW5fYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIn4KCk5vY29EQkJhc2USCgoCaWQYASABKAkSDQoFdGl0bGUYAiABKAkSJwoGcG9saWN5GAMgASgLMhcubmVvYm94LnYxLkJhY2t1cFBvbGljeRIsCg9sYXRlc3Rfc25hcHNob3QYBCABKAsyEy5uZW9ib3gudjEuU25hcHNob3QiOAoWTGlzdE5vY29EQkJhc2VzUmVxdWVzdBIeCg1jb25uZWN0aW9uX2lkGAEgASgJQgf6QgRyAhABIj8KF0xpc3ROb2NvREJCYXNlc1Jlc3BvbnNlEiQKBWJhc2VzGAEgAygLMhUubmVvYm94LnYxLk5vY29EQkJhc2UikAEKGVVwc2VydEJhY2t1cFBvbGljeVJlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQARIYCgdiYXNlX2lkGAIgASgJQgf6QgRyAhABEg8KB2VuYWJsZWQYAyABKAgSDAoEY3JvbhgEIAEoCRIaCglyZXRlbnRpb24YBSABKAVCB/pCBBoCKAAiRQoaVXBzZXJ0QmFja3VwUG9saWN5UmVzcG9uc2USJwoGcG9saWN5GAEgASgLMhcubmVvYm94LnYxLkJhY2t1cFBvbGljeSJpCg1TbmFwc2hvdFRhYmxlEgoKAmlkGAEgASgJEg0KBXRpdGxlGAIgASgJEhQKDHJlY29yZF9jb3VudBgDIAEoAxITCgtmaWVsZF9jb3VudBgEIAEoBRISCgpsaW5rX2NvdW50GAUgASgDIsQDCghTbmFwc2hvdBIKCgJpZBgBIAEoCRIVCg1jb25uZWN0aW9uX2lkGAIgASgJEg8KB2Jhc2VfaWQYAyABKAkSEgoKYmFzZV90aXRsZRgEIAEoCRIpCgZzdGF0dXMYBSABKA4yGS5uZW9ib3gudjEuU25hcHNob3RTdGF0dXMSKwoHdHJpZ2dlchgGIAEoDjIaLm5lb2JveC52MS5TbmFwc2hvdFRyaWdnZXISDQoFZXJyb3IYByABKAkSLgoKY3JlYXRlZF9hdBgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKc3RhcnRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLwoLZmluaXNoZWRfYXQYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhIKCnNpemVfYnl0ZXMYCyABKAMSFAoMcmVjb3JkX2NvdW50GAwgASgDEhIKCmxpbmtfY291bnQYDSABKAMSKAoGdGFibGVzGA4gAygLMhgubmVvYm94LnYxLlNuYXBzaG90VGFibGUSEAoIcHJvZ3Jlc3MYDyABKAkiUQoVQ3JlYXRlU25hcHNob3RSZXF1ZXN0Eh4KDWNvbm5lY3Rpb25faWQYASABKAlCB/pCBHICEAESGAoHYmFzZV9pZBgCIAEoCUIH+kIEcgIQASI/ChZDcmVhdGVTbmFwc2hvdFJlc3BvbnNlEiUKCHNuYXBzaG90GAEgASgLMhMubmVvYm94LnYxLlNuYXBzaG90Ik0KFExpc3RTbmFwc2hvdHNSZXF1ZXN0EhUKDWNvbm5lY3Rpb25faWQYASABKAkSDwoHYmFzZV9pZBgCIAEoCRINCgVsaW1pdBgDIAEoBSI/ChVMaXN0U25hcHNob3RzUmVzcG9uc2USJgoJc25hcHNob3RzGAEgAygLMhMubmVvYm94LnYxLlNuYXBzaG90IikKEkdldFNuYXBzaG90UmVxdWVzdBITCgJpZBgBIAEoCUIH+kIEcgIQASI8ChNHZXRTbmFwc2hvdFJlc3BvbnNlEiUKCHNuYXBzaG90GAEgASgLMhMubmVvYm94LnYxLlNuYXBzaG90IiwKFURlbGV0ZVNuYXBzaG90UmVxdWVzdBITCgJpZBgBIAEoCUIH+kIEcgIQASIYChZEZWxldGVTbmFwc2hvdFJlc3BvbnNlIjgKDVNuYXBzaG90RmllbGQSCgoCaWQYASABKAkSDQoFdGl0bGUYAiABKAkSDAoEdHlwZRgDIAEoCSJ2ChpMaXN0U25hcHNob3RSZWNvcmRzUmVxdWVzdBIcCgtzbmFwc2hvdF9pZBgBIAEoCUIH+kIEcgIQARIZCgh0YWJsZV9pZBgCIAEoCUIH+kIEcgIQARIMCgRwYWdlGAMgASgFEhEKCXBhZ2Vfc2l6ZRgEIAEoBSKAAQobTGlzdFNuYXBzaG90UmVjb3Jkc1Jlc3BvbnNlEigKBmZpZWxkcxgBIAMoCzIYLm5lb2JveC52MS5TbmFwc2hvdEZpZWxkEigKB3JlY29yZHMYAiADKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0Eg0KBXRvdGFsGAMgASgDKqYBCg5TbmFwc2hvdFN0YXR1cxIfChtTTkFQU0hPVF9TVEFUVVNfVU5TUEVDSUZJRUQQABIbChdTTkFQU0hPVF9TVEFUVVNfUEVORElORxABEhsKF1NOQVBTSE9UX1NUQVRVU19SVU5OSU5HEAISHQoZU05BUFNIT1RfU1RBVFVTX1NVQ0NFRURFRBADEhoKFlNOQVBTSE9UX1NUQVRVU19GQUlMRUQQBCpwCg9TbmFwc2hvdFRyaWdnZXISIAocU05BUFNIT1RfVFJJR0dFUl9VTlNQRUNJRklFRBAAEhsKF1NOQVBTSE9UX1RSSUdHRVJfTUFOVUFMEAESHgoaU05BUFNIT1RfVFJJR0dFUl9TQ0hFRFVMRUQQAjKkCQoNTm9jb0RCU2VydmljZRJtChZDcmVhdGVOb2NvREJDb25uZWN0aW9uEigubmVvYm94LnYxLkNyZWF0ZU5vY29EQkNvbm5lY3Rpb25SZXF1ZXN0GikubmVvYm94LnYxLkNyZWF0ZU5vY29EQkNvbm5lY3Rpb25SZXNwb25zZRJqChVMaXN0Tm9jb0RCQ29ubmVjdGlvbnMSJy5uZW9ib3gudjEuTGlzdE5vY29EQkNvbm5lY3Rpb25zUmVxdWVzdBooLm5lb2JveC52MS5MaXN0Tm9jb0RCQ29ubmVjdGlvbnNSZXNwb25zZRJtChZVcGRhdGVOb2NvREJDb25uZWN0aW9uEigubmVvYm94LnYxLlVwZGF0ZU5vY29EQkNvbm5lY3Rpb25SZXF1ZXN0GikubmVvYm94LnYxLlVwZGF0ZU5vY29EQkNvbm5lY3Rpb25SZXNwb25zZRJtChZEZWxldGVOb2NvREJDb25uZWN0aW9uEigubmVvYm94LnYxLkRlbGV0ZU5vY29EQkNvbm5lY3Rpb25SZXF1ZXN0GikubmVvYm94LnYxLkRlbGV0ZU5vY29EQkNvbm5lY3Rpb25SZXNwb25zZRJnChRUZXN0Tm9jb0RCQ29ubmVjdGlvbhImLm5lb2JveC52MS5UZXN0Tm9jb0RCQ29ubmVjdGlvblJlcXVlc3QaJy5uZW9ib3gudjEuVGVzdE5vY29EQkNvbm5lY3Rpb25SZXNwb25zZRJYCg9MaXN0Tm9jb0RCQmFzZXMSIS5uZW9ib3gudjEuTGlzdE5vY29EQkJhc2VzUmVxdWVzdBoiLm5lb2JveC52MS5MaXN0Tm9jb0RCQmFzZXNSZXNwb25zZRJhChJVcHNlcnRCYWNrdXBQb2xpY3kSJC5uZW9ib3gudjEuVXBzZXJ0QmFja3VwUG9saWN5UmVxdWVzdBolLm5lb2JveC52MS5VcHNlcnRCYWNrdXBQb2xpY3lSZXNwb25zZRJVCg5DcmVhdGVTbmFwc2hvdBIgLm5lb2JveC52MS5DcmVhdGVTbmFwc2hvdFJlcXVlc3QaIS5uZW9ib3gudjEuQ3JlYXRlU25hcHNob3RSZXNwb25zZRJSCg1MaXN0U25hcHNob3RzEh8ubmVvYm94LnYxLkxpc3RTbmFwc2hvdHNSZXF1ZXN0GiAubmVvYm94LnYxLkxpc3RTbmFwc2hvdHNSZXNwb25zZRJMCgtHZXRTbmFwc2hvdBIdLm5lb2JveC52MS5HZXRTbmFwc2hvdFJlcXVlc3QaHi5uZW9ib3gudjEuR2V0U25hcHNob3RSZXNwb25zZRJVCg5EZWxldGVTbmFwc2hvdBIgLm5lb2JveC52MS5EZWxldGVTbmFwc2hvdFJlcXVlc3QaIS5uZW9ib3gudjEuRGVsZXRlU25hcHNob3RSZXNwb25zZRJkChNMaXN0U25hcHNob3RSZWNvcmRzEiUubmVvYm94LnYxLkxpc3RTbmFwc2hvdFJlY29yZHNSZXF1ZXN0GiYubmVvYm94LnYxLkxpc3RTbmFwc2hvdFJlY29yZHNSZXNwb25zZUI1WjNnby5vcngubWUvYXBwcy9uZW8tYm94L3BrZy9wcm90by9uZW9ib3gvdjE7bmVvYm94djFiBnByb3RvMw", [file_google_protobuf_struct, file_google_protobuf_timestamp, file_validate_validate]);
-
-/**
- * @generated from message neobox.v1.NocoDBConnection
- */
-export type NocoDBConnection = Message<"neobox.v1.NocoDBConnection"> & {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id: string;
-
-  /**
-   * @generated from field: string name = 2;
-   */
-  name: string;
-
-  /**
-   * Base URL of the NocoDB instance, e.g. https://nocodb.example.com.
-   *
-   * @generated from field: string base_url = 3;
-   */
-  baseUrl: string;
-
-  /**
-   * Whether an API token is stored. The token itself is never returned.
-   *
-   * @generated from field: bool has_token = 4;
-   */
-  hasToken: boolean;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp created_at = 5;
-   */
-  createdAt?: Timestamp;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp updated_at = 6;
-   */
-  updatedAt?: Timestamp;
-};
-
-/**
- * Describes the message neobox.v1.NocoDBConnection.
- * Use `create(NocoDBConnectionSchema)` to create a new message.
- */
-export const NocoDBConnectionSchema: GenMessage<NocoDBConnection> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 0);
-
-/**
- * @generated from message neobox.v1.CreateNocoDBConnectionRequest
- */
-export type CreateNocoDBConnectionRequest = Message<"neobox.v1.CreateNocoDBConnectionRequest"> & {
-  /**
-   * @generated from field: string name = 1;
-   */
-  name: string;
-
-  /**
-   * @generated from field: string base_url = 2;
-   */
-  baseUrl: string;
-
-  /**
-   * @generated from field: string api_token = 3;
-   */
-  apiToken: string;
-};
-
-/**
- * Describes the message neobox.v1.CreateNocoDBConnectionRequest.
- * Use `create(CreateNocoDBConnectionRequestSchema)` to create a new message.
- */
-export const CreateNocoDBConnectionRequestSchema: GenMessage<CreateNocoDBConnectionRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 1);
-
-/**
- * @generated from message neobox.v1.CreateNocoDBConnectionResponse
- */
-export type CreateNocoDBConnectionResponse = Message<"neobox.v1.CreateNocoDBConnectionResponse"> & {
-  /**
-   * @generated from field: neobox.v1.NocoDBConnection connection = 1;
-   */
-  connection?: NocoDBConnection;
-};
-
-/**
- * Describes the message neobox.v1.CreateNocoDBConnectionResponse.
- * Use `create(CreateNocoDBConnectionResponseSchema)` to create a new message.
- */
-export const CreateNocoDBConnectionResponseSchema: GenMessage<CreateNocoDBConnectionResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 2);
-
-/**
- * @generated from message neobox.v1.ListNocoDBConnectionsRequest
- */
-export type ListNocoDBConnectionsRequest = Message<"neobox.v1.ListNocoDBConnectionsRequest"> & {
-};
-
-/**
- * Describes the message neobox.v1.ListNocoDBConnectionsRequest.
- * Use `create(ListNocoDBConnectionsRequestSchema)` to create a new message.
- */
-export const ListNocoDBConnectionsRequestSchema: GenMessage<ListNocoDBConnectionsRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 3);
-
-/**
- * @generated from message neobox.v1.ListNocoDBConnectionsResponse
- */
-export type ListNocoDBConnectionsResponse = Message<"neobox.v1.ListNocoDBConnectionsResponse"> & {
-  /**
-   * @generated from field: repeated neobox.v1.NocoDBConnection connections = 1;
-   */
-  connections: NocoDBConnection[];
-};
-
-/**
- * Describes the message neobox.v1.ListNocoDBConnectionsResponse.
- * Use `create(ListNocoDBConnectionsResponseSchema)` to create a new message.
- */
-export const ListNocoDBConnectionsResponseSchema: GenMessage<ListNocoDBConnectionsResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 4);
-
-/**
- * @generated from message neobox.v1.UpdateNocoDBConnectionRequest
- */
-export type UpdateNocoDBConnectionRequest = Message<"neobox.v1.UpdateNocoDBConnectionRequest"> & {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id: string;
-
-  /**
-   * @generated from field: string name = 2;
-   */
-  name: string;
-
-  /**
-   * @generated from field: string base_url = 3;
-   */
-  baseUrl: string;
-
-  /**
-   * When unset the stored token is kept.
-   *
-   * @generated from field: optional string api_token = 4;
-   */
-  apiToken?: string;
-};
-
-/**
- * Describes the message neobox.v1.UpdateNocoDBConnectionRequest.
- * Use `create(UpdateNocoDBConnectionRequestSchema)` to create a new message.
- */
-export const UpdateNocoDBConnectionRequestSchema: GenMessage<UpdateNocoDBConnectionRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 5);
-
-/**
- * @generated from message neobox.v1.UpdateNocoDBConnectionResponse
- */
-export type UpdateNocoDBConnectionResponse = Message<"neobox.v1.UpdateNocoDBConnectionResponse"> & {
-  /**
-   * @generated from field: neobox.v1.NocoDBConnection connection = 1;
-   */
-  connection?: NocoDBConnection;
-};
-
-/**
- * Describes the message neobox.v1.UpdateNocoDBConnectionResponse.
- * Use `create(UpdateNocoDBConnectionResponseSchema)` to create a new message.
- */
-export const UpdateNocoDBConnectionResponseSchema: GenMessage<UpdateNocoDBConnectionResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 6);
-
-/**
- * @generated from message neobox.v1.DeleteNocoDBConnectionRequest
- */
-export type DeleteNocoDBConnectionRequest = Message<"neobox.v1.DeleteNocoDBConnectionRequest"> & {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id: string;
-};
-
-/**
- * Describes the message neobox.v1.DeleteNocoDBConnectionRequest.
- * Use `create(DeleteNocoDBConnectionRequestSchema)` to create a new message.
- */
-export const DeleteNocoDBConnectionRequestSchema: GenMessage<DeleteNocoDBConnectionRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 7);
-
-/**
- * @generated from message neobox.v1.DeleteNocoDBConnectionResponse
- */
-export type DeleteNocoDBConnectionResponse = Message<"neobox.v1.DeleteNocoDBConnectionResponse"> & {
-};
-
-/**
- * Describes the message neobox.v1.DeleteNocoDBConnectionResponse.
- * Use `create(DeleteNocoDBConnectionResponseSchema)` to create a new message.
- */
-export const DeleteNocoDBConnectionResponseSchema: GenMessage<DeleteNocoDBConnectionResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 8);
-
-/**
- * @generated from message neobox.v1.TestNocoDBConnectionRequest
- */
-export type TestNocoDBConnectionRequest = Message<"neobox.v1.TestNocoDBConnectionRequest"> & {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id: string;
-};
-
-/**
- * Describes the message neobox.v1.TestNocoDBConnectionRequest.
- * Use `create(TestNocoDBConnectionRequestSchema)` to create a new message.
- */
-export const TestNocoDBConnectionRequestSchema: GenMessage<TestNocoDBConnectionRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 9);
-
-/**
- * @generated from message neobox.v1.TestNocoDBConnectionResponse
- */
-export type TestNocoDBConnectionResponse = Message<"neobox.v1.TestNocoDBConnectionResponse"> & {
-  /**
-   * @generated from field: bool ok = 1;
-   */
-  ok: boolean;
-
-  /**
-   * Error detail when ok is false.
-   *
-   * @generated from field: string error = 2;
-   */
-  error: string;
-
-  /**
-   * @generated from field: int32 base_count = 3;
-   */
-  baseCount: number;
-};
-
-/**
- * Describes the message neobox.v1.TestNocoDBConnectionResponse.
- * Use `create(TestNocoDBConnectionResponseSchema)` to create a new message.
- */
-export const TestNocoDBConnectionResponseSchema: GenMessage<TestNocoDBConnectionResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 10);
+  fileDesc("ChZuZW9ib3gvdjEvbm9jb2RiLnByb3RvEgluZW9ib3gudjEiyQEKDEJhY2t1cFBvbGljeRIVCg1jb25uZWN0aW9uX2lkGAEgASgJEg8KB2Jhc2VfaWQYAiABKAkSDwoHZW5hYmxlZBgDIAEoCBIMCgRjcm9uGAQgASgJEhEKCXJldGVudGlvbhgFIAEoBRIuCgp1cGRhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIvCgtuZXh0X3J1bl9hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAifgoKTm9jb0RCQmFzZRIKCgJpZBgBIAEoCRINCgV0aXRsZRgCIAEoCRInCgZwb2xpY3kYAyABKAsyFy5uZW9ib3gudjEuQmFja3VwUG9saWN5EiwKD2xhdGVzdF9zbmFwc2hvdBgEIAEoCzITLm5lb2JveC52MS5TbmFwc2hvdCI4ChZMaXN0Tm9jb0RCQmFzZXNSZXF1ZXN0Eh4KDWNvbm5lY3Rpb25faWQYASABKAlCB/pCBHICEAEiPwoXTGlzdE5vY29EQkJhc2VzUmVzcG9uc2USJAoFYmFzZXMYASADKAsyFS5uZW9ib3gudjEuTm9jb0RCQmFzZSKQAQoZVXBzZXJ0QmFja3VwUG9saWN5UmVxdWVzdBIeCg1jb25uZWN0aW9uX2lkGAEgASgJQgf6QgRyAhABEhgKB2Jhc2VfaWQYAiABKAlCB/pCBHICEAESDwoHZW5hYmxlZBgDIAEoCBIMCgRjcm9uGAQgASgJEhoKCXJldGVudGlvbhgFIAEoBUIH+kIEGgIoACJFChpVcHNlcnRCYWNrdXBQb2xpY3lSZXNwb25zZRInCgZwb2xpY3kYASABKAsyFy5uZW9ib3gudjEuQmFja3VwUG9saWN5ImkKDVNuYXBzaG90VGFibGUSCgoCaWQYASABKAkSDQoFdGl0bGUYAiABKAkSFAoMcmVjb3JkX2NvdW50GAMgASgDEhMKC2ZpZWxkX2NvdW50GAQgASgFEhIKCmxpbmtfY291bnQYBSABKAMixAMKCFNuYXBzaG90EgoKAmlkGAEgASgJEhUKDWNvbm5lY3Rpb25faWQYAiABKAkSDwoHYmFzZV9pZBgDIAEoCRISCgpiYXNlX3RpdGxlGAQgASgJEikKBnN0YXR1cxgFIAEoDjIZLm5lb2JveC52MS5TbmFwc2hvdFN0YXR1cxIrCgd0cmlnZ2VyGAYgASgOMhoubmVvYm94LnYxLlNuYXBzaG90VHJpZ2dlchINCgVlcnJvchgHIAEoCRIuCgpjcmVhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgpzdGFydGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIvCgtmaW5pc2hlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEgoKc2l6ZV9ieXRlcxgLIAEoAxIUCgxyZWNvcmRfY291bnQYDCABKAMSEgoKbGlua19jb3VudBgNIAEoAxIoCgZ0YWJsZXMYDiADKAsyGC5uZW9ib3gudjEuU25hcHNob3RUYWJsZRIQCghwcm9ncmVzcxgPIAEoCSJRChVDcmVhdGVTbmFwc2hvdFJlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQARIYCgdiYXNlX2lkGAIgASgJQgf6QgRyAhABIj8KFkNyZWF0ZVNuYXBzaG90UmVzcG9uc2USJQoIc25hcHNob3QYASABKAsyEy5uZW9ib3gudjEuU25hcHNob3QiTQoUTGlzdFNuYXBzaG90c1JlcXVlc3QSFQoNY29ubmVjdGlvbl9pZBgBIAEoCRIPCgdiYXNlX2lkGAIgASgJEg0KBWxpbWl0GAMgASgFIj8KFUxpc3RTbmFwc2hvdHNSZXNwb25zZRImCglzbmFwc2hvdHMYASADKAsyEy5uZW9ib3gudjEuU25hcHNob3QiKQoSR2V0U25hcHNob3RSZXF1ZXN0EhMKAmlkGAEgASgJQgf6QgRyAhABIjwKE0dldFNuYXBzaG90UmVzcG9uc2USJQoIc25hcHNob3QYASABKAsyEy5uZW9ib3gudjEuU25hcHNob3QiLAoVRGVsZXRlU25hcHNob3RSZXF1ZXN0EhMKAmlkGAEgASgJQgf6QgRyAhABIhgKFkRlbGV0ZVNuYXBzaG90UmVzcG9uc2UiOAoNU25hcHNob3RGaWVsZBIKCgJpZBgBIAEoCRINCgV0aXRsZRgCIAEoCRIMCgR0eXBlGAMgASgJInYKGkxpc3RTbmFwc2hvdFJlY29yZHNSZXF1ZXN0EhwKC3NuYXBzaG90X2lkGAEgASgJQgf6QgRyAhABEhkKCHRhYmxlX2lkGAIgASgJQgf6QgRyAhABEgwKBHBhZ2UYAyABKAUSEQoJcGFnZV9zaXplGAQgASgFIoABChtMaXN0U25hcHNob3RSZWNvcmRzUmVzcG9uc2USKAoGZmllbGRzGAEgAygLMhgubmVvYm94LnYxLlNuYXBzaG90RmllbGQSKAoHcmVjb3JkcxgCIAMoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSDQoFdG90YWwYAyABKAMqpgEKDlNuYXBzaG90U3RhdHVzEh8KG1NOQVBTSE9UX1NUQVRVU19VTlNQRUNJRklFRBAAEhsKF1NOQVBTSE9UX1NUQVRVU19QRU5ESU5HEAESGwoXU05BUFNIT1RfU1RBVFVTX1JVTk5JTkcQAhIdChlTTkFQU0hPVF9TVEFUVVNfU1VDQ0VFREVEEAMSGgoWU05BUFNIT1RfU1RBVFVTX0ZBSUxFRBAEKnAKD1NuYXBzaG90VHJpZ2dlchIgChxTTkFQU0hPVF9UUklHR0VSX1VOU1BFQ0lGSUVEEAASGwoXU05BUFNIT1RfVFJJR0dFUl9NQU5VQUwQARIeChpTTkFQU0hPVF9UUklHR0VSX1NDSEVEVUxFRBACMoIFCg1Ob2NvREJTZXJ2aWNlElgKD0xpc3ROb2NvREJCYXNlcxIhLm5lb2JveC52MS5MaXN0Tm9jb0RCQmFzZXNSZXF1ZXN0GiIubmVvYm94LnYxLkxpc3ROb2NvREJCYXNlc1Jlc3BvbnNlEmEKElVwc2VydEJhY2t1cFBvbGljeRIkLm5lb2JveC52MS5VcHNlcnRCYWNrdXBQb2xpY3lSZXF1ZXN0GiUubmVvYm94LnYxLlVwc2VydEJhY2t1cFBvbGljeVJlc3BvbnNlElUKDkNyZWF0ZVNuYXBzaG90EiAubmVvYm94LnYxLkNyZWF0ZVNuYXBzaG90UmVxdWVzdBohLm5lb2JveC52MS5DcmVhdGVTbmFwc2hvdFJlc3BvbnNlElIKDUxpc3RTbmFwc2hvdHMSHy5uZW9ib3gudjEuTGlzdFNuYXBzaG90c1JlcXVlc3QaIC5uZW9ib3gudjEuTGlzdFNuYXBzaG90c1Jlc3BvbnNlEkwKC0dldFNuYXBzaG90Eh0ubmVvYm94LnYxLkdldFNuYXBzaG90UmVxdWVzdBoeLm5lb2JveC52MS5HZXRTbmFwc2hvdFJlc3BvbnNlElUKDkRlbGV0ZVNuYXBzaG90EiAubmVvYm94LnYxLkRlbGV0ZVNuYXBzaG90UmVxdWVzdBohLm5lb2JveC52MS5EZWxldGVTbmFwc2hvdFJlc3BvbnNlEmQKE0xpc3RTbmFwc2hvdFJlY29yZHMSJS5uZW9ib3gudjEuTGlzdFNuYXBzaG90UmVjb3Jkc1JlcXVlc3QaJi5uZW9ib3gudjEuTGlzdFNuYXBzaG90UmVjb3Jkc1Jlc3BvbnNlQjVaM2dvLm9yeC5tZS9hcHBzL25lby1ib3gvcGtnL3Byb3RvL25lb2JveC92MTtuZW9ib3h2MWIGcHJvdG8z", [file_google_protobuf_struct, file_google_protobuf_timestamp, file_validate_validate]);
 
 /**
  * BackupPolicy controls scheduled snapshots of one Base.
@@ -318,7 +71,7 @@ export type BackupPolicy = Message<"neobox.v1.BackupPolicy"> & {
  * Use `create(BackupPolicySchema)` to create a new message.
  */
 export const BackupPolicySchema: GenMessage<BackupPolicy> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 11);
+  messageDesc(file_neobox_v1_nocodb, 0);
 
 /**
  * @generated from message neobox.v1.NocoDBBase
@@ -350,7 +103,7 @@ export type NocoDBBase = Message<"neobox.v1.NocoDBBase"> & {
  * Use `create(NocoDBBaseSchema)` to create a new message.
  */
 export const NocoDBBaseSchema: GenMessage<NocoDBBase> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 12);
+  messageDesc(file_neobox_v1_nocodb, 1);
 
 /**
  * @generated from message neobox.v1.ListNocoDBBasesRequest
@@ -367,7 +120,7 @@ export type ListNocoDBBasesRequest = Message<"neobox.v1.ListNocoDBBasesRequest">
  * Use `create(ListNocoDBBasesRequestSchema)` to create a new message.
  */
 export const ListNocoDBBasesRequestSchema: GenMessage<ListNocoDBBasesRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 13);
+  messageDesc(file_neobox_v1_nocodb, 2);
 
 /**
  * @generated from message neobox.v1.ListNocoDBBasesResponse
@@ -384,7 +137,7 @@ export type ListNocoDBBasesResponse = Message<"neobox.v1.ListNocoDBBasesResponse
  * Use `create(ListNocoDBBasesResponseSchema)` to create a new message.
  */
 export const ListNocoDBBasesResponseSchema: GenMessage<ListNocoDBBasesResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 14);
+  messageDesc(file_neobox_v1_nocodb, 3);
 
 /**
  * @generated from message neobox.v1.UpsertBackupPolicyRequest
@@ -421,7 +174,7 @@ export type UpsertBackupPolicyRequest = Message<"neobox.v1.UpsertBackupPolicyReq
  * Use `create(UpsertBackupPolicyRequestSchema)` to create a new message.
  */
 export const UpsertBackupPolicyRequestSchema: GenMessage<UpsertBackupPolicyRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 15);
+  messageDesc(file_neobox_v1_nocodb, 4);
 
 /**
  * @generated from message neobox.v1.UpsertBackupPolicyResponse
@@ -438,7 +191,7 @@ export type UpsertBackupPolicyResponse = Message<"neobox.v1.UpsertBackupPolicyRe
  * Use `create(UpsertBackupPolicyResponseSchema)` to create a new message.
  */
 export const UpsertBackupPolicyResponseSchema: GenMessage<UpsertBackupPolicyResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 16);
+  messageDesc(file_neobox_v1_nocodb, 5);
 
 /**
  * @generated from message neobox.v1.SnapshotTable
@@ -475,7 +228,7 @@ export type SnapshotTable = Message<"neobox.v1.SnapshotTable"> & {
  * Use `create(SnapshotTableSchema)` to create a new message.
  */
 export const SnapshotTableSchema: GenMessage<SnapshotTable> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 17);
+  messageDesc(file_neobox_v1_nocodb, 6);
 
 /**
  * @generated from message neobox.v1.Snapshot
@@ -566,7 +319,7 @@ export type Snapshot = Message<"neobox.v1.Snapshot"> & {
  * Use `create(SnapshotSchema)` to create a new message.
  */
 export const SnapshotSchema: GenMessage<Snapshot> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 18);
+  messageDesc(file_neobox_v1_nocodb, 7);
 
 /**
  * @generated from message neobox.v1.CreateSnapshotRequest
@@ -588,7 +341,7 @@ export type CreateSnapshotRequest = Message<"neobox.v1.CreateSnapshotRequest"> &
  * Use `create(CreateSnapshotRequestSchema)` to create a new message.
  */
 export const CreateSnapshotRequestSchema: GenMessage<CreateSnapshotRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 19);
+  messageDesc(file_neobox_v1_nocodb, 8);
 
 /**
  * @generated from message neobox.v1.CreateSnapshotResponse
@@ -605,7 +358,7 @@ export type CreateSnapshotResponse = Message<"neobox.v1.CreateSnapshotResponse">
  * Use `create(CreateSnapshotResponseSchema)` to create a new message.
  */
 export const CreateSnapshotResponseSchema: GenMessage<CreateSnapshotResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 20);
+  messageDesc(file_neobox_v1_nocodb, 9);
 
 /**
  * @generated from message neobox.v1.ListSnapshotsRequest
@@ -634,7 +387,7 @@ export type ListSnapshotsRequest = Message<"neobox.v1.ListSnapshotsRequest"> & {
  * Use `create(ListSnapshotsRequestSchema)` to create a new message.
  */
 export const ListSnapshotsRequestSchema: GenMessage<ListSnapshotsRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 21);
+  messageDesc(file_neobox_v1_nocodb, 10);
 
 /**
  * @generated from message neobox.v1.ListSnapshotsResponse
@@ -651,7 +404,7 @@ export type ListSnapshotsResponse = Message<"neobox.v1.ListSnapshotsResponse"> &
  * Use `create(ListSnapshotsResponseSchema)` to create a new message.
  */
 export const ListSnapshotsResponseSchema: GenMessage<ListSnapshotsResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 22);
+  messageDesc(file_neobox_v1_nocodb, 11);
 
 /**
  * @generated from message neobox.v1.GetSnapshotRequest
@@ -668,7 +421,7 @@ export type GetSnapshotRequest = Message<"neobox.v1.GetSnapshotRequest"> & {
  * Use `create(GetSnapshotRequestSchema)` to create a new message.
  */
 export const GetSnapshotRequestSchema: GenMessage<GetSnapshotRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 23);
+  messageDesc(file_neobox_v1_nocodb, 12);
 
 /**
  * @generated from message neobox.v1.GetSnapshotResponse
@@ -685,7 +438,7 @@ export type GetSnapshotResponse = Message<"neobox.v1.GetSnapshotResponse"> & {
  * Use `create(GetSnapshotResponseSchema)` to create a new message.
  */
 export const GetSnapshotResponseSchema: GenMessage<GetSnapshotResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 24);
+  messageDesc(file_neobox_v1_nocodb, 13);
 
 /**
  * @generated from message neobox.v1.DeleteSnapshotRequest
@@ -702,7 +455,7 @@ export type DeleteSnapshotRequest = Message<"neobox.v1.DeleteSnapshotRequest"> &
  * Use `create(DeleteSnapshotRequestSchema)` to create a new message.
  */
 export const DeleteSnapshotRequestSchema: GenMessage<DeleteSnapshotRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 25);
+  messageDesc(file_neobox_v1_nocodb, 14);
 
 /**
  * @generated from message neobox.v1.DeleteSnapshotResponse
@@ -715,7 +468,7 @@ export type DeleteSnapshotResponse = Message<"neobox.v1.DeleteSnapshotResponse">
  * Use `create(DeleteSnapshotResponseSchema)` to create a new message.
  */
 export const DeleteSnapshotResponseSchema: GenMessage<DeleteSnapshotResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 26);
+  messageDesc(file_neobox_v1_nocodb, 15);
 
 /**
  * @generated from message neobox.v1.SnapshotField
@@ -742,7 +495,7 @@ export type SnapshotField = Message<"neobox.v1.SnapshotField"> & {
  * Use `create(SnapshotFieldSchema)` to create a new message.
  */
 export const SnapshotFieldSchema: GenMessage<SnapshotField> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 27);
+  messageDesc(file_neobox_v1_nocodb, 16);
 
 /**
  * @generated from message neobox.v1.ListSnapshotRecordsRequest
@@ -776,7 +529,7 @@ export type ListSnapshotRecordsRequest = Message<"neobox.v1.ListSnapshotRecordsR
  * Use `create(ListSnapshotRecordsRequestSchema)` to create a new message.
  */
 export const ListSnapshotRecordsRequestSchema: GenMessage<ListSnapshotRecordsRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 28);
+  messageDesc(file_neobox_v1_nocodb, 17);
 
 /**
  * @generated from message neobox.v1.ListSnapshotRecordsResponse
@@ -805,7 +558,7 @@ export type ListSnapshotRecordsResponse = Message<"neobox.v1.ListSnapshotRecords
  * Use `create(ListSnapshotRecordsResponseSchema)` to create a new message.
  */
 export const ListSnapshotRecordsResponseSchema: GenMessage<ListSnapshotRecordsResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_nocodb, 29);
+  messageDesc(file_neobox_v1_nocodb, 18);
 
 /**
  * @generated from enum neobox.v1.SnapshotStatus
@@ -870,60 +623,14 @@ export const SnapshotTriggerSchema: GenEnum<SnapshotTrigger> = /*@__PURE__*/
   enumDesc(file_neobox_v1_nocodb, 1);
 
 /**
- * NocoDBService manages connections to self-hosted NocoDB instances and
- * point-in-time Snapshots of their Bases (schema + records + links).
+ * NocoDBService manages point-in-time Snapshots of the Bases (schema +
+ * records + links) of NocoDB connections. Connections themselves are managed
+ * by ConnectionService; connection_id here must name a NocoDB connection.
  * Every resource is owned by the calling user.
  *
  * @generated from service neobox.v1.NocoDBService
  */
 export const NocoDBService: GenService<{
-  /**
-   * Connections
-   *
-   * @generated from rpc neobox.v1.NocoDBService.CreateNocoDBConnection
-   */
-  createNocoDBConnection: {
-    methodKind: "unary";
-    input: typeof CreateNocoDBConnectionRequestSchema;
-    output: typeof CreateNocoDBConnectionResponseSchema;
-  },
-  /**
-   * @generated from rpc neobox.v1.NocoDBService.ListNocoDBConnections
-   */
-  listNocoDBConnections: {
-    methodKind: "unary";
-    input: typeof ListNocoDBConnectionsRequestSchema;
-    output: typeof ListNocoDBConnectionsResponseSchema;
-  },
-  /**
-   * @generated from rpc neobox.v1.NocoDBService.UpdateNocoDBConnection
-   */
-  updateNocoDBConnection: {
-    methodKind: "unary";
-    input: typeof UpdateNocoDBConnectionRequestSchema;
-    output: typeof UpdateNocoDBConnectionResponseSchema;
-  },
-  /**
-   * DeleteNocoDBConnection removes the connection, its backup policies, and
-   * all of its snapshots (including stored snapshot content).
-   *
-   * @generated from rpc neobox.v1.NocoDBService.DeleteNocoDBConnection
-   */
-  deleteNocoDBConnection: {
-    methodKind: "unary";
-    input: typeof DeleteNocoDBConnectionRequestSchema;
-    output: typeof DeleteNocoDBConnectionResponseSchema;
-  },
-  /**
-   * TestNocoDBConnection checks that the stored URL + token can list bases.
-   *
-   * @generated from rpc neobox.v1.NocoDBService.TestNocoDBConnection
-   */
-  testNocoDBConnection: {
-    methodKind: "unary";
-    input: typeof TestNocoDBConnectionRequestSchema;
-    output: typeof TestNocoDBConnectionResponseSchema;
-  },
   /**
    * ListNocoDBBases lists the Bases visible to the connection's token, each
    * joined with its backup policy and latest snapshot.

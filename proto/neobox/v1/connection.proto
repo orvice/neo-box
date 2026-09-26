@@ -1,0 +1,127 @@
+syntax = "proto3";
+
+package neobox.v1;
+
+import "google/protobuf/timestamp.proto";
+import "validate/validate.proto";
+
+option go_package = "go.orx.me/apps/neo-box/pkg/proto/neobox/v1;neoboxv1";
+
+// ConnectionService manages Connections: accounts at third-party services
+// (Providers), owned by the calling user. Provider-specific settings travel
+// in typed oneofs. Secrets are write-only and never returned.
+service ConnectionService {
+  rpc ListConnections(ListConnectionsRequest) returns (ListConnectionsResponse);
+  rpc GetConnection(GetConnectionRequest) returns (GetConnectionResponse);
+  // CreateConnection verifies the settings with the provider before saving.
+  rpc CreateConnection(CreateConnectionRequest) returns (CreateConnectionResponse);
+  // UpdateConnection re-verifies when the settings change. The settings must
+  // be for the connection's provider.
+  rpc UpdateConnection(UpdateConnectionRequest) returns (UpdateConnectionResponse);
+  // DeleteConnection removes the connection and everything the provider
+  // stored for it (for NocoDB: snapshots with their content, and Backup
+  // Policies).
+  rpc DeleteConnection(DeleteConnectionRequest) returns (DeleteConnectionResponse);
+  // TestConnection verifies the stored settings and records the result as
+  // the connection's status.
+  rpc TestConnection(TestConnectionRequest) returns (TestConnectionResponse);
+}
+
+enum Provider {
+  PROVIDER_UNSPECIFIED = 0;
+  PROVIDER_NOCODB = 1;
+}
+
+// ConnectionStatus is the outcome of the last credential check or
+// background run.
+enum ConnectionStatus {
+  CONNECTION_STATUS_UNSPECIFIED = 0;
+  CONNECTION_STATUS_OK = 1;
+  CONNECTION_STATUS_ERROR = 2;
+}
+
+message Connection {
+  string id = 1;
+  string name = 2;
+  Provider provider = 3;
+  ConnectionStatus status = 4;
+  // Error detail when status is ERROR.
+  string status_message = 5;
+  google.protobuf.Timestamp status_checked_at = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+  // The provider's non-secret settings.
+  oneof config {
+    NocoDBConnectionConfig nocodb = 20;
+  }
+}
+
+// NocoDBConnectionConfig is the non-secret part of a NocoDB connection.
+message NocoDBConnectionConfig {
+  // Base URL of the NocoDB instance, e.g. https://nocodb.example.com.
+  string base_url = 1;
+}
+
+// NocoDBConnectionSettings is what a user enters for a NocoDB connection.
+message NocoDBConnectionSettings {
+  string base_url = 1 [(validate.rules).string.min_len = 1];
+  // API token. Required on create; on update, empty keeps the stored token.
+  string api_token = 2;
+}
+
+message ListConnectionsRequest {
+  // Only connections of this provider; UNSPECIFIED lists all of them.
+  Provider provider = 1;
+}
+
+message ListConnectionsResponse {
+  repeated Connection connections = 1;
+}
+
+message GetConnectionRequest {
+  string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetConnectionResponse {
+  Connection connection = 1;
+}
+
+message CreateConnectionRequest {
+  string name = 1 [(validate.rules).string.min_len = 1];
+  oneof settings {
+    option (validate.required) = true;
+    NocoDBConnectionSettings nocodb = 20;
+  }
+}
+
+message CreateConnectionResponse {
+  Connection connection = 1;
+}
+
+message UpdateConnectionRequest {
+  string id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  oneof settings {
+    option (validate.required) = true;
+    NocoDBConnectionSettings nocodb = 20;
+  }
+}
+
+message UpdateConnectionResponse {
+  Connection connection = 1;
+}
+
+message DeleteConnectionRequest {
+  string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message DeleteConnectionResponse {}
+
+message TestConnectionRequest {
+  string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message TestConnectionResponse {
+  // The connection with its updated status.
+  Connection connection = 1;
+}

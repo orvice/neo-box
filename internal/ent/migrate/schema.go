@@ -9,6 +9,33 @@ import (
 )
 
 var (
+	// ConnectionsColumns holds the columns for the "connections" table.
+	ConnectionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "provider", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString},
+		{Name: "config", Type: field.TypeString, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "secret_ciphertext", Type: field.TypeString},
+		{Name: "status", Type: field.TypeString, Default: "unknown"},
+		{Name: "status_message", Type: field.TypeString, Default: ""},
+		{Name: "status_checked_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// ConnectionsTable holds the schema information for the "connections" table.
+	ConnectionsTable = &schema.Table{
+		Name:       "connections",
+		Columns:    ConnectionsColumns,
+		PrimaryKey: []*schema.Column{ConnectionsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "connection_user_id_provider_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{ConnectionsColumns[1], ConnectionsColumns[2], ConnectionsColumns[9]},
+			},
+		},
+	}
 	// NocodbBackupPoliciesColumns holds the columns for the "nocodb_backup_policies" table.
 	NocodbBackupPoliciesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -35,29 +62,6 @@ var (
 				Name:    "nocodbbackuppolicy_user_id_connection_id",
 				Unique:  false,
 				Columns: []*schema.Column{NocodbBackupPoliciesColumns[3], NocodbBackupPoliciesColumns[1]},
-			},
-		},
-	}
-	// NocodbConnectionsColumns holds the columns for the "nocodb_connections" table.
-	NocodbConnectionsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeString},
-		{Name: "user_id", Type: field.TypeString},
-		{Name: "name", Type: field.TypeString},
-		{Name: "base_url", Type: field.TypeString},
-		{Name: "token_ciphertext", Type: field.TypeString},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-	}
-	// NocodbConnectionsTable holds the schema information for the "nocodb_connections" table.
-	NocodbConnectionsTable = &schema.Table{
-		Name:       "nocodb_connections",
-		Columns:    NocodbConnectionsColumns,
-		PrimaryKey: []*schema.Column{NocodbConnectionsColumns[0]},
-		Indexes: []*schema.Index{
-			{
-				Name:    "nocodbconnection_user_id_created_at",
-				Unique:  false,
-				Columns: []*schema.Column{NocodbConnectionsColumns[1], NocodbConnectionsColumns[5]},
 			},
 		},
 	}
@@ -181,8 +185,8 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		ConnectionsTable,
 		NocodbBackupPoliciesTable,
-		NocodbConnectionsTable,
 		NocodbSnapshotsTable,
 		OauthStatesTable,
 		AuthSessionsTable,
@@ -191,11 +195,11 @@ var (
 )
 
 func init() {
+	ConnectionsTable.Annotation = &entsql.Annotation{
+		Table: "connections",
+	}
 	NocodbBackupPoliciesTable.Annotation = &entsql.Annotation{
 		Table: "nocodb_backup_policies",
-	}
-	NocodbConnectionsTable.Annotation = &entsql.Annotation{
-		Table: "nocodb_connections",
 	}
 	NocodbSnapshotsTable.Annotation = &entsql.Annotation{
 		Table: "nocodb_snapshots",

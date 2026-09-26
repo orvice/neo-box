@@ -7,7 +7,6 @@ import (
 
 	"go.orx.me/apps/neo-box/internal/ent"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
-	"go.orx.me/apps/neo-box/internal/ent/nocodbconnection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbsnapshot"
 	"go.orx.me/apps/neo-box/internal/ent/predicate"
 	repo "go.orx.me/apps/neo-box/internal/repo/nocodb"
@@ -21,88 +20,6 @@ var _ repo.Repository = (*Store)(nil)
 
 func New(client *ent.Client) *Store {
 	return &Store{client: client}
-}
-
-// --- connections ---
-
-func (s *Store) CreateConnection(ctx context.Context, c *repo.Connection) error {
-	err := s.client.NocoDBConnection.Create().
-		SetID(c.ID).
-		SetUserID(c.UserID).
-		SetName(c.Name).
-		SetBaseURL(c.BaseURL).
-		SetTokenCiphertext(c.TokenCiphertext).
-		SetCreatedAt(c.CreatedAt).
-		SetUpdatedAt(c.UpdatedAt).
-		Exec(ctx)
-	if err != nil {
-		return fmt.Errorf("insert connection: %w", err)
-	}
-	return nil
-}
-
-func (s *Store) GetConnection(ctx context.Context, userID, id string) (*repo.Connection, error) {
-	return s.findConnection(ctx, nocodbconnection.ID(id), nocodbconnection.UserID(userID))
-}
-
-func (s *Store) GetConnectionByID(ctx context.Context, id string) (*repo.Connection, error) {
-	return s.findConnection(ctx, nocodbconnection.ID(id))
-}
-
-func (s *Store) findConnection(ctx context.Context, ps ...predicate.NocoDBConnection) (*repo.Connection, error) {
-	row, err := s.client.NocoDBConnection.Query().Where(ps...).Only(ctx)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, repo.ErrNotFound
-		}
-		return nil, fmt.Errorf("find connection: %w", err)
-	}
-	return connectionFromRow(row), nil
-}
-
-func (s *Store) ListConnections(ctx context.Context, userID string) ([]*repo.Connection, error) {
-	rows, err := s.client.NocoDBConnection.Query().
-		Where(nocodbconnection.UserID(userID)).
-		Order(ent.Asc(nocodbconnection.FieldCreatedAt)).
-		All(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("list connections: %w", err)
-	}
-	out := make([]*repo.Connection, 0, len(rows))
-	for _, row := range rows {
-		out = append(out, connectionFromRow(row))
-	}
-	return out, nil
-}
-
-func (s *Store) UpdateConnection(ctx context.Context, c *repo.Connection) error {
-	n, err := s.client.NocoDBConnection.Update().
-		Where(nocodbconnection.ID(c.ID), nocodbconnection.UserID(c.UserID)).
-		SetName(c.Name).
-		SetBaseURL(c.BaseURL).
-		SetTokenCiphertext(c.TokenCiphertext).
-		SetUpdatedAt(c.UpdatedAt).
-		Save(ctx)
-	if err != nil {
-		return fmt.Errorf("update connection: %w", err)
-	}
-	if n == 0 {
-		return repo.ErrNotFound
-	}
-	return nil
-}
-
-func (s *Store) DeleteConnection(ctx context.Context, userID, id string) error {
-	n, err := s.client.NocoDBConnection.Delete().
-		Where(nocodbconnection.ID(id), nocodbconnection.UserID(userID)).
-		Exec(ctx)
-	if err != nil {
-		return fmt.Errorf("delete connection: %w", err)
-	}
-	if n == 0 {
-		return repo.ErrNotFound
-	}
-	return nil
 }
 
 // --- policies ---
@@ -296,13 +213,6 @@ func (s *Store) FailUnfinishedSnapshots(ctx context.Context, reason string, at t
 }
 
 // --- conversions ---
-
-func connectionFromRow(r *ent.NocoDBConnection) *repo.Connection {
-	return &repo.Connection{
-		ID: r.ID, UserID: r.UserID, Name: r.Name, BaseURL: r.BaseURL,
-		TokenCiphertext: r.TokenCiphertext, CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt,
-	}
-}
 
 func policyFromRow(r *ent.NocoDBBackupPolicy) *repo.Policy {
 	return &repo.Policy{

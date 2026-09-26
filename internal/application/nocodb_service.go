@@ -8,17 +8,16 @@ import (
 	"sync"
 	"time"
 
-	"butterfly.orx.me/core/log"
 	"connectrpc.com/connect"
-	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"go.orx.me/apps/neo-box/internal/backup"
+	"go.orx.me/apps/neo-box/internal/connection"
 	"go.orx.me/apps/neo-box/internal/nocodb"
 	"go.orx.me/apps/neo-box/internal/repo/auth"
+	connrepo "go.orx.me/apps/neo-box/internal/repo/connection"
 	repo "go.orx.me/apps/neo-box/internal/repo/nocodb"
-	"go.orx.me/apps/neo-box/internal/secretbox"
 	"go.orx.me/apps/neo-box/internal/snapshot"
 	"go.orx.me/apps/neo-box/internal/transport/connectx"
 	neoboxv1 "go.orx.me/apps/neo-box/pkg/proto/neobox/v1"
@@ -39,7 +38,7 @@ type NocoDBServiceServer struct {
 	mu      sync.RWMutex
 	repo    repo.Repository
 	manager *backup.Manager
-	cipher  *secretbox.Cipher
+	conns   *connection.Service
 
 	cache *tableCache
 }
@@ -48,13 +47,11 @@ func NewNocoDBServiceServer() *NocoDBServiceServer {
 	return &NocoDBServiceServer{cache: newTableCache(tableCacheSize)}
 }
 
-// SetDeps wires the repository, backup manager, and token cipher. cipher may
-// be nil when no encryption key is configured; creating connections then
-// fails with FailedPrecondition.
-func (s *NocoDBServiceServer) SetDeps(r repo.Repository, m *backup.Manager, cipher *secretbox.Cipher) {
+// SetDeps wires the repository, backup manager, and connection service.
+func (s *NocoDBServiceServer) SetDeps(r repo.Repository, m *backup.Manager, conns *connection.Service) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.repo, s.manager, s.cipher = r, m, cipher
+	s.repo, s.manager, s.conns = r, m, conns
 }
 
 func (s *NocoDBServiceServer) deps(ctx context.Context) (string, repo.Repository, *backup.Manager, error) {
@@ -64,163 +61,10 @@ func (s *NocoDBServiceServer) deps(ctx context.Context) (string, repo.Repository
 	}
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	if s.repo == nil || s.manager == nil {
+	if s.repo == nil || s.manager == nil || s.conns == nil {
 		return "", nil, nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("nocodb backups are not available"))
 	}
 	return user.GetId(), s.repo, s.manager, nil
-}
-
-// --- connections ---
-
-func (s *NocoDBServiceServer) CreateNocoDBConnection(ctx context.Context, req *connect.Request[neoboxv1.CreateNocoDBConnectionRequest]) (*connect.Response[neoboxv1.CreateNocoDBConnectionResponse], error) {
-	userID, r, m, err := s.deps(ctx)
-	if err != nil {
-		return nil, err
-	}
-	name := strings.TrimSpace(req.Msg.GetName())
-	if name == "" {
-		return nil, connectx.RequiredArgument("name")
-	}
-	baseURL, err := nocodb.NormalizeBaseURL(req.Msg.GetBaseUrl())
-	if err != nil {
-		return nil, connectx.InvalidArgument("base_url", "must be an http(s) URL")
-	}
-	token := strings.TrimSpace(req.Msg.GetApiToken())
-	if token == "" {
-		return nil, connectx.RequiredArgument("api_token")
-	}
-	if err := verifyNocoDB(ctx, m, baseURL, token); err != nil {
-		return nil, err
-	}
-	ciphertext, err := s.encrypt(token)
-	if err != nil {
-		return nil, err
-	}
-	now := time.Now().UTC()
-	conn := &repo.Connection{
-		ID: uuid.NewString(), UserID: userID, Name: name, BaseURL: baseURL,
-		TokenCiphertext: ciphertext, CreatedAt: now, UpdatedAt: now,
-	}
-	if err := r.CreateConnection(ctx, conn); err != nil {
-		return nil, connectx.InternalWith(err)
-	}
-	return connect.NewResponse(&neoboxv1.CreateNocoDBConnectionResponse{Connection: connectionToProto(conn)}), nil
-}
-
-func (s *NocoDBServiceServer) ListNocoDBConnections(ctx context.Context, _ *connect.Request[neoboxv1.ListNocoDBConnectionsRequest]) (*connect.Response[neoboxv1.ListNocoDBConnectionsResponse], error) {
-	userID, r, _, err := s.deps(ctx)
-	if err != nil {
-		return nil, err
-	}
-	conns, err := r.ListConnections(ctx, userID)
-	if err != nil {
-		return nil, connectx.InternalWith(err)
-	}
-	out := make([]*neoboxv1.NocoDBConnection, 0, len(conns))
-	for _, c := range conns {
-		out = append(out, connectionToProto(c))
-	}
-	return connect.NewResponse(&neoboxv1.ListNocoDBConnectionsResponse{Connections: out}), nil
-}
-
-func (s *NocoDBServiceServer) UpdateNocoDBConnection(ctx context.Context, req *connect.Request[neoboxv1.UpdateNocoDBConnectionRequest]) (*connect.Response[neoboxv1.UpdateNocoDBConnectionResponse], error) {
-	userID, r, m, err := s.deps(ctx)
-	if err != nil {
-		return nil, err
-	}
-	conn, err := s.loadConnection(ctx, r, userID, req.Msg.GetId())
-	if err != nil {
-		return nil, err
-	}
-	name := strings.TrimSpace(req.Msg.GetName())
-	if name == "" {
-		return nil, connectx.RequiredArgument("name")
-	}
-	baseURL, err := nocodb.NormalizeBaseURL(req.Msg.GetBaseUrl())
-	if err != nil {
-		return nil, connectx.InvalidArgument("base_url", "must be an http(s) URL")
-	}
-	if req.Msg.ApiToken != nil && strings.TrimSpace(req.Msg.GetApiToken()) != "" {
-		token := strings.TrimSpace(req.Msg.GetApiToken())
-		if err := verifyNocoDB(ctx, m, baseURL, token); err != nil {
-			return nil, err
-		}
-		if conn.TokenCiphertext, err = s.encrypt(token); err != nil {
-			return nil, err
-		}
-	} else if baseURL != conn.BaseURL {
-		// The stored token must work against the new URL too.
-		token, err := s.decrypt(conn.TokenCiphertext)
-		if err != nil {
-			return nil, err
-		}
-		if err := verifyNocoDB(ctx, m, baseURL, token); err != nil {
-			return nil, err
-		}
-	}
-	conn.Name = name
-	conn.BaseURL = baseURL
-	conn.UpdatedAt = time.Now().UTC()
-	if err := r.UpdateConnection(ctx, conn); err != nil {
-		return nil, mapRepoErr(err, "connection")
-	}
-	return connect.NewResponse(&neoboxv1.UpdateNocoDBConnectionResponse{Connection: connectionToProto(conn)}), nil
-}
-
-func (s *NocoDBServiceServer) DeleteNocoDBConnection(ctx context.Context, req *connect.Request[neoboxv1.DeleteNocoDBConnectionRequest]) (*connect.Response[neoboxv1.DeleteNocoDBConnectionResponse], error) {
-	userID, r, m, err := s.deps(ctx)
-	if err != nil {
-		return nil, err
-	}
-	conn, err := s.loadConnection(ctx, r, userID, req.Msg.GetId())
-	if err != nil {
-		return nil, err
-	}
-	snaps, err := r.ListSnapshots(ctx, repo.SnapshotFilter{UserID: userID, ConnectionID: conn.ID})
-	if err != nil {
-		return nil, connectx.InternalWith(err)
-	}
-	for _, snap := range snaps {
-		if snap.Status == repo.StatusPending || snap.Status == repo.StatusRunning {
-			return nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("a snapshot is in progress; try again when it finishes"))
-		}
-	}
-	for _, snap := range snaps {
-		if err := m.DeleteSnapshot(ctx, snap); err != nil {
-			return nil, connectx.InternalWith(err)
-		}
-		s.cache.dropSnapshot(snap.ID)
-	}
-	if err := r.DeletePoliciesForConnection(ctx, conn.ID); err != nil {
-		return nil, connectx.InternalWith(err)
-	}
-	if err := r.DeleteConnection(ctx, userID, conn.ID); err != nil {
-		return nil, mapRepoErr(err, "connection")
-	}
-	if err := m.ReloadSchedules(ctx); err != nil {
-		log.FromContext(ctx).Warn("reload backup schedules failed", "err", err)
-	}
-	return connect.NewResponse(&neoboxv1.DeleteNocoDBConnectionResponse{}), nil
-}
-
-func (s *NocoDBServiceServer) TestNocoDBConnection(ctx context.Context, req *connect.Request[neoboxv1.TestNocoDBConnectionRequest]) (*connect.Response[neoboxv1.TestNocoDBConnectionResponse], error) {
-	userID, r, m, err := s.deps(ctx)
-	if err != nil {
-		return nil, err
-	}
-	conn, err := s.loadConnection(ctx, r, userID, req.Msg.GetId())
-	if err != nil {
-		return nil, err
-	}
-	api, err := m.Client(conn)
-	if err != nil {
-		return connect.NewResponse(&neoboxv1.TestNocoDBConnectionResponse{Error: err.Error()}), nil
-	}
-	bases, err := api.ListBases(ctx)
-	if err != nil {
-		return connect.NewResponse(&neoboxv1.TestNocoDBConnectionResponse{Error: err.Error()}), nil
-	}
-	return connect.NewResponse(&neoboxv1.TestNocoDBConnectionResponse{Ok: true, BaseCount: int32(len(bases))}), nil
 }
 
 // --- bases & policies ---
@@ -230,7 +74,7 @@ func (s *NocoDBServiceServer) ListNocoDBBases(ctx context.Context, req *connect.
 	if err != nil {
 		return nil, err
 	}
-	conn, err := s.loadConnection(ctx, r, userID, req.Msg.GetConnectionId())
+	conn, err := s.loadConnection(ctx, userID, req.Msg.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
@@ -273,7 +117,7 @@ func (s *NocoDBServiceServer) UpsertBackupPolicy(ctx context.Context, req *conne
 	if err != nil {
 		return nil, err
 	}
-	conn, err := s.loadConnection(ctx, r, userID, req.Msg.GetConnectionId())
+	conn, err := s.loadConnection(ctx, userID, req.Msg.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
@@ -310,11 +154,11 @@ func (s *NocoDBServiceServer) UpsertBackupPolicy(ctx context.Context, req *conne
 // --- snapshots ---
 
 func (s *NocoDBServiceServer) CreateSnapshot(ctx context.Context, req *connect.Request[neoboxv1.CreateSnapshotRequest]) (*connect.Response[neoboxv1.CreateSnapshotResponse], error) {
-	userID, r, m, err := s.deps(ctx)
+	userID, _, m, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	conn, err := s.loadConnection(ctx, r, userID, req.Msg.GetConnectionId())
+	conn, err := s.loadConnection(ctx, userID, req.Msg.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
@@ -444,52 +288,27 @@ func (s *NocoDBServiceServer) ListSnapshotRecords(ctx context.Context, req *conn
 
 // --- helpers ---
 
-func (s *NocoDBServiceServer) loadConnection(ctx context.Context, r repo.Repository, userID, id string) (*repo.Connection, error) {
+// loadConnection returns the caller's NocoDB connection; connections of
+// other providers are reported as not found.
+func (s *NocoDBServiceServer) loadConnection(ctx context.Context, userID, id string) (*connrepo.Connection, error) {
 	id = strings.TrimSpace(id)
 	if id == "" {
 		return nil, connectx.RequiredArgument("connection_id")
 	}
-	conn, err := r.GetConnection(ctx, userID, id)
+	s.mu.RLock()
+	conns := s.conns
+	s.mu.RUnlock()
+	conn, err := conns.Get(ctx, userID, id)
 	if err != nil {
-		return nil, mapRepoErr(err, "connection")
+		if errors.Is(err, connrepo.ErrNotFound) {
+			return nil, connectx.NotFound("connection not found")
+		}
+		return nil, connectx.InternalWith(err)
+	}
+	if conn.Provider != nocodb.ProviderType {
+		return nil, connectx.NotFound("connection not found")
 	}
 	return conn, nil
-}
-
-func (s *NocoDBServiceServer) encrypt(token string) (string, error) {
-	s.mu.RLock()
-	c := s.cipher
-	s.mu.RUnlock()
-	if c == nil {
-		return "", connect.NewError(connect.CodeFailedPrecondition, errors.New("crypto.encryption_key is not configured on the server"))
-	}
-	out, err := c.Encrypt([]byte(token))
-	if err != nil {
-		return "", connectx.InternalWith(err)
-	}
-	return out, nil
-}
-
-func (s *NocoDBServiceServer) decrypt(ciphertext string) (string, error) {
-	s.mu.RLock()
-	c := s.cipher
-	s.mu.RUnlock()
-	raw, err := c.Decrypt(ciphertext)
-	if err != nil {
-		return "", connect.NewError(connect.CodeFailedPrecondition, err)
-	}
-	return string(raw), nil
-}
-
-func verifyNocoDB(ctx context.Context, m *backup.Manager, baseURL, token string) error {
-	api, err := m.NewClient(baseURL, token)
-	if err != nil {
-		return connect.NewError(connect.CodeInvalidArgument, err)
-	}
-	if _, err := api.ListBases(ctx); err != nil {
-		return connect.NewError(connect.CodeInvalidArgument, errors.New("cannot reach NocoDB with this URL and token: "+err.Error()))
-	}
-	return nil
 }
 
 func mapRepoErr(err error, what string) error {
@@ -509,13 +328,6 @@ func recordToStruct(rec nocodb.Record) (*structpb.Struct, error) {
 		return nil, err
 	}
 	return structpb.NewStruct(m)
-}
-
-func connectionToProto(c *repo.Connection) *neoboxv1.NocoDBConnection {
-	return &neoboxv1.NocoDBConnection{
-		Id: c.ID, Name: c.Name, BaseUrl: c.BaseURL, HasToken: c.TokenCiphertext != "",
-		CreatedAt: timestamppb.New(c.CreatedAt), UpdatedAt: timestamppb.New(c.UpdatedAt),
-	}
 }
 
 func policyToProto(p *repo.Policy, next time.Time) *neoboxv1.BackupPolicy {

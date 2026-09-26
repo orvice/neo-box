@@ -1,6 +1,8 @@
-// Package nocodb persists NocoDB Connections, Backup Policies, and Snapshot
-// metadata. Snapshot content lives in the blob store under Snapshot.ObjectKey.
-// Every record is owned by one user; reads and writes are scoped by UserID.
+// Package nocodb persists NocoDB Backup Policies and Snapshot metadata.
+// Connections are generic (see internal/repo/connection); policies and
+// snapshots refer to one by ConnectionID. Snapshot content lives in the blob
+// store under Snapshot.ObjectKey. Every record is owned by one user; reads
+// and writes are scoped by UserID.
 package nocodb
 
 import (
@@ -12,18 +14,6 @@ import (
 var (
 	ErrNotFound = errors.New("not found")
 )
-
-// Connection is one NocoDB instance + API token owned by a user.
-type Connection struct {
-	ID      string
-	UserID  string
-	Name    string
-	BaseURL string
-	// TokenCiphertext is the secretbox-encrypted API token.
-	TokenCiphertext string
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
-}
 
 // Policy schedules snapshots of one Base.
 type Policy struct {
@@ -92,14 +82,6 @@ type SnapshotFilter struct {
 }
 
 type Repository interface {
-	CreateConnection(ctx context.Context, c *Connection) error
-	GetConnection(ctx context.Context, userID, id string) (*Connection, error)
-	// GetConnectionByID bypasses owner scoping; used by the scheduler.
-	GetConnectionByID(ctx context.Context, id string) (*Connection, error)
-	ListConnections(ctx context.Context, userID string) ([]*Connection, error)
-	UpdateConnection(ctx context.Context, c *Connection) error
-	DeleteConnection(ctx context.Context, userID, id string) error
-
 	UpsertPolicy(ctx context.Context, p *Policy) error
 	ListPolicies(ctx context.Context, userID, connectionID string) ([]*Policy, error)
 	// ListEnabledPolicies returns every enabled policy across users.

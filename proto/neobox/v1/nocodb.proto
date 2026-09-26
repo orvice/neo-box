@@ -8,20 +8,11 @@ import "validate/validate.proto";
 
 option go_package = "go.orx.me/apps/neo-box/pkg/proto/neobox/v1;neoboxv1";
 
-// NocoDBService manages connections to self-hosted NocoDB instances and
-// point-in-time Snapshots of their Bases (schema + records + links).
+// NocoDBService manages point-in-time Snapshots of the Bases (schema +
+// records + links) of NocoDB connections. Connections themselves are managed
+// by ConnectionService; connection_id here must name a NocoDB connection.
 // Every resource is owned by the calling user.
 service NocoDBService {
-  // Connections
-  rpc CreateNocoDBConnection(CreateNocoDBConnectionRequest) returns (CreateNocoDBConnectionResponse);
-  rpc ListNocoDBConnections(ListNocoDBConnectionsRequest) returns (ListNocoDBConnectionsResponse);
-  rpc UpdateNocoDBConnection(UpdateNocoDBConnectionRequest) returns (UpdateNocoDBConnectionResponse);
-  // DeleteNocoDBConnection removes the connection, its backup policies, and
-  // all of its snapshots (including stored snapshot content).
-  rpc DeleteNocoDBConnection(DeleteNocoDBConnectionRequest) returns (DeleteNocoDBConnectionResponse);
-  // TestNocoDBConnection checks that the stored URL + token can list bases.
-  rpc TestNocoDBConnection(TestNocoDBConnectionRequest) returns (TestNocoDBConnectionResponse);
-
   // ListNocoDBBases lists the Bases visible to the connection's token, each
   // joined with its backup policy and latest snapshot.
   rpc ListNocoDBBases(ListNocoDBBasesRequest) returns (ListNocoDBBasesResponse);
@@ -39,62 +30,6 @@ service NocoDBService {
   // ListSnapshotRecords pages through the records of one table inside a
   // succeeded snapshot.
   rpc ListSnapshotRecords(ListSnapshotRecordsRequest) returns (ListSnapshotRecordsResponse);
-}
-
-message NocoDBConnection {
-  string id = 1;
-  string name = 2;
-  // Base URL of the NocoDB instance, e.g. https://nocodb.example.com.
-  string base_url = 3;
-  // Whether an API token is stored. The token itself is never returned.
-  bool has_token = 4;
-  google.protobuf.Timestamp created_at = 5;
-  google.protobuf.Timestamp updated_at = 6;
-}
-
-message CreateNocoDBConnectionRequest {
-  string name = 1 [(validate.rules).string.min_len = 1];
-  string base_url = 2 [(validate.rules).string.min_len = 1];
-  string api_token = 3 [(validate.rules).string.min_len = 1];
-}
-
-message CreateNocoDBConnectionResponse {
-  NocoDBConnection connection = 1;
-}
-
-message ListNocoDBConnectionsRequest {}
-
-message ListNocoDBConnectionsResponse {
-  repeated NocoDBConnection connections = 1;
-}
-
-message UpdateNocoDBConnectionRequest {
-  string id = 1 [(validate.rules).string.min_len = 1];
-  string name = 2 [(validate.rules).string.min_len = 1];
-  string base_url = 3 [(validate.rules).string.min_len = 1];
-  // When unset the stored token is kept.
-  optional string api_token = 4;
-}
-
-message UpdateNocoDBConnectionResponse {
-  NocoDBConnection connection = 1;
-}
-
-message DeleteNocoDBConnectionRequest {
-  string id = 1 [(validate.rules).string.min_len = 1];
-}
-
-message DeleteNocoDBConnectionResponse {}
-
-message TestNocoDBConnectionRequest {
-  string id = 1 [(validate.rules).string.min_len = 1];
-}
-
-message TestNocoDBConnectionResponse {
-  bool ok = 1;
-  // Error detail when ok is false.
-  string error = 2;
-  int32 base_count = 3;
 }
 
 // BackupPolicy controls scheduled snapshots of one Base.
