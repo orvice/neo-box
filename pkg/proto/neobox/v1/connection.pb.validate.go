@@ -342,6 +342,8 @@ func (m *NocoDBConnectionConfig) validate(all bool) error {
 
 	// no validation rules for BaseUrl
 
+	// no validation rules for RequestsPerSecond
+
 	if len(errors) > 0 {
 		return NocoDBConnectionConfigMultiError(errors)
 	}
@@ -456,6 +458,17 @@ func (m *NocoDBConnectionSettings) validate(all bool) error {
 	}
 
 	// no validation rules for ApiToken
+
+	if val := m.GetRequestsPerSecond(); val < 0 || val > 1000 {
+		err := NocoDBConnectionSettingsValidationError{
+			field:  "RequestsPerSecond",
+			reason: "value must be inside range [0, 1000]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return NocoDBConnectionSettingsMultiError(errors)

@@ -25,7 +25,8 @@ one place.
 ### NocoDB
 
 - **NocoDB Connection** — a Connection whose Provider is NocoDB: one
-  self-hosted NocoDB instance (base URL) plus an API token. A Snapshot run
+  self-hosted NocoDB instance (base URL) plus an API token, and the request
+  rate the instance tolerates (default 5/s, NocoDB Cloud's limit). A Snapshot run
   rejected with 401/403 marks it error; a successful run marks it ok.
 - **Base** — NocoDB's top-level container of tables (a "project"; IDs start
   with `p`). Neo Box does not store Bases; it lists them live from NocoDB.

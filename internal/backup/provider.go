@@ -36,7 +36,7 @@ func (p provider) Verify(ctx context.Context, config, secret json.RawMessage) er
 	if err := json.Unmarshal(secret, &sec); err != nil {
 		return fmt.Errorf("decode secret: %w", err)
 	}
-	api, err := p.m.newClient(cfg.BaseURL, sec.APIToken)
+	api, err := p.m.newClient(cfg, sec.APIToken)
 	if err != nil {
 		return err
 	}

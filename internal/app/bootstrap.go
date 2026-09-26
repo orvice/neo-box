@@ -89,10 +89,9 @@ func (h *Handlers) bootstrapNocoDB(ctx, runCtx context.Context, client *ent.Clie
 
 	nocodbRepo := nocodbpg.New(client)
 	manager := backup.New(backup.Config{
-		Workers:           cfg.NocoDB.Workers,
-		RequestsPerSecond: cfg.NocoDB.RequestsPerSecond,
-		PageSize:          cfg.NocoDB.PageSize,
-		SnapshotTimeout:   cfg.NocoDB.SnapshotTimeout,
+		Workers:         cfg.NocoDB.Workers,
+		PageSize:        cfg.NocoDB.PageSize,
+		SnapshotTimeout: cfg.NocoDB.SnapshotTimeout,
 	}, nocodbRepo, conns, blobs)
 	conns.Register(manager.ConnectionProvider())
 

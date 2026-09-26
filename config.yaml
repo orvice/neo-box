@@ -63,14 +63,3 @@ storage:
   s3_store: ""
   key_prefix: "neobox"
   local_dir: "./data/blobs"
-
-# Wasabi usage sync. Empty stats_endpoint uses https://stats.wasabisys.com.
-wasabi:
-  stats_endpoint: ""
-
-# NocoDB Base snapshots.
-nocodb:
-  requests_per_second: 5
-  workers: 1
-  page_size: 200
-  snapshot_timeout: 2h

@@ -167,3 +167,35 @@ func TestConnectionOwnershipAndDelete(t *testing.T) {
 		t.Fatalf("Get after delete = %v, want NotFound", err)
 	}
 }
+
+func TestNocoDBRateLimitSetting(t *testing.T) {
+	srv, _, _ := newConnectionServer(t)
+	ctx := asUser("u1")
+
+	req := nocodbCreate("home", "tok")
+	req.Msg.GetNocodb().RequestsPerSecond = -1
+	if _, err := srv.CreateConnection(ctx, req); connect.CodeOf(err) != connect.CodeInvalidArgument {
+		t.Fatalf("negative requests_per_second = %v, want InvalidArgument", err)
+	}
+
+	created, err := srv.CreateConnection(ctx, nocodbCreate("home", "tok"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := created.Msg.GetConnection().GetNocodb().GetRequestsPerSecond(); got != nocodb.DefaultRequestsPerSecond {
+		t.Fatalf("default requests_per_second = %v, want %v", got, nocodb.DefaultRequestsPerSecond)
+	}
+
+	updated, err := srv.UpdateConnection(ctx, connect.NewRequest(&neoboxv1.UpdateConnectionRequest{
+		Id: created.Msg.GetConnection().GetId(), Name: "home",
+		Settings: &neoboxv1.UpdateConnectionRequest_Nocodb{Nocodb: &neoboxv1.NocoDBConnectionSettings{
+			BaseUrl: "https://noco.example.com", RequestsPerSecond: 20,
+		}},
+	}))
+	if err != nil {
+		t.Fatalf("Update: %v", err)
+	}
+	if got := updated.Msg.GetConnection().GetNocodb().GetRequestsPerSecond(); got != 20 {
+		t.Fatalf("requests_per_second after update = %v, want 20", got)
+	}
+}

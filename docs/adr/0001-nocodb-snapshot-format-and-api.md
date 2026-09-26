@@ -47,7 +47,8 @@ What the OSS REST API offers (checked against `swagger-v2.json` /
 
 - Link capture costs one request per linked record per link field; large,
   heavily linked Bases take a while at 5 req/s. Self-hosted users can raise
-  `nocodb.requests_per_second`.
+  `nocodb.requests_per_second`. (Since 2026-09-26 this is a per-connection
+  setting, "Requests per second" on the NocoDB connection, not a config key.)
 - Browsing a Snapshot re-reads the document from storage (the last few tables
   are cached in memory).
 - Running multiple neo-box replicas would double-fire schedules; that needs a
