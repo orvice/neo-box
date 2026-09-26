@@ -138,6 +138,12 @@ its feature folder).
   entries to `provider-info.ts` and `providers.ts` in the frontend.
 - Frontend uses npm (`package-lock.json` is tracked); prettier config in
   `front/.prettierrc`.
+- Charts use shadcn `chart` (recharts). Series colors come from the dataviz
+  reference palette (categorical slot 1 blue, slot 2 orange), with separate
+  light and dark steps validated on the card surfaces (`#ffffff`,
+  `#020919`). Every chart has a table view, a crosshair tooltip, solid
+  hairline grid, and 2px lines with ~10% fills. Byte axes use `byteTicks`
+  for round base-2 ticks. See `front/src/features/wasabi/usage-charts.tsx`.
 
 ## Domain
 

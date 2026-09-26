@@ -1,4 +1,4 @@
-import { DatabaseBackup, type LucideIcon } from 'lucide-react'
+import { Cloud, DatabaseBackup, type LucideIcon } from 'lucide-react'
 import { Provider } from '@/api/connections'
 
 /**
@@ -22,6 +22,14 @@ export const providerInfos: ProviderInfo[] = [
     description:
       'Snapshot the Bases of a self-hosted NocoDB, on demand or on a schedule.',
     icon: DatabaseBackup,
+  },
+  {
+    provider: Provider.WASABI,
+    key: 'wasabi',
+    label: 'Wasabi',
+    description:
+      'Daily storage, egress, and an estimated cost for a Wasabi account.',
+    icon: Cloud,
   },
 ]
 

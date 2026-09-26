@@ -1,5 +1,6 @@
 import { Provider } from '@/api/connections'
 import { nocodbViews } from '@/features/nocodb/provider'
+import { wasabiViews } from '@/features/wasabi/provider'
 import { providerInfos, type ProviderInfo } from './provider-info'
 import type { ProviderViews } from './types'
 
@@ -7,6 +8,7 @@ export type ProviderDef = ProviderInfo & ProviderViews
 
 const views: Partial<Record<Provider, ProviderViews>> = {
   [Provider.NOCODB]: nocodbViews,
+  [Provider.WASABI]: wasabiViews,
 }
 
 /** Every provider the dashboard can show, in sidebar order. */
