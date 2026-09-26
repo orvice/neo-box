@@ -15,6 +15,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/repo/auth"
 	nocodbrepo "go.orx.me/apps/neo-box/internal/repo/nocodb"
 	"go.orx.me/apps/neo-box/internal/transport/connectx"
+	"go.orx.me/apps/neo-box/internal/wasabisync"
 	"go.orx.me/apps/neo-box/pkg/proto/neobox/v1/neoboxv1connect"
 )
 
@@ -26,11 +27,13 @@ type Handlers struct {
 	authSvcServer       *application.AuthServiceServer
 	connectionSvcServer *application.ConnectionServiceServer
 	nocodbSvcServer     *application.NocoDBServiceServer
+	wasabiSvcServer     *application.WasabiServiceServer
 	authRepo            atomic.Value // auth.Repository
 	snapshots           atomic.Value // *snapshotContent
 
 	stop    context.CancelFunc
 	manager *backup.Manager
+	wasabi  *wasabisync.Manager
 }
 
 func (h *Handlers) authRepoFromHolder() auth.Repository {
@@ -72,12 +75,15 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 	connectionConnectPath, connectionConnectHandler := neoboxv1connect.NewConnectionServiceHandler(connectionSvcServer, connectOpts...)
 	nocodbSvcServer := application.NewNocoDBServiceServer()
 	nocodbConnectPath, nocodbConnectHandler := neoboxv1connect.NewNocoDBServiceHandler(nocodbSvcServer, connectOpts...)
+	wasabiSvcServer := application.NewWasabiServiceServer()
+	wasabiConnectPath, wasabiConnectHandler := neoboxv1connect.NewWasabiServiceHandler(wasabiSvcServer, connectOpts...)
 
 	handlers := &Handlers{
 		cfg:                 cfg,
 		authSvcServer:       authSvcServer,
 		connectionSvcServer: connectionSvcServer,
 		nocodbSvcServer:     nocodbSvcServer,
+		wasabiSvcServer:     wasabiSvcServer,
 	}
 
 	router := func(r *gin.Engine) {
@@ -88,6 +94,7 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 		r.Any("/api"+authConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", authConnectHandler)))
 		r.Any("/api"+connectionConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", connectionConnectHandler)))
 		r.Any("/api"+nocodbConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", nocodbConnectHandler)))
+		r.Any("/api"+wasabiConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", wasabiConnectHandler)))
 	}
 
 	return router, handlers

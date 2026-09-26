@@ -22,7 +22,9 @@ import (
 	connectionpg "go.orx.me/apps/neo-box/internal/repo/connection/postgres"
 	nocodbpg "go.orx.me/apps/neo-box/internal/repo/nocodb/postgres"
 	oauthstatepg "go.orx.me/apps/neo-box/internal/repo/oauthstate/postgres"
+	wasabipg "go.orx.me/apps/neo-box/internal/repo/wasabi/postgres"
 	"go.orx.me/apps/neo-box/internal/secretbox"
+	"go.orx.me/apps/neo-box/internal/wasabisync"
 )
 
 // Bootstrap connects storage, migrates the schema, seeds the initial admin,
@@ -55,6 +57,10 @@ func (h *Handlers) Bootstrap(ctx context.Context) error {
 
 	runCtx, stop := context.WithCancel(context.Background())
 	if err := h.bootstrapNocoDB(ctx, runCtx, client, conns); err != nil {
+		stop()
+		return err
+	}
+	if err := h.bootstrapWasabi(runCtx, client, conns); err != nil {
 		stop()
 		return err
 	}
@@ -126,15 +132,32 @@ func purgeExpired(ctx context.Context, sessions *authpg.Store, states *oauthstat
 	}
 }
 
-// Shutdown stops the backup scheduler and workers. In-flight snapshots are
-// cancelled and recorded as failed (or on next startup).
+func (h *Handlers) bootstrapWasabi(runCtx context.Context, client *ent.Client, conns *connection.Service) error {
+	repo := wasabipg.New(client)
+	manager := wasabisync.New(wasabisync.Config{Endpoint: h.cfg.Wasabi.StatsEndpoint}, repo, conns)
+	conns.Register(manager.ConnectionProvider())
+	if err := manager.Start(runCtx); err != nil {
+		return err
+	}
+	h.wasabi = manager
+	h.wasabiSvcServer.SetDeps(repo, manager, conns)
+	return nil
+}
+
+// Shutdown stops the backup and Wasabi schedulers and workers. In-flight
+// snapshots are cancelled and recorded as failed (or on next startup); an
+// interrupted Wasabi sync resumes on the next start.
 func (h *Handlers) Shutdown() error {
 	if h.stop == nil {
 		return nil
 	}
 	h.stop()
 	done := make(chan struct{})
-	go func() { h.manager.Wait(); close(done) }()
+	go func() {
+		h.manager.Wait()
+		h.wasabi.Wait()
+		close(done)
+	}()
 	select {
 	case <-done:
 	case <-time.After(30 * time.Second):

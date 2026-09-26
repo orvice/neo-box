@@ -1,0 +1,145 @@
+syntax = "proto3";
+
+package neobox.v1;
+
+import "google/protobuf/timestamp.proto";
+import "validate/validate.proto";
+
+option go_package = "go.orx.me/apps/neo-box/pkg/proto/neobox/v1;neoboxv1";
+
+// WasabiService shows the daily usage and estimated cost of Wasabi
+// connections, synced from the Wasabi Stats API. Connections themselves are
+// managed by ConnectionService; connection_id must name one of the caller's
+// Wasabi connections. Days are UTC, written YYYY-MM-DD.
+service WasabiService {
+  // GetWasabiOverview returns the newest account totals, the cost estimate,
+  // and the sync state.
+  rpc GetWasabiOverview(GetWasabiOverviewRequest) returns (GetWasabiOverviewResponse);
+  // ListWasabiBuckets lists buckets with their newest day of usage.
+  rpc ListWasabiBuckets(ListWasabiBucketsRequest) returns (ListWasabiBucketsResponse);
+  // GetWasabiUsage returns the daily usage of the account or one bucket.
+  rpc GetWasabiUsage(GetWasabiUsageRequest) returns (GetWasabiUsageResponse);
+  // SyncWasabiConnection re-fetches the last 7 days in the background (a
+  // backfill first, if it has not finished).
+  rpc SyncWasabiConnection(SyncWasabiConnectionRequest) returns (SyncWasabiConnectionResponse);
+}
+
+// WasabiUsage is one day of Stats API utilization. Storage fields are a
+// snapshot at midnight UTC; activity fields cover that day.
+message WasabiUsage {
+  string day = 1;
+  // Empty for the account as a whole.
+  string bucket = 2;
+  string region = 3;
+  // Billable active storage: padded object bytes plus metadata.
+  int64 active_storage_bytes = 4;
+  // Deleted data still billed under the minimum storage duration.
+  int64 deleted_storage_bytes = 5;
+  int64 billable_objects = 6;
+  int64 billable_deleted_objects = 7;
+  int64 raw_storage_bytes = 8;
+  int64 padded_storage_bytes = 9;
+  int64 metadata_storage_bytes = 10;
+  int64 orphaned_storage_bytes = 11;
+  int64 min_storage_charge_bytes = 12;
+  int64 api_calls = 13;
+  int64 upload_bytes = 14;
+  // Egress.
+  int64 download_bytes = 15;
+  int64 storage_wrote_bytes = 16;
+  int64 storage_read_bytes = 17;
+  int64 delete_bytes = 18;
+  int64 get_calls = 19;
+  int64 put_calls = 20;
+  int64 delete_calls = 21;
+  int64 list_calls = 22;
+  int64 head_calls = 23;
+}
+
+// WasabiCostEstimate is an estimate from Wasabi's published formulas, not
+// an invoice.
+message WasabiCostEstimate {
+  string period_start = 1;
+  string period_end = 2;
+  // No billing-cycle anchor: the period is the last 30 days and
+  // projected_cost is a monthly run rate.
+  bool rolling = 3;
+  // Newest day with data in the period; empty when there is none.
+  string data_through = 4;
+  int32 days_with_data = 5;
+  // USD.
+  double cost_to_date = 6;
+  // USD; the whole period, with days lacking data filled from the newest.
+  double projected_cost = 7;
+  double price_per_tb_month = 8;
+  int64 egress_bytes = 9;
+  // Egress above the average active storage: outside Wasabi's free-egress
+  // allowance.
+  bool egress_exceeds_storage = 10;
+}
+
+message WasabiSyncState {
+  // A sync is queued or running.
+  bool syncing = 1;
+  google.protobuf.Timestamp last_success_at = 2;
+  // Newest day with account data; empty before the first sync.
+  string last_synced_day = 3;
+  bool backfill_complete = 4;
+  // Share of the 12-month backfill done, 0..1.
+  double backfill_progress = 5;
+}
+
+message WasabiBucket {
+  string name = 1;
+  string region = 2;
+  // The bucket is missing from the newest day of data.
+  bool deleted = 3;
+  WasabiUsage latest = 4;
+}
+
+message GetWasabiOverviewRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetWasabiOverviewResponse {
+  // Newest day of account totals; unset before any data arrived.
+  WasabiUsage latest = 1;
+  // Unset when the estimate is disabled for the connection.
+  WasabiCostEstimate cost_estimate = 2;
+  WasabiSyncState sync = 3;
+  // Buckets present on the newest day.
+  int32 bucket_count = 4;
+}
+
+message ListWasabiBucketsRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  // Also list buckets that are gone from the newest day of data.
+  bool include_deleted = 2;
+}
+
+message ListWasabiBucketsResponse {
+  repeated WasabiBucket buckets = 1;
+}
+
+message GetWasabiUsageRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  // Empty for account totals.
+  string bucket = 2;
+  // Inclusive; empty means 90 days before `to`.
+  string from = 3;
+  // Inclusive; empty means today.
+  string to = 4;
+}
+
+message GetWasabiUsageResponse {
+  // Oldest first; days without data are absent.
+  repeated WasabiUsage days = 1;
+}
+
+message SyncWasabiConnectionRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message SyncWasabiConnectionResponse {
+  WasabiSyncState sync = 1;
+}

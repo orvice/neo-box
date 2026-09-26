@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file neobox/v1/connection.proto.
  */
 export const file_neobox_v1_connection: GenFile = /*@__PURE__*/
-  fileDesc("ChpuZW9ib3gvdjEvY29ubmVjdGlvbi5wcm90bxIJbmVvYm94LnYxIugCCgpDb25uZWN0aW9uEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSJQoIcHJvdmlkZXIYAyABKA4yEy5uZW9ib3gudjEuUHJvdmlkZXISKwoGc3RhdHVzGAQgASgOMhsubmVvYm94LnYxLkNvbm5lY3Rpb25TdGF0dXMSFgoOc3RhdHVzX21lc3NhZ2UYBSABKAkSNQoRc3RhdHVzX2NoZWNrZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCmNyZWF0ZWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjMKBm5vY29kYhgUIAEoCzIhLm5lb2JveC52MS5Ob2NvREJDb25uZWN0aW9uQ29uZmlnSABCCAoGY29uZmlnIioKFk5vY29EQkNvbm5lY3Rpb25Db25maWcSEAoIYmFzZV91cmwYASABKAkiSAoYTm9jb0RCQ29ubmVjdGlvblNldHRpbmdzEhkKCGJhc2VfdXJsGAEgASgJQgf6QgRyAhABEhEKCWFwaV90b2tlbhgCIAEoCSI/ChZMaXN0Q29ubmVjdGlvbnNSZXF1ZXN0EiUKCHByb3ZpZGVyGAEgASgOMhMubmVvYm94LnYxLlByb3ZpZGVyIkUKF0xpc3RDb25uZWN0aW9uc1Jlc3BvbnNlEioKC2Nvbm5lY3Rpb25zGAEgAygLMhUubmVvYm94LnYxLkNvbm5lY3Rpb24iKwoUR2V0Q29ubmVjdGlvblJlcXVlc3QSEwoCaWQYASABKAlCB/pCBHICEAEiQgoVR2V0Q29ubmVjdGlvblJlc3BvbnNlEikKCmNvbm5lY3Rpb24YASABKAsyFS5uZW9ib3gudjEuQ29ubmVjdGlvbiJ4ChdDcmVhdGVDb25uZWN0aW9uUmVxdWVzdBIVCgRuYW1lGAEgASgJQgf6QgRyAhABEjUKBm5vY29kYhgUIAEoCzIjLm5lb2JveC52MS5Ob2NvREJDb25uZWN0aW9uU2V0dGluZ3NIAEIPCghzZXR0aW5ncxID+EIBIkUKGENyZWF0ZUNvbm5lY3Rpb25SZXNwb25zZRIpCgpjb25uZWN0aW9uGAEgASgLMhUubmVvYm94LnYxLkNvbm5lY3Rpb24ijQEKF1VwZGF0ZUNvbm5lY3Rpb25SZXF1ZXN0EhMKAmlkGAEgASgJQgf6QgRyAhABEhUKBG5hbWUYAiABKAlCB/pCBHICEAESNQoGbm9jb2RiGBQgASgLMiMubmVvYm94LnYxLk5vY29EQkNvbm5lY3Rpb25TZXR0aW5nc0gAQg8KCHNldHRpbmdzEgP4QgEiRQoYVXBkYXRlQ29ubmVjdGlvblJlc3BvbnNlEikKCmNvbm5lY3Rpb24YASABKAsyFS5uZW9ib3gudjEuQ29ubmVjdGlvbiIuChdEZWxldGVDb25uZWN0aW9uUmVxdWVzdBITCgJpZBgBIAEoCUIH+kIEcgIQASIaChhEZWxldGVDb25uZWN0aW9uUmVzcG9uc2UiLAoVVGVzdENvbm5lY3Rpb25SZXF1ZXN0EhMKAmlkGAEgASgJQgf6QgRyAhABIkMKFlRlc3RDb25uZWN0aW9uUmVzcG9uc2USKQoKY29ubmVjdGlvbhgBIAEoCzIVLm5lb2JveC52MS5Db25uZWN0aW9uKjkKCFByb3ZpZGVyEhgKFFBST1ZJREVSX1VOU1BFQ0lGSUVEEAASEwoPUFJPVklERVJfTk9DT0RCEAEqbAoQQ29ubmVjdGlvblN0YXR1cxIhCh1DT05ORUNUSU9OX1NUQVRVU19VTlNQRUNJRklFRBAAEhgKFENPTk5FQ1RJT05fU1RBVFVTX09LEAESGwoXQ09OTkVDVElPTl9TVEFUVVNfRVJST1IQAjKvBAoRQ29ubmVjdGlvblNlcnZpY2USWAoPTGlzdENvbm5lY3Rpb25zEiEubmVvYm94LnYxLkxpc3RDb25uZWN0aW9uc1JlcXVlc3QaIi5uZW9ib3gudjEuTGlzdENvbm5lY3Rpb25zUmVzcG9uc2USUgoNR2V0Q29ubmVjdGlvbhIfLm5lb2JveC52MS5HZXRDb25uZWN0aW9uUmVxdWVzdBogLm5lb2JveC52MS5HZXRDb25uZWN0aW9uUmVzcG9uc2USWwoQQ3JlYXRlQ29ubmVjdGlvbhIiLm5lb2JveC52MS5DcmVhdGVDb25uZWN0aW9uUmVxdWVzdBojLm5lb2JveC52MS5DcmVhdGVDb25uZWN0aW9uUmVzcG9uc2USWwoQVXBkYXRlQ29ubmVjdGlvbhIiLm5lb2JveC52MS5VcGRhdGVDb25uZWN0aW9uUmVxdWVzdBojLm5lb2JveC52MS5VcGRhdGVDb25uZWN0aW9uUmVzcG9uc2USWwoQRGVsZXRlQ29ubmVjdGlvbhIiLm5lb2JveC52MS5EZWxldGVDb25uZWN0aW9uUmVxdWVzdBojLm5lb2JveC52MS5EZWxldGVDb25uZWN0aW9uUmVzcG9uc2USVQoOVGVzdENvbm5lY3Rpb24SIC5uZW9ib3gudjEuVGVzdENvbm5lY3Rpb25SZXF1ZXN0GiEubmVvYm94LnYxLlRlc3RDb25uZWN0aW9uUmVzcG9uc2VCNVozZ28ub3J4Lm1lL2FwcHMvbmVvLWJveC9wa2cvcHJvdG8vbmVvYm94L3YxO25lb2JveHYxYgZwcm90bzM", [file_google_protobuf_timestamp, file_validate_validate]);
+  fileDesc("ChpuZW9ib3gvdjEvY29ubmVjdGlvbi5wcm90bxIJbmVvYm94LnYxIp0DCgpDb25uZWN0aW9uEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSJQoIcHJvdmlkZXIYAyABKA4yEy5uZW9ib3gudjEuUHJvdmlkZXISKwoGc3RhdHVzGAQgASgOMhsubmVvYm94LnYxLkNvbm5lY3Rpb25TdGF0dXMSFgoOc3RhdHVzX21lc3NhZ2UYBSABKAkSNQoRc3RhdHVzX2NoZWNrZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCmNyZWF0ZWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjMKBm5vY29kYhgUIAEoCzIhLm5lb2JveC52MS5Ob2NvREJDb25uZWN0aW9uQ29uZmlnSAASMwoGd2FzYWJpGBUgASgLMiEubmVvYm94LnYxLldhc2FiaUNvbm5lY3Rpb25Db25maWdIAEIICgZjb25maWciKgoWTm9jb0RCQ29ubmVjdGlvbkNvbmZpZxIQCghiYXNlX3VybBgBIAEoCSJIChhOb2NvREJDb25uZWN0aW9uU2V0dGluZ3MSGQoIYmFzZV91cmwYASABKAlCB/pCBHICEAESEQoJYXBpX3Rva2VuGAIgASgJIogBChZXYXNhYmlDb25uZWN0aW9uQ29uZmlnEhUKDWFjY2Vzc19rZXlfaWQYASABKAkSGgoScHJpY2VfcGVyX3RiX21vbnRoGAIgASgBEhwKFGJpbGxpbmdfY3ljbGVfYW5jaG9yGAMgASgJEh0KFWNvc3RfZXN0aW1hdGVfZW5hYmxlZBgEIAEoCCK3AQoYV2FzYWJpQ29ubmVjdGlvblNldHRpbmdzEh4KDWFjY2Vzc19rZXlfaWQYASABKAlCB/pCBHICEAESEgoKc2VjcmV0X2tleRgCIAEoCRIqChJwcmljZV9wZXJfdGJfbW9udGgYAyABKAFCDvpCCxIJKQAAAAAAAAAAEhwKFGJpbGxpbmdfY3ljbGVfYW5jaG9yGAQgASgJEh0KFWNvc3RfZXN0aW1hdGVfZW5hYmxlZBgFIAEoCCI/ChZMaXN0Q29ubmVjdGlvbnNSZXF1ZXN0EiUKCHByb3ZpZGVyGAEgASgOMhMubmVvYm94LnYxLlByb3ZpZGVyIkUKF0xpc3RDb25uZWN0aW9uc1Jlc3BvbnNlEioKC2Nvbm5lY3Rpb25zGAEgAygLMhUubmVvYm94LnYxLkNvbm5lY3Rpb24iKwoUR2V0Q29ubmVjdGlvblJlcXVlc3QSEwoCaWQYASABKAlCB/pCBHICEAEiQgoVR2V0Q29ubmVjdGlvblJlc3BvbnNlEikKCmNvbm5lY3Rpb24YASABKAsyFS5uZW9ib3gudjEuQ29ubmVjdGlvbiKvAQoXQ3JlYXRlQ29ubmVjdGlvblJlcXVlc3QSFQoEbmFtZRgBIAEoCUIH+kIEcgIQARI1CgZub2NvZGIYFCABKAsyIy5uZW9ib3gudjEuTm9jb0RCQ29ubmVjdGlvblNldHRpbmdzSAASNQoGd2FzYWJpGBUgASgLMiMubmVvYm94LnYxLldhc2FiaUNvbm5lY3Rpb25TZXR0aW5nc0gAQg8KCHNldHRpbmdzEgP4QgEiRQoYQ3JlYXRlQ29ubmVjdGlvblJlc3BvbnNlEikKCmNvbm5lY3Rpb24YASABKAsyFS5uZW9ib3gudjEuQ29ubmVjdGlvbiLEAQoXVXBkYXRlQ29ubmVjdGlvblJlcXVlc3QSEwoCaWQYASABKAlCB/pCBHICEAESFQoEbmFtZRgCIAEoCUIH+kIEcgIQARI1CgZub2NvZGIYFCABKAsyIy5uZW9ib3gudjEuTm9jb0RCQ29ubmVjdGlvblNldHRpbmdzSAASNQoGd2FzYWJpGBUgASgLMiMubmVvYm94LnYxLldhc2FiaUNvbm5lY3Rpb25TZXR0aW5nc0gAQg8KCHNldHRpbmdzEgP4QgEiRQoYVXBkYXRlQ29ubmVjdGlvblJlc3BvbnNlEikKCmNvbm5lY3Rpb24YASABKAsyFS5uZW9ib3gudjEuQ29ubmVjdGlvbiIuChdEZWxldGVDb25uZWN0aW9uUmVxdWVzdBITCgJpZBgBIAEoCUIH+kIEcgIQASIaChhEZWxldGVDb25uZWN0aW9uUmVzcG9uc2UiLAoVVGVzdENvbm5lY3Rpb25SZXF1ZXN0EhMKAmlkGAEgASgJQgf6QgRyAhABIkMKFlRlc3RDb25uZWN0aW9uUmVzcG9uc2USKQoKY29ubmVjdGlvbhgBIAEoCzIVLm5lb2JveC52MS5Db25uZWN0aW9uKk4KCFByb3ZpZGVyEhgKFFBST1ZJREVSX1VOU1BFQ0lGSUVEEAASEwoPUFJPVklERVJfTk9DT0RCEAESEwoPUFJPVklERVJfV0FTQUJJEAIqbAoQQ29ubmVjdGlvblN0YXR1cxIhCh1DT05ORUNUSU9OX1NUQVRVU19VTlNQRUNJRklFRBAAEhgKFENPTk5FQ1RJT05fU1RBVFVTX09LEAESGwoXQ09OTkVDVElPTl9TVEFUVVNfRVJST1IQAjKvBAoRQ29ubmVjdGlvblNlcnZpY2USWAoPTGlzdENvbm5lY3Rpb25zEiEubmVvYm94LnYxLkxpc3RDb25uZWN0aW9uc1JlcXVlc3QaIi5uZW9ib3gudjEuTGlzdENvbm5lY3Rpb25zUmVzcG9uc2USUgoNR2V0Q29ubmVjdGlvbhIfLm5lb2JveC52MS5HZXRDb25uZWN0aW9uUmVxdWVzdBogLm5lb2JveC52MS5HZXRDb25uZWN0aW9uUmVzcG9uc2USWwoQQ3JlYXRlQ29ubmVjdGlvbhIiLm5lb2JveC52MS5DcmVhdGVDb25uZWN0aW9uUmVxdWVzdBojLm5lb2JveC52MS5DcmVhdGVDb25uZWN0aW9uUmVzcG9uc2USWwoQVXBkYXRlQ29ubmVjdGlvbhIiLm5lb2JveC52MS5VcGRhdGVDb25uZWN0aW9uUmVxdWVzdBojLm5lb2JveC52MS5VcGRhdGVDb25uZWN0aW9uUmVzcG9uc2USWwoQRGVsZXRlQ29ubmVjdGlvbhIiLm5lb2JveC52MS5EZWxldGVDb25uZWN0aW9uUmVxdWVzdBojLm5lb2JveC52MS5EZWxldGVDb25uZWN0aW9uUmVzcG9uc2USVQoOVGVzdENvbm5lY3Rpb24SIC5uZW9ib3gudjEuVGVzdENvbm5lY3Rpb25SZXF1ZXN0GiEubmVvYm94LnYxLlRlc3RDb25uZWN0aW9uUmVzcG9uc2VCNVozZ28ub3J4Lm1lL2FwcHMvbmVvLWJveC9wa2cvcHJvdG8vbmVvYm94L3YxO25lb2JveHYxYgZwcm90bzM", [file_google_protobuf_timestamp, file_validate_validate]);
 
 /**
  * @generated from message neobox.v1.Connection
@@ -72,6 +72,12 @@ export type Connection = Message<"neobox.v1.Connection"> & {
      */
     value: NocoDBConnectionConfig;
     case: "nocodb";
+  } | {
+    /**
+     * @generated from field: neobox.v1.WasabiConnectionConfig wasabi = 21;
+     */
+    value: WasabiConnectionConfig;
+    case: "wasabi";
   } | { case: undefined; value?: undefined };
 };
 
@@ -130,6 +136,91 @@ export const NocoDBConnectionSettingsSchema: GenMessage<NocoDBConnectionSettings
   messageDesc(file_neobox_v1_connection, 2);
 
 /**
+ * WasabiConnectionConfig is the non-secret part of a Wasabi connection.
+ *
+ * @generated from message neobox.v1.WasabiConnectionConfig
+ */
+export type WasabiConnectionConfig = Message<"neobox.v1.WasabiConnectionConfig"> & {
+  /**
+   * @generated from field: string access_key_id = 1;
+   */
+  accessKeyId: string;
+
+  /**
+   * Storage price for the cost estimate, USD per TB-month.
+   *
+   * @generated from field: double price_per_tb_month = 2;
+   */
+  pricePerTbMonth: number;
+
+  /**
+   * A day (YYYY-MM-DD) on which a 30-day billing cycle started; empty
+   * estimates over the last 30 days.
+   *
+   * @generated from field: string billing_cycle_anchor = 3;
+   */
+  billingCycleAnchor: string;
+
+  /**
+   * @generated from field: bool cost_estimate_enabled = 4;
+   */
+  costEstimateEnabled: boolean;
+};
+
+/**
+ * Describes the message neobox.v1.WasabiConnectionConfig.
+ * Use `create(WasabiConnectionConfigSchema)` to create a new message.
+ */
+export const WasabiConnectionConfigSchema: GenMessage<WasabiConnectionConfig> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_connection, 3);
+
+/**
+ * WasabiConnectionSettings is what a user enters for a Wasabi connection.
+ * The key should belong to a read-only sub-user with Stats access.
+ *
+ * @generated from message neobox.v1.WasabiConnectionSettings
+ */
+export type WasabiConnectionSettings = Message<"neobox.v1.WasabiConnectionSettings"> & {
+  /**
+   * @generated from field: string access_key_id = 1;
+   */
+  accessKeyId: string;
+
+  /**
+   * Required on create; on update, empty keeps the stored secret key.
+   *
+   * @generated from field: string secret_key = 2;
+   */
+  secretKey: string;
+
+  /**
+   * 0 uses the Pay-Go price (7.99).
+   *
+   * @generated from field: double price_per_tb_month = 3;
+   */
+  pricePerTbMonth: number;
+
+  /**
+   * YYYY-MM-DD, or empty.
+   *
+   * @generated from field: string billing_cycle_anchor = 4;
+   */
+  billingCycleAnchor: string;
+
+  /**
+   * @generated from field: bool cost_estimate_enabled = 5;
+   */
+  costEstimateEnabled: boolean;
+};
+
+/**
+ * Describes the message neobox.v1.WasabiConnectionSettings.
+ * Use `create(WasabiConnectionSettingsSchema)` to create a new message.
+ */
+export const WasabiConnectionSettingsSchema: GenMessage<WasabiConnectionSettings> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_connection, 4);
+
+/**
  * @generated from message neobox.v1.ListConnectionsRequest
  */
 export type ListConnectionsRequest = Message<"neobox.v1.ListConnectionsRequest"> & {
@@ -146,7 +237,7 @@ export type ListConnectionsRequest = Message<"neobox.v1.ListConnectionsRequest">
  * Use `create(ListConnectionsRequestSchema)` to create a new message.
  */
 export const ListConnectionsRequestSchema: GenMessage<ListConnectionsRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 3);
+  messageDesc(file_neobox_v1_connection, 5);
 
 /**
  * @generated from message neobox.v1.ListConnectionsResponse
@@ -163,7 +254,7 @@ export type ListConnectionsResponse = Message<"neobox.v1.ListConnectionsResponse
  * Use `create(ListConnectionsResponseSchema)` to create a new message.
  */
 export const ListConnectionsResponseSchema: GenMessage<ListConnectionsResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 4);
+  messageDesc(file_neobox_v1_connection, 6);
 
 /**
  * @generated from message neobox.v1.GetConnectionRequest
@@ -180,7 +271,7 @@ export type GetConnectionRequest = Message<"neobox.v1.GetConnectionRequest"> & {
  * Use `create(GetConnectionRequestSchema)` to create a new message.
  */
 export const GetConnectionRequestSchema: GenMessage<GetConnectionRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 5);
+  messageDesc(file_neobox_v1_connection, 7);
 
 /**
  * @generated from message neobox.v1.GetConnectionResponse
@@ -197,7 +288,7 @@ export type GetConnectionResponse = Message<"neobox.v1.GetConnectionResponse"> &
  * Use `create(GetConnectionResponseSchema)` to create a new message.
  */
 export const GetConnectionResponseSchema: GenMessage<GetConnectionResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 6);
+  messageDesc(file_neobox_v1_connection, 8);
 
 /**
  * @generated from message neobox.v1.CreateConnectionRequest
@@ -217,6 +308,12 @@ export type CreateConnectionRequest = Message<"neobox.v1.CreateConnectionRequest
      */
     value: NocoDBConnectionSettings;
     case: "nocodb";
+  } | {
+    /**
+     * @generated from field: neobox.v1.WasabiConnectionSettings wasabi = 21;
+     */
+    value: WasabiConnectionSettings;
+    case: "wasabi";
   } | { case: undefined; value?: undefined };
 };
 
@@ -225,7 +322,7 @@ export type CreateConnectionRequest = Message<"neobox.v1.CreateConnectionRequest
  * Use `create(CreateConnectionRequestSchema)` to create a new message.
  */
 export const CreateConnectionRequestSchema: GenMessage<CreateConnectionRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 7);
+  messageDesc(file_neobox_v1_connection, 9);
 
 /**
  * @generated from message neobox.v1.CreateConnectionResponse
@@ -242,7 +339,7 @@ export type CreateConnectionResponse = Message<"neobox.v1.CreateConnectionRespon
  * Use `create(CreateConnectionResponseSchema)` to create a new message.
  */
 export const CreateConnectionResponseSchema: GenMessage<CreateConnectionResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 8);
+  messageDesc(file_neobox_v1_connection, 10);
 
 /**
  * @generated from message neobox.v1.UpdateConnectionRequest
@@ -267,6 +364,12 @@ export type UpdateConnectionRequest = Message<"neobox.v1.UpdateConnectionRequest
      */
     value: NocoDBConnectionSettings;
     case: "nocodb";
+  } | {
+    /**
+     * @generated from field: neobox.v1.WasabiConnectionSettings wasabi = 21;
+     */
+    value: WasabiConnectionSettings;
+    case: "wasabi";
   } | { case: undefined; value?: undefined };
 };
 
@@ -275,7 +378,7 @@ export type UpdateConnectionRequest = Message<"neobox.v1.UpdateConnectionRequest
  * Use `create(UpdateConnectionRequestSchema)` to create a new message.
  */
 export const UpdateConnectionRequestSchema: GenMessage<UpdateConnectionRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 9);
+  messageDesc(file_neobox_v1_connection, 11);
 
 /**
  * @generated from message neobox.v1.UpdateConnectionResponse
@@ -292,7 +395,7 @@ export type UpdateConnectionResponse = Message<"neobox.v1.UpdateConnectionRespon
  * Use `create(UpdateConnectionResponseSchema)` to create a new message.
  */
 export const UpdateConnectionResponseSchema: GenMessage<UpdateConnectionResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 10);
+  messageDesc(file_neobox_v1_connection, 12);
 
 /**
  * @generated from message neobox.v1.DeleteConnectionRequest
@@ -309,7 +412,7 @@ export type DeleteConnectionRequest = Message<"neobox.v1.DeleteConnectionRequest
  * Use `create(DeleteConnectionRequestSchema)` to create a new message.
  */
 export const DeleteConnectionRequestSchema: GenMessage<DeleteConnectionRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 11);
+  messageDesc(file_neobox_v1_connection, 13);
 
 /**
  * @generated from message neobox.v1.DeleteConnectionResponse
@@ -322,7 +425,7 @@ export type DeleteConnectionResponse = Message<"neobox.v1.DeleteConnectionRespon
  * Use `create(DeleteConnectionResponseSchema)` to create a new message.
  */
 export const DeleteConnectionResponseSchema: GenMessage<DeleteConnectionResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 12);
+  messageDesc(file_neobox_v1_connection, 14);
 
 /**
  * @generated from message neobox.v1.TestConnectionRequest
@@ -339,7 +442,7 @@ export type TestConnectionRequest = Message<"neobox.v1.TestConnectionRequest"> &
  * Use `create(TestConnectionRequestSchema)` to create a new message.
  */
 export const TestConnectionRequestSchema: GenMessage<TestConnectionRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 13);
+  messageDesc(file_neobox_v1_connection, 15);
 
 /**
  * @generated from message neobox.v1.TestConnectionResponse
@@ -358,7 +461,7 @@ export type TestConnectionResponse = Message<"neobox.v1.TestConnectionResponse">
  * Use `create(TestConnectionResponseSchema)` to create a new message.
  */
 export const TestConnectionResponseSchema: GenMessage<TestConnectionResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 14);
+  messageDesc(file_neobox_v1_connection, 16);
 
 /**
  * @generated from enum neobox.v1.Provider
@@ -373,6 +476,11 @@ export enum Provider {
    * @generated from enum value: PROVIDER_NOCODB = 1;
    */
   NOCODB = 1,
+
+  /**
+   * @generated from enum value: PROVIDER_WASABI = 2;
+   */
+  WASABI = 2,
 }
 
 /**

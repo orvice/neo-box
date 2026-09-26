@@ -79,6 +79,14 @@ shadcn/ui + Connect-Web on the frontend.
   gzip JSON; format in `format.go`, rationale in `docs/adr/0001`).
 - `internal/backup/` — `Manager`: worker queue running snapshots, in-process
   cron for Backup Policies, retention, and one-snapshot-per-Base guarding.
+- `internal/wasabi/` — Wasabi Stats API client (`Authorization: AK:SK`,
+  pages until a short page, accepts both the paged-object and bare-array
+  response shapes), connection settings, and `EstimateCost` (Wasabi's
+  published per-day formula).
+- `internal/wasabisync/` — `Manager`: one sync at a time; 12-month backfill in
+  30-day chunks that resumes after failures, daily run at 02:30 UTC from the
+  last synced day, `Refresh` for the last 7 days, catch-up at startup. Also
+  the "wasabi" connection Provider (`Activate` queues the first sync).
 
 **User center** (`proto/neobox/v1/auth.proto`, `AuthService`): password
 login, OAuth login (`BeginOAuthFlow` → provider → `CompleteOAuthFlow`, CSRF
@@ -98,6 +106,13 @@ Base listing joined with policy + latest snapshot, `UpsertBackupPolicy`,
 async `CreateSnapshot` (poll `GetSnapshot`), `ListSnapshotRecords` for
 browsing, and `GET /api/nocodb/snapshots/:id/download` for the raw
 `.json.gz`. `connection_id` must be the caller's NocoDB connection.
+
+**Wasabi usage** (`proto/neobox/v1/wasabi.proto`, `WasabiService`):
+overview (newest account totals, cost estimate, sync state), buckets with
+their newest day (gone buckets flagged `deleted`), daily usage of the
+account or a bucket, and "sync now". Days are UTC `YYYY-MM-DD` strings.
+`connection_id` must be the caller's Wasabi connection. The live Stats API
+test needs `NEOBOX_TEST_WASABI_ACCESS_KEY` / `NEOBOX_TEST_WASABI_SECRET_KEY`.
 
 **Frontend** (`front/`): `src/api/transport.ts` is the Connect transport
 (binary protobuf, Bearer interceptor, redirect to `/sign-in` on

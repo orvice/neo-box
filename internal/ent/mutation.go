@@ -18,6 +18,8 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent/predicate"
 	"go.orx.me/apps/neo-box/internal/ent/session"
 	"go.orx.me/apps/neo-box/internal/ent/user"
+	"go.orx.me/apps/neo-box/internal/ent/wasabidailyusage"
+	"go.orx.me/apps/neo-box/internal/ent/wasabisyncstate"
 	"go.orx.me/apps/neo-box/internal/repo/nocodb"
 )
 
@@ -36,6 +38,8 @@ const (
 	TypeOAuthState         = "OAuthState"
 	TypeSession            = "Session"
 	TypeUser               = "User"
+	TypeWasabiDailyUsage   = "WasabiDailyUsage"
+	TypeWasabiSyncState    = "WasabiSyncState"
 )
 
 // ConnectionMutation represents an operation that mutates the Connection nodes in the graph.
@@ -4873,4 +4877,2848 @@ func (m *UserMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *UserMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown User edge %s", name)
+}
+
+// WasabiDailyUsageMutation represents an operation that mutates the WasabiDailyUsage nodes in the graph.
+type WasabiDailyUsageMutation struct {
+	config
+	op                              Op
+	typ                             string
+	id                              *int
+	connection_id                   *string
+	bucket                          *string
+	day                             *time.Time
+	region                          *string
+	num_billable_objects            *int64
+	addnum_billable_objects         *int64
+	num_billable_deleted_objects    *int64
+	addnum_billable_deleted_objects *int64
+	raw_storage_size_bytes          *int64
+	addraw_storage_size_bytes       *int64
+	padded_storage_size_bytes       *int64
+	addpadded_storage_size_bytes    *int64
+	metadata_storage_size_bytes     *int64
+	addmetadata_storage_size_bytes  *int64
+	deleted_storage_size_bytes      *int64
+	adddeleted_storage_size_bytes   *int64
+	orphaned_storage_size_bytes     *int64
+	addorphaned_storage_size_bytes  *int64
+	min_storage_charge_bytes        *int64
+	addmin_storage_charge_bytes     *int64
+	num_api_calls                   *int64
+	addnum_api_calls                *int64
+	upload_bytes                    *int64
+	addupload_bytes                 *int64
+	download_bytes                  *int64
+	adddownload_bytes               *int64
+	storage_wrote_bytes             *int64
+	addstorage_wrote_bytes          *int64
+	storage_read_bytes              *int64
+	addstorage_read_bytes           *int64
+	delete_bytes                    *int64
+	adddelete_bytes                 *int64
+	num_get_calls                   *int64
+	addnum_get_calls                *int64
+	num_put_calls                   *int64
+	addnum_put_calls                *int64
+	num_delete_calls                *int64
+	addnum_delete_calls             *int64
+	num_list_calls                  *int64
+	addnum_list_calls               *int64
+	num_head_calls                  *int64
+	addnum_head_calls               *int64
+	clearedFields                   map[string]struct{}
+	done                            bool
+	oldValue                        func(context.Context) (*WasabiDailyUsage, error)
+	predicates                      []predicate.WasabiDailyUsage
+}
+
+var _ ent.Mutation = (*WasabiDailyUsageMutation)(nil)
+
+// wasabidailyusageOption allows management of the mutation configuration using functional options.
+type wasabidailyusageOption func(*WasabiDailyUsageMutation)
+
+// newWasabiDailyUsageMutation creates new mutation for the WasabiDailyUsage entity.
+func newWasabiDailyUsageMutation(c config, op Op, opts ...wasabidailyusageOption) *WasabiDailyUsageMutation {
+	m := &WasabiDailyUsageMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeWasabiDailyUsage,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withWasabiDailyUsageID sets the ID field of the mutation.
+func withWasabiDailyUsageID(id int) wasabidailyusageOption {
+	return func(m *WasabiDailyUsageMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *WasabiDailyUsage
+		)
+		m.oldValue = func(ctx context.Context) (*WasabiDailyUsage, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().WasabiDailyUsage.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withWasabiDailyUsage sets the old WasabiDailyUsage of the mutation.
+func withWasabiDailyUsage(node *WasabiDailyUsage) wasabidailyusageOption {
+	return func(m *WasabiDailyUsageMutation) {
+		m.oldValue = func(context.Context) (*WasabiDailyUsage, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m WasabiDailyUsageMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m WasabiDailyUsageMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *WasabiDailyUsageMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *WasabiDailyUsageMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().WasabiDailyUsage.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetConnectionID sets the "connection_id" field.
+func (m *WasabiDailyUsageMutation) SetConnectionID(s string) {
+	m.connection_id = &s
+}
+
+// ConnectionID returns the value of the "connection_id" field in the mutation.
+func (m *WasabiDailyUsageMutation) ConnectionID() (r string, exists bool) {
+	v := m.connection_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConnectionID returns the old "connection_id" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldConnectionID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConnectionID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConnectionID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConnectionID: %w", err)
+	}
+	return oldValue.ConnectionID, nil
+}
+
+// ResetConnectionID resets all changes to the "connection_id" field.
+func (m *WasabiDailyUsageMutation) ResetConnectionID() {
+	m.connection_id = nil
+}
+
+// SetBucket sets the "bucket" field.
+func (m *WasabiDailyUsageMutation) SetBucket(s string) {
+	m.bucket = &s
+}
+
+// Bucket returns the value of the "bucket" field in the mutation.
+func (m *WasabiDailyUsageMutation) Bucket() (r string, exists bool) {
+	v := m.bucket
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBucket returns the old "bucket" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldBucket(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBucket is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBucket requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBucket: %w", err)
+	}
+	return oldValue.Bucket, nil
+}
+
+// ResetBucket resets all changes to the "bucket" field.
+func (m *WasabiDailyUsageMutation) ResetBucket() {
+	m.bucket = nil
+}
+
+// SetDay sets the "day" field.
+func (m *WasabiDailyUsageMutation) SetDay(t time.Time) {
+	m.day = &t
+}
+
+// Day returns the value of the "day" field in the mutation.
+func (m *WasabiDailyUsageMutation) Day() (r time.Time, exists bool) {
+	v := m.day
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDay returns the old "day" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldDay(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDay is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDay requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDay: %w", err)
+	}
+	return oldValue.Day, nil
+}
+
+// ResetDay resets all changes to the "day" field.
+func (m *WasabiDailyUsageMutation) ResetDay() {
+	m.day = nil
+}
+
+// SetRegion sets the "region" field.
+func (m *WasabiDailyUsageMutation) SetRegion(s string) {
+	m.region = &s
+}
+
+// Region returns the value of the "region" field in the mutation.
+func (m *WasabiDailyUsageMutation) Region() (r string, exists bool) {
+	v := m.region
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRegion returns the old "region" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldRegion(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRegion is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRegion requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRegion: %w", err)
+	}
+	return oldValue.Region, nil
+}
+
+// ResetRegion resets all changes to the "region" field.
+func (m *WasabiDailyUsageMutation) ResetRegion() {
+	m.region = nil
+}
+
+// SetNumBillableObjects sets the "num_billable_objects" field.
+func (m *WasabiDailyUsageMutation) SetNumBillableObjects(i int64) {
+	m.num_billable_objects = &i
+	m.addnum_billable_objects = nil
+}
+
+// NumBillableObjects returns the value of the "num_billable_objects" field in the mutation.
+func (m *WasabiDailyUsageMutation) NumBillableObjects() (r int64, exists bool) {
+	v := m.num_billable_objects
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNumBillableObjects returns the old "num_billable_objects" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldNumBillableObjects(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNumBillableObjects is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNumBillableObjects requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNumBillableObjects: %w", err)
+	}
+	return oldValue.NumBillableObjects, nil
+}
+
+// AddNumBillableObjects adds i to the "num_billable_objects" field.
+func (m *WasabiDailyUsageMutation) AddNumBillableObjects(i int64) {
+	if m.addnum_billable_objects != nil {
+		*m.addnum_billable_objects += i
+	} else {
+		m.addnum_billable_objects = &i
+	}
+}
+
+// AddedNumBillableObjects returns the value that was added to the "num_billable_objects" field in this mutation.
+func (m *WasabiDailyUsageMutation) AddedNumBillableObjects() (r int64, exists bool) {
+	v := m.addnum_billable_objects
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetNumBillableObjects resets all changes to the "num_billable_objects" field.
+func (m *WasabiDailyUsageMutation) ResetNumBillableObjects() {
+	m.num_billable_objects = nil
+	m.addnum_billable_objects = nil
+}
+
+// SetNumBillableDeletedObjects sets the "num_billable_deleted_objects" field.
+func (m *WasabiDailyUsageMutation) SetNumBillableDeletedObjects(i int64) {
+	m.num_billable_deleted_objects = &i
+	m.addnum_billable_deleted_objects = nil
+}
+
+// NumBillableDeletedObjects returns the value of the "num_billable_deleted_objects" field in the mutation.
+func (m *WasabiDailyUsageMutation) NumBillableDeletedObjects() (r int64, exists bool) {
+	v := m.num_billable_deleted_objects
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNumBillableDeletedObjects returns the old "num_billable_deleted_objects" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldNumBillableDeletedObjects(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNumBillableDeletedObjects is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNumBillableDeletedObjects requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNumBillableDeletedObjects: %w", err)
+	}
+	return oldValue.NumBillableDeletedObjects, nil
+}
+
+// AddNumBillableDeletedObjects adds i to the "num_billable_deleted_objects" field.
+func (m *WasabiDailyUsageMutation) AddNumBillableDeletedObjects(i int64) {
+	if m.addnum_billable_deleted_objects != nil {
+		*m.addnum_billable_deleted_objects += i
+	} else {
+		m.addnum_billable_deleted_objects = &i
+	}
+}
+
+// AddedNumBillableDeletedObjects returns the value that was added to the "num_billable_deleted_objects" field in this mutation.
+func (m *WasabiDailyUsageMutation) AddedNumBillableDeletedObjects() (r int64, exists bool) {
+	v := m.addnum_billable_deleted_objects
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetNumBillableDeletedObjects resets all changes to the "num_billable_deleted_objects" field.
+func (m *WasabiDailyUsageMutation) ResetNumBillableDeletedObjects() {
+	m.num_billable_deleted_objects = nil
+	m.addnum_billable_deleted_objects = nil
+}
+
+// SetRawStorageSizeBytes sets the "raw_storage_size_bytes" field.
+func (m *WasabiDailyUsageMutation) SetRawStorageSizeBytes(i int64) {
+	m.raw_storage_size_bytes = &i
+	m.addraw_storage_size_bytes = nil
+}
+
+// RawStorageSizeBytes returns the value of the "raw_storage_size_bytes" field in the mutation.
+func (m *WasabiDailyUsageMutation) RawStorageSizeBytes() (r int64, exists bool) {
+	v := m.raw_storage_size_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRawStorageSizeBytes returns the old "raw_storage_size_bytes" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldRawStorageSizeBytes(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRawStorageSizeBytes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRawStorageSizeBytes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRawStorageSizeBytes: %w", err)
+	}
+	return oldValue.RawStorageSizeBytes, nil
+}
+
+// AddRawStorageSizeBytes adds i to the "raw_storage_size_bytes" field.
+func (m *WasabiDailyUsageMutation) AddRawStorageSizeBytes(i int64) {
+	if m.addraw_storage_size_bytes != nil {
+		*m.addraw_storage_size_bytes += i
+	} else {
+		m.addraw_storage_size_bytes = &i
+	}
+}
+
+// AddedRawStorageSizeBytes returns the value that was added to the "raw_storage_size_bytes" field in this mutation.
+func (m *WasabiDailyUsageMutation) AddedRawStorageSizeBytes() (r int64, exists bool) {
+	v := m.addraw_storage_size_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetRawStorageSizeBytes resets all changes to the "raw_storage_size_bytes" field.
+func (m *WasabiDailyUsageMutation) ResetRawStorageSizeBytes() {
+	m.raw_storage_size_bytes = nil
+	m.addraw_storage_size_bytes = nil
+}
+
+// SetPaddedStorageSizeBytes sets the "padded_storage_size_bytes" field.
+func (m *WasabiDailyUsageMutation) SetPaddedStorageSizeBytes(i int64) {
+	m.padded_storage_size_bytes = &i
+	m.addpadded_storage_size_bytes = nil
+}
+
+// PaddedStorageSizeBytes returns the value of the "padded_storage_size_bytes" field in the mutation.
+func (m *WasabiDailyUsageMutation) PaddedStorageSizeBytes() (r int64, exists bool) {
+	v := m.padded_storage_size_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPaddedStorageSizeBytes returns the old "padded_storage_size_bytes" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldPaddedStorageSizeBytes(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPaddedStorageSizeBytes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPaddedStorageSizeBytes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPaddedStorageSizeBytes: %w", err)
+	}
+	return oldValue.PaddedStorageSizeBytes, nil
+}
+
+// AddPaddedStorageSizeBytes adds i to the "padded_storage_size_bytes" field.
+func (m *WasabiDailyUsageMutation) AddPaddedStorageSizeBytes(i int64) {
+	if m.addpadded_storage_size_bytes != nil {
+		*m.addpadded_storage_size_bytes += i
+	} else {
+		m.addpadded_storage_size_bytes = &i
+	}
+}
+
+// AddedPaddedStorageSizeBytes returns the value that was added to the "padded_storage_size_bytes" field in this mutation.
+func (m *WasabiDailyUsageMutation) AddedPaddedStorageSizeBytes() (r int64, exists bool) {
+	v := m.addpadded_storage_size_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetPaddedStorageSizeBytes resets all changes to the "padded_storage_size_bytes" field.
+func (m *WasabiDailyUsageMutation) ResetPaddedStorageSizeBytes() {
+	m.padded_storage_size_bytes = nil
+	m.addpadded_storage_size_bytes = nil
+}
+
+// SetMetadataStorageSizeBytes sets the "metadata_storage_size_bytes" field.
+func (m *WasabiDailyUsageMutation) SetMetadataStorageSizeBytes(i int64) {
+	m.metadata_storage_size_bytes = &i
+	m.addmetadata_storage_size_bytes = nil
+}
+
+// MetadataStorageSizeBytes returns the value of the "metadata_storage_size_bytes" field in the mutation.
+func (m *WasabiDailyUsageMutation) MetadataStorageSizeBytes() (r int64, exists bool) {
+	v := m.metadata_storage_size_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMetadataStorageSizeBytes returns the old "metadata_storage_size_bytes" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldMetadataStorageSizeBytes(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMetadataStorageSizeBytes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMetadataStorageSizeBytes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMetadataStorageSizeBytes: %w", err)
+	}
+	return oldValue.MetadataStorageSizeBytes, nil
+}
+
+// AddMetadataStorageSizeBytes adds i to the "metadata_storage_size_bytes" field.
+func (m *WasabiDailyUsageMutation) AddMetadataStorageSizeBytes(i int64) {
+	if m.addmetadata_storage_size_bytes != nil {
+		*m.addmetadata_storage_size_bytes += i
+	} else {
+		m.addmetadata_storage_size_bytes = &i
+	}
+}
+
+// AddedMetadataStorageSizeBytes returns the value that was added to the "metadata_storage_size_bytes" field in this mutation.
+func (m *WasabiDailyUsageMutation) AddedMetadataStorageSizeBytes() (r int64, exists bool) {
+	v := m.addmetadata_storage_size_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetMetadataStorageSizeBytes resets all changes to the "metadata_storage_size_bytes" field.
+func (m *WasabiDailyUsageMutation) ResetMetadataStorageSizeBytes() {
+	m.metadata_storage_size_bytes = nil
+	m.addmetadata_storage_size_bytes = nil
+}
+
+// SetDeletedStorageSizeBytes sets the "deleted_storage_size_bytes" field.
+func (m *WasabiDailyUsageMutation) SetDeletedStorageSizeBytes(i int64) {
+	m.deleted_storage_size_bytes = &i
+	m.adddeleted_storage_size_bytes = nil
+}
+
+// DeletedStorageSizeBytes returns the value of the "deleted_storage_size_bytes" field in the mutation.
+func (m *WasabiDailyUsageMutation) DeletedStorageSizeBytes() (r int64, exists bool) {
+	v := m.deleted_storage_size_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedStorageSizeBytes returns the old "deleted_storage_size_bytes" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldDeletedStorageSizeBytes(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedStorageSizeBytes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedStorageSizeBytes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedStorageSizeBytes: %w", err)
+	}
+	return oldValue.DeletedStorageSizeBytes, nil
+}
+
+// AddDeletedStorageSizeBytes adds i to the "deleted_storage_size_bytes" field.
+func (m *WasabiDailyUsageMutation) AddDeletedStorageSizeBytes(i int64) {
+	if m.adddeleted_storage_size_bytes != nil {
+		*m.adddeleted_storage_size_bytes += i
+	} else {
+		m.adddeleted_storage_size_bytes = &i
+	}
+}
+
+// AddedDeletedStorageSizeBytes returns the value that was added to the "deleted_storage_size_bytes" field in this mutation.
+func (m *WasabiDailyUsageMutation) AddedDeletedStorageSizeBytes() (r int64, exists bool) {
+	v := m.adddeleted_storage_size_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDeletedStorageSizeBytes resets all changes to the "deleted_storage_size_bytes" field.
+func (m *WasabiDailyUsageMutation) ResetDeletedStorageSizeBytes() {
+	m.deleted_storage_size_bytes = nil
+	m.adddeleted_storage_size_bytes = nil
+}
+
+// SetOrphanedStorageSizeBytes sets the "orphaned_storage_size_bytes" field.
+func (m *WasabiDailyUsageMutation) SetOrphanedStorageSizeBytes(i int64) {
+	m.orphaned_storage_size_bytes = &i
+	m.addorphaned_storage_size_bytes = nil
+}
+
+// OrphanedStorageSizeBytes returns the value of the "orphaned_storage_size_bytes" field in the mutation.
+func (m *WasabiDailyUsageMutation) OrphanedStorageSizeBytes() (r int64, exists bool) {
+	v := m.orphaned_storage_size_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOrphanedStorageSizeBytes returns the old "orphaned_storage_size_bytes" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldOrphanedStorageSizeBytes(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOrphanedStorageSizeBytes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOrphanedStorageSizeBytes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOrphanedStorageSizeBytes: %w", err)
+	}
+	return oldValue.OrphanedStorageSizeBytes, nil
+}
+
+// AddOrphanedStorageSizeBytes adds i to the "orphaned_storage_size_bytes" field.
+func (m *WasabiDailyUsageMutation) AddOrphanedStorageSizeBytes(i int64) {
+	if m.addorphaned_storage_size_bytes != nil {
+		*m.addorphaned_storage_size_bytes += i
+	} else {
+		m.addorphaned_storage_size_bytes = &i
+	}
+}
+
+// AddedOrphanedStorageSizeBytes returns the value that was added to the "orphaned_storage_size_bytes" field in this mutation.
+func (m *WasabiDailyUsageMutation) AddedOrphanedStorageSizeBytes() (r int64, exists bool) {
+	v := m.addorphaned_storage_size_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetOrphanedStorageSizeBytes resets all changes to the "orphaned_storage_size_bytes" field.
+func (m *WasabiDailyUsageMutation) ResetOrphanedStorageSizeBytes() {
+	m.orphaned_storage_size_bytes = nil
+	m.addorphaned_storage_size_bytes = nil
+}
+
+// SetMinStorageChargeBytes sets the "min_storage_charge_bytes" field.
+func (m *WasabiDailyUsageMutation) SetMinStorageChargeBytes(i int64) {
+	m.min_storage_charge_bytes = &i
+	m.addmin_storage_charge_bytes = nil
+}
+
+// MinStorageChargeBytes returns the value of the "min_storage_charge_bytes" field in the mutation.
+func (m *WasabiDailyUsageMutation) MinStorageChargeBytes() (r int64, exists bool) {
+	v := m.min_storage_charge_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMinStorageChargeBytes returns the old "min_storage_charge_bytes" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldMinStorageChargeBytes(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMinStorageChargeBytes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMinStorageChargeBytes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMinStorageChargeBytes: %w", err)
+	}
+	return oldValue.MinStorageChargeBytes, nil
+}
+
+// AddMinStorageChargeBytes adds i to the "min_storage_charge_bytes" field.
+func (m *WasabiDailyUsageMutation) AddMinStorageChargeBytes(i int64) {
+	if m.addmin_storage_charge_bytes != nil {
+		*m.addmin_storage_charge_bytes += i
+	} else {
+		m.addmin_storage_charge_bytes = &i
+	}
+}
+
+// AddedMinStorageChargeBytes returns the value that was added to the "min_storage_charge_bytes" field in this mutation.
+func (m *WasabiDailyUsageMutation) AddedMinStorageChargeBytes() (r int64, exists bool) {
+	v := m.addmin_storage_charge_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetMinStorageChargeBytes resets all changes to the "min_storage_charge_bytes" field.
+func (m *WasabiDailyUsageMutation) ResetMinStorageChargeBytes() {
+	m.min_storage_charge_bytes = nil
+	m.addmin_storage_charge_bytes = nil
+}
+
+// SetNumAPICalls sets the "num_api_calls" field.
+func (m *WasabiDailyUsageMutation) SetNumAPICalls(i int64) {
+	m.num_api_calls = &i
+	m.addnum_api_calls = nil
+}
+
+// NumAPICalls returns the value of the "num_api_calls" field in the mutation.
+func (m *WasabiDailyUsageMutation) NumAPICalls() (r int64, exists bool) {
+	v := m.num_api_calls
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNumAPICalls returns the old "num_api_calls" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldNumAPICalls(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNumAPICalls is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNumAPICalls requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNumAPICalls: %w", err)
+	}
+	return oldValue.NumAPICalls, nil
+}
+
+// AddNumAPICalls adds i to the "num_api_calls" field.
+func (m *WasabiDailyUsageMutation) AddNumAPICalls(i int64) {
+	if m.addnum_api_calls != nil {
+		*m.addnum_api_calls += i
+	} else {
+		m.addnum_api_calls = &i
+	}
+}
+
+// AddedNumAPICalls returns the value that was added to the "num_api_calls" field in this mutation.
+func (m *WasabiDailyUsageMutation) AddedNumAPICalls() (r int64, exists bool) {
+	v := m.addnum_api_calls
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetNumAPICalls resets all changes to the "num_api_calls" field.
+func (m *WasabiDailyUsageMutation) ResetNumAPICalls() {
+	m.num_api_calls = nil
+	m.addnum_api_calls = nil
+}
+
+// SetUploadBytes sets the "upload_bytes" field.
+func (m *WasabiDailyUsageMutation) SetUploadBytes(i int64) {
+	m.upload_bytes = &i
+	m.addupload_bytes = nil
+}
+
+// UploadBytes returns the value of the "upload_bytes" field in the mutation.
+func (m *WasabiDailyUsageMutation) UploadBytes() (r int64, exists bool) {
+	v := m.upload_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUploadBytes returns the old "upload_bytes" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldUploadBytes(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUploadBytes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUploadBytes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUploadBytes: %w", err)
+	}
+	return oldValue.UploadBytes, nil
+}
+
+// AddUploadBytes adds i to the "upload_bytes" field.
+func (m *WasabiDailyUsageMutation) AddUploadBytes(i int64) {
+	if m.addupload_bytes != nil {
+		*m.addupload_bytes += i
+	} else {
+		m.addupload_bytes = &i
+	}
+}
+
+// AddedUploadBytes returns the value that was added to the "upload_bytes" field in this mutation.
+func (m *WasabiDailyUsageMutation) AddedUploadBytes() (r int64, exists bool) {
+	v := m.addupload_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetUploadBytes resets all changes to the "upload_bytes" field.
+func (m *WasabiDailyUsageMutation) ResetUploadBytes() {
+	m.upload_bytes = nil
+	m.addupload_bytes = nil
+}
+
+// SetDownloadBytes sets the "download_bytes" field.
+func (m *WasabiDailyUsageMutation) SetDownloadBytes(i int64) {
+	m.download_bytes = &i
+	m.adddownload_bytes = nil
+}
+
+// DownloadBytes returns the value of the "download_bytes" field in the mutation.
+func (m *WasabiDailyUsageMutation) DownloadBytes() (r int64, exists bool) {
+	v := m.download_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDownloadBytes returns the old "download_bytes" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldDownloadBytes(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDownloadBytes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDownloadBytes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDownloadBytes: %w", err)
+	}
+	return oldValue.DownloadBytes, nil
+}
+
+// AddDownloadBytes adds i to the "download_bytes" field.
+func (m *WasabiDailyUsageMutation) AddDownloadBytes(i int64) {
+	if m.adddownload_bytes != nil {
+		*m.adddownload_bytes += i
+	} else {
+		m.adddownload_bytes = &i
+	}
+}
+
+// AddedDownloadBytes returns the value that was added to the "download_bytes" field in this mutation.
+func (m *WasabiDailyUsageMutation) AddedDownloadBytes() (r int64, exists bool) {
+	v := m.adddownload_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDownloadBytes resets all changes to the "download_bytes" field.
+func (m *WasabiDailyUsageMutation) ResetDownloadBytes() {
+	m.download_bytes = nil
+	m.adddownload_bytes = nil
+}
+
+// SetStorageWroteBytes sets the "storage_wrote_bytes" field.
+func (m *WasabiDailyUsageMutation) SetStorageWroteBytes(i int64) {
+	m.storage_wrote_bytes = &i
+	m.addstorage_wrote_bytes = nil
+}
+
+// StorageWroteBytes returns the value of the "storage_wrote_bytes" field in the mutation.
+func (m *WasabiDailyUsageMutation) StorageWroteBytes() (r int64, exists bool) {
+	v := m.storage_wrote_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStorageWroteBytes returns the old "storage_wrote_bytes" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldStorageWroteBytes(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStorageWroteBytes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStorageWroteBytes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStorageWroteBytes: %w", err)
+	}
+	return oldValue.StorageWroteBytes, nil
+}
+
+// AddStorageWroteBytes adds i to the "storage_wrote_bytes" field.
+func (m *WasabiDailyUsageMutation) AddStorageWroteBytes(i int64) {
+	if m.addstorage_wrote_bytes != nil {
+		*m.addstorage_wrote_bytes += i
+	} else {
+		m.addstorage_wrote_bytes = &i
+	}
+}
+
+// AddedStorageWroteBytes returns the value that was added to the "storage_wrote_bytes" field in this mutation.
+func (m *WasabiDailyUsageMutation) AddedStorageWroteBytes() (r int64, exists bool) {
+	v := m.addstorage_wrote_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetStorageWroteBytes resets all changes to the "storage_wrote_bytes" field.
+func (m *WasabiDailyUsageMutation) ResetStorageWroteBytes() {
+	m.storage_wrote_bytes = nil
+	m.addstorage_wrote_bytes = nil
+}
+
+// SetStorageReadBytes sets the "storage_read_bytes" field.
+func (m *WasabiDailyUsageMutation) SetStorageReadBytes(i int64) {
+	m.storage_read_bytes = &i
+	m.addstorage_read_bytes = nil
+}
+
+// StorageReadBytes returns the value of the "storage_read_bytes" field in the mutation.
+func (m *WasabiDailyUsageMutation) StorageReadBytes() (r int64, exists bool) {
+	v := m.storage_read_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStorageReadBytes returns the old "storage_read_bytes" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldStorageReadBytes(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStorageReadBytes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStorageReadBytes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStorageReadBytes: %w", err)
+	}
+	return oldValue.StorageReadBytes, nil
+}
+
+// AddStorageReadBytes adds i to the "storage_read_bytes" field.
+func (m *WasabiDailyUsageMutation) AddStorageReadBytes(i int64) {
+	if m.addstorage_read_bytes != nil {
+		*m.addstorage_read_bytes += i
+	} else {
+		m.addstorage_read_bytes = &i
+	}
+}
+
+// AddedStorageReadBytes returns the value that was added to the "storage_read_bytes" field in this mutation.
+func (m *WasabiDailyUsageMutation) AddedStorageReadBytes() (r int64, exists bool) {
+	v := m.addstorage_read_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetStorageReadBytes resets all changes to the "storage_read_bytes" field.
+func (m *WasabiDailyUsageMutation) ResetStorageReadBytes() {
+	m.storage_read_bytes = nil
+	m.addstorage_read_bytes = nil
+}
+
+// SetDeleteBytes sets the "delete_bytes" field.
+func (m *WasabiDailyUsageMutation) SetDeleteBytes(i int64) {
+	m.delete_bytes = &i
+	m.adddelete_bytes = nil
+}
+
+// DeleteBytes returns the value of the "delete_bytes" field in the mutation.
+func (m *WasabiDailyUsageMutation) DeleteBytes() (r int64, exists bool) {
+	v := m.delete_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteBytes returns the old "delete_bytes" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldDeleteBytes(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteBytes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteBytes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteBytes: %w", err)
+	}
+	return oldValue.DeleteBytes, nil
+}
+
+// AddDeleteBytes adds i to the "delete_bytes" field.
+func (m *WasabiDailyUsageMutation) AddDeleteBytes(i int64) {
+	if m.adddelete_bytes != nil {
+		*m.adddelete_bytes += i
+	} else {
+		m.adddelete_bytes = &i
+	}
+}
+
+// AddedDeleteBytes returns the value that was added to the "delete_bytes" field in this mutation.
+func (m *WasabiDailyUsageMutation) AddedDeleteBytes() (r int64, exists bool) {
+	v := m.adddelete_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDeleteBytes resets all changes to the "delete_bytes" field.
+func (m *WasabiDailyUsageMutation) ResetDeleteBytes() {
+	m.delete_bytes = nil
+	m.adddelete_bytes = nil
+}
+
+// SetNumGetCalls sets the "num_get_calls" field.
+func (m *WasabiDailyUsageMutation) SetNumGetCalls(i int64) {
+	m.num_get_calls = &i
+	m.addnum_get_calls = nil
+}
+
+// NumGetCalls returns the value of the "num_get_calls" field in the mutation.
+func (m *WasabiDailyUsageMutation) NumGetCalls() (r int64, exists bool) {
+	v := m.num_get_calls
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNumGetCalls returns the old "num_get_calls" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldNumGetCalls(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNumGetCalls is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNumGetCalls requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNumGetCalls: %w", err)
+	}
+	return oldValue.NumGetCalls, nil
+}
+
+// AddNumGetCalls adds i to the "num_get_calls" field.
+func (m *WasabiDailyUsageMutation) AddNumGetCalls(i int64) {
+	if m.addnum_get_calls != nil {
+		*m.addnum_get_calls += i
+	} else {
+		m.addnum_get_calls = &i
+	}
+}
+
+// AddedNumGetCalls returns the value that was added to the "num_get_calls" field in this mutation.
+func (m *WasabiDailyUsageMutation) AddedNumGetCalls() (r int64, exists bool) {
+	v := m.addnum_get_calls
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetNumGetCalls resets all changes to the "num_get_calls" field.
+func (m *WasabiDailyUsageMutation) ResetNumGetCalls() {
+	m.num_get_calls = nil
+	m.addnum_get_calls = nil
+}
+
+// SetNumPutCalls sets the "num_put_calls" field.
+func (m *WasabiDailyUsageMutation) SetNumPutCalls(i int64) {
+	m.num_put_calls = &i
+	m.addnum_put_calls = nil
+}
+
+// NumPutCalls returns the value of the "num_put_calls" field in the mutation.
+func (m *WasabiDailyUsageMutation) NumPutCalls() (r int64, exists bool) {
+	v := m.num_put_calls
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNumPutCalls returns the old "num_put_calls" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldNumPutCalls(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNumPutCalls is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNumPutCalls requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNumPutCalls: %w", err)
+	}
+	return oldValue.NumPutCalls, nil
+}
+
+// AddNumPutCalls adds i to the "num_put_calls" field.
+func (m *WasabiDailyUsageMutation) AddNumPutCalls(i int64) {
+	if m.addnum_put_calls != nil {
+		*m.addnum_put_calls += i
+	} else {
+		m.addnum_put_calls = &i
+	}
+}
+
+// AddedNumPutCalls returns the value that was added to the "num_put_calls" field in this mutation.
+func (m *WasabiDailyUsageMutation) AddedNumPutCalls() (r int64, exists bool) {
+	v := m.addnum_put_calls
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetNumPutCalls resets all changes to the "num_put_calls" field.
+func (m *WasabiDailyUsageMutation) ResetNumPutCalls() {
+	m.num_put_calls = nil
+	m.addnum_put_calls = nil
+}
+
+// SetNumDeleteCalls sets the "num_delete_calls" field.
+func (m *WasabiDailyUsageMutation) SetNumDeleteCalls(i int64) {
+	m.num_delete_calls = &i
+	m.addnum_delete_calls = nil
+}
+
+// NumDeleteCalls returns the value of the "num_delete_calls" field in the mutation.
+func (m *WasabiDailyUsageMutation) NumDeleteCalls() (r int64, exists bool) {
+	v := m.num_delete_calls
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNumDeleteCalls returns the old "num_delete_calls" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldNumDeleteCalls(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNumDeleteCalls is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNumDeleteCalls requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNumDeleteCalls: %w", err)
+	}
+	return oldValue.NumDeleteCalls, nil
+}
+
+// AddNumDeleteCalls adds i to the "num_delete_calls" field.
+func (m *WasabiDailyUsageMutation) AddNumDeleteCalls(i int64) {
+	if m.addnum_delete_calls != nil {
+		*m.addnum_delete_calls += i
+	} else {
+		m.addnum_delete_calls = &i
+	}
+}
+
+// AddedNumDeleteCalls returns the value that was added to the "num_delete_calls" field in this mutation.
+func (m *WasabiDailyUsageMutation) AddedNumDeleteCalls() (r int64, exists bool) {
+	v := m.addnum_delete_calls
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetNumDeleteCalls resets all changes to the "num_delete_calls" field.
+func (m *WasabiDailyUsageMutation) ResetNumDeleteCalls() {
+	m.num_delete_calls = nil
+	m.addnum_delete_calls = nil
+}
+
+// SetNumListCalls sets the "num_list_calls" field.
+func (m *WasabiDailyUsageMutation) SetNumListCalls(i int64) {
+	m.num_list_calls = &i
+	m.addnum_list_calls = nil
+}
+
+// NumListCalls returns the value of the "num_list_calls" field in the mutation.
+func (m *WasabiDailyUsageMutation) NumListCalls() (r int64, exists bool) {
+	v := m.num_list_calls
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNumListCalls returns the old "num_list_calls" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldNumListCalls(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNumListCalls is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNumListCalls requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNumListCalls: %w", err)
+	}
+	return oldValue.NumListCalls, nil
+}
+
+// AddNumListCalls adds i to the "num_list_calls" field.
+func (m *WasabiDailyUsageMutation) AddNumListCalls(i int64) {
+	if m.addnum_list_calls != nil {
+		*m.addnum_list_calls += i
+	} else {
+		m.addnum_list_calls = &i
+	}
+}
+
+// AddedNumListCalls returns the value that was added to the "num_list_calls" field in this mutation.
+func (m *WasabiDailyUsageMutation) AddedNumListCalls() (r int64, exists bool) {
+	v := m.addnum_list_calls
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetNumListCalls resets all changes to the "num_list_calls" field.
+func (m *WasabiDailyUsageMutation) ResetNumListCalls() {
+	m.num_list_calls = nil
+	m.addnum_list_calls = nil
+}
+
+// SetNumHeadCalls sets the "num_head_calls" field.
+func (m *WasabiDailyUsageMutation) SetNumHeadCalls(i int64) {
+	m.num_head_calls = &i
+	m.addnum_head_calls = nil
+}
+
+// NumHeadCalls returns the value of the "num_head_calls" field in the mutation.
+func (m *WasabiDailyUsageMutation) NumHeadCalls() (r int64, exists bool) {
+	v := m.num_head_calls
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNumHeadCalls returns the old "num_head_calls" field's value of the WasabiDailyUsage entity.
+// If the WasabiDailyUsage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiDailyUsageMutation) OldNumHeadCalls(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNumHeadCalls is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNumHeadCalls requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNumHeadCalls: %w", err)
+	}
+	return oldValue.NumHeadCalls, nil
+}
+
+// AddNumHeadCalls adds i to the "num_head_calls" field.
+func (m *WasabiDailyUsageMutation) AddNumHeadCalls(i int64) {
+	if m.addnum_head_calls != nil {
+		*m.addnum_head_calls += i
+	} else {
+		m.addnum_head_calls = &i
+	}
+}
+
+// AddedNumHeadCalls returns the value that was added to the "num_head_calls" field in this mutation.
+func (m *WasabiDailyUsageMutation) AddedNumHeadCalls() (r int64, exists bool) {
+	v := m.addnum_head_calls
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetNumHeadCalls resets all changes to the "num_head_calls" field.
+func (m *WasabiDailyUsageMutation) ResetNumHeadCalls() {
+	m.num_head_calls = nil
+	m.addnum_head_calls = nil
+}
+
+// Where appends a list predicates to the WasabiDailyUsageMutation builder.
+func (m *WasabiDailyUsageMutation) Where(ps ...predicate.WasabiDailyUsage) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the WasabiDailyUsageMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *WasabiDailyUsageMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.WasabiDailyUsage, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *WasabiDailyUsageMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *WasabiDailyUsageMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (WasabiDailyUsage).
+func (m *WasabiDailyUsageMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *WasabiDailyUsageMutation) Fields() []string {
+	fields := make([]string, 0, 23)
+	if m.connection_id != nil {
+		fields = append(fields, wasabidailyusage.FieldConnectionID)
+	}
+	if m.bucket != nil {
+		fields = append(fields, wasabidailyusage.FieldBucket)
+	}
+	if m.day != nil {
+		fields = append(fields, wasabidailyusage.FieldDay)
+	}
+	if m.region != nil {
+		fields = append(fields, wasabidailyusage.FieldRegion)
+	}
+	if m.num_billable_objects != nil {
+		fields = append(fields, wasabidailyusage.FieldNumBillableObjects)
+	}
+	if m.num_billable_deleted_objects != nil {
+		fields = append(fields, wasabidailyusage.FieldNumBillableDeletedObjects)
+	}
+	if m.raw_storage_size_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldRawStorageSizeBytes)
+	}
+	if m.padded_storage_size_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldPaddedStorageSizeBytes)
+	}
+	if m.metadata_storage_size_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldMetadataStorageSizeBytes)
+	}
+	if m.deleted_storage_size_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldDeletedStorageSizeBytes)
+	}
+	if m.orphaned_storage_size_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldOrphanedStorageSizeBytes)
+	}
+	if m.min_storage_charge_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldMinStorageChargeBytes)
+	}
+	if m.num_api_calls != nil {
+		fields = append(fields, wasabidailyusage.FieldNumAPICalls)
+	}
+	if m.upload_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldUploadBytes)
+	}
+	if m.download_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldDownloadBytes)
+	}
+	if m.storage_wrote_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldStorageWroteBytes)
+	}
+	if m.storage_read_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldStorageReadBytes)
+	}
+	if m.delete_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldDeleteBytes)
+	}
+	if m.num_get_calls != nil {
+		fields = append(fields, wasabidailyusage.FieldNumGetCalls)
+	}
+	if m.num_put_calls != nil {
+		fields = append(fields, wasabidailyusage.FieldNumPutCalls)
+	}
+	if m.num_delete_calls != nil {
+		fields = append(fields, wasabidailyusage.FieldNumDeleteCalls)
+	}
+	if m.num_list_calls != nil {
+		fields = append(fields, wasabidailyusage.FieldNumListCalls)
+	}
+	if m.num_head_calls != nil {
+		fields = append(fields, wasabidailyusage.FieldNumHeadCalls)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *WasabiDailyUsageMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case wasabidailyusage.FieldConnectionID:
+		return m.ConnectionID()
+	case wasabidailyusage.FieldBucket:
+		return m.Bucket()
+	case wasabidailyusage.FieldDay:
+		return m.Day()
+	case wasabidailyusage.FieldRegion:
+		return m.Region()
+	case wasabidailyusage.FieldNumBillableObjects:
+		return m.NumBillableObjects()
+	case wasabidailyusage.FieldNumBillableDeletedObjects:
+		return m.NumBillableDeletedObjects()
+	case wasabidailyusage.FieldRawStorageSizeBytes:
+		return m.RawStorageSizeBytes()
+	case wasabidailyusage.FieldPaddedStorageSizeBytes:
+		return m.PaddedStorageSizeBytes()
+	case wasabidailyusage.FieldMetadataStorageSizeBytes:
+		return m.MetadataStorageSizeBytes()
+	case wasabidailyusage.FieldDeletedStorageSizeBytes:
+		return m.DeletedStorageSizeBytes()
+	case wasabidailyusage.FieldOrphanedStorageSizeBytes:
+		return m.OrphanedStorageSizeBytes()
+	case wasabidailyusage.FieldMinStorageChargeBytes:
+		return m.MinStorageChargeBytes()
+	case wasabidailyusage.FieldNumAPICalls:
+		return m.NumAPICalls()
+	case wasabidailyusage.FieldUploadBytes:
+		return m.UploadBytes()
+	case wasabidailyusage.FieldDownloadBytes:
+		return m.DownloadBytes()
+	case wasabidailyusage.FieldStorageWroteBytes:
+		return m.StorageWroteBytes()
+	case wasabidailyusage.FieldStorageReadBytes:
+		return m.StorageReadBytes()
+	case wasabidailyusage.FieldDeleteBytes:
+		return m.DeleteBytes()
+	case wasabidailyusage.FieldNumGetCalls:
+		return m.NumGetCalls()
+	case wasabidailyusage.FieldNumPutCalls:
+		return m.NumPutCalls()
+	case wasabidailyusage.FieldNumDeleteCalls:
+		return m.NumDeleteCalls()
+	case wasabidailyusage.FieldNumListCalls:
+		return m.NumListCalls()
+	case wasabidailyusage.FieldNumHeadCalls:
+		return m.NumHeadCalls()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *WasabiDailyUsageMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case wasabidailyusage.FieldConnectionID:
+		return m.OldConnectionID(ctx)
+	case wasabidailyusage.FieldBucket:
+		return m.OldBucket(ctx)
+	case wasabidailyusage.FieldDay:
+		return m.OldDay(ctx)
+	case wasabidailyusage.FieldRegion:
+		return m.OldRegion(ctx)
+	case wasabidailyusage.FieldNumBillableObjects:
+		return m.OldNumBillableObjects(ctx)
+	case wasabidailyusage.FieldNumBillableDeletedObjects:
+		return m.OldNumBillableDeletedObjects(ctx)
+	case wasabidailyusage.FieldRawStorageSizeBytes:
+		return m.OldRawStorageSizeBytes(ctx)
+	case wasabidailyusage.FieldPaddedStorageSizeBytes:
+		return m.OldPaddedStorageSizeBytes(ctx)
+	case wasabidailyusage.FieldMetadataStorageSizeBytes:
+		return m.OldMetadataStorageSizeBytes(ctx)
+	case wasabidailyusage.FieldDeletedStorageSizeBytes:
+		return m.OldDeletedStorageSizeBytes(ctx)
+	case wasabidailyusage.FieldOrphanedStorageSizeBytes:
+		return m.OldOrphanedStorageSizeBytes(ctx)
+	case wasabidailyusage.FieldMinStorageChargeBytes:
+		return m.OldMinStorageChargeBytes(ctx)
+	case wasabidailyusage.FieldNumAPICalls:
+		return m.OldNumAPICalls(ctx)
+	case wasabidailyusage.FieldUploadBytes:
+		return m.OldUploadBytes(ctx)
+	case wasabidailyusage.FieldDownloadBytes:
+		return m.OldDownloadBytes(ctx)
+	case wasabidailyusage.FieldStorageWroteBytes:
+		return m.OldStorageWroteBytes(ctx)
+	case wasabidailyusage.FieldStorageReadBytes:
+		return m.OldStorageReadBytes(ctx)
+	case wasabidailyusage.FieldDeleteBytes:
+		return m.OldDeleteBytes(ctx)
+	case wasabidailyusage.FieldNumGetCalls:
+		return m.OldNumGetCalls(ctx)
+	case wasabidailyusage.FieldNumPutCalls:
+		return m.OldNumPutCalls(ctx)
+	case wasabidailyusage.FieldNumDeleteCalls:
+		return m.OldNumDeleteCalls(ctx)
+	case wasabidailyusage.FieldNumListCalls:
+		return m.OldNumListCalls(ctx)
+	case wasabidailyusage.FieldNumHeadCalls:
+		return m.OldNumHeadCalls(ctx)
+	}
+	return nil, fmt.Errorf("unknown WasabiDailyUsage field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *WasabiDailyUsageMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case wasabidailyusage.FieldConnectionID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConnectionID(v)
+		return nil
+	case wasabidailyusage.FieldBucket:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBucket(v)
+		return nil
+	case wasabidailyusage.FieldDay:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDay(v)
+		return nil
+	case wasabidailyusage.FieldRegion:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRegion(v)
+		return nil
+	case wasabidailyusage.FieldNumBillableObjects:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNumBillableObjects(v)
+		return nil
+	case wasabidailyusage.FieldNumBillableDeletedObjects:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNumBillableDeletedObjects(v)
+		return nil
+	case wasabidailyusage.FieldRawStorageSizeBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRawStorageSizeBytes(v)
+		return nil
+	case wasabidailyusage.FieldPaddedStorageSizeBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPaddedStorageSizeBytes(v)
+		return nil
+	case wasabidailyusage.FieldMetadataStorageSizeBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMetadataStorageSizeBytes(v)
+		return nil
+	case wasabidailyusage.FieldDeletedStorageSizeBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedStorageSizeBytes(v)
+		return nil
+	case wasabidailyusage.FieldOrphanedStorageSizeBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOrphanedStorageSizeBytes(v)
+		return nil
+	case wasabidailyusage.FieldMinStorageChargeBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMinStorageChargeBytes(v)
+		return nil
+	case wasabidailyusage.FieldNumAPICalls:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNumAPICalls(v)
+		return nil
+	case wasabidailyusage.FieldUploadBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUploadBytes(v)
+		return nil
+	case wasabidailyusage.FieldDownloadBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDownloadBytes(v)
+		return nil
+	case wasabidailyusage.FieldStorageWroteBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStorageWroteBytes(v)
+		return nil
+	case wasabidailyusage.FieldStorageReadBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStorageReadBytes(v)
+		return nil
+	case wasabidailyusage.FieldDeleteBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteBytes(v)
+		return nil
+	case wasabidailyusage.FieldNumGetCalls:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNumGetCalls(v)
+		return nil
+	case wasabidailyusage.FieldNumPutCalls:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNumPutCalls(v)
+		return nil
+	case wasabidailyusage.FieldNumDeleteCalls:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNumDeleteCalls(v)
+		return nil
+	case wasabidailyusage.FieldNumListCalls:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNumListCalls(v)
+		return nil
+	case wasabidailyusage.FieldNumHeadCalls:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNumHeadCalls(v)
+		return nil
+	}
+	return fmt.Errorf("unknown WasabiDailyUsage field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *WasabiDailyUsageMutation) AddedFields() []string {
+	var fields []string
+	if m.addnum_billable_objects != nil {
+		fields = append(fields, wasabidailyusage.FieldNumBillableObjects)
+	}
+	if m.addnum_billable_deleted_objects != nil {
+		fields = append(fields, wasabidailyusage.FieldNumBillableDeletedObjects)
+	}
+	if m.addraw_storage_size_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldRawStorageSizeBytes)
+	}
+	if m.addpadded_storage_size_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldPaddedStorageSizeBytes)
+	}
+	if m.addmetadata_storage_size_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldMetadataStorageSizeBytes)
+	}
+	if m.adddeleted_storage_size_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldDeletedStorageSizeBytes)
+	}
+	if m.addorphaned_storage_size_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldOrphanedStorageSizeBytes)
+	}
+	if m.addmin_storage_charge_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldMinStorageChargeBytes)
+	}
+	if m.addnum_api_calls != nil {
+		fields = append(fields, wasabidailyusage.FieldNumAPICalls)
+	}
+	if m.addupload_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldUploadBytes)
+	}
+	if m.adddownload_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldDownloadBytes)
+	}
+	if m.addstorage_wrote_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldStorageWroteBytes)
+	}
+	if m.addstorage_read_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldStorageReadBytes)
+	}
+	if m.adddelete_bytes != nil {
+		fields = append(fields, wasabidailyusage.FieldDeleteBytes)
+	}
+	if m.addnum_get_calls != nil {
+		fields = append(fields, wasabidailyusage.FieldNumGetCalls)
+	}
+	if m.addnum_put_calls != nil {
+		fields = append(fields, wasabidailyusage.FieldNumPutCalls)
+	}
+	if m.addnum_delete_calls != nil {
+		fields = append(fields, wasabidailyusage.FieldNumDeleteCalls)
+	}
+	if m.addnum_list_calls != nil {
+		fields = append(fields, wasabidailyusage.FieldNumListCalls)
+	}
+	if m.addnum_head_calls != nil {
+		fields = append(fields, wasabidailyusage.FieldNumHeadCalls)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *WasabiDailyUsageMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case wasabidailyusage.FieldNumBillableObjects:
+		return m.AddedNumBillableObjects()
+	case wasabidailyusage.FieldNumBillableDeletedObjects:
+		return m.AddedNumBillableDeletedObjects()
+	case wasabidailyusage.FieldRawStorageSizeBytes:
+		return m.AddedRawStorageSizeBytes()
+	case wasabidailyusage.FieldPaddedStorageSizeBytes:
+		return m.AddedPaddedStorageSizeBytes()
+	case wasabidailyusage.FieldMetadataStorageSizeBytes:
+		return m.AddedMetadataStorageSizeBytes()
+	case wasabidailyusage.FieldDeletedStorageSizeBytes:
+		return m.AddedDeletedStorageSizeBytes()
+	case wasabidailyusage.FieldOrphanedStorageSizeBytes:
+		return m.AddedOrphanedStorageSizeBytes()
+	case wasabidailyusage.FieldMinStorageChargeBytes:
+		return m.AddedMinStorageChargeBytes()
+	case wasabidailyusage.FieldNumAPICalls:
+		return m.AddedNumAPICalls()
+	case wasabidailyusage.FieldUploadBytes:
+		return m.AddedUploadBytes()
+	case wasabidailyusage.FieldDownloadBytes:
+		return m.AddedDownloadBytes()
+	case wasabidailyusage.FieldStorageWroteBytes:
+		return m.AddedStorageWroteBytes()
+	case wasabidailyusage.FieldStorageReadBytes:
+		return m.AddedStorageReadBytes()
+	case wasabidailyusage.FieldDeleteBytes:
+		return m.AddedDeleteBytes()
+	case wasabidailyusage.FieldNumGetCalls:
+		return m.AddedNumGetCalls()
+	case wasabidailyusage.FieldNumPutCalls:
+		return m.AddedNumPutCalls()
+	case wasabidailyusage.FieldNumDeleteCalls:
+		return m.AddedNumDeleteCalls()
+	case wasabidailyusage.FieldNumListCalls:
+		return m.AddedNumListCalls()
+	case wasabidailyusage.FieldNumHeadCalls:
+		return m.AddedNumHeadCalls()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *WasabiDailyUsageMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case wasabidailyusage.FieldNumBillableObjects:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddNumBillableObjects(v)
+		return nil
+	case wasabidailyusage.FieldNumBillableDeletedObjects:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddNumBillableDeletedObjects(v)
+		return nil
+	case wasabidailyusage.FieldRawStorageSizeBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRawStorageSizeBytes(v)
+		return nil
+	case wasabidailyusage.FieldPaddedStorageSizeBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPaddedStorageSizeBytes(v)
+		return nil
+	case wasabidailyusage.FieldMetadataStorageSizeBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMetadataStorageSizeBytes(v)
+		return nil
+	case wasabidailyusage.FieldDeletedStorageSizeBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeletedStorageSizeBytes(v)
+		return nil
+	case wasabidailyusage.FieldOrphanedStorageSizeBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOrphanedStorageSizeBytes(v)
+		return nil
+	case wasabidailyusage.FieldMinStorageChargeBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMinStorageChargeBytes(v)
+		return nil
+	case wasabidailyusage.FieldNumAPICalls:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddNumAPICalls(v)
+		return nil
+	case wasabidailyusage.FieldUploadBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUploadBytes(v)
+		return nil
+	case wasabidailyusage.FieldDownloadBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDownloadBytes(v)
+		return nil
+	case wasabidailyusage.FieldStorageWroteBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddStorageWroteBytes(v)
+		return nil
+	case wasabidailyusage.FieldStorageReadBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddStorageReadBytes(v)
+		return nil
+	case wasabidailyusage.FieldDeleteBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeleteBytes(v)
+		return nil
+	case wasabidailyusage.FieldNumGetCalls:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddNumGetCalls(v)
+		return nil
+	case wasabidailyusage.FieldNumPutCalls:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddNumPutCalls(v)
+		return nil
+	case wasabidailyusage.FieldNumDeleteCalls:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddNumDeleteCalls(v)
+		return nil
+	case wasabidailyusage.FieldNumListCalls:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddNumListCalls(v)
+		return nil
+	case wasabidailyusage.FieldNumHeadCalls:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddNumHeadCalls(v)
+		return nil
+	}
+	return fmt.Errorf("unknown WasabiDailyUsage numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *WasabiDailyUsageMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *WasabiDailyUsageMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *WasabiDailyUsageMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown WasabiDailyUsage nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *WasabiDailyUsageMutation) ResetField(name string) error {
+	switch name {
+	case wasabidailyusage.FieldConnectionID:
+		m.ResetConnectionID()
+		return nil
+	case wasabidailyusage.FieldBucket:
+		m.ResetBucket()
+		return nil
+	case wasabidailyusage.FieldDay:
+		m.ResetDay()
+		return nil
+	case wasabidailyusage.FieldRegion:
+		m.ResetRegion()
+		return nil
+	case wasabidailyusage.FieldNumBillableObjects:
+		m.ResetNumBillableObjects()
+		return nil
+	case wasabidailyusage.FieldNumBillableDeletedObjects:
+		m.ResetNumBillableDeletedObjects()
+		return nil
+	case wasabidailyusage.FieldRawStorageSizeBytes:
+		m.ResetRawStorageSizeBytes()
+		return nil
+	case wasabidailyusage.FieldPaddedStorageSizeBytes:
+		m.ResetPaddedStorageSizeBytes()
+		return nil
+	case wasabidailyusage.FieldMetadataStorageSizeBytes:
+		m.ResetMetadataStorageSizeBytes()
+		return nil
+	case wasabidailyusage.FieldDeletedStorageSizeBytes:
+		m.ResetDeletedStorageSizeBytes()
+		return nil
+	case wasabidailyusage.FieldOrphanedStorageSizeBytes:
+		m.ResetOrphanedStorageSizeBytes()
+		return nil
+	case wasabidailyusage.FieldMinStorageChargeBytes:
+		m.ResetMinStorageChargeBytes()
+		return nil
+	case wasabidailyusage.FieldNumAPICalls:
+		m.ResetNumAPICalls()
+		return nil
+	case wasabidailyusage.FieldUploadBytes:
+		m.ResetUploadBytes()
+		return nil
+	case wasabidailyusage.FieldDownloadBytes:
+		m.ResetDownloadBytes()
+		return nil
+	case wasabidailyusage.FieldStorageWroteBytes:
+		m.ResetStorageWroteBytes()
+		return nil
+	case wasabidailyusage.FieldStorageReadBytes:
+		m.ResetStorageReadBytes()
+		return nil
+	case wasabidailyusage.FieldDeleteBytes:
+		m.ResetDeleteBytes()
+		return nil
+	case wasabidailyusage.FieldNumGetCalls:
+		m.ResetNumGetCalls()
+		return nil
+	case wasabidailyusage.FieldNumPutCalls:
+		m.ResetNumPutCalls()
+		return nil
+	case wasabidailyusage.FieldNumDeleteCalls:
+		m.ResetNumDeleteCalls()
+		return nil
+	case wasabidailyusage.FieldNumListCalls:
+		m.ResetNumListCalls()
+		return nil
+	case wasabidailyusage.FieldNumHeadCalls:
+		m.ResetNumHeadCalls()
+		return nil
+	}
+	return fmt.Errorf("unknown WasabiDailyUsage field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *WasabiDailyUsageMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *WasabiDailyUsageMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *WasabiDailyUsageMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *WasabiDailyUsageMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *WasabiDailyUsageMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *WasabiDailyUsageMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *WasabiDailyUsageMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown WasabiDailyUsage unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *WasabiDailyUsageMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown WasabiDailyUsage edge %s", name)
+}
+
+// WasabiSyncStateMutation represents an operation that mutates the WasabiSyncState nodes in the graph.
+type WasabiSyncStateMutation struct {
+	config
+	op                    Op
+	typ                   string
+	id                    *string
+	last_synced_day       *time.Time
+	last_success_at       *time.Time
+	backfill_from         *time.Time
+	backfill_through      *time.Time
+	backfill_completed_at *time.Time
+	updated_at            *time.Time
+	clearedFields         map[string]struct{}
+	done                  bool
+	oldValue              func(context.Context) (*WasabiSyncState, error)
+	predicates            []predicate.WasabiSyncState
+}
+
+var _ ent.Mutation = (*WasabiSyncStateMutation)(nil)
+
+// wasabisyncstateOption allows management of the mutation configuration using functional options.
+type wasabisyncstateOption func(*WasabiSyncStateMutation)
+
+// newWasabiSyncStateMutation creates new mutation for the WasabiSyncState entity.
+func newWasabiSyncStateMutation(c config, op Op, opts ...wasabisyncstateOption) *WasabiSyncStateMutation {
+	m := &WasabiSyncStateMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeWasabiSyncState,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withWasabiSyncStateID sets the ID field of the mutation.
+func withWasabiSyncStateID(id string) wasabisyncstateOption {
+	return func(m *WasabiSyncStateMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *WasabiSyncState
+		)
+		m.oldValue = func(ctx context.Context) (*WasabiSyncState, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().WasabiSyncState.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withWasabiSyncState sets the old WasabiSyncState of the mutation.
+func withWasabiSyncState(node *WasabiSyncState) wasabisyncstateOption {
+	return func(m *WasabiSyncStateMutation) {
+		m.oldValue = func(context.Context) (*WasabiSyncState, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m WasabiSyncStateMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m WasabiSyncStateMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of WasabiSyncState entities.
+func (m *WasabiSyncStateMutation) SetID(id string) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *WasabiSyncStateMutation) ID() (id string, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *WasabiSyncStateMutation) IDs(ctx context.Context) ([]string, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []string{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().WasabiSyncState.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetLastSyncedDay sets the "last_synced_day" field.
+func (m *WasabiSyncStateMutation) SetLastSyncedDay(t time.Time) {
+	m.last_synced_day = &t
+}
+
+// LastSyncedDay returns the value of the "last_synced_day" field in the mutation.
+func (m *WasabiSyncStateMutation) LastSyncedDay() (r time.Time, exists bool) {
+	v := m.last_synced_day
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastSyncedDay returns the old "last_synced_day" field's value of the WasabiSyncState entity.
+// If the WasabiSyncState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiSyncStateMutation) OldLastSyncedDay(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastSyncedDay is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastSyncedDay requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastSyncedDay: %w", err)
+	}
+	return oldValue.LastSyncedDay, nil
+}
+
+// ClearLastSyncedDay clears the value of the "last_synced_day" field.
+func (m *WasabiSyncStateMutation) ClearLastSyncedDay() {
+	m.last_synced_day = nil
+	m.clearedFields[wasabisyncstate.FieldLastSyncedDay] = struct{}{}
+}
+
+// LastSyncedDayCleared returns if the "last_synced_day" field was cleared in this mutation.
+func (m *WasabiSyncStateMutation) LastSyncedDayCleared() bool {
+	_, ok := m.clearedFields[wasabisyncstate.FieldLastSyncedDay]
+	return ok
+}
+
+// ResetLastSyncedDay resets all changes to the "last_synced_day" field.
+func (m *WasabiSyncStateMutation) ResetLastSyncedDay() {
+	m.last_synced_day = nil
+	delete(m.clearedFields, wasabisyncstate.FieldLastSyncedDay)
+}
+
+// SetLastSuccessAt sets the "last_success_at" field.
+func (m *WasabiSyncStateMutation) SetLastSuccessAt(t time.Time) {
+	m.last_success_at = &t
+}
+
+// LastSuccessAt returns the value of the "last_success_at" field in the mutation.
+func (m *WasabiSyncStateMutation) LastSuccessAt() (r time.Time, exists bool) {
+	v := m.last_success_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastSuccessAt returns the old "last_success_at" field's value of the WasabiSyncState entity.
+// If the WasabiSyncState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiSyncStateMutation) OldLastSuccessAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastSuccessAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastSuccessAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastSuccessAt: %w", err)
+	}
+	return oldValue.LastSuccessAt, nil
+}
+
+// ClearLastSuccessAt clears the value of the "last_success_at" field.
+func (m *WasabiSyncStateMutation) ClearLastSuccessAt() {
+	m.last_success_at = nil
+	m.clearedFields[wasabisyncstate.FieldLastSuccessAt] = struct{}{}
+}
+
+// LastSuccessAtCleared returns if the "last_success_at" field was cleared in this mutation.
+func (m *WasabiSyncStateMutation) LastSuccessAtCleared() bool {
+	_, ok := m.clearedFields[wasabisyncstate.FieldLastSuccessAt]
+	return ok
+}
+
+// ResetLastSuccessAt resets all changes to the "last_success_at" field.
+func (m *WasabiSyncStateMutation) ResetLastSuccessAt() {
+	m.last_success_at = nil
+	delete(m.clearedFields, wasabisyncstate.FieldLastSuccessAt)
+}
+
+// SetBackfillFrom sets the "backfill_from" field.
+func (m *WasabiSyncStateMutation) SetBackfillFrom(t time.Time) {
+	m.backfill_from = &t
+}
+
+// BackfillFrom returns the value of the "backfill_from" field in the mutation.
+func (m *WasabiSyncStateMutation) BackfillFrom() (r time.Time, exists bool) {
+	v := m.backfill_from
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBackfillFrom returns the old "backfill_from" field's value of the WasabiSyncState entity.
+// If the WasabiSyncState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiSyncStateMutation) OldBackfillFrom(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBackfillFrom is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBackfillFrom requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBackfillFrom: %w", err)
+	}
+	return oldValue.BackfillFrom, nil
+}
+
+// ClearBackfillFrom clears the value of the "backfill_from" field.
+func (m *WasabiSyncStateMutation) ClearBackfillFrom() {
+	m.backfill_from = nil
+	m.clearedFields[wasabisyncstate.FieldBackfillFrom] = struct{}{}
+}
+
+// BackfillFromCleared returns if the "backfill_from" field was cleared in this mutation.
+func (m *WasabiSyncStateMutation) BackfillFromCleared() bool {
+	_, ok := m.clearedFields[wasabisyncstate.FieldBackfillFrom]
+	return ok
+}
+
+// ResetBackfillFrom resets all changes to the "backfill_from" field.
+func (m *WasabiSyncStateMutation) ResetBackfillFrom() {
+	m.backfill_from = nil
+	delete(m.clearedFields, wasabisyncstate.FieldBackfillFrom)
+}
+
+// SetBackfillThrough sets the "backfill_through" field.
+func (m *WasabiSyncStateMutation) SetBackfillThrough(t time.Time) {
+	m.backfill_through = &t
+}
+
+// BackfillThrough returns the value of the "backfill_through" field in the mutation.
+func (m *WasabiSyncStateMutation) BackfillThrough() (r time.Time, exists bool) {
+	v := m.backfill_through
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBackfillThrough returns the old "backfill_through" field's value of the WasabiSyncState entity.
+// If the WasabiSyncState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiSyncStateMutation) OldBackfillThrough(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBackfillThrough is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBackfillThrough requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBackfillThrough: %w", err)
+	}
+	return oldValue.BackfillThrough, nil
+}
+
+// ClearBackfillThrough clears the value of the "backfill_through" field.
+func (m *WasabiSyncStateMutation) ClearBackfillThrough() {
+	m.backfill_through = nil
+	m.clearedFields[wasabisyncstate.FieldBackfillThrough] = struct{}{}
+}
+
+// BackfillThroughCleared returns if the "backfill_through" field was cleared in this mutation.
+func (m *WasabiSyncStateMutation) BackfillThroughCleared() bool {
+	_, ok := m.clearedFields[wasabisyncstate.FieldBackfillThrough]
+	return ok
+}
+
+// ResetBackfillThrough resets all changes to the "backfill_through" field.
+func (m *WasabiSyncStateMutation) ResetBackfillThrough() {
+	m.backfill_through = nil
+	delete(m.clearedFields, wasabisyncstate.FieldBackfillThrough)
+}
+
+// SetBackfillCompletedAt sets the "backfill_completed_at" field.
+func (m *WasabiSyncStateMutation) SetBackfillCompletedAt(t time.Time) {
+	m.backfill_completed_at = &t
+}
+
+// BackfillCompletedAt returns the value of the "backfill_completed_at" field in the mutation.
+func (m *WasabiSyncStateMutation) BackfillCompletedAt() (r time.Time, exists bool) {
+	v := m.backfill_completed_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBackfillCompletedAt returns the old "backfill_completed_at" field's value of the WasabiSyncState entity.
+// If the WasabiSyncState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiSyncStateMutation) OldBackfillCompletedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBackfillCompletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBackfillCompletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBackfillCompletedAt: %w", err)
+	}
+	return oldValue.BackfillCompletedAt, nil
+}
+
+// ClearBackfillCompletedAt clears the value of the "backfill_completed_at" field.
+func (m *WasabiSyncStateMutation) ClearBackfillCompletedAt() {
+	m.backfill_completed_at = nil
+	m.clearedFields[wasabisyncstate.FieldBackfillCompletedAt] = struct{}{}
+}
+
+// BackfillCompletedAtCleared returns if the "backfill_completed_at" field was cleared in this mutation.
+func (m *WasabiSyncStateMutation) BackfillCompletedAtCleared() bool {
+	_, ok := m.clearedFields[wasabisyncstate.FieldBackfillCompletedAt]
+	return ok
+}
+
+// ResetBackfillCompletedAt resets all changes to the "backfill_completed_at" field.
+func (m *WasabiSyncStateMutation) ResetBackfillCompletedAt() {
+	m.backfill_completed_at = nil
+	delete(m.clearedFields, wasabisyncstate.FieldBackfillCompletedAt)
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *WasabiSyncStateMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *WasabiSyncStateMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the WasabiSyncState entity.
+// If the WasabiSyncState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiSyncStateMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *WasabiSyncStateMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the WasabiSyncStateMutation builder.
+func (m *WasabiSyncStateMutation) Where(ps ...predicate.WasabiSyncState) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the WasabiSyncStateMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *WasabiSyncStateMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.WasabiSyncState, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *WasabiSyncStateMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *WasabiSyncStateMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (WasabiSyncState).
+func (m *WasabiSyncStateMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *WasabiSyncStateMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.last_synced_day != nil {
+		fields = append(fields, wasabisyncstate.FieldLastSyncedDay)
+	}
+	if m.last_success_at != nil {
+		fields = append(fields, wasabisyncstate.FieldLastSuccessAt)
+	}
+	if m.backfill_from != nil {
+		fields = append(fields, wasabisyncstate.FieldBackfillFrom)
+	}
+	if m.backfill_through != nil {
+		fields = append(fields, wasabisyncstate.FieldBackfillThrough)
+	}
+	if m.backfill_completed_at != nil {
+		fields = append(fields, wasabisyncstate.FieldBackfillCompletedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, wasabisyncstate.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *WasabiSyncStateMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case wasabisyncstate.FieldLastSyncedDay:
+		return m.LastSyncedDay()
+	case wasabisyncstate.FieldLastSuccessAt:
+		return m.LastSuccessAt()
+	case wasabisyncstate.FieldBackfillFrom:
+		return m.BackfillFrom()
+	case wasabisyncstate.FieldBackfillThrough:
+		return m.BackfillThrough()
+	case wasabisyncstate.FieldBackfillCompletedAt:
+		return m.BackfillCompletedAt()
+	case wasabisyncstate.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *WasabiSyncStateMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case wasabisyncstate.FieldLastSyncedDay:
+		return m.OldLastSyncedDay(ctx)
+	case wasabisyncstate.FieldLastSuccessAt:
+		return m.OldLastSuccessAt(ctx)
+	case wasabisyncstate.FieldBackfillFrom:
+		return m.OldBackfillFrom(ctx)
+	case wasabisyncstate.FieldBackfillThrough:
+		return m.OldBackfillThrough(ctx)
+	case wasabisyncstate.FieldBackfillCompletedAt:
+		return m.OldBackfillCompletedAt(ctx)
+	case wasabisyncstate.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown WasabiSyncState field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *WasabiSyncStateMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case wasabisyncstate.FieldLastSyncedDay:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastSyncedDay(v)
+		return nil
+	case wasabisyncstate.FieldLastSuccessAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastSuccessAt(v)
+		return nil
+	case wasabisyncstate.FieldBackfillFrom:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBackfillFrom(v)
+		return nil
+	case wasabisyncstate.FieldBackfillThrough:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBackfillThrough(v)
+		return nil
+	case wasabisyncstate.FieldBackfillCompletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBackfillCompletedAt(v)
+		return nil
+	case wasabisyncstate.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown WasabiSyncState field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *WasabiSyncStateMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *WasabiSyncStateMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *WasabiSyncStateMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown WasabiSyncState numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *WasabiSyncStateMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(wasabisyncstate.FieldLastSyncedDay) {
+		fields = append(fields, wasabisyncstate.FieldLastSyncedDay)
+	}
+	if m.FieldCleared(wasabisyncstate.FieldLastSuccessAt) {
+		fields = append(fields, wasabisyncstate.FieldLastSuccessAt)
+	}
+	if m.FieldCleared(wasabisyncstate.FieldBackfillFrom) {
+		fields = append(fields, wasabisyncstate.FieldBackfillFrom)
+	}
+	if m.FieldCleared(wasabisyncstate.FieldBackfillThrough) {
+		fields = append(fields, wasabisyncstate.FieldBackfillThrough)
+	}
+	if m.FieldCleared(wasabisyncstate.FieldBackfillCompletedAt) {
+		fields = append(fields, wasabisyncstate.FieldBackfillCompletedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *WasabiSyncStateMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *WasabiSyncStateMutation) ClearField(name string) error {
+	switch name {
+	case wasabisyncstate.FieldLastSyncedDay:
+		m.ClearLastSyncedDay()
+		return nil
+	case wasabisyncstate.FieldLastSuccessAt:
+		m.ClearLastSuccessAt()
+		return nil
+	case wasabisyncstate.FieldBackfillFrom:
+		m.ClearBackfillFrom()
+		return nil
+	case wasabisyncstate.FieldBackfillThrough:
+		m.ClearBackfillThrough()
+		return nil
+	case wasabisyncstate.FieldBackfillCompletedAt:
+		m.ClearBackfillCompletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown WasabiSyncState nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *WasabiSyncStateMutation) ResetField(name string) error {
+	switch name {
+	case wasabisyncstate.FieldLastSyncedDay:
+		m.ResetLastSyncedDay()
+		return nil
+	case wasabisyncstate.FieldLastSuccessAt:
+		m.ResetLastSuccessAt()
+		return nil
+	case wasabisyncstate.FieldBackfillFrom:
+		m.ResetBackfillFrom()
+		return nil
+	case wasabisyncstate.FieldBackfillThrough:
+		m.ResetBackfillThrough()
+		return nil
+	case wasabisyncstate.FieldBackfillCompletedAt:
+		m.ResetBackfillCompletedAt()
+		return nil
+	case wasabisyncstate.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown WasabiSyncState field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *WasabiSyncStateMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *WasabiSyncStateMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *WasabiSyncStateMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *WasabiSyncStateMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *WasabiSyncStateMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *WasabiSyncStateMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *WasabiSyncStateMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown WasabiSyncState unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *WasabiSyncStateMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown WasabiSyncState edge %s", name)
 }

@@ -43,7 +43,28 @@ one place.
 
 A Base has at most one Snapshot pending or running at a time.
 
+### Wasabi
+
+- **Wasabi Connection** — a Connection whose Provider is Wasabi: one
+  standalone Wasabi account, read through the Stats API with a (preferably
+  read-only sub-user) access key. A sync marks it ok or error.
+- **Daily usage** — one UTC day of Stats API figures for the account or one
+  bucket. Storage figures are a snapshot at midnight UTC; activity figures
+  (API calls, egress) cover that day. Neo Box keeps every numeric field.
+- **Active storage** — padded object bytes plus metadata: what Wasabi bills
+  as stored data, with a 1 TB minimum.
+- **Deleted storage** — deleted data still billed because it is younger than
+  the minimum storage duration (typically 90 days).
+- **Billing cycle** — Wasabi invoices every 30 days from the day the account
+  became paid, not per calendar month. A connection may record one cycle's
+  start day (its anchor).
+- **Estimated cost** — Neo Box's estimate of a billing cycle's storage charge
+  (or of the last 30 days without an anchor), from Daily usage and the
+  connection's price. Never an invoice; egress is not priced.
+- **Backfill** — the first sync of a Wasabi Connection, covering the last 12
+  months.
+
 ## Planned (not yet modeled)
 
 - **Restore** — rebuild a Snapshot into a new Base (never overwrite).
-- More **Providers** beyond NocoDB (next: Wasabi, #5).
+- More **Providers** beyond NocoDB and Wasabi.

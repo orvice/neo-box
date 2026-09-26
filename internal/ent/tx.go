@@ -24,6 +24,10 @@ type Tx struct {
 	Session *SessionClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// WasabiDailyUsage is the client for interacting with the WasabiDailyUsage builders.
+	WasabiDailyUsage *WasabiDailyUsageClient
+	// WasabiSyncState is the client for interacting with the WasabiSyncState builders.
+	WasabiSyncState *WasabiSyncStateClient
 
 	// lazily loaded.
 	client     *Client
@@ -161,6 +165,8 @@ func (tx *Tx) init() {
 	tx.OAuthState = NewOAuthStateClient(tx.config)
 	tx.Session = NewSessionClient(tx.config)
 	tx.User = NewUserClient(tx.config)
+	tx.WasabiDailyUsage = NewWasabiDailyUsageClient(tx.config)
+	tx.WasabiSyncState = NewWasabiSyncStateClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

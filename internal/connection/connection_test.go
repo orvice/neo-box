@@ -207,3 +207,38 @@ func TestDeleteRunsCleanupFirst(t *testing.T) {
 		t.Fatalf("connection still stored after Delete: %v", err)
 	}
 }
+
+// activatingProvider records Activate calls.
+type activatingProvider struct {
+	fakeProvider
+	activated []string
+}
+
+func (p *activatingProvider) Activate(_ context.Context, c *repo.Connection) {
+	p.activated = append(p.activated, c.Name)
+}
+
+func TestActivateOnCreateAndSettingsChange(t *testing.T) {
+	cipher, err := secretbox.NewCipher("0123456789abcdef0123456789abcdef")
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := NewService(memory.New(), cipher)
+	p := &activatingProvider{}
+	s.Register(p)
+	ctx := context.Background()
+
+	c, err := s.Create(ctx, "u1", "fake", "created", testConfig{URL: "a"}, testSecret{Token: "t"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Update(ctx, c, "renamed", testConfig{URL: "a"}, nil); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Update(ctx, c, "new config", testConfig{URL: "b"}, nil); err != nil {
+		t.Fatal(err)
+	}
+	if len(p.activated) != 2 || p.activated[0] != "created" || p.activated[1] != "new config" {
+		t.Fatalf("Activate calls = %v, want create and the config change only", p.activated)
+	}
+}

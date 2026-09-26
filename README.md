@@ -17,6 +17,10 @@ protobuf contracts generated with buf, all in one monorepo.
   captures a Base's schema, records, and record links into point-in-time
   snapshots. You can take them manually or on a cron schedule with retention,
   browse them in the dashboard, and download them as gzip JSON.
+- **Wasabi usage and cost** (read-only): daily storage, deleted storage
+  still billed under the 90-day minimum, egress, and API calls for a Wasabi
+  account and each of its buckets, synced from the Wasabi Stats API, plus an
+  estimated charge for the current billing cycle. See [Wasabi](#wasabi).
 - Stores users, sessions, and metadata in PostgreSQL, and snapshot content in
   S3-compatible object storage.
 
@@ -187,11 +191,44 @@ nocodb:
   workers: 1              # snapshots running concurrently
   page_size: 200          # records per page when reading tables
   snapshot_timeout: 2h    # a run exceeding this is marked failed
+
+# ── Wasabi usage ───────────────────────────────────────────────────────
+wasabi:
+  stats_endpoint: ""      # default https://stats.wasabisys.com
 ```
 
 Cron schedules are evaluated in the server's time zone. The container image is
 UTC, so prefix expressions with a zone when needed, e.g.
 `CRON_TZ=Asia/Shanghai 0 3 * * *`.
+
+### Wasabi
+
+A Wasabi connection reads the account's daily utilization from the
+[Stats API](https://docs.wasabi.com/apidocs/wasabi-stats-api). The Stats API
+receives the access key and secret key as-is in the `Authorization` header,
+so use a dedicated, read-only sub-user rather than root keys:
+
+1. In the Wasabi Console, open **Users** and create a user with
+   programmatic (API) access only.
+2. Attach the `WasabiAccountStatsAccess` policy. Wasabi's pages disagree on
+   whether a sub-user also needs `WasabiBucketStatsAccess`; attach both if
+   bucket figures come back empty or with 403.
+3. Create an access key for that user and add it in Neo Box under
+   **Connections → Add connection → Wasabi**. The key is checked with a
+   Stats call before it is saved.
+
+After a connection is added, Neo Box backfills the last 12 months in the
+background, then syncs once a day at 02:30 UTC (Wasabi publishes the
+previous day around 01:30 UTC). "Sync now" re-fetches the last 7 days. A
+failed sync is picked up by the next daily run.
+
+The cost estimate follows Wasabi's published formula: per day, active
+storage (at least 1 TB) plus deleted storage, at the connection's price per
+TB-month (default Pay-Go $7.99) / 30. With a billing-cycle anchor it covers
+the current 30-day cycle; without one, the last 30 days. It is an estimate,
+not your invoice (Wasabi exposes no invoice API for standalone accounts),
+and can be turned off per connection, e.g. for Reserved Capacity plans.
+Egress is not priced; the page warns when it exceeds the stored volume.
 
 ### Environment variables
 
@@ -300,6 +337,8 @@ internal/connection/   connections across providers (secrets, verify, health)
 internal/backup/       NocoDB snapshot queue, cron scheduling, retention
 internal/nocodb/       NocoDB REST client
 internal/snapshot/     snapshot document format
+internal/wasabi/       Wasabi Stats API client, settings, cost estimate
+internal/wasabisync/   Wasabi usage sync: backfill, daily run, provider
 internal/ent/          ent schema (schema/) + generated client (do not edit)
 internal/repo/         repositories (PostgreSQL via ent)
 proto/neobox/v1/       protobuf API
