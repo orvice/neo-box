@@ -73,7 +73,10 @@ message NocoDBConnectionSettings {
   string api_token = 2;
   // Cap on calls to the instance; 0 uses 5, NocoDB Cloud's limit.
   // Self-hosted instances can usually go higher.
-  double requests_per_second = 3 [(validate.rules).double = {gte: 0, lte: 1000}];
+  double requests_per_second = 3 [(validate.rules).double = {
+    gte: 0
+    lte: 1000
+  }];
 }
 
 // WasabiConnectionConfig is the non-secret part of a Wasabi connection.
