@@ -207,9 +207,13 @@ func nocodbSettings(in *neoboxv1.NocoDBConnectionSettings) (*providerSettings, e
 	if err != nil {
 		return nil, connectx.InvalidArgument("base_url", "must be an http(s) URL")
 	}
+	rps := in.GetRequestsPerSecond()
+	if rps < 0 || rps > 1000 || math.IsNaN(rps) {
+		return nil, connectx.InvalidArgument("requests_per_second", "must be between 0 and 1000")
+	}
 	out := &providerSettings{
 		provider:    nocodb.ProviderType,
-		config:      nocodb.ConnectionConfig{BaseURL: baseURL},
+		config:      nocodb.ConnectionConfig{BaseURL: baseURL, RequestsPerSecond: rps},
 		secretField: "api_token",
 	}
 	if token := strings.TrimSpace(in.GetApiToken()); token != "" {
@@ -252,7 +256,9 @@ func configToProto(c *connrepo.Connection, out *neoboxv1.Connection) {
 	case nocodb.ProviderType:
 		var cfg nocodb.ConnectionConfig
 		if json.Unmarshal(c.Config, &cfg) == nil {
-			out.Config = &neoboxv1.Connection_Nocodb{Nocodb: &neoboxv1.NocoDBConnectionConfig{BaseUrl: cfg.BaseURL}}
+			out.Config = &neoboxv1.Connection_Nocodb{Nocodb: &neoboxv1.NocoDBConnectionConfig{
+				BaseUrl: cfg.BaseURL, RequestsPerSecond: cfg.RateLimit(),
+			}}
 		}
 	case wasabi.ProviderType:
 		var cfg wasabi.ConnectionConfig

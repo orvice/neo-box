@@ -56,9 +56,6 @@ func (s StorageConfig) EffectiveLocalDir() string {
 
 // NocoDBConfig tunes NocoDB snapshot runs.
 type NocoDBConfig struct {
-	// RequestsPerSecond caps calls per NocoDB connection client. NocoDB
-	// Cloud allows 5/s; self-hosted instances can usually go higher.
-	RequestsPerSecond float64 `yaml:"requests_per_second"`
 	// Workers is how many snapshots run concurrently.
 	Workers int `yaml:"workers"`
 	// PageSize is the record page size when reading tables.

@@ -183,18 +183,16 @@ store:
     #   bucket: "neobox"
     #   use_path_style: true
 
-# ── NocoDB snapshots ───────────────────────────────────────────────────
-nocodb:
-  # Request rate per NocoDB connection. NocoDB Cloud allows 5/s; self-hosted
-  # instances can usually go higher, which speeds up link-heavy Bases.
-  requests_per_second: 5
-  workers: 1              # snapshots running concurrently
-  page_size: 200          # records per page when reading tables
-  snapshot_timeout: 2h    # a run exceeding this is marked failed
-
-# ── Wasabi usage ───────────────────────────────────────────────────────
-wasabi:
-  stats_endpoint: ""      # default https://stats.wasabisys.com
+# ── Optional tuning ────────────────────────────────────────────────────
+# Server-wide knobs with working defaults; leave them out unless needed.
+# Everything about a connection (URLs, keys, a NocoDB instance's request
+# rate, Wasabi pricing) is set per connection in the dashboard.
+# nocodb:
+#   workers: 1              # snapshots running concurrently
+#   page_size: 200          # records per page when reading tables
+#   snapshot_timeout: 2h    # a run exceeding this is marked failed
+# wasabi:
+#   stats_endpoint: "https://stats.wasabisys.com"
 ```
 
 Cron schedules are evaluated in the server's time zone. The container image is
@@ -314,7 +312,7 @@ go test ./...
 make build   # bin/neobox
 make buf     # buf generate + protoc-go-inject-tag
 make ent     # regenerate internal/ent from internal/ent/schema
-make lint    # buf lint + golangci-lint
+make lint    # buf lint + buf format check + golangci-lint
 ```
 
 Commit regenerated code (`pkg/proto/`, `front/src/gen/`, `internal/ent/`) with

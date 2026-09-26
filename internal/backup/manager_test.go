@@ -219,7 +219,7 @@ func newHarness(t *testing.T) *harness {
 	h.conns = &memConns{conns: map[string]*connrepo.Connection{"c1": h.conn}, statuses: map[string][]error{}}
 
 	h.m = New(Config{}, h.repo, h.conns, blobs)
-	h.m.newClient = func(_, token string) (NocoDB, error) {
+	h.m.newClient = func(_ nocodb.ConnectionConfig, token string) (NocoDB, error) {
 		if token != "tok" {
 			t.Errorf("token = %q", token)
 		}

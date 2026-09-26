@@ -16,7 +16,7 @@ make build   # bin/neobox
 make test    # go test ./...
 make buf     # buf generate + protoc-go-inject-tag
 make ent     # go generate ./internal/ent
-make lint    # buf lint + golangci-lint
+make lint    # buf lint + buf format check + golangci-lint
 ```
 
 After changing any `.proto`, run `make buf` and commit the generated Go

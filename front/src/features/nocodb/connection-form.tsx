@@ -7,6 +7,8 @@ import { FormFooter, NameField } from '@/features/connections/form-parts'
 import type { ProviderFormProps } from '@/features/connections/types'
 import { nocodbBaseUrl } from './format'
 
+const DEFAULT_RPS = 5
+
 export function NocoDBConnectionForm({
   connection,
   pending,
@@ -16,6 +18,13 @@ export function NocoDBConnectionForm({
   const [name, setName] = useState(connection?.name ?? '')
   const [baseUrl, setBaseUrl] = useState(nocodbBaseUrl(connection))
   const [token, setToken] = useState('')
+  const [rps, setRps] = useState(
+    String(
+      connection?.config.case === 'nocodb'
+        ? connection.config.value.requestsPerSecond
+        : DEFAULT_RPS
+    )
+  )
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -27,9 +36,22 @@ export function NocoDBConnectionForm({
       toast.error('API token is required')
       return
     }
+    const requestsPerSecond = Number.parseFloat(rps || '0')
+    if (
+      Number.isNaN(requestsPerSecond) ||
+      requestsPerSecond < 0 ||
+      requestsPerSecond > 1000
+    ) {
+      toast.error('Requests per second must be between 0 and 1000')
+      return
+    }
     onSubmit(name.trim(), {
       case: 'nocodb',
-      value: { baseUrl: baseUrl.trim(), apiToken: token.trim() },
+      value: {
+        baseUrl: baseUrl.trim(),
+        apiToken: token.trim(),
+        requestsPerSecond,
+      },
     })
   }
 
@@ -56,6 +78,22 @@ export function NocoDBConnectionForm({
           onChange={(e) => setToken(e.target.value)}
           autoComplete='off'
         />
+      </div>
+      <div className='space-y-2'>
+        <Label htmlFor='conn-rps'>Requests per second</Label>
+        <Input
+          id='conn-rps'
+          type='number'
+          min={0}
+          max={1000}
+          step='1'
+          value={rps}
+          onChange={(e) => setRps(e.target.value)}
+        />
+        <p className='text-xs text-muted-foreground'>
+          NocoDB Cloud allows 5. Self-hosted instances can usually go higher,
+          which speeds up snapshots of link-heavy Bases.
+        </p>
       </div>
       <FormFooter pending={pending} onCancel={onCancel} />
     </form>

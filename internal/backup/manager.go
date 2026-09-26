@@ -50,10 +50,9 @@ var ErrSnapshotInProgress = errors.New("a snapshot of this base is already in pr
 
 // Config tunes the manager.
 type Config struct {
-	Workers           int
-	QueueSize         int
-	RequestsPerSecond float64
-	PageSize          int
+	Workers   int
+	QueueSize int
+	PageSize  int
 	// SnapshotTimeout bounds one snapshot run.
 	SnapshotTimeout time.Duration
 }
@@ -64,9 +63,6 @@ func (c Config) withDefaults() Config {
 	}
 	if c.QueueSize <= 0 {
 		c.QueueSize = 64
-	}
-	if c.RequestsPerSecond == 0 {
-		c.RequestsPerSecond = 5
 	}
 	if c.PageSize <= 0 {
 		c.PageSize = 200
@@ -93,7 +89,7 @@ type Manager struct {
 	inFlight map[string]string       // connection/base -> snapshot id
 
 	// newClient is swapped in tests.
-	newClient func(baseURL, token string) (NocoDB, error)
+	newClient func(cfg nocodb.ConnectionConfig, token string) (NocoDB, error)
 	now       func() time.Time
 }
 
@@ -110,9 +106,7 @@ func New(cfg Config, r repo.Repository, conns Connections, blobs blobstore.Store
 		inFlight: make(map[string]string),
 		now:      time.Now,
 	}
-	m.newClient = func(baseURL, token string) (NocoDB, error) {
-		return m.NewClient(baseURL, token)
-	}
+	m.newClient = NewClient
 	return m
 }
 
@@ -216,9 +210,10 @@ func (m *Manager) runScheduled(p *repo.Policy) {
 	}
 }
 
-// NewClient builds a rate-limited client for an instance URL and token.
-func (m *Manager) NewClient(baseURL, token string) (NocoDB, error) {
-	return nocodb.New(baseURL, token, nocodb.WithRateLimit(m.cfg.RequestsPerSecond))
+// NewClient builds a client for a connection's instance, rate limited to
+// the connection's requests per second.
+func NewClient(cfg nocodb.ConnectionConfig, token string) (NocoDB, error) {
+	return nocodb.New(cfg.BaseURL, token, nocodb.WithRateLimit(cfg.RateLimit()))
 }
 
 // Client returns a NocoDB client for a stored connection.
@@ -235,7 +230,7 @@ func (m *Manager) open(conn *connrepo.Connection) (NocoDB, nocodb.ConnectionConf
 	if err := m.conns.Open(conn, &cfg, &secret); err != nil {
 		return nil, cfg, err
 	}
-	api, err := m.newClient(cfg.BaseURL, secret.APIToken)
+	api, err := m.newClient(cfg, secret.APIToken)
 	return api, cfg, err
 }
 
