@@ -234,6 +234,7 @@ Egress is not priced; the page warns when it exceeds the stored volume.
 |---|---|
 | `BUTTERFLY_CONFIG_TYPE` | `file` to load config from a YAML file |
 | `BUTTERFLY_CONFIG_FILE_PATH` | Path to the YAML config |
+| `BUTTERFLY_NAMESPACE` | Namespace of the Consul config key `<namespace>/neobox` (default `apps`) |
 | `BUTTERFLY_TRACING_PROVIDER` | `grpc` (default) or `http` OTLP exporter |
 | `BUTTERFLY_TRACING_ENDPOINT` | OTLP collector, e.g. `otel-collector:4317` |
 | `BUTTERFLY_TRACING_DISABLE` | `true` to turn tracing off |
