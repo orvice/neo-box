@@ -19,9 +19,9 @@ import (
 	"time"
 )
 
-// DefaultEndpoint is the Stats API host the reference pages use. (The
-// overview page names api.stats.wasabisys.com, which did not answer TLS
-// when checked.)
+// DefaultEndpoint is the Stats API host the reference pages use, confirmed
+// against a live account. (The overview page names api.stats.wasabisys.com,
+// which did not answer TLS when checked.)
 const DefaultEndpoint = "https://stats.wasabisys.com"
 
 const (
@@ -131,8 +131,9 @@ type record struct {
 	NumHEADCalls              int64 `json:"NumHEADCalls"`
 }
 
-// page is one response. The docs show both a paged object and, for the
-// bucket endpoint, a bare array; decodePage accepts either.
+// page is one response. Both endpoints return the paged object, but the docs
+// also show a bare array for the bucket endpoint, so decodePage accepts
+// either. Only page 0 reports RecordCount and PageCount; later pages carry 0.
 type page struct {
 	PageInfo struct {
 		RecordCount int `json:"RecordCount"`
