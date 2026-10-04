@@ -66,6 +66,13 @@ func TestUpsertAndListUsage(t *testing.T) {
 	if len(logs) != 2 || logs[0].Region != "eu-central-1" {
 		t.Fatalf("bucket usage = %+v", logs)
 	}
+	if err := s.UpsertUsage(ctx, "c1", []wasabi.Usage{usage("2026-09-02", "archive", 5)}); err != nil {
+		t.Fatal(err)
+	}
+	all, err := s.ListBucketUsage(ctx, "c1", day("2026-09-02"), day("2026-09-30"))
+	if err != nil || len(all) != 2 || all[0].Bucket != "archive" || all[1].Bucket != "logs" || !all[1].Day.Equal(day("2026-09-02")) {
+		t.Fatalf("ListBucketUsage = %+v, %v", all, err)
+	}
 
 	latest, err := s.LatestAccountUsage(ctx, "c1")
 	if err != nil || !latest.Day.Equal(day("2026-09-03")) {

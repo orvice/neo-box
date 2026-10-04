@@ -38,11 +38,7 @@ import {
   formatDayShort,
   todayUTC,
 } from './format'
-
-// Categorical slots 1 and 2 of the reference palette, validated on this
-// app's card surfaces (#ffffff light, #020919 dark).
-const BLUE = { light: '#2a78d6', dark: '#3987e5' }
-const ORANGE = { light: '#eb6834', dark: '#d95926' }
+import { BLUE, ORANGE } from './palette'
 
 const storageConfig = {
   active: { label: 'Active', theme: BLUE },

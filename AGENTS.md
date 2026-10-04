@@ -120,7 +120,9 @@ caller's NocoDB connection.
 **Wasabi usage** (`proto/neobox/v1/wasabi.proto`, `WasabiService`):
 overview (newest account totals, cost estimate, sync state), buckets with
 their newest day (gone buckets flagged `deleted`), daily usage of the
-account or a bucket, and "sync now". Days are UTC `YYYY-MM-DD` strings.
+account or a bucket, the cost breakdown (`wasabi.CostBreakdown`: the
+estimate's period by active / deleted / 1 TB minimum and by bucket), and
+"sync now". Days are UTC `YYYY-MM-DD` strings.
 `connection_id` must be the caller's Wasabi connection. The live Stats API
 test needs `NEOBOX_TEST_WASABI_ACCESS_KEY` / `NEOBOX_TEST_WASABI_SECRET_KEY`.
 

@@ -233,6 +233,12 @@ not your invoice (Wasabi exposes no invoice API for standalone accounts),
 and can be turned off per connection, e.g. for Reserved Capacity plans.
 Egress is not priced; the page warns when it exceeds the stored volume.
 
+"Where the cost goes" splits the same period's charge into active storage,
+deleted data still billed (objects deleted before they are 90 days old stay
+billed until they would have reached 90 days), and the 1 TB minimum, then by
+bucket. Each bucket and the account also show every figure the Stats API
+reported for the newest day.
+
 ### Environment variables
 
 | Variable | Purpose |

@@ -34,6 +34,9 @@ type Repository interface {
 	// ListUsage returns one bucket's rows (the account's when bucket is
 	// empty) with from <= day <= to, oldest first.
 	ListUsage(ctx context.Context, connectionID, bucket string, from, to time.Time) ([]wasabi.Usage, error)
+	// ListBucketUsage returns every bucket's rows with from <= day <= to,
+	// oldest first.
+	ListBucketUsage(ctx context.Context, connectionID string, from, to time.Time) ([]wasabi.Usage, error)
 	// LatestBucketUsage returns the newest row of every bucket ever seen.
 	LatestBucketUsage(ctx context.Context, connectionID string) ([]wasabi.Usage, error)
 	// LatestAccountUsage returns the newest account-level row, or

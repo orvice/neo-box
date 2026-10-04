@@ -45,6 +45,9 @@ const (
 	// WasabiServiceSyncWasabiConnectionProcedure is the fully-qualified name of the WasabiService's
 	// SyncWasabiConnection RPC.
 	WasabiServiceSyncWasabiConnectionProcedure = "/neobox.v1.WasabiService/SyncWasabiConnection"
+	// WasabiServiceGetWasabiCostBreakdownProcedure is the fully-qualified name of the WasabiService's
+	// GetWasabiCostBreakdown RPC.
+	WasabiServiceGetWasabiCostBreakdownProcedure = "/neobox.v1.WasabiService/GetWasabiCostBreakdown"
 )
 
 // WasabiServiceClient is a client for the neobox.v1.WasabiService service.
@@ -59,6 +62,10 @@ type WasabiServiceClient interface {
 	// SyncWasabiConnection re-fetches the last 7 days in the background (a
 	// backfill first, if it has not finished).
 	SyncWasabiConnection(context.Context, *connect.Request[v1.SyncWasabiConnectionRequest]) (*connect.Response[v1.SyncWasabiConnectionResponse], error)
+	// GetWasabiCostBreakdown splits the cost estimate's period by what the
+	// charge pays for (active storage, deleted storage still billed, the 1 TB
+	// minimum) and by bucket, at the connection's price.
+	GetWasabiCostBreakdown(context.Context, *connect.Request[v1.GetWasabiCostBreakdownRequest]) (*connect.Response[v1.GetWasabiCostBreakdownResponse], error)
 }
 
 // NewWasabiServiceClient constructs a client for the neobox.v1.WasabiService service. By default,
@@ -96,15 +103,22 @@ func NewWasabiServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 			connect.WithSchema(wasabiServiceMethods.ByName("SyncWasabiConnection")),
 			connect.WithClientOptions(opts...),
 		),
+		getWasabiCostBreakdown: connect.NewClient[v1.GetWasabiCostBreakdownRequest, v1.GetWasabiCostBreakdownResponse](
+			httpClient,
+			baseURL+WasabiServiceGetWasabiCostBreakdownProcedure,
+			connect.WithSchema(wasabiServiceMethods.ByName("GetWasabiCostBreakdown")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // wasabiServiceClient implements WasabiServiceClient.
 type wasabiServiceClient struct {
-	getWasabiOverview    *connect.Client[v1.GetWasabiOverviewRequest, v1.GetWasabiOverviewResponse]
-	listWasabiBuckets    *connect.Client[v1.ListWasabiBucketsRequest, v1.ListWasabiBucketsResponse]
-	getWasabiUsage       *connect.Client[v1.GetWasabiUsageRequest, v1.GetWasabiUsageResponse]
-	syncWasabiConnection *connect.Client[v1.SyncWasabiConnectionRequest, v1.SyncWasabiConnectionResponse]
+	getWasabiOverview      *connect.Client[v1.GetWasabiOverviewRequest, v1.GetWasabiOverviewResponse]
+	listWasabiBuckets      *connect.Client[v1.ListWasabiBucketsRequest, v1.ListWasabiBucketsResponse]
+	getWasabiUsage         *connect.Client[v1.GetWasabiUsageRequest, v1.GetWasabiUsageResponse]
+	syncWasabiConnection   *connect.Client[v1.SyncWasabiConnectionRequest, v1.SyncWasabiConnectionResponse]
+	getWasabiCostBreakdown *connect.Client[v1.GetWasabiCostBreakdownRequest, v1.GetWasabiCostBreakdownResponse]
 }
 
 // GetWasabiOverview calls neobox.v1.WasabiService.GetWasabiOverview.
@@ -127,6 +141,11 @@ func (c *wasabiServiceClient) SyncWasabiConnection(ctx context.Context, req *con
 	return c.syncWasabiConnection.CallUnary(ctx, req)
 }
 
+// GetWasabiCostBreakdown calls neobox.v1.WasabiService.GetWasabiCostBreakdown.
+func (c *wasabiServiceClient) GetWasabiCostBreakdown(ctx context.Context, req *connect.Request[v1.GetWasabiCostBreakdownRequest]) (*connect.Response[v1.GetWasabiCostBreakdownResponse], error) {
+	return c.getWasabiCostBreakdown.CallUnary(ctx, req)
+}
+
 // WasabiServiceHandler is an implementation of the neobox.v1.WasabiService service.
 type WasabiServiceHandler interface {
 	// GetWasabiOverview returns the newest account totals, the cost estimate,
@@ -139,6 +158,10 @@ type WasabiServiceHandler interface {
 	// SyncWasabiConnection re-fetches the last 7 days in the background (a
 	// backfill first, if it has not finished).
 	SyncWasabiConnection(context.Context, *connect.Request[v1.SyncWasabiConnectionRequest]) (*connect.Response[v1.SyncWasabiConnectionResponse], error)
+	// GetWasabiCostBreakdown splits the cost estimate's period by what the
+	// charge pays for (active storage, deleted storage still billed, the 1 TB
+	// minimum) and by bucket, at the connection's price.
+	GetWasabiCostBreakdown(context.Context, *connect.Request[v1.GetWasabiCostBreakdownRequest]) (*connect.Response[v1.GetWasabiCostBreakdownResponse], error)
 }
 
 // NewWasabiServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -172,6 +195,12 @@ func NewWasabiServiceHandler(svc WasabiServiceHandler, opts ...connect.HandlerOp
 		connect.WithSchema(wasabiServiceMethods.ByName("SyncWasabiConnection")),
 		connect.WithHandlerOptions(opts...),
 	)
+	wasabiServiceGetWasabiCostBreakdownHandler := connect.NewUnaryHandler(
+		WasabiServiceGetWasabiCostBreakdownProcedure,
+		svc.GetWasabiCostBreakdown,
+		connect.WithSchema(wasabiServiceMethods.ByName("GetWasabiCostBreakdown")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/neobox.v1.WasabiService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case WasabiServiceGetWasabiOverviewProcedure:
@@ -182,6 +211,8 @@ func NewWasabiServiceHandler(svc WasabiServiceHandler, opts ...connect.HandlerOp
 			wasabiServiceGetWasabiUsageHandler.ServeHTTP(w, r)
 		case WasabiServiceSyncWasabiConnectionProcedure:
 			wasabiServiceSyncWasabiConnectionHandler.ServeHTTP(w, r)
+		case WasabiServiceGetWasabiCostBreakdownProcedure:
+			wasabiServiceGetWasabiCostBreakdownHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -205,4 +236,8 @@ func (UnimplementedWasabiServiceHandler) GetWasabiUsage(context.Context, *connec
 
 func (UnimplementedWasabiServiceHandler) SyncWasabiConnection(context.Context, *connect.Request[v1.SyncWasabiConnectionRequest]) (*connect.Response[v1.SyncWasabiConnectionResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.WasabiService.SyncWasabiConnection is not implemented"))
+}
+
+func (UnimplementedWasabiServiceHandler) GetWasabiCostBreakdown(context.Context, *connect.Request[v1.GetWasabiCostBreakdownRequest]) (*connect.Response[v1.GetWasabiCostBreakdownResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.WasabiService.GetWasabiCostBreakdown is not implemented"))
 }

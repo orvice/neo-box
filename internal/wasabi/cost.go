@@ -58,26 +58,13 @@ func DailyCharge(u Usage, pricePerTBMonth float64) float64 {
 // or for the last CycleDays days when anchor is zero. days holds
 // account-level usage (Bucket empty) in any order.
 func EstimateCost(days []Usage, pricePerTBMonth float64, anchor, today time.Time) Estimate {
-	today = DayOf(today)
-	e := Estimate{Rolling: anchor.IsZero()}
-	if e.Rolling {
-		e.PeriodStart = today.AddDate(0, 0, -(CycleDays - 1))
-		e.PeriodEnd = today
-	} else {
-		e.PeriodStart = CycleStart(anchor, today)
-		e.PeriodEnd = e.PeriodStart.AddDate(0, 0, CycleDays-1)
-	}
+	e := Estimate{}
+	e.PeriodStart, e.PeriodEnd, e.Rolling = Period(anchor, today)
 
-	var inPeriod []Usage
-	for _, u := range days {
-		if !u.Day.Before(e.PeriodStart) && !u.Day.After(e.PeriodEnd) {
-			inPeriod = append(inPeriod, u)
-		}
-	}
+	inPeriod := daysIn(days, e.PeriodStart, e.PeriodEnd)
 	if len(inPeriod) == 0 {
 		return e
 	}
-	sort.Slice(inPeriod, func(i, j int) bool { return inPeriod[i].Day.Before(inPeriod[j].Day) })
 
 	var activeSum float64
 	for _, u := range inPeriod {
@@ -97,6 +84,29 @@ func EstimateCost(days []Usage, pricePerTBMonth float64, anchor, today time.Time
 		e.ProjectedCost = e.CostToDate + newestCharge*float64(CycleDays-e.DaysWithData)
 	}
 	return e
+}
+
+// Period is what an estimate covers: the 30-day billing cycle containing
+// today, or the last CycleDays days (rolling) when anchor is zero.
+func Period(anchor, today time.Time) (start, end time.Time, rolling bool) {
+	today = DayOf(today)
+	if anchor.IsZero() {
+		return today.AddDate(0, 0, -(CycleDays - 1)), today, true
+	}
+	start = CycleStart(anchor, today)
+	return start, start.AddDate(0, 0, CycleDays-1), false
+}
+
+// daysIn returns the rows with from <= Day <= to, oldest first.
+func daysIn(days []Usage, from, to time.Time) []Usage {
+	var out []Usage
+	for _, u := range days {
+		if !u.Day.Before(from) && !u.Day.After(to) {
+			out = append(out, u)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].Day.Before(out[j].Day) })
+	return out
 }
 
 // CycleStart returns the first day of the 30-day billing cycle, counted
