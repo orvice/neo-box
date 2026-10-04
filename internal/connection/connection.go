@@ -17,6 +17,7 @@ import (
 	"butterfly.orx.me/core/log"
 	"github.com/google/uuid"
 
+	"go.orx.me/apps/neo-box/internal/notify"
 	repo "go.orx.me/apps/neo-box/internal/repo/connection"
 	"go.orx.me/apps/neo-box/internal/secretbox"
 )
@@ -61,6 +62,14 @@ type Service struct {
 
 	mu        sync.RWMutex
 	providers map[string]Provider
+	notifier  notify.Notifier
+}
+
+// SetNotifier makes background status changes to error raise an alert.
+func (s *Service) SetNotifier(n notify.Notifier) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.notifier = n
 }
 
 // NewService builds a service. cipher may be nil; creating, updating, or
@@ -225,15 +234,36 @@ func (s *Service) Open(c *repo.Connection, config, secret any) error {
 }
 
 // RecordStatus records the outcome of provider background work on the
-// connection: ok when err is nil, error with err's message otherwise.
+// connection: ok when err is nil, error with err's message otherwise. A
+// connection that turns to error raises an alert, once per outage.
 // Failing to record it is logged, not returned.
 func (s *Service) RecordStatus(ctx context.Context, id string, err error) {
+	logger := log.FromContext(ctx)
 	status, msg := repo.StatusOK, ""
 	if err != nil {
 		status, msg = repo.StatusError, err.Error()
 	}
-	if serr := s.repo.SetStatus(ctx, id, status, msg, s.now().UTC()); serr != nil {
-		log.FromContext(ctx).Warn("record connection status failed", "connection_id", id, "err", serr)
+	before, gerr := s.repo.GetByID(ctx, id)
+	if gerr != nil {
+		logger.Warn("load connection for status failed", "connection_id", id, "err", gerr)
+	}
+	at := s.now().UTC()
+	if serr := s.repo.SetStatus(ctx, id, status, msg, at); serr != nil {
+		logger.Warn("record connection status failed", "connection_id", id, "err", serr)
+		return
+	}
+	s.mu.RLock()
+	n := s.notifier
+	s.mu.RUnlock()
+	if n != nil && before != nil && status == repo.StatusError && before.Status != repo.StatusError {
+		n.Notify(ctx, notify.Alert{
+			UserID: before.UserID, Source: "connection", ConnectionID: id, Kind: "connection_error",
+			Key:      fmt.Sprintf("connection:%s:error:%d", id, at.UnixNano()),
+			Severity: notify.Critical,
+			Title:    fmt.Sprintf("Connection %q stopped working", before.Name),
+			Body:     msg,
+			Link:     "/connections/" + id,
+		})
 	}
 }
 

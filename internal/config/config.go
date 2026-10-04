@@ -15,6 +15,18 @@ type AppConfig struct {
 	Storage StorageConfig `yaml:"storage"`
 	NocoDB  NocoDBConfig  `yaml:"nocodb"`
 	Wasabi  WasabiConfig  `yaml:"wasabi"`
+	Notify  NotifyConfig  `yaml:"notify"`
+}
+
+// NotifyConfig tunes alert delivery.
+type NotifyConfig struct {
+	// DashboardURL is where users open the dashboard, e.g.
+	// "https://neobox.example.com"; alerts link to it. Empty leaves links
+	// out of messages.
+	DashboardURL string `yaml:"dashboard_url"`
+	// TelegramEndpoint overrides the Bot API host
+	// (https://api.telegram.org).
+	TelegramEndpoint string `yaml:"telegram_endpoint"`
 }
 
 // WasabiConfig tunes Wasabi usage syncs.

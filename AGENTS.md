@@ -90,6 +90,13 @@ shadcn/ui + Connect-Web on the frontend.
   pages until a short page, accepts both the paged-object and bare-array
   response shapes), connection settings, and `EstimateCost` (Wasabi's
   published per-day formula).
+- `internal/notify/` — `Service`: per-user notification channels (sealed
+  secrets) and the alert log; `Notify` stores an alert once per dedupe key
+  and a worker delivers it to every enabled channel. A `Sender` per channel
+  type (`Telegram`, via the Bot API). Raisers depend on `notify.Notifier`:
+  `connection.Service.RecordStatus` (health turned to error) and
+  `backup.Manager` (scheduled snapshot or restore failed). The live test
+  needs `NEOBOX_TEST_TELEGRAM_BOT_TOKEN` / `NEOBOX_TEST_TELEGRAM_CHAT_ID`.
 - `internal/wasabisync/` — `Manager`: one sync at a time; 12-month backfill in
   30-day chunks that resumes after failures, daily run at 02:30 UTC from the
   last synced day, `Refresh` for the last 7 days, catch-up at startup. Also
@@ -125,6 +132,11 @@ estimate's period by active / deleted / 1 TB minimum and by bucket), and
 "sync now". Days are UTC `YYYY-MM-DD` strings.
 `connection_id` must be the caller's Wasabi connection. The live Stats API
 test needs `NEOBOX_TEST_WASABI_ACCESS_KEY` / `NEOBOX_TEST_WASABI_SECRET_KEY`.
+
+**Notifications** (`proto/neobox/v1/notification.proto`,
+`NotificationService`): channel list / create / update / delete / test
+(settings are a typed oneof, secrets write-only) and `ListAlerts`. Scoped
+to the calling user. The dashboard page is Settings → Notifications.
 
 **Frontend** (`front/`): `src/api/transport.ts` is the Connect transport
 (binary protobuf, Bearer interceptor, redirect to `/sign-in` on

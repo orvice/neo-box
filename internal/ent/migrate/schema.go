@@ -9,6 +9,40 @@ import (
 )
 
 var (
+	// AlertsColumns holds the columns for the "alerts" table.
+	AlertsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "source", Type: field.TypeString},
+		{Name: "connection_id", Type: field.TypeString, Default: ""},
+		{Name: "kind", Type: field.TypeString},
+		{Name: "key", Type: field.TypeString},
+		{Name: "severity", Type: field.TypeString},
+		{Name: "title", Type: field.TypeString},
+		{Name: "body", Type: field.TypeString, Size: 2147483647, Default: ""},
+		{Name: "link", Type: field.TypeString, Default: ""},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "delivered_at", Type: field.TypeTime, Nullable: true},
+		{Name: "delivery_error", Type: field.TypeString, Size: 2147483647, Default: ""},
+	}
+	// AlertsTable holds the schema information for the "alerts" table.
+	AlertsTable = &schema.Table{
+		Name:       "alerts",
+		Columns:    AlertsColumns,
+		PrimaryKey: []*schema.Column{AlertsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "alert_user_id_key",
+				Unique:  true,
+				Columns: []*schema.Column{AlertsColumns[1], AlertsColumns[5]},
+			},
+			{
+				Name:    "alert_user_id_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{AlertsColumns[1], AlertsColumns[10]},
+			},
+		},
+	}
 	// ConnectionsColumns holds the columns for the "connections" table.
 	ConnectionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -158,6 +192,33 @@ var (
 			},
 		},
 	}
+	// NotificationChannelsColumns holds the columns for the "notification_channels" table.
+	NotificationChannelsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "type", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString},
+		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "config", Type: field.TypeString, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "secret_ciphertext", Type: field.TypeString},
+		{Name: "last_sent_at", Type: field.TypeTime, Nullable: true},
+		{Name: "last_error", Type: field.TypeString, Default: ""},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// NotificationChannelsTable holds the schema information for the "notification_channels" table.
+	NotificationChannelsTable = &schema.Table{
+		Name:       "notification_channels",
+		Columns:    NotificationChannelsColumns,
+		PrimaryKey: []*schema.Column{NotificationChannelsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "notificationchannel_user_id_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{NotificationChannelsColumns[1], NotificationChannelsColumns[9]},
+			},
+		},
+	}
 	// OauthStatesColumns holds the columns for the "oauth_states" table.
 	OauthStatesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -291,10 +352,12 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AlertsTable,
 		ConnectionsTable,
 		NocodbBackupPoliciesTable,
 		NocodbRestoresTable,
 		NocodbSnapshotsTable,
+		NotificationChannelsTable,
 		OauthStatesTable,
 		AuthSessionsTable,
 		UsersTable,
@@ -304,6 +367,9 @@ var (
 )
 
 func init() {
+	AlertsTable.Annotation = &entsql.Annotation{
+		Table: "alerts",
+	}
 	ConnectionsTable.Annotation = &entsql.Annotation{
 		Table: "connections",
 	}
@@ -315,6 +381,9 @@ func init() {
 	}
 	NocodbSnapshotsTable.Annotation = &entsql.Annotation{
 		Table: "nocodb_snapshots",
+	}
+	NotificationChannelsTable.Annotation = &entsql.Annotation{
+		Table: "notification_channels",
 	}
 	OauthStatesTable.Annotation = &entsql.Annotation{
 		Table: "oauth_states",

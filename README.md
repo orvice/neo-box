@@ -197,11 +197,29 @@ store:
 #   restore_timeout: 6h     # a restore exceeding this is marked failed
 # wasabi:
 #   stats_endpoint: "https://stats.wasabisys.com"
+# notify:
+#   dashboard_url: "https://neobox.example.com"  # alerts link here; empty = no links
+#   telegram_endpoint: "https://api.telegram.org"
 ```
 
 Cron schedules are evaluated in the server's time zone. The container image is
 UTC, so prefix expressions with a zone when needed, e.g.
 `CRON_TZ=Asia/Shanghai 0 3 * * *`.
+
+### Notifications
+
+Neo Box raises an alert when a scheduled snapshot or a restore fails, and
+when a connection stops working (for example a revoked token or a failing
+Wasabi sync). Each problem is reported once. Alerts are listed under
+**Settings → Notifications** and sent to your Telegram channels:
+
+1. Message `@BotFather` in Telegram with `/newbot` and copy the token.
+2. Send your bot a message (or add it to a group and mention it).
+3. Open `https://api.telegram.org/bot<token>/getUpdates` and copy `chat.id`
+   (group IDs are negative).
+4. Add the channel under **Settings → Notifications** and press **Test**.
+
+Set `notify.dashboard_url` so messages link back to the dashboard.
 
 ### Wasabi
 
@@ -359,6 +377,7 @@ internal/application/  ConnectRPC service implementations
 internal/connection/   connections across providers (secrets, verify, health)
 internal/backup/       NocoDB snapshot and restore queues, cron scheduling, retention
 internal/nocodb/       NocoDB REST client
+internal/notify/       notification channels (Telegram), alert log and delivery
 internal/snapshot/     snapshot document format, restore into a new Base
 internal/wasabi/       Wasabi Stats API client, settings, cost estimate
 internal/wasabisync/   Wasabi usage sync: backfill, daily run, provider

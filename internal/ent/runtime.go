@@ -3,9 +3,11 @@
 package ent
 
 import (
+	"go.orx.me/apps/neo-box/internal/ent/alert"
 	"go.orx.me/apps/neo-box/internal/ent/connection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbrestore"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbsnapshot"
+	"go.orx.me/apps/neo-box/internal/ent/notificationchannel"
 	"go.orx.me/apps/neo-box/internal/ent/oauthstate"
 	"go.orx.me/apps/neo-box/internal/ent/schema"
 	"go.orx.me/apps/neo-box/internal/ent/session"
@@ -17,6 +19,24 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	alertFields := schema.Alert{}.Fields()
+	_ = alertFields
+	// alertDescConnectionID is the schema descriptor for connection_id field.
+	alertDescConnectionID := alertFields[3].Descriptor()
+	// alert.DefaultConnectionID holds the default value on creation for the connection_id field.
+	alert.DefaultConnectionID = alertDescConnectionID.Default.(string)
+	// alertDescBody is the schema descriptor for body field.
+	alertDescBody := alertFields[8].Descriptor()
+	// alert.DefaultBody holds the default value on creation for the body field.
+	alert.DefaultBody = alertDescBody.Default.(string)
+	// alertDescLink is the schema descriptor for link field.
+	alertDescLink := alertFields[9].Descriptor()
+	// alert.DefaultLink holds the default value on creation for the link field.
+	alert.DefaultLink = alertDescLink.Default.(string)
+	// alertDescDeliveryError is the schema descriptor for delivery_error field.
+	alertDescDeliveryError := alertFields[12].Descriptor()
+	// alert.DefaultDeliveryError holds the default value on creation for the delivery_error field.
+	alert.DefaultDeliveryError = alertDescDeliveryError.Default.(string)
 	connectionFields := schema.Connection{}.Fields()
 	_ = connectionFields
 	// connectionDescStatus is the schema descriptor for status field.
@@ -87,6 +107,16 @@ func init() {
 	nocodbsnapshotDescLinkCount := nocodbsnapshotFields[12].Descriptor()
 	// nocodbsnapshot.DefaultLinkCount holds the default value on creation for the link_count field.
 	nocodbsnapshot.DefaultLinkCount = nocodbsnapshotDescLinkCount.Default.(int64)
+	notificationchannelFields := schema.NotificationChannel{}.Fields()
+	_ = notificationchannelFields
+	// notificationchannelDescEnabled is the schema descriptor for enabled field.
+	notificationchannelDescEnabled := notificationchannelFields[4].Descriptor()
+	// notificationchannel.DefaultEnabled holds the default value on creation for the enabled field.
+	notificationchannel.DefaultEnabled = notificationchannelDescEnabled.Default.(bool)
+	// notificationchannelDescLastError is the schema descriptor for last_error field.
+	notificationchannelDescLastError := notificationchannelFields[8].Descriptor()
+	// notificationchannel.DefaultLastError holds the default value on creation for the last_error field.
+	notificationchannel.DefaultLastError = notificationchannelDescLastError.Default.(string)
 	oauthstateFields := schema.OAuthState{}.Fields()
 	_ = oauthstateFields
 	// oauthstateDescRedirectURI is the schema descriptor for redirect_uri field.

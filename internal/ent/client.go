@@ -14,10 +14,12 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"go.orx.me/apps/neo-box/internal/ent/alert"
 	"go.orx.me/apps/neo-box/internal/ent/connection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbrestore"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbsnapshot"
+	"go.orx.me/apps/neo-box/internal/ent/notificationchannel"
 	"go.orx.me/apps/neo-box/internal/ent/oauthstate"
 	"go.orx.me/apps/neo-box/internal/ent/session"
 	"go.orx.me/apps/neo-box/internal/ent/user"
@@ -30,6 +32,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Alert is the client for interacting with the Alert builders.
+	Alert *AlertClient
 	// Connection is the client for interacting with the Connection builders.
 	Connection *ConnectionClient
 	// NocoDBBackupPolicy is the client for interacting with the NocoDBBackupPolicy builders.
@@ -38,6 +42,8 @@ type Client struct {
 	NocoDBRestore *NocoDBRestoreClient
 	// NocoDBSnapshot is the client for interacting with the NocoDBSnapshot builders.
 	NocoDBSnapshot *NocoDBSnapshotClient
+	// NotificationChannel is the client for interacting with the NotificationChannel builders.
+	NotificationChannel *NotificationChannelClient
 	// OAuthState is the client for interacting with the OAuthState builders.
 	OAuthState *OAuthStateClient
 	// Session is the client for interacting with the Session builders.
@@ -59,10 +65,12 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Alert = NewAlertClient(c.config)
 	c.Connection = NewConnectionClient(c.config)
 	c.NocoDBBackupPolicy = NewNocoDBBackupPolicyClient(c.config)
 	c.NocoDBRestore = NewNocoDBRestoreClient(c.config)
 	c.NocoDBSnapshot = NewNocoDBSnapshotClient(c.config)
+	c.NotificationChannel = NewNotificationChannelClient(c.config)
 	c.OAuthState = NewOAuthStateClient(c.config)
 	c.Session = NewSessionClient(c.config)
 	c.User = NewUserClient(c.config)
@@ -158,17 +166,19 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:                ctx,
-		config:             cfg,
-		Connection:         NewConnectionClient(cfg),
-		NocoDBBackupPolicy: NewNocoDBBackupPolicyClient(cfg),
-		NocoDBRestore:      NewNocoDBRestoreClient(cfg),
-		NocoDBSnapshot:     NewNocoDBSnapshotClient(cfg),
-		OAuthState:         NewOAuthStateClient(cfg),
-		Session:            NewSessionClient(cfg),
-		User:               NewUserClient(cfg),
-		WasabiDailyUsage:   NewWasabiDailyUsageClient(cfg),
-		WasabiSyncState:    NewWasabiSyncStateClient(cfg),
+		ctx:                 ctx,
+		config:              cfg,
+		Alert:               NewAlertClient(cfg),
+		Connection:          NewConnectionClient(cfg),
+		NocoDBBackupPolicy:  NewNocoDBBackupPolicyClient(cfg),
+		NocoDBRestore:       NewNocoDBRestoreClient(cfg),
+		NocoDBSnapshot:      NewNocoDBSnapshotClient(cfg),
+		NotificationChannel: NewNotificationChannelClient(cfg),
+		OAuthState:          NewOAuthStateClient(cfg),
+		Session:             NewSessionClient(cfg),
+		User:                NewUserClient(cfg),
+		WasabiDailyUsage:    NewWasabiDailyUsageClient(cfg),
+		WasabiSyncState:     NewWasabiSyncStateClient(cfg),
 	}, nil
 }
 
@@ -186,24 +196,26 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:                ctx,
-		config:             cfg,
-		Connection:         NewConnectionClient(cfg),
-		NocoDBBackupPolicy: NewNocoDBBackupPolicyClient(cfg),
-		NocoDBRestore:      NewNocoDBRestoreClient(cfg),
-		NocoDBSnapshot:     NewNocoDBSnapshotClient(cfg),
-		OAuthState:         NewOAuthStateClient(cfg),
-		Session:            NewSessionClient(cfg),
-		User:               NewUserClient(cfg),
-		WasabiDailyUsage:   NewWasabiDailyUsageClient(cfg),
-		WasabiSyncState:    NewWasabiSyncStateClient(cfg),
+		ctx:                 ctx,
+		config:              cfg,
+		Alert:               NewAlertClient(cfg),
+		Connection:          NewConnectionClient(cfg),
+		NocoDBBackupPolicy:  NewNocoDBBackupPolicyClient(cfg),
+		NocoDBRestore:       NewNocoDBRestoreClient(cfg),
+		NocoDBSnapshot:      NewNocoDBSnapshotClient(cfg),
+		NotificationChannel: NewNotificationChannelClient(cfg),
+		OAuthState:          NewOAuthStateClient(cfg),
+		Session:             NewSessionClient(cfg),
+		User:                NewUserClient(cfg),
+		WasabiDailyUsage:    NewWasabiDailyUsageClient(cfg),
+		WasabiSyncState:     NewWasabiSyncStateClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Connection.
+//		Alert.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -226,8 +238,9 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Connection, c.NocoDBBackupPolicy, c.NocoDBRestore, c.NocoDBSnapshot,
-		c.OAuthState, c.Session, c.User, c.WasabiDailyUsage, c.WasabiSyncState,
+		c.Alert, c.Connection, c.NocoDBBackupPolicy, c.NocoDBRestore, c.NocoDBSnapshot,
+		c.NotificationChannel, c.OAuthState, c.Session, c.User, c.WasabiDailyUsage,
+		c.WasabiSyncState,
 	} {
 		n.Use(hooks...)
 	}
@@ -237,8 +250,9 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Connection, c.NocoDBBackupPolicy, c.NocoDBRestore, c.NocoDBSnapshot,
-		c.OAuthState, c.Session, c.User, c.WasabiDailyUsage, c.WasabiSyncState,
+		c.Alert, c.Connection, c.NocoDBBackupPolicy, c.NocoDBRestore, c.NocoDBSnapshot,
+		c.NotificationChannel, c.OAuthState, c.Session, c.User, c.WasabiDailyUsage,
+		c.WasabiSyncState,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -247,6 +261,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *AlertMutation:
+		return c.Alert.mutate(ctx, m)
 	case *ConnectionMutation:
 		return c.Connection.mutate(ctx, m)
 	case *NocoDBBackupPolicyMutation:
@@ -255,6 +271,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.NocoDBRestore.mutate(ctx, m)
 	case *NocoDBSnapshotMutation:
 		return c.NocoDBSnapshot.mutate(ctx, m)
+	case *NotificationChannelMutation:
+		return c.NotificationChannel.mutate(ctx, m)
 	case *OAuthStateMutation:
 		return c.OAuthState.mutate(ctx, m)
 	case *SessionMutation:
@@ -267,6 +285,139 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.WasabiSyncState.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// AlertClient is a client for the Alert schema.
+type AlertClient struct {
+	config
+}
+
+// NewAlertClient returns a client for the Alert from the given config.
+func NewAlertClient(c config) *AlertClient {
+	return &AlertClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `alert.Hooks(f(g(h())))`.
+func (c *AlertClient) Use(hooks ...Hook) {
+	c.hooks.Alert = append(c.hooks.Alert, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `alert.Intercept(f(g(h())))`.
+func (c *AlertClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Alert = append(c.inters.Alert, interceptors...)
+}
+
+// Create returns a builder for creating a Alert entity.
+func (c *AlertClient) Create() *AlertCreate {
+	mutation := newAlertMutation(c.config, OpCreate)
+	return &AlertCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Alert entities.
+func (c *AlertClient) CreateBulk(builders ...*AlertCreate) *AlertCreateBulk {
+	return &AlertCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AlertClient) MapCreateBulk(slice any, setFunc func(*AlertCreate, int)) *AlertCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AlertCreateBulk{err: fmt.Errorf("calling to AlertClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AlertCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AlertCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Alert.
+func (c *AlertClient) Update() *AlertUpdate {
+	mutation := newAlertMutation(c.config, OpUpdate)
+	return &AlertUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AlertClient) UpdateOne(_m *Alert) *AlertUpdateOne {
+	mutation := newAlertMutation(c.config, OpUpdateOne, withAlert(_m))
+	return &AlertUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AlertClient) UpdateOneID(id string) *AlertUpdateOne {
+	mutation := newAlertMutation(c.config, OpUpdateOne, withAlertID(id))
+	return &AlertUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Alert.
+func (c *AlertClient) Delete() *AlertDelete {
+	mutation := newAlertMutation(c.config, OpDelete)
+	return &AlertDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AlertClient) DeleteOne(_m *Alert) *AlertDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AlertClient) DeleteOneID(id string) *AlertDeleteOne {
+	builder := c.Delete().Where(alert.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AlertDeleteOne{builder}
+}
+
+// Query returns a query builder for Alert.
+func (c *AlertClient) Query() *AlertQuery {
+	return &AlertQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAlert},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Alert entity by its id.
+func (c *AlertClient) Get(ctx context.Context, id string) (*Alert, error) {
+	return c.Query().Where(alert.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AlertClient) GetX(ctx context.Context, id string) *Alert {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *AlertClient) Hooks() []Hook {
+	return c.hooks.Alert
+}
+
+// Interceptors returns the client interceptors.
+func (c *AlertClient) Interceptors() []Interceptor {
+	return c.inters.Alert
+}
+
+func (c *AlertClient) mutate(ctx context.Context, m *AlertMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AlertCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AlertUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AlertUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AlertDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Alert mutation op: %q", m.Op())
 	}
 }
 
@@ -799,6 +950,139 @@ func (c *NocoDBSnapshotClient) mutate(ctx context.Context, m *NocoDBSnapshotMuta
 		return (&NocoDBSnapshotDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown NocoDBSnapshot mutation op: %q", m.Op())
+	}
+}
+
+// NotificationChannelClient is a client for the NotificationChannel schema.
+type NotificationChannelClient struct {
+	config
+}
+
+// NewNotificationChannelClient returns a client for the NotificationChannel from the given config.
+func NewNotificationChannelClient(c config) *NotificationChannelClient {
+	return &NotificationChannelClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `notificationchannel.Hooks(f(g(h())))`.
+func (c *NotificationChannelClient) Use(hooks ...Hook) {
+	c.hooks.NotificationChannel = append(c.hooks.NotificationChannel, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `notificationchannel.Intercept(f(g(h())))`.
+func (c *NotificationChannelClient) Intercept(interceptors ...Interceptor) {
+	c.inters.NotificationChannel = append(c.inters.NotificationChannel, interceptors...)
+}
+
+// Create returns a builder for creating a NotificationChannel entity.
+func (c *NotificationChannelClient) Create() *NotificationChannelCreate {
+	mutation := newNotificationChannelMutation(c.config, OpCreate)
+	return &NotificationChannelCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of NotificationChannel entities.
+func (c *NotificationChannelClient) CreateBulk(builders ...*NotificationChannelCreate) *NotificationChannelCreateBulk {
+	return &NotificationChannelCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *NotificationChannelClient) MapCreateBulk(slice any, setFunc func(*NotificationChannelCreate, int)) *NotificationChannelCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &NotificationChannelCreateBulk{err: fmt.Errorf("calling to NotificationChannelClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*NotificationChannelCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &NotificationChannelCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for NotificationChannel.
+func (c *NotificationChannelClient) Update() *NotificationChannelUpdate {
+	mutation := newNotificationChannelMutation(c.config, OpUpdate)
+	return &NotificationChannelUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *NotificationChannelClient) UpdateOne(_m *NotificationChannel) *NotificationChannelUpdateOne {
+	mutation := newNotificationChannelMutation(c.config, OpUpdateOne, withNotificationChannel(_m))
+	return &NotificationChannelUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *NotificationChannelClient) UpdateOneID(id string) *NotificationChannelUpdateOne {
+	mutation := newNotificationChannelMutation(c.config, OpUpdateOne, withNotificationChannelID(id))
+	return &NotificationChannelUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for NotificationChannel.
+func (c *NotificationChannelClient) Delete() *NotificationChannelDelete {
+	mutation := newNotificationChannelMutation(c.config, OpDelete)
+	return &NotificationChannelDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *NotificationChannelClient) DeleteOne(_m *NotificationChannel) *NotificationChannelDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *NotificationChannelClient) DeleteOneID(id string) *NotificationChannelDeleteOne {
+	builder := c.Delete().Where(notificationchannel.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &NotificationChannelDeleteOne{builder}
+}
+
+// Query returns a query builder for NotificationChannel.
+func (c *NotificationChannelClient) Query() *NotificationChannelQuery {
+	return &NotificationChannelQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeNotificationChannel},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a NotificationChannel entity by its id.
+func (c *NotificationChannelClient) Get(ctx context.Context, id string) (*NotificationChannel, error) {
+	return c.Query().Where(notificationchannel.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *NotificationChannelClient) GetX(ctx context.Context, id string) *NotificationChannel {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *NotificationChannelClient) Hooks() []Hook {
+	return c.hooks.NotificationChannel
+}
+
+// Interceptors returns the client interceptors.
+func (c *NotificationChannelClient) Interceptors() []Interceptor {
+	return c.inters.NotificationChannel
+}
+
+func (c *NotificationChannelClient) mutate(ctx context.Context, m *NotificationChannelMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&NotificationChannelCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&NotificationChannelUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&NotificationChannelUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&NotificationChannelDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown NotificationChannel mutation op: %q", m.Op())
 	}
 }
 
@@ -1470,11 +1754,13 @@ func (c *WasabiSyncStateClient) mutate(ctx context.Context, m *WasabiSyncStateMu
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Connection, NocoDBBackupPolicy, NocoDBRestore, NocoDBSnapshot, OAuthState,
-		Session, User, WasabiDailyUsage, WasabiSyncState []ent.Hook
+		Alert, Connection, NocoDBBackupPolicy, NocoDBRestore, NocoDBSnapshot,
+		NotificationChannel, OAuthState, Session, User, WasabiDailyUsage,
+		WasabiSyncState []ent.Hook
 	}
 	inters struct {
-		Connection, NocoDBBackupPolicy, NocoDBRestore, NocoDBSnapshot, OAuthState,
-		Session, User, WasabiDailyUsage, WasabiSyncState []ent.Interceptor
+		Alert, Connection, NocoDBBackupPolicy, NocoDBRestore, NocoDBSnapshot,
+		NotificationChannel, OAuthState, Session, User, WasabiDailyUsage,
+		WasabiSyncState []ent.Interceptor
 	}
 )
