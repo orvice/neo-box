@@ -1,5 +1,5 @@
 import { Loader2 } from 'lucide-react'
-import { SnapshotStatus } from '@/api/nocodb'
+import { RestoreStatus, SnapshotStatus } from '@/api/nocodb'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 
@@ -39,4 +39,17 @@ export function SnapshotStatusBadge({ status }: { status: SnapshotStatus }) {
       {style.label}
     </Badge>
   )
+}
+
+// Restores share the snapshot life cycle and its styles.
+const restoreAsSnapshot: Record<RestoreStatus, SnapshotStatus> = {
+  [RestoreStatus.UNSPECIFIED]: SnapshotStatus.UNSPECIFIED,
+  [RestoreStatus.PENDING]: SnapshotStatus.PENDING,
+  [RestoreStatus.RUNNING]: SnapshotStatus.RUNNING,
+  [RestoreStatus.SUCCEEDED]: SnapshotStatus.SUCCEEDED,
+  [RestoreStatus.FAILED]: SnapshotStatus.FAILED,
+}
+
+export function RestoreStatusBadge({ status }: { status: RestoreStatus }) {
+  return <SnapshotStatusBadge status={restoreAsSnapshot[status]} />
 }

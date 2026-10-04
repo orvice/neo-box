@@ -7,6 +7,7 @@ import {
   isSnapshotActive,
   useCreateSnapshot,
   useNocoDBBases,
+  useRestores,
   useSnapshots,
   useUpsertBackupPolicy,
   type NocoDBBase,
@@ -35,6 +36,7 @@ import { Switch } from '@/components/ui/switch'
 import { Page, PageHeader, PageScroll } from '@/components/common/page-parts'
 import { DataTable, type Column } from '@/components/data-table'
 import { nocodbBaseUrl } from './format'
+import { RestoreTable } from './restore-table'
 import { SnapshotTable } from './snapshot-table'
 import { SnapshotStatusBadge } from './status-badge'
 
@@ -47,6 +49,7 @@ export function NocoDBConnectionDetail({
   const connectionId = connection.id
   const bases = useNocoDBBases(connectionId)
   const snapshots = useSnapshots(connectionId)
+  const restores = useRestores({ connectionId })
   const createSnapshot = useCreateSnapshot()
   const [scheduling, setScheduling] = useState<NocoDBBase | null>(null)
   const [historyBase, setHistoryBase] = useState<NocoDBBase | null>(null)
@@ -190,6 +193,24 @@ export function NocoDBConnectionDetail({
             />
           </CardContent>
         </Card>
+
+        {!!restores.data?.length && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Restores</CardTitle>
+              <CardDescription>
+                Restores from this connection's snapshots, and into it.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <RestoreTable
+                restores={restores.data}
+                isLoading={restores.isLoading}
+                showSource
+              />
+            </CardContent>
+          </Card>
+        )}
       </PageScroll>
 
       {scheduling && (

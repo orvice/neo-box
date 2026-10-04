@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { type JsonValue } from '@bufbuild/protobuf'
 import {
+  ArchiveRestore,
   ChevronLeft,
   ChevronRight,
   Download,
@@ -12,7 +13,9 @@ import { toast } from 'sonner'
 import {
   SnapshotStatus,
   downloadSnapshot,
+  isRestoreActive,
   useDeleteSnapshot,
+  useRestores,
   useSnapshot,
   useSnapshotRecords,
 } from '@/api/nocodb'
@@ -39,6 +42,8 @@ import { Page, PageHeader, PageScroll } from '@/components/common/page-parts'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { EmptyState } from '@/components/empty-state'
 import { formatDuration, triggerLabel } from './format'
+import { RestoreDialog } from './restore-dialog'
+import { RestoreTable } from './restore-table'
 import { SnapshotStatusBadge } from './status-badge'
 
 const PAGE_SIZE = 50
@@ -51,8 +56,15 @@ export function SnapshotDetailPage() {
   const { data: snap, isLoading, error } = useSnapshot(snapshotId)
   const remove = useDeleteSnapshot()
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [restoring, setRestoring] = useState(false)
+  const [newRestoreId, setNewRestoreId] = useState<string>()
   const [tableId, setTableId] = useState<string>()
   const activeTableId = tableId ?? snap?.tables[0]?.id
+  const restores = useRestores(
+    { snapshotId },
+    snap?.status === SnapshotStatus.SUCCEEDED
+  )
+  const restoreRunning = !!restores.data?.some(isRestoreActive)
 
   const back = (
     <Link
@@ -109,7 +121,24 @@ export function SnapshotDetailPage() {
             <Button
               size='sm'
               variant='outline'
-              disabled={!succeeded && snap.status !== SnapshotStatus.FAILED}
+              disabled={!succeeded}
+              onClick={() => setRestoring(true)}
+            >
+              <ArchiveRestore />
+              Restore
+            </Button>
+            <Button
+              size='sm'
+              variant='outline'
+              disabled={
+                (!succeeded && snap.status !== SnapshotStatus.FAILED) ||
+                restoreRunning
+              }
+              title={
+                restoreRunning
+                  ? 'A restore of this snapshot is in progress'
+                  : undefined
+              }
               onClick={() => setConfirmDelete(true)}
             >
               <Trash2 />
@@ -147,6 +176,24 @@ export function SnapshotDetailPage() {
                 {snap.error}
               </CardDescription>
             </CardHeader>
+          </Card>
+        )}
+
+        {!!restores.data?.length && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Restores</CardTitle>
+              <CardDescription>
+                New Bases rebuilt from this snapshot.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <RestoreTable
+                restores={restores.data}
+                isLoading={restores.isLoading}
+                highlightId={newRestoreId}
+              />
+            </CardContent>
           </Card>
         )}
 
@@ -195,6 +242,13 @@ export function SnapshotDetailPage() {
         )}
       </PageScroll>
 
+      {restoring && (
+        <RestoreDialog
+          snapshot={snap}
+          onClose={() => setRestoring(false)}
+          onQueued={(r) => setNewRestoreId(r.id)}
+        />
+      )}
       <ConfirmDialog
         open={confirmDelete}
         onOpenChange={setConfirmDelete}
