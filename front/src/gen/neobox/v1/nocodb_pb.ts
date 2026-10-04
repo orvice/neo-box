@@ -13,7 +13,7 @@ import type { JsonObject, Message } from "@bufbuild/protobuf";
  * Describes the file neobox/v1/nocodb.proto.
  */
 export const file_neobox_v1_nocodb: GenFile = /*@__PURE__*/
-  fileDesc("ChZuZW9ib3gvdjEvbm9jb2RiLnByb3RvEgluZW9ib3gudjEiyQEKDEJhY2t1cFBvbGljeRIVCg1jb25uZWN0aW9uX2lkGAEgASgJEg8KB2Jhc2VfaWQYAiABKAkSDwoHZW5hYmxlZBgDIAEoCBIMCgRjcm9uGAQgASgJEhEKCXJldGVudGlvbhgFIAEoBRIuCgp1cGRhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIvCgtuZXh0X3J1bl9hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAifgoKTm9jb0RCQmFzZRIKCgJpZBgBIAEoCRINCgV0aXRsZRgCIAEoCRInCgZwb2xpY3kYAyABKAsyFy5uZW9ib3gudjEuQmFja3VwUG9saWN5EiwKD2xhdGVzdF9zbmFwc2hvdBgEIAEoCzITLm5lb2JveC52MS5TbmFwc2hvdCI4ChZMaXN0Tm9jb0RCQmFzZXNSZXF1ZXN0Eh4KDWNvbm5lY3Rpb25faWQYASABKAlCB/pCBHICEAEiPwoXTGlzdE5vY29EQkJhc2VzUmVzcG9uc2USJAoFYmFzZXMYASADKAsyFS5uZW9ib3gudjEuTm9jb0RCQmFzZSKQAQoZVXBzZXJ0QmFja3VwUG9saWN5UmVxdWVzdBIeCg1jb25uZWN0aW9uX2lkGAEgASgJQgf6QgRyAhABEhgKB2Jhc2VfaWQYAiABKAlCB/pCBHICEAESDwoHZW5hYmxlZBgDIAEoCBIMCgRjcm9uGAQgASgJEhoKCXJldGVudGlvbhgFIAEoBUIH+kIEGgIoACJFChpVcHNlcnRCYWNrdXBQb2xpY3lSZXNwb25zZRInCgZwb2xpY3kYASABKAsyFy5uZW9ib3gudjEuQmFja3VwUG9saWN5ImkKDVNuYXBzaG90VGFibGUSCgoCaWQYASABKAkSDQoFdGl0bGUYAiABKAkSFAoMcmVjb3JkX2NvdW50GAMgASgDEhMKC2ZpZWxkX2NvdW50GAQgASgFEhIKCmxpbmtfY291bnQYBSABKAMixAMKCFNuYXBzaG90EgoKAmlkGAEgASgJEhUKDWNvbm5lY3Rpb25faWQYAiABKAkSDwoHYmFzZV9pZBgDIAEoCRISCgpiYXNlX3RpdGxlGAQgASgJEikKBnN0YXR1cxgFIAEoDjIZLm5lb2JveC52MS5TbmFwc2hvdFN0YXR1cxIrCgd0cmlnZ2VyGAYgASgOMhoubmVvYm94LnYxLlNuYXBzaG90VHJpZ2dlchINCgVlcnJvchgHIAEoCRIuCgpjcmVhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgpzdGFydGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIvCgtmaW5pc2hlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEgoKc2l6ZV9ieXRlcxgLIAEoAxIUCgxyZWNvcmRfY291bnQYDCABKAMSEgoKbGlua19jb3VudBgNIAEoAxIoCgZ0YWJsZXMYDiADKAsyGC5uZW9ib3gudjEuU25hcHNob3RUYWJsZRIQCghwcm9ncmVzcxgPIAEoCSJRChVDcmVhdGVTbmFwc2hvdFJlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQARIYCgdiYXNlX2lkGAIgASgJQgf6QgRyAhABIj8KFkNyZWF0ZVNuYXBzaG90UmVzcG9uc2USJQoIc25hcHNob3QYASABKAsyEy5uZW9ib3gudjEuU25hcHNob3QiTQoUTGlzdFNuYXBzaG90c1JlcXVlc3QSFQoNY29ubmVjdGlvbl9pZBgBIAEoCRIPCgdiYXNlX2lkGAIgASgJEg0KBWxpbWl0GAMgASgFIj8KFUxpc3RTbmFwc2hvdHNSZXNwb25zZRImCglzbmFwc2hvdHMYASADKAsyEy5uZW9ib3gudjEuU25hcHNob3QiKQoSR2V0U25hcHNob3RSZXF1ZXN0EhMKAmlkGAEgASgJQgf6QgRyAhABIjwKE0dldFNuYXBzaG90UmVzcG9uc2USJQoIc25hcHNob3QYASABKAsyEy5uZW9ib3gudjEuU25hcHNob3QiLAoVRGVsZXRlU25hcHNob3RSZXF1ZXN0EhMKAmlkGAEgASgJQgf6QgRyAhABIhgKFkRlbGV0ZVNuYXBzaG90UmVzcG9uc2UiOAoNU25hcHNob3RGaWVsZBIKCgJpZBgBIAEoCRINCgV0aXRsZRgCIAEoCRIMCgR0eXBlGAMgASgJInYKGkxpc3RTbmFwc2hvdFJlY29yZHNSZXF1ZXN0EhwKC3NuYXBzaG90X2lkGAEgASgJQgf6QgRyAhABEhkKCHRhYmxlX2lkGAIgASgJQgf6QgRyAhABEgwKBHBhZ2UYAyABKAUSEQoJcGFnZV9zaXplGAQgASgFIoABChtMaXN0U25hcHNob3RSZWNvcmRzUmVzcG9uc2USKAoGZmllbGRzGAEgAygLMhgubmVvYm94LnYxLlNuYXBzaG90RmllbGQSKAoHcmVjb3JkcxgCIAMoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSDQoFdG90YWwYAyABKAMqpgEKDlNuYXBzaG90U3RhdHVzEh8KG1NOQVBTSE9UX1NUQVRVU19VTlNQRUNJRklFRBAAEhsKF1NOQVBTSE9UX1NUQVRVU19QRU5ESU5HEAESGwoXU05BUFNIT1RfU1RBVFVTX1JVTk5JTkcQAhIdChlTTkFQU0hPVF9TVEFUVVNfU1VDQ0VFREVEEAMSGgoWU05BUFNIT1RfU1RBVFVTX0ZBSUxFRBAEKnAKD1NuYXBzaG90VHJpZ2dlchIgChxTTkFQU0hPVF9UUklHR0VSX1VOU1BFQ0lGSUVEEAASGwoXU05BUFNIT1RfVFJJR0dFUl9NQU5VQUwQARIeChpTTkFQU0hPVF9UUklHR0VSX1NDSEVEVUxFRBACMoIFCg1Ob2NvREJTZXJ2aWNlElgKD0xpc3ROb2NvREJCYXNlcxIhLm5lb2JveC52MS5MaXN0Tm9jb0RCQmFzZXNSZXF1ZXN0GiIubmVvYm94LnYxLkxpc3ROb2NvREJCYXNlc1Jlc3BvbnNlEmEKElVwc2VydEJhY2t1cFBvbGljeRIkLm5lb2JveC52MS5VcHNlcnRCYWNrdXBQb2xpY3lSZXF1ZXN0GiUubmVvYm94LnYxLlVwc2VydEJhY2t1cFBvbGljeVJlc3BvbnNlElUKDkNyZWF0ZVNuYXBzaG90EiAubmVvYm94LnYxLkNyZWF0ZVNuYXBzaG90UmVxdWVzdBohLm5lb2JveC52MS5DcmVhdGVTbmFwc2hvdFJlc3BvbnNlElIKDUxpc3RTbmFwc2hvdHMSHy5uZW9ib3gudjEuTGlzdFNuYXBzaG90c1JlcXVlc3QaIC5uZW9ib3gudjEuTGlzdFNuYXBzaG90c1Jlc3BvbnNlEkwKC0dldFNuYXBzaG90Eh0ubmVvYm94LnYxLkdldFNuYXBzaG90UmVxdWVzdBoeLm5lb2JveC52MS5HZXRTbmFwc2hvdFJlc3BvbnNlElUKDkRlbGV0ZVNuYXBzaG90EiAubmVvYm94LnYxLkRlbGV0ZVNuYXBzaG90UmVxdWVzdBohLm5lb2JveC52MS5EZWxldGVTbmFwc2hvdFJlc3BvbnNlEmQKE0xpc3RTbmFwc2hvdFJlY29yZHMSJS5uZW9ib3gudjEuTGlzdFNuYXBzaG90UmVjb3Jkc1JlcXVlc3QaJi5uZW9ib3gudjEuTGlzdFNuYXBzaG90UmVjb3Jkc1Jlc3BvbnNlQjVaM2dvLm9yeC5tZS9hcHBzL25lby1ib3gvcGtnL3Byb3RvL25lb2JveC92MTtuZW9ib3h2MWIGcHJvdG8z", [file_google_protobuf_struct, file_google_protobuf_timestamp, file_validate_validate]);
+  fileDesc("ChZuZW9ib3gvdjEvbm9jb2RiLnByb3RvEgluZW9ib3gudjEiyQEKDEJhY2t1cFBvbGljeRIVCg1jb25uZWN0aW9uX2lkGAEgASgJEg8KB2Jhc2VfaWQYAiABKAkSDwoHZW5hYmxlZBgDIAEoCBIMCgRjcm9uGAQgASgJEhEKCXJldGVudGlvbhgFIAEoBRIuCgp1cGRhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIvCgtuZXh0X3J1bl9hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAifgoKTm9jb0RCQmFzZRIKCgJpZBgBIAEoCRINCgV0aXRsZRgCIAEoCRInCgZwb2xpY3kYAyABKAsyFy5uZW9ib3gudjEuQmFja3VwUG9saWN5EiwKD2xhdGVzdF9zbmFwc2hvdBgEIAEoCzITLm5lb2JveC52MS5TbmFwc2hvdCI4ChZMaXN0Tm9jb0RCQmFzZXNSZXF1ZXN0Eh4KDWNvbm5lY3Rpb25faWQYASABKAlCB/pCBHICEAEiPwoXTGlzdE5vY29EQkJhc2VzUmVzcG9uc2USJAoFYmFzZXMYASADKAsyFS5uZW9ib3gudjEuTm9jb0RCQmFzZSKQAQoZVXBzZXJ0QmFja3VwUG9saWN5UmVxdWVzdBIeCg1jb25uZWN0aW9uX2lkGAEgASgJQgf6QgRyAhABEhgKB2Jhc2VfaWQYAiABKAlCB/pCBHICEAESDwoHZW5hYmxlZBgDIAEoCBIMCgRjcm9uGAQgASgJEhoKCXJldGVudGlvbhgFIAEoBUIH+kIEGgIoACJFChpVcHNlcnRCYWNrdXBQb2xpY3lSZXNwb25zZRInCgZwb2xpY3kYASABKAsyFy5uZW9ib3gudjEuQmFja3VwUG9saWN5ImkKDVNuYXBzaG90VGFibGUSCgoCaWQYASABKAkSDQoFdGl0bGUYAiABKAkSFAoMcmVjb3JkX2NvdW50GAMgASgDEhMKC2ZpZWxkX2NvdW50GAQgASgFEhIKCmxpbmtfY291bnQYBSABKAMixAMKCFNuYXBzaG90EgoKAmlkGAEgASgJEhUKDWNvbm5lY3Rpb25faWQYAiABKAkSDwoHYmFzZV9pZBgDIAEoCRISCgpiYXNlX3RpdGxlGAQgASgJEikKBnN0YXR1cxgFIAEoDjIZLm5lb2JveC52MS5TbmFwc2hvdFN0YXR1cxIrCgd0cmlnZ2VyGAYgASgOMhoubmVvYm94LnYxLlNuYXBzaG90VHJpZ2dlchINCgVlcnJvchgHIAEoCRIuCgpjcmVhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgpzdGFydGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIvCgtmaW5pc2hlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEgoKc2l6ZV9ieXRlcxgLIAEoAxIUCgxyZWNvcmRfY291bnQYDCABKAMSEgoKbGlua19jb3VudBgNIAEoAxIoCgZ0YWJsZXMYDiADKAsyGC5uZW9ib3gudjEuU25hcHNob3RUYWJsZRIQCghwcm9ncmVzcxgPIAEoCSJRChVDcmVhdGVTbmFwc2hvdFJlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQARIYCgdiYXNlX2lkGAIgASgJQgf6QgRyAhABIj8KFkNyZWF0ZVNuYXBzaG90UmVzcG9uc2USJQoIc25hcHNob3QYASABKAsyEy5uZW9ib3gudjEuU25hcHNob3QiTQoUTGlzdFNuYXBzaG90c1JlcXVlc3QSFQoNY29ubmVjdGlvbl9pZBgBIAEoCRIPCgdiYXNlX2lkGAIgASgJEg0KBWxpbWl0GAMgASgFIj8KFUxpc3RTbmFwc2hvdHNSZXNwb25zZRImCglzbmFwc2hvdHMYASADKAsyEy5uZW9ib3gudjEuU25hcHNob3QiKQoSR2V0U25hcHNob3RSZXF1ZXN0EhMKAmlkGAEgASgJQgf6QgRyAhABIjwKE0dldFNuYXBzaG90UmVzcG9uc2USJQoIc25hcHNob3QYASABKAsyEy5uZW9ib3gudjEuU25hcHNob3QiLAoVRGVsZXRlU25hcHNob3RSZXF1ZXN0EhMKAmlkGAEgASgJQgf6QgRyAhABIhgKFkRlbGV0ZVNuYXBzaG90UmVzcG9uc2UiOAoNU25hcHNob3RGaWVsZBIKCgJpZBgBIAEoCRINCgV0aXRsZRgCIAEoCRIMCgR0eXBlGAMgASgJInYKGkxpc3RTbmFwc2hvdFJlY29yZHNSZXF1ZXN0EhwKC3NuYXBzaG90X2lkGAEgASgJQgf6QgRyAhABEhkKCHRhYmxlX2lkGAIgASgJQgf6QgRyAhABEgwKBHBhZ2UYAyABKAUSEQoJcGFnZV9zaXplGAQgASgFIoABChtMaXN0U25hcHNob3RSZWNvcmRzUmVzcG9uc2USKAoGZmllbGRzGAEgAygLMhgubmVvYm94LnYxLlNuYXBzaG90RmllbGQSKAoHcmVjb3JkcxgCIAMoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSDQoFdG90YWwYAyABKAMiXAoOUmVzdG9yZVdhcm5pbmcSDAoEY29kZRgBIAEoCRINCgV0YWJsZRgCIAEoCRINCgVmaWVsZBgDIAEoCRINCgVjb3VudBgEIAEoAxIPCgdtZXNzYWdlGAUgASgJIpQECgdSZXN0b3JlEgoKAmlkGAEgASgJEhMKC3NuYXBzaG90X2lkGAIgASgJEhwKFHNvdXJjZV9jb25uZWN0aW9uX2lkGAMgASgJEhYKDnNvdXJjZV9iYXNlX2lkGAQgASgJEhkKEXNvdXJjZV9iYXNlX3RpdGxlGAUgASgJEhwKFHRhcmdldF9jb25uZWN0aW9uX2lkGAYgASgJEhYKDnRhcmdldF9iYXNlX2lkGAcgASgJEhkKEXRhcmdldF9iYXNlX3RpdGxlGAggASgJEigKBnN0YXR1cxgJIAEoDjIYLm5lb2JveC52MS5SZXN0b3JlU3RhdHVzEg0KBWVycm9yGAogASgJEhAKCHByb2dyZXNzGAsgASgJEi4KCmNyZWF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnN0YXJ0ZWRfYXQYDSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi8KC2ZpbmlzaGVkX2F0GA4gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBITCgt0YWJsZV9jb3VudBgPIAEoBRIUCgxyZWNvcmRfY291bnQYECABKAMSEgoKbGlua19jb3VudBgRIAEoAxIrCgh3YXJuaW5ncxgSIAMoCzIZLm5lb2JveC52MS5SZXN0b3JlV2FybmluZyJjChZSZXN0b3JlU25hcHNob3RSZXF1ZXN0EhwKC3NuYXBzaG90X2lkGAEgASgJQgf6QgRyAhABEhwKFHRhcmdldF9jb25uZWN0aW9uX2lkGAIgASgJEg0KBXRpdGxlGAMgASgJIj4KF1Jlc3RvcmVTbmFwc2hvdFJlc3BvbnNlEiMKB3Jlc3RvcmUYASABKAsyEi5uZW9ib3gudjEuUmVzdG9yZSIoChFHZXRSZXN0b3JlUmVxdWVzdBITCgJpZBgBIAEoCUIH+kIEcgIQASI5ChJHZXRSZXN0b3JlUmVzcG9uc2USIwoHcmVzdG9yZRgBIAEoCzISLm5lb2JveC52MS5SZXN0b3JlIlAKE0xpc3RSZXN0b3Jlc1JlcXVlc3QSEwoLc25hcHNob3RfaWQYASABKAkSFQoNY29ubmVjdGlvbl9pZBgCIAEoCRINCgVsaW1pdBgDIAEoBSI8ChRMaXN0UmVzdG9yZXNSZXNwb25zZRIkCghyZXN0b3JlcxgBIAMoCzISLm5lb2JveC52MS5SZXN0b3JlKqYBCg5TbmFwc2hvdFN0YXR1cxIfChtTTkFQU0hPVF9TVEFUVVNfVU5TUEVDSUZJRUQQABIbChdTTkFQU0hPVF9TVEFUVVNfUEVORElORxABEhsKF1NOQVBTSE9UX1NUQVRVU19SVU5OSU5HEAISHQoZU05BUFNIT1RfU1RBVFVTX1NVQ0NFRURFRBADEhoKFlNOQVBTSE9UX1NUQVRVU19GQUlMRUQQBCpwCg9TbmFwc2hvdFRyaWdnZXISIAocU05BUFNIT1RfVFJJR0dFUl9VTlNQRUNJRklFRBAAEhsKF1NOQVBTSE9UX1RSSUdHRVJfTUFOVUFMEAESHgoaU05BUFNIT1RfVFJJR0dFUl9TQ0hFRFVMRUQQAiqgAQoNUmVzdG9yZVN0YXR1cxIeChpSRVNUT1JFX1NUQVRVU19VTlNQRUNJRklFRBAAEhoKFlJFU1RPUkVfU1RBVFVTX1BFTkRJTkcQARIaChZSRVNUT1JFX1NUQVRVU19SVU5OSU5HEAISHAoYUkVTVE9SRV9TVEFUVVNfU1VDQ0VFREVEEAMSGQoVUkVTVE9SRV9TVEFUVVNfRkFJTEVEEAQy+AYKDU5vY29EQlNlcnZpY2USWAoPTGlzdE5vY29EQkJhc2VzEiEubmVvYm94LnYxLkxpc3ROb2NvREJCYXNlc1JlcXVlc3QaIi5uZW9ib3gudjEuTGlzdE5vY29EQkJhc2VzUmVzcG9uc2USYQoSVXBzZXJ0QmFja3VwUG9saWN5EiQubmVvYm94LnYxLlVwc2VydEJhY2t1cFBvbGljeVJlcXVlc3QaJS5uZW9ib3gudjEuVXBzZXJ0QmFja3VwUG9saWN5UmVzcG9uc2USVQoOQ3JlYXRlU25hcHNob3QSIC5uZW9ib3gudjEuQ3JlYXRlU25hcHNob3RSZXF1ZXN0GiEubmVvYm94LnYxLkNyZWF0ZVNuYXBzaG90UmVzcG9uc2USUgoNTGlzdFNuYXBzaG90cxIfLm5lb2JveC52MS5MaXN0U25hcHNob3RzUmVxdWVzdBogLm5lb2JveC52MS5MaXN0U25hcHNob3RzUmVzcG9uc2USTAoLR2V0U25hcHNob3QSHS5uZW9ib3gudjEuR2V0U25hcHNob3RSZXF1ZXN0Gh4ubmVvYm94LnYxLkdldFNuYXBzaG90UmVzcG9uc2USVQoORGVsZXRlU25hcHNob3QSIC5uZW9ib3gudjEuRGVsZXRlU25hcHNob3RSZXF1ZXN0GiEubmVvYm94LnYxLkRlbGV0ZVNuYXBzaG90UmVzcG9uc2USZAoTTGlzdFNuYXBzaG90UmVjb3JkcxIlLm5lb2JveC52MS5MaXN0U25hcHNob3RSZWNvcmRzUmVxdWVzdBomLm5lb2JveC52MS5MaXN0U25hcHNob3RSZWNvcmRzUmVzcG9uc2USWAoPUmVzdG9yZVNuYXBzaG90EiEubmVvYm94LnYxLlJlc3RvcmVTbmFwc2hvdFJlcXVlc3QaIi5uZW9ib3gudjEuUmVzdG9yZVNuYXBzaG90UmVzcG9uc2USSQoKR2V0UmVzdG9yZRIcLm5lb2JveC52MS5HZXRSZXN0b3JlUmVxdWVzdBodLm5lb2JveC52MS5HZXRSZXN0b3JlUmVzcG9uc2USTwoMTGlzdFJlc3RvcmVzEh4ubmVvYm94LnYxLkxpc3RSZXN0b3Jlc1JlcXVlc3QaHy5uZW9ib3gudjEuTGlzdFJlc3RvcmVzUmVzcG9uc2VCNVozZ28ub3J4Lm1lL2FwcHMvbmVvLWJveC9wa2cvcHJvdG8vbmVvYm94L3YxO25lb2JveHYxYgZwcm90bzM", [file_google_protobuf_struct, file_google_protobuf_timestamp, file_validate_validate]);
 
 /**
  * BackupPolicy controls scheduled snapshots of one Base.
@@ -561,6 +561,291 @@ export const ListSnapshotRecordsResponseSchema: GenMessage<ListSnapshotRecordsRe
   messageDesc(file_neobox_v1_nocodb, 18);
 
 /**
+ * RestoreWarning groups one kind of loss in one table (and field), e.g.
+ * code "attachments_skipped" with the number of attachments not restored.
+ *
+ * @generated from message neobox.v1.RestoreWarning
+ */
+export type RestoreWarning = Message<"neobox.v1.RestoreWarning"> & {
+  /**
+   * One of field_skipped, attachments_skipped, user_values_dropped,
+   * records_failed, links_failed, display_field_not_set, relation_guessed.
+   *
+   * @generated from field: string code = 1;
+   */
+  code: string;
+
+  /**
+   * @generated from field: string table = 2;
+   */
+  table: string;
+
+  /**
+   * @generated from field: string field = 3;
+   */
+  field: string;
+
+  /**
+   * @generated from field: int64 count = 4;
+   */
+  count: bigint;
+
+  /**
+   * @generated from field: string message = 5;
+   */
+  message: string;
+};
+
+/**
+ * Describes the message neobox.v1.RestoreWarning.
+ * Use `create(RestoreWarningSchema)` to create a new message.
+ */
+export const RestoreWarningSchema: GenMessage<RestoreWarning> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_nocodb, 19);
+
+/**
+ * Restore is one rebuild of a Snapshot into a new Base. The source fields
+ * are copied from the snapshot, so they stay readable after it is deleted.
+ *
+ * @generated from message neobox.v1.Restore
+ */
+export type Restore = Message<"neobox.v1.Restore"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string snapshot_id = 2;
+   */
+  snapshotId: string;
+
+  /**
+   * @generated from field: string source_connection_id = 3;
+   */
+  sourceConnectionId: string;
+
+  /**
+   * @generated from field: string source_base_id = 4;
+   */
+  sourceBaseId: string;
+
+  /**
+   * @generated from field: string source_base_title = 5;
+   */
+  sourceBaseTitle: string;
+
+  /**
+   * @generated from field: string target_connection_id = 6;
+   */
+  targetConnectionId: string;
+
+  /**
+   * Set as soon as the new Base exists; a failed restore keeps its
+   * partial Base.
+   *
+   * @generated from field: string target_base_id = 7;
+   */
+  targetBaseId: string;
+
+  /**
+   * @generated from field: string target_base_title = 8;
+   */
+  targetBaseTitle: string;
+
+  /**
+   * @generated from field: neobox.v1.RestoreStatus status = 9;
+   */
+  status: RestoreStatus;
+
+  /**
+   * @generated from field: string error = 10;
+   */
+  error: string;
+
+  /**
+   * Human-readable progress while RUNNING.
+   *
+   * @generated from field: string progress = 11;
+   */
+  progress: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 12;
+   */
+  createdAt?: Timestamp;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp started_at = 13;
+   */
+  startedAt?: Timestamp;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp finished_at = 14;
+   */
+  finishedAt?: Timestamp;
+
+  /**
+   * @generated from field: int32 table_count = 15;
+   */
+  tableCount: number;
+
+  /**
+   * @generated from field: int64 record_count = 16;
+   */
+  recordCount: bigint;
+
+  /**
+   * @generated from field: int64 link_count = 17;
+   */
+  linkCount: bigint;
+
+  /**
+   * @generated from field: repeated neobox.v1.RestoreWarning warnings = 18;
+   */
+  warnings: RestoreWarning[];
+};
+
+/**
+ * Describes the message neobox.v1.Restore.
+ * Use `create(RestoreSchema)` to create a new message.
+ */
+export const RestoreSchema: GenMessage<Restore> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_nocodb, 20);
+
+/**
+ * @generated from message neobox.v1.RestoreSnapshotRequest
+ */
+export type RestoreSnapshotRequest = Message<"neobox.v1.RestoreSnapshotRequest"> & {
+  /**
+   * @generated from field: string snapshot_id = 1;
+   */
+  snapshotId: string;
+
+  /**
+   * The NocoDB connection to create the Base on; empty means the
+   * snapshot's own connection.
+   *
+   * @generated from field: string target_connection_id = 2;
+   */
+  targetConnectionId: string;
+
+  /**
+   * Title of the new Base; empty means
+   * "<base title> (restored from <snapshot date, UTC>)". NocoDB allows
+   * letters, numbers, spaces, and - _ . ( ) & , ' and at most 150
+   * characters.
+   *
+   * @generated from field: string title = 3;
+   */
+  title: string;
+};
+
+/**
+ * Describes the message neobox.v1.RestoreSnapshotRequest.
+ * Use `create(RestoreSnapshotRequestSchema)` to create a new message.
+ */
+export const RestoreSnapshotRequestSchema: GenMessage<RestoreSnapshotRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_nocodb, 21);
+
+/**
+ * @generated from message neobox.v1.RestoreSnapshotResponse
+ */
+export type RestoreSnapshotResponse = Message<"neobox.v1.RestoreSnapshotResponse"> & {
+  /**
+   * @generated from field: neobox.v1.Restore restore = 1;
+   */
+  restore?: Restore;
+};
+
+/**
+ * Describes the message neobox.v1.RestoreSnapshotResponse.
+ * Use `create(RestoreSnapshotResponseSchema)` to create a new message.
+ */
+export const RestoreSnapshotResponseSchema: GenMessage<RestoreSnapshotResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_nocodb, 22);
+
+/**
+ * @generated from message neobox.v1.GetRestoreRequest
+ */
+export type GetRestoreRequest = Message<"neobox.v1.GetRestoreRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message neobox.v1.GetRestoreRequest.
+ * Use `create(GetRestoreRequestSchema)` to create a new message.
+ */
+export const GetRestoreRequestSchema: GenMessage<GetRestoreRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_nocodb, 23);
+
+/**
+ * @generated from message neobox.v1.GetRestoreResponse
+ */
+export type GetRestoreResponse = Message<"neobox.v1.GetRestoreResponse"> & {
+  /**
+   * @generated from field: neobox.v1.Restore restore = 1;
+   */
+  restore?: Restore;
+};
+
+/**
+ * Describes the message neobox.v1.GetRestoreResponse.
+ * Use `create(GetRestoreResponseSchema)` to create a new message.
+ */
+export const GetRestoreResponseSchema: GenMessage<GetRestoreResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_nocodb, 24);
+
+/**
+ * @generated from message neobox.v1.ListRestoresRequest
+ */
+export type ListRestoresRequest = Message<"neobox.v1.ListRestoresRequest"> & {
+  /**
+   * Optional filters. connection_id matches the source or the target.
+   *
+   * @generated from field: string snapshot_id = 1;
+   */
+  snapshotId: string;
+
+  /**
+   * @generated from field: string connection_id = 2;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: int32 limit = 3;
+   */
+  limit: number;
+};
+
+/**
+ * Describes the message neobox.v1.ListRestoresRequest.
+ * Use `create(ListRestoresRequestSchema)` to create a new message.
+ */
+export const ListRestoresRequestSchema: GenMessage<ListRestoresRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_nocodb, 25);
+
+/**
+ * @generated from message neobox.v1.ListRestoresResponse
+ */
+export type ListRestoresResponse = Message<"neobox.v1.ListRestoresResponse"> & {
+  /**
+   * @generated from field: repeated neobox.v1.Restore restores = 1;
+   */
+  restores: Restore[];
+};
+
+/**
+ * Describes the message neobox.v1.ListRestoresResponse.
+ * Use `create(ListRestoresResponseSchema)` to create a new message.
+ */
+export const ListRestoresResponseSchema: GenMessage<ListRestoresResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_nocodb, 26);
+
+/**
  * @generated from enum neobox.v1.SnapshotStatus
  */
 export enum SnapshotStatus {
@@ -623,10 +908,47 @@ export const SnapshotTriggerSchema: GenEnum<SnapshotTrigger> = /*@__PURE__*/
   enumDesc(file_neobox_v1_nocodb, 1);
 
 /**
+ * @generated from enum neobox.v1.RestoreStatus
+ */
+export enum RestoreStatus {
+  /**
+   * @generated from enum value: RESTORE_STATUS_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: RESTORE_STATUS_PENDING = 1;
+   */
+  PENDING = 1,
+
+  /**
+   * @generated from enum value: RESTORE_STATUS_RUNNING = 2;
+   */
+  RUNNING = 2,
+
+  /**
+   * @generated from enum value: RESTORE_STATUS_SUCCEEDED = 3;
+   */
+  SUCCEEDED = 3,
+
+  /**
+   * @generated from enum value: RESTORE_STATUS_FAILED = 4;
+   */
+  FAILED = 4,
+}
+
+/**
+ * Describes the enum neobox.v1.RestoreStatus.
+ */
+export const RestoreStatusSchema: GenEnum<RestoreStatus> = /*@__PURE__*/
+  enumDesc(file_neobox_v1_nocodb, 2);
+
+/**
  * NocoDBService manages point-in-time Snapshots of the Bases (schema +
- * records + links) of NocoDB connections. Connections themselves are managed
- * by ConnectionService; connection_id here must name a NocoDB connection.
- * Every resource is owned by the calling user.
+ * records + links) of NocoDB connections, and Restores of them into new
+ * Bases. Connections themselves are managed by ConnectionService;
+ * connection_id here must name a NocoDB connection. Every resource is owned
+ * by the calling user.
  *
  * @generated from service neobox.v1.NocoDBService
  */
@@ -698,6 +1020,37 @@ export const NocoDBService: GenService<{
     methodKind: "unary";
     input: typeof ListSnapshotRecordsRequestSchema;
     output: typeof ListSnapshotRecordsResponseSchema;
+  },
+  /**
+   * Restores
+   * RestoreSnapshot queues a restore of a succeeded snapshot into a new Base
+   * and returns immediately with a PENDING restore; poll GetRestore for
+   * progress. A restore never changes an existing Base.
+   *
+   * @generated from rpc neobox.v1.NocoDBService.RestoreSnapshot
+   */
+  restoreSnapshot: {
+    methodKind: "unary";
+    input: typeof RestoreSnapshotRequestSchema;
+    output: typeof RestoreSnapshotResponseSchema;
+  },
+  /**
+   * @generated from rpc neobox.v1.NocoDBService.GetRestore
+   */
+  getRestore: {
+    methodKind: "unary";
+    input: typeof GetRestoreRequestSchema;
+    output: typeof GetRestoreResponseSchema;
+  },
+  /**
+   * ListRestores lists restores, newest first.
+   *
+   * @generated from rpc neobox.v1.NocoDBService.ListRestores
+   */
+  listRestores: {
+    methodKind: "unary";
+    input: typeof ListRestoresRequestSchema;
+    output: typeof ListRestoresResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_neobox_v1_nocodb, 0);

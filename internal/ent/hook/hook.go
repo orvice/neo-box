@@ -33,6 +33,18 @@ func (f NocoDBBackupPolicyFunc) Mutate(ctx context.Context, m ent.Mutation) (ent
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NocoDBBackupPolicyMutation", m)
 }
 
+// The NocoDBRestoreFunc type is an adapter to allow the use of ordinary
+// function as NocoDBRestore mutator.
+type NocoDBRestoreFunc func(context.Context, *ent.NocoDBRestoreMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f NocoDBRestoreFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.NocoDBRestoreMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NocoDBRestoreMutation", m)
+}
+
 // The NocoDBSnapshotFunc type is an adapter to allow the use of ordinary
 // function as NocoDBSnapshot mutator.
 type NocoDBSnapshotFunc func(context.Context, *ent.NocoDBSnapshotMutation) (ent.Value, error)

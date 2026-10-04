@@ -4,6 +4,7 @@ package ent
 
 import (
 	"go.orx.me/apps/neo-box/internal/ent/connection"
+	"go.orx.me/apps/neo-box/internal/ent/nocodbrestore"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbsnapshot"
 	"go.orx.me/apps/neo-box/internal/ent/oauthstate"
 	"go.orx.me/apps/neo-box/internal/ent/schema"
@@ -26,6 +27,36 @@ func init() {
 	connectionDescStatusMessage := connectionFields[7].Descriptor()
 	// connection.DefaultStatusMessage holds the default value on creation for the status_message field.
 	connection.DefaultStatusMessage = connectionDescStatusMessage.Default.(string)
+	nocodbrestoreFields := schema.NocoDBRestore{}.Fields()
+	_ = nocodbrestoreFields
+	// nocodbrestoreDescSourceBaseTitle is the schema descriptor for source_base_title field.
+	nocodbrestoreDescSourceBaseTitle := nocodbrestoreFields[5].Descriptor()
+	// nocodbrestore.DefaultSourceBaseTitle holds the default value on creation for the source_base_title field.
+	nocodbrestore.DefaultSourceBaseTitle = nocodbrestoreDescSourceBaseTitle.Default.(string)
+	// nocodbrestoreDescTargetBaseID is the schema descriptor for target_base_id field.
+	nocodbrestoreDescTargetBaseID := nocodbrestoreFields[7].Descriptor()
+	// nocodbrestore.DefaultTargetBaseID holds the default value on creation for the target_base_id field.
+	nocodbrestore.DefaultTargetBaseID = nocodbrestoreDescTargetBaseID.Default.(string)
+	// nocodbrestoreDescError is the schema descriptor for error field.
+	nocodbrestoreDescError := nocodbrestoreFields[10].Descriptor()
+	// nocodbrestore.DefaultError holds the default value on creation for the error field.
+	nocodbrestore.DefaultError = nocodbrestoreDescError.Default.(string)
+	// nocodbrestoreDescProgress is the schema descriptor for progress field.
+	nocodbrestoreDescProgress := nocodbrestoreFields[11].Descriptor()
+	// nocodbrestore.DefaultProgress holds the default value on creation for the progress field.
+	nocodbrestore.DefaultProgress = nocodbrestoreDescProgress.Default.(string)
+	// nocodbrestoreDescTableCount is the schema descriptor for table_count field.
+	nocodbrestoreDescTableCount := nocodbrestoreFields[12].Descriptor()
+	// nocodbrestore.DefaultTableCount holds the default value on creation for the table_count field.
+	nocodbrestore.DefaultTableCount = nocodbrestoreDescTableCount.Default.(int)
+	// nocodbrestoreDescRecordCount is the schema descriptor for record_count field.
+	nocodbrestoreDescRecordCount := nocodbrestoreFields[13].Descriptor()
+	// nocodbrestore.DefaultRecordCount holds the default value on creation for the record_count field.
+	nocodbrestore.DefaultRecordCount = nocodbrestoreDescRecordCount.Default.(int64)
+	// nocodbrestoreDescLinkCount is the schema descriptor for link_count field.
+	nocodbrestoreDescLinkCount := nocodbrestoreFields[14].Descriptor()
+	// nocodbrestore.DefaultLinkCount holds the default value on creation for the link_count field.
+	nocodbrestore.DefaultLinkCount = nocodbrestoreDescLinkCount.Default.(int64)
 	nocodbsnapshotFields := schema.NocoDBSnapshot{}.Fields()
 	_ = nocodbsnapshotFields
 	// nocodbsnapshotDescBaseTitle is the schema descriptor for base_title field.

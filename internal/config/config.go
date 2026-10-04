@@ -54,7 +54,7 @@ func (s StorageConfig) EffectiveLocalDir() string {
 	return s.LocalDir
 }
 
-// NocoDBConfig tunes NocoDB snapshot runs.
+// NocoDBConfig tunes NocoDB snapshot and restore runs.
 type NocoDBConfig struct {
 	// Workers is how many snapshots run concurrently.
 	Workers int `yaml:"workers"`
@@ -62,6 +62,8 @@ type NocoDBConfig struct {
 	PageSize int `yaml:"page_size"`
 	// SnapshotTimeout bounds one snapshot run.
 	SnapshotTimeout time.Duration `yaml:"snapshot_timeout"`
+	// RestoreTimeout bounds one restore run.
+	RestoreTimeout time.Duration `yaml:"restore_timeout"`
 }
 
 type AuthConfig struct {

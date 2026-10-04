@@ -1,4 +1,5 @@
-// Package nocodb persists NocoDB Backup Policies and Snapshot metadata.
+// Package nocodb persists NocoDB Backup Policies, Snapshot metadata, and
+// Restores.
 // Connections are generic (see internal/repo/connection); policies and
 // snapshots refer to one by ConnectionID. Snapshot content lives in the blob
 // store under Snapshot.ObjectKey. Every record is owned by one user; reads
@@ -81,6 +82,66 @@ type SnapshotFilter struct {
 	Limit        int
 }
 
+// RestoreStatus is where a Restore is in its life cycle.
+type RestoreStatus string
+
+const (
+	RestorePending   RestoreStatus = "pending"
+	RestoreRunning   RestoreStatus = "running"
+	RestoreSucceeded RestoreStatus = "succeeded"
+	RestoreFailed    RestoreStatus = "failed"
+)
+
+// RestoreWarning groups one kind of loss in one table (and field).
+type RestoreWarning struct {
+	Code    string `json:"code"`
+	Table   string `json:"table,omitempty"`
+	Field   string `json:"field,omitempty"`
+	Count   int64  `json:"count"`
+	Message string `json:"message"`
+}
+
+// Restore is one rebuild of a Snapshot into a new Base on a target
+// Connection. The source fields are copied from the snapshot.
+type Restore struct {
+	ID                 string
+	UserID             string
+	SnapshotID         string
+	SourceConnectionID string
+	SourceBaseID       string
+	SourceBaseTitle    string
+	TargetConnectionID string
+	// TargetBaseID is empty until the new Base exists.
+	TargetBaseID    string
+	TargetBaseTitle string
+	Status          RestoreStatus
+	Error           string
+	Progress        string
+	TableCount      int
+	RecordCount     int64
+	LinkCount       int64
+	Warnings        []RestoreWarning
+	CreatedAt       time.Time
+	StartedAt       time.Time
+	FinishedAt      time.Time
+}
+
+// Active reports whether the restore is pending or running.
+func (r *Restore) Active() bool {
+	return r.Status == RestorePending || r.Status == RestoreRunning
+}
+
+// RestoreFilter narrows ListRestores. Zero fields are ignored.
+type RestoreFilter struct {
+	UserID     string
+	SnapshotID string
+	// ConnectionID matches the source or the target connection.
+	ConnectionID string
+	// ActiveOnly keeps pending and running restores.
+	ActiveOnly bool
+	Limit      int
+}
+
 type Repository interface {
 	UpsertPolicy(ctx context.Context, p *Policy) error
 	ListPolicies(ctx context.Context, userID, connectionID string) ([]*Policy, error)
@@ -98,4 +159,22 @@ type Repository interface {
 	// FailUnfinishedSnapshots marks every pending/running snapshot failed;
 	// called at startup because in-flight work does not survive a restart.
 	FailUnfinishedSnapshots(ctx context.Context, reason string, at time.Time) (int64, error)
+
+	CreateRestore(ctx context.Context, r *Restore) error
+	GetRestore(ctx context.Context, userID, id string) (*Restore, error)
+	// UpdateRestore overwrites the mutable fields: target Base ID, status,
+	// error, progress, counts, warnings, and start/finish times.
+	UpdateRestore(ctx context.Context, r *Restore) error
+	// UpdateRestoreProgress writes only the progress text.
+	UpdateRestoreProgress(ctx context.Context, id, progress string) error
+	// UpdateRestoreTargetBase writes only the new Base's ID.
+	UpdateRestoreTargetBase(ctx context.Context, id, baseID string) error
+	// ListRestores returns matching restores, newest first.
+	ListRestores(ctx context.Context, f RestoreFilter) ([]*Restore, error)
+	// DeleteRestoresForConnection deletes restores whose source or target
+	// is the connection.
+	DeleteRestoresForConnection(ctx context.Context, connectionID string) error
+	// FailUnfinishedRestores marks every pending/running restore failed;
+	// called at startup, like FailUnfinishedSnapshots.
+	FailUnfinishedRestores(ctx context.Context, reason string, at time.Time) (int64, error)
 }

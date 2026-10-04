@@ -92,6 +92,7 @@ func (h *Handlers) bootstrapNocoDB(ctx, runCtx context.Context, client *ent.Clie
 		Workers:         cfg.NocoDB.Workers,
 		PageSize:        cfg.NocoDB.PageSize,
 		SnapshotTimeout: cfg.NocoDB.SnapshotTimeout,
+		RestoreTimeout:  cfg.NocoDB.RestoreTimeout,
 	}, nocodbRepo, conns, blobs)
 	conns.Register(manager.ConnectionProvider())
 

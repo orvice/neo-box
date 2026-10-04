@@ -78,3 +78,48 @@ func (NocoDBSnapshot) Indexes() []ent.Index {
 		index.Fields("status"),
 	}
 }
+
+// NocoDBRestore is one rebuild of a Snapshot into a new Base. The source is
+// copied from the snapshot so the history still reads correctly after the
+// snapshot is deleted.
+type NocoDBRestore struct {
+	ent.Schema
+}
+
+func (NocoDBRestore) Annotations() []schema.Annotation {
+	return []schema.Annotation{entsql.Annotation{Table: "nocodb_restores"}}
+}
+
+func (NocoDBRestore) Fields() []ent.Field {
+	return []ent.Field{
+		field.String("id").Immutable(),
+		field.String("user_id").Immutable(),
+		field.String("snapshot_id").Immutable(),
+		field.String("source_connection_id").Immutable(),
+		field.String("source_base_id").Immutable(),
+		field.String("source_base_title").Default("").Immutable(),
+		field.String("target_connection_id").Immutable(),
+		// target_base_id is set as soon as the new Base exists.
+		field.String("target_base_id").Default(""),
+		field.String("target_base_title").Immutable(),
+		field.String("status"),
+		field.String("error").Default(""),
+		field.String("progress").Default(""),
+		field.Int("table_count").Default(0),
+		field.Int64("record_count").Default(0),
+		field.Int64("link_count").Default(0),
+		field.JSON("warnings", []nocodb.RestoreWarning{}).Optional(),
+		field.Time("created_at").Immutable(),
+		field.Time("started_at").Optional().Nillable(),
+		field.Time("finished_at").Optional().Nillable(),
+	}
+}
+
+func (NocoDBRestore) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("user_id", "snapshot_id", "created_at"),
+		index.Fields("user_id", "target_connection_id", "created_at"),
+		index.Fields("source_connection_id"),
+		index.Fields("status"),
+	}
+}

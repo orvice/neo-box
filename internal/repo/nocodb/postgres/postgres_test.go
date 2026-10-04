@@ -174,3 +174,118 @@ func TestListSnapshotsAndFailUnfinished(t *testing.T) {
 		t.Fatalf("failed: %v", got)
 	}
 }
+
+func newRestore(id, snapshotID, source, target string, status repo.RestoreStatus, at time.Time) *repo.Restore {
+	return &repo.Restore{
+		ID: id, UserID: "u1", SnapshotID: snapshotID,
+		SourceConnectionID: source, SourceBaseID: "p1", SourceBaseTitle: "CRM",
+		TargetConnectionID: target, TargetBaseTitle: "CRM (restored)",
+		Status: status, CreatedAt: at,
+	}
+}
+
+func TestRestoreRoundTrip(t *testing.T) {
+	s := New(pgtest.NewClient(t))
+	ctx := context.Background()
+
+	r := newRestore("r1", "s1", "c1", "c2", repo.RestorePending, t0)
+	if err := s.CreateRestore(ctx, r); err != nil {
+		t.Fatalf("CreateRestore: %v", err)
+	}
+	if _, err := s.GetRestore(ctx, "u2", "r1"); !errors.Is(err, repo.ErrNotFound) {
+		t.Fatalf("GetRestore other user = %v, want ErrNotFound", err)
+	}
+
+	r.Status, r.StartedAt = repo.RestoreRunning, t0.Add(time.Second)
+	if err := s.UpdateRestore(ctx, r); err != nil {
+		t.Fatalf("UpdateRestore running: %v", err)
+	}
+	if err := s.UpdateRestoreProgress(ctx, "r1", "[1/2] Orders: 10/30 records"); err != nil {
+		t.Fatalf("UpdateRestoreProgress: %v", err)
+	}
+	if err := s.UpdateRestoreTargetBase(ctx, "r1", "pNew"); err != nil {
+		t.Fatalf("UpdateRestoreTargetBase: %v", err)
+	}
+	r.TargetBaseID = "pNew"
+	got, err := s.GetRestore(ctx, "u1", "r1")
+	if err != nil || got.Progress != "[1/2] Orders: 10/30 records" || got.TargetBaseID != "pNew" || !got.Active() {
+		t.Fatalf("GetRestore = %+v, %v", got, err)
+	}
+
+	r.Status, r.Progress, r.FinishedAt = repo.RestoreSucceeded, "", t0.Add(time.Minute)
+	r.TableCount, r.RecordCount, r.LinkCount = 2, 30, 12
+	r.Warnings = []repo.RestoreWarning{{Code: "attachments_skipped", Table: "Orders", Field: "Files", Count: 3, Message: "attachments are not restored"}}
+	if err := s.UpdateRestore(ctx, r); err != nil {
+		t.Fatalf("UpdateRestore done: %v", err)
+	}
+	got, err = s.GetRestore(ctx, "", "r1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Status != repo.RestoreSucceeded || got.Active() || got.TableCount != 2 || got.RecordCount != 30 || got.LinkCount != 12 ||
+		len(got.Warnings) != 1 || got.Warnings[0] != r.Warnings[0] ||
+		got.SourceBaseTitle != "CRM" || got.TargetBaseTitle != "CRM (restored)" ||
+		!got.StartedAt.Equal(r.StartedAt) || !got.FinishedAt.Equal(r.FinishedAt) {
+		t.Fatalf("restore after update = %+v", got)
+	}
+	if err := s.UpdateRestore(ctx, &repo.Restore{ID: "nope", Status: repo.RestoreFailed}); !errors.Is(err, repo.ErrNotFound) {
+		t.Fatalf("UpdateRestore missing = %v, want ErrNotFound", err)
+	}
+}
+
+func TestListRestoresAndFailUnfinished(t *testing.T) {
+	s := New(pgtest.NewClient(t))
+	ctx := context.Background()
+	for _, r := range []*repo.Restore{
+		newRestore("r1", "s1", "c1", "c1", repo.RestoreSucceeded, t0),
+		newRestore("r2", "s1", "c1", "c2", repo.RestoreRunning, t0.Add(time.Minute)),
+		newRestore("r3", "s2", "c3", "c3", repo.RestorePending, t0.Add(2*time.Minute)),
+	} {
+		if err := s.CreateRestore(ctx, r); err != nil {
+			t.Fatal(err)
+		}
+	}
+	ids := func(f repo.RestoreFilter) []string {
+		t.Helper()
+		list, err := s.ListRestores(ctx, f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var out []string
+		for _, r := range list {
+			out = append(out, r.ID)
+		}
+		return out
+	}
+	check := func(name string, got []string, want ...string) {
+		t.Helper()
+		if len(got) != len(want) {
+			t.Fatalf("%s = %v, want %v", name, got, want)
+		}
+		for i := range want {
+			if got[i] != want[i] {
+				t.Fatalf("%s = %v, want %v", name, got, want)
+			}
+		}
+	}
+	check("by snapshot", ids(repo.RestoreFilter{UserID: "u1", SnapshotID: "s1"}), "r2", "r1")
+	check("by target connection", ids(repo.RestoreFilter{UserID: "u1", ConnectionID: "c2"}), "r2")
+	check("by source connection", ids(repo.RestoreFilter{ConnectionID: "c1"}), "r2", "r1")
+	check("active", ids(repo.RestoreFilter{ActiveOnly: true}), "r3", "r2")
+	check("limit", ids(repo.RestoreFilter{Limit: 1}), "r3")
+	check("other user", ids(repo.RestoreFilter{UserID: "u2"}))
+
+	n, err := s.FailUnfinishedRestores(ctx, "interrupted", t0.Add(time.Hour))
+	if err != nil || n != 2 {
+		t.Fatalf("FailUnfinishedRestores = %d, %v", n, err)
+	}
+	r2, _ := s.GetRestore(ctx, "", "r2")
+	if r2.Status != repo.RestoreFailed || r2.Error != "interrupted" || !r2.FinishedAt.Equal(t0.Add(time.Hour)) {
+		t.Fatalf("r2 after fail = %+v", r2)
+	}
+
+	if err := s.DeleteRestoresForConnection(ctx, "c2"); err != nil {
+		t.Fatal(err)
+	}
+	check("after deleting c2", ids(repo.RestoreFilter{}), "r3", "r1")
+}

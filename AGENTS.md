@@ -83,7 +83,9 @@ shadcn/ui + Connect-Web on the frontend.
   `NEOBOX_TEST_NOCODB_TOKEN` and `NEOBOX_TEST_NOCODB_EMAIL` (the token
   owner's email); an OSS `nocodb/nocodb` container is enough.
 - `internal/backup/` — `Manager`: worker queue running snapshots, in-process
-  cron for Backup Policies, retention, and one-snapshot-per-Base guarding.
+  cron for Backup Policies, retention, and one-snapshot-per-Base guarding;
+  a separate one-at-a-time queue running restores (`restore.go`). Clients
+  of one connection share a rate limiter.
 - `internal/wasabi/` — Wasabi Stats API client (`Authorization: AK:SK`,
   pages until a short page, accepts both the paged-object and bare-array
   response shapes), connection settings, and `EstimateCost` (Wasabi's
@@ -110,7 +112,10 @@ secrets are write-only. Scoped to the calling user.
 Base listing joined with policy + latest snapshot, `UpsertBackupPolicy`,
 async `CreateSnapshot` (poll `GetSnapshot`), `ListSnapshotRecords` for
 browsing, and `GET /api/nocodb/snapshots/:id/download` for the raw
-`.json.gz`. `connection_id` must be the caller's NocoDB connection.
+`.json.gz`. Async `RestoreSnapshot` (poll `GetRestore`; `ListRestores`)
+rebuilds a succeeded snapshot into a new Base on any of the caller's NocoDB
+connections; rows live in `nocodb_restores`. `connection_id` must be the
+caller's NocoDB connection.
 
 **Wasabi usage** (`proto/neobox/v1/wasabi.proto`, `WasabiService`):
 overview (newest account totals, cost estimate, sync state), buckets with

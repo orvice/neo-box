@@ -65,6 +65,56 @@ var (
 			},
 		},
 	}
+	// NocodbRestoresColumns holds the columns for the "nocodb_restores" table.
+	NocodbRestoresColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "snapshot_id", Type: field.TypeString},
+		{Name: "source_connection_id", Type: field.TypeString},
+		{Name: "source_base_id", Type: field.TypeString},
+		{Name: "source_base_title", Type: field.TypeString, Default: ""},
+		{Name: "target_connection_id", Type: field.TypeString},
+		{Name: "target_base_id", Type: field.TypeString, Default: ""},
+		{Name: "target_base_title", Type: field.TypeString},
+		{Name: "status", Type: field.TypeString},
+		{Name: "error", Type: field.TypeString, Default: ""},
+		{Name: "progress", Type: field.TypeString, Default: ""},
+		{Name: "table_count", Type: field.TypeInt, Default: 0},
+		{Name: "record_count", Type: field.TypeInt64, Default: 0},
+		{Name: "link_count", Type: field.TypeInt64, Default: 0},
+		{Name: "warnings", Type: field.TypeJSON, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "started_at", Type: field.TypeTime, Nullable: true},
+		{Name: "finished_at", Type: field.TypeTime, Nullable: true},
+	}
+	// NocodbRestoresTable holds the schema information for the "nocodb_restores" table.
+	NocodbRestoresTable = &schema.Table{
+		Name:       "nocodb_restores",
+		Columns:    NocodbRestoresColumns,
+		PrimaryKey: []*schema.Column{NocodbRestoresColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "nocodbrestore_user_id_snapshot_id_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{NocodbRestoresColumns[1], NocodbRestoresColumns[2], NocodbRestoresColumns[16]},
+			},
+			{
+				Name:    "nocodbrestore_user_id_target_connection_id_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{NocodbRestoresColumns[1], NocodbRestoresColumns[6], NocodbRestoresColumns[16]},
+			},
+			{
+				Name:    "nocodbrestore_source_connection_id",
+				Unique:  false,
+				Columns: []*schema.Column{NocodbRestoresColumns[3]},
+			},
+			{
+				Name:    "nocodbrestore_status",
+				Unique:  false,
+				Columns: []*schema.Column{NocodbRestoresColumns[9]},
+			},
+		},
+	}
 	// NocodbSnapshotsColumns holds the columns for the "nocodb_snapshots" table.
 	NocodbSnapshotsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -243,6 +293,7 @@ var (
 	Tables = []*schema.Table{
 		ConnectionsTable,
 		NocodbBackupPoliciesTable,
+		NocodbRestoresTable,
 		NocodbSnapshotsTable,
 		OauthStatesTable,
 		AuthSessionsTable,
@@ -258,6 +309,9 @@ func init() {
 	}
 	NocodbBackupPoliciesTable.Annotation = &entsql.Annotation{
 		Table: "nocodb_backup_policies",
+	}
+	NocodbRestoresTable.Annotation = &entsql.Annotation{
+		Table: "nocodb_restores",
 	}
 	NocodbSnapshotsTable.Annotation = &entsql.Annotation{
 		Table: "nocodb_snapshots",

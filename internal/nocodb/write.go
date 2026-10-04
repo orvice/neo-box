@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
+	"unicode"
+	"unicode/utf8"
 )
 
 // The write half of the client, used to restore snapshots. Bases are
@@ -127,4 +130,44 @@ func (c *Client) ListBaseUserEmails(ctx context.Context, baseID string) ([]strin
 		}
 	}
 	return emails, nil
+}
+
+// BaseTitleMaxLen is the longest Base title NocoDB accepts, in characters.
+const BaseTitleMaxLen = 150
+
+// ValidBaseTitle reports whether NocoDB accepts title as a Base name:
+// letters, numbers, spaces, and - _ . ( ) & , ' only, at most
+// BaseTitleMaxLen characters.
+func ValidBaseTitle(title string) bool {
+	if strings.TrimSpace(title) == "" || utf8.RuneCountInString(title) > BaseTitleMaxLen {
+		return false
+	}
+	for _, r := range title {
+		if !baseTitleRune(r) {
+			return false
+		}
+	}
+	return true
+}
+
+// SanitizeBaseTitle makes title a valid Base name: characters NocoDB
+// rejects become spaces, runs of spaces collapse, and the result is cut to
+// maxLen characters (at most BaseTitleMaxLen).
+func SanitizeBaseTitle(title string, maxLen int) string {
+	maxLen = min(maxLen, BaseTitleMaxLen)
+	cleaned := strings.Map(func(r rune) rune {
+		if baseTitleRune(r) && !unicode.IsSpace(r) {
+			return r
+		}
+		return ' '
+	}, title)
+	out := []rune(strings.Join(strings.Fields(cleaned), " "))
+	if len(out) > maxLen {
+		out = []rune(strings.TrimSpace(string(out[:maxLen])))
+	}
+	return string(out)
+}
+
+func baseTitleRune(r rune) bool {
+	return unicode.IsLetter(r) || unicode.IsNumber(r) || unicode.IsSpace(r) || strings.ContainsRune("-_.()&,'", r)
 }

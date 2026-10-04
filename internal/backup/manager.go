@@ -1,10 +1,12 @@
-// Package backup runs NocoDB Base snapshots: a bounded worker queue executes
-// snapshot jobs, a cron scheduler enqueues them from Backup Policies, and
-// retention prunes old scheduled snapshots.
+// Package backup runs NocoDB Base snapshots and restores: a bounded worker
+// queue executes snapshot jobs, a cron scheduler enqueues them from Backup
+// Policies, retention prunes old scheduled snapshots, and a separate queue
+// rebuilds snapshots into new Bases.
 //
-// State lives in PostgreSQL (snapshot metadata) and the blob store (content).
-// Nothing in-flight survives a restart: Start marks leftover pending/running
-// snapshots failed. The scheduler assumes a single neo-box process.
+// State lives in PostgreSQL (snapshot and restore metadata) and the blob
+// store (content). Nothing in-flight survives a restart: Start marks
+// leftover pending/running snapshots and restores failed. The scheduler
+// assumes a single neo-box process.
 package backup
 
 import (
@@ -20,6 +22,7 @@ import (
 	"butterfly.orx.me/core/log"
 	"github.com/google/uuid"
 	"github.com/robfig/cron/v3"
+	"golang.org/x/time/rate"
 
 	"go.orx.me/apps/neo-box/internal/blobstore"
 	"go.orx.me/apps/neo-box/internal/nocodb"
@@ -31,6 +34,7 @@ import (
 // NocoDB is the client surface the manager and RPC layer use.
 type NocoDB interface {
 	snapshot.API
+	snapshot.WriteAPI
 	ListBases(ctx context.Context) ([]nocodb.Base, error)
 }
 
@@ -44,9 +48,19 @@ type Connections interface {
 	RecordStatus(ctx context.Context, id string, err error)
 }
 
-// ErrSnapshotInProgress is returned when the Base already has a pending or
-// running snapshot.
-var ErrSnapshotInProgress = errors.New("a snapshot of this base is already in progress")
+var (
+	// ErrSnapshotInProgress is returned when the Base already has a
+	// pending or running snapshot.
+	ErrSnapshotInProgress = errors.New("a snapshot of this base is already in progress")
+	// ErrRestoreInProgress is returned when deleting a snapshot that a
+	// pending or running restore reads.
+	ErrRestoreInProgress = errors.New("a restore of this snapshot is in progress")
+	// ErrNotRestorable is returned when restoring a snapshot that has not
+	// succeeded.
+	ErrNotRestorable = errors.New("only a succeeded snapshot can be restored")
+	// ErrQueueFull is returned when a job can't be queued.
+	ErrQueueFull = errors.New("the queue is full, try again later")
+)
 
 // Config tunes the manager.
 type Config struct {
@@ -55,6 +69,8 @@ type Config struct {
 	PageSize  int
 	// SnapshotTimeout bounds one snapshot run.
 	SnapshotTimeout time.Duration
+	// RestoreTimeout bounds one restore run.
+	RestoreTimeout time.Duration
 }
 
 func (c Config) withDefaults() Config {
@@ -70,6 +86,9 @@ func (c Config) withDefaults() Config {
 	if c.SnapshotTimeout <= 0 {
 		c.SnapshotTimeout = 2 * time.Hour
 	}
+	if c.RestoreTimeout <= 0 {
+		c.RestoreTimeout = 6 * time.Hour
+	}
 	return c
 }
 
@@ -80,16 +99,19 @@ type Manager struct {
 	conns Connections
 	blobs blobstore.Store
 
-	queue chan string
-	wg    sync.WaitGroup
+	queue        chan string
+	restoreQueue chan string
+	wg           sync.WaitGroup
 
 	mu       sync.Mutex
 	cron     *cron.Cron
 	entries  map[string]cron.EntryID // policy key -> entry
 	inFlight map[string]string       // connection/base -> snapshot id
+	limiters map[string]*connLimiter // connection id -> shared limiter
 
-	// newClient is swapped in tests.
-	newClient func(cfg nocodb.ConnectionConfig, token string) (NocoDB, error)
+	// newClient is swapped in tests. limiter is nil for a connection that
+	// isn't stored yet.
+	newClient func(cfg nocodb.ConnectionConfig, token string, limiter *rate.Limiter) (NocoDB, error)
 	now       func() time.Time
 }
 
@@ -97,21 +119,23 @@ type Manager struct {
 func New(cfg Config, r repo.Repository, conns Connections, blobs blobstore.Store) *Manager {
 	cfg = cfg.withDefaults()
 	m := &Manager{
-		cfg:      cfg,
-		repo:     r,
-		conns:    conns,
-		blobs:    blobs,
-		queue:    make(chan string, cfg.QueueSize),
-		entries:  make(map[string]cron.EntryID),
-		inFlight: make(map[string]string),
-		now:      time.Now,
+		cfg:          cfg,
+		repo:         r,
+		conns:        conns,
+		blobs:        blobs,
+		queue:        make(chan string, cfg.QueueSize),
+		restoreQueue: make(chan string, cfg.QueueSize),
+		entries:      make(map[string]cron.EntryID),
+		inFlight:     make(map[string]string),
+		limiters:     make(map[string]*connLimiter),
+		now:          time.Now,
 	}
 	m.newClient = NewClient
 	return m
 }
 
-// Start fails interrupted snapshots, launches workers, and loads schedules.
-// Workers stop when ctx is cancelled.
+// Start fails interrupted snapshots and restores, launches workers, and
+// loads schedules. Workers stop when ctx is cancelled.
 func (m *Manager) Start(ctx context.Context) error {
 	logger := log.FromContext(ctx)
 	n, err := m.repo.FailUnfinishedSnapshots(ctx, "interrupted by server restart", m.now().UTC())
@@ -121,10 +145,21 @@ func (m *Manager) Start(ctx context.Context) error {
 	if n > 0 {
 		logger.Warn("marked interrupted snapshots failed", "count", n)
 	}
+	n, err = m.repo.FailUnfinishedRestores(ctx, "interrupted by server restart", m.now().UTC())
+	if err != nil {
+		return err
+	}
+	if n > 0 {
+		logger.Warn("marked interrupted restores failed", "count", n)
+	}
 	for i := 0; i < m.cfg.Workers; i++ {
 		m.wg.Add(1)
-		go m.worker(ctx)
+		go m.worker(ctx, m.queue, m.execute)
 	}
+	// One restore at a time: restores are rare and long, and run beside
+	// snapshots rather than behind them.
+	m.wg.Add(1)
+	go m.worker(ctx, m.restoreQueue, m.executeRestore)
 	m.mu.Lock()
 	m.cron = cron.New(cron.WithParser(CronParser))
 	m.cron.Start()
@@ -210,10 +245,33 @@ func (m *Manager) runScheduled(p *repo.Policy) {
 	}
 }
 
-// NewClient builds a client for a connection's instance, rate limited to
-// the connection's requests per second.
-func NewClient(cfg nocodb.ConnectionConfig, token string) (NocoDB, error) {
+// NewClient builds a client for a connection's instance. It uses limiter
+// when given, otherwise its own limiter at the connection's requests per
+// second.
+func NewClient(cfg nocodb.ConnectionConfig, token string, limiter *rate.Limiter) (NocoDB, error) {
+	if limiter != nil {
+		return nocodb.New(cfg.BaseURL, token, nocodb.WithLimiter(limiter))
+	}
 	return nocodb.New(cfg.BaseURL, token, nocodb.WithRateLimit(cfg.RateLimit()))
+}
+
+type connLimiter struct {
+	rps     float64
+	limiter *rate.Limiter
+}
+
+// limiter returns the rate limiter shared by every client of a connection,
+// so a snapshot and a restore running together stay within the
+// connection's rate. It is replaced when the rate changes.
+func (m *Manager) limiter(connectionID string, rps float64) *rate.Limiter {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if l, ok := m.limiters[connectionID]; ok && l.rps == rps {
+		return l.limiter
+	}
+	l := &connLimiter{rps: rps, limiter: rate.NewLimiter(rate.Limit(rps), 1)}
+	m.limiters[connectionID] = l
+	return l.limiter
 }
 
 // Client returns a NocoDB client for a stored connection.
@@ -230,7 +288,7 @@ func (m *Manager) open(conn *connrepo.Connection) (NocoDB, nocodb.ConnectionConf
 	if err := m.conns.Open(conn, &cfg, &secret); err != nil {
 		return nil, cfg, err
 	}
-	api, err := m.newClient(cfg, secret.APIToken)
+	api, err := m.newClient(cfg, secret.APIToken, m.limiter(conn.ID, cfg.RateLimit()))
 	return api, cfg, err
 }
 
@@ -270,7 +328,7 @@ func (m *Manager) Enqueue(ctx context.Context, conn *connrepo.Connection, baseID
 		snap.Error = "snapshot queue is full"
 		snap.FinishedAt = m.now().UTC()
 		_ = m.repo.UpdateSnapshot(ctx, snap)
-		return nil, errors.New("snapshot queue is full, try again later")
+		return nil, ErrQueueFull
 	}
 }
 
@@ -280,14 +338,14 @@ func (m *Manager) release(key string) {
 	m.mu.Unlock()
 }
 
-func (m *Manager) worker(ctx context.Context) {
+func (m *Manager) worker(ctx context.Context, queue <-chan string, run func(context.Context, string)) {
 	defer m.wg.Done()
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case id := <-m.queue:
-			m.execute(ctx, id)
+		case id := <-queue:
+			run(ctx, id)
 		}
 	}
 }
@@ -452,7 +510,8 @@ func (m *Manager) applyRetention(ctx context.Context, connectionID, baseID strin
 	}
 	sort.Slice(snaps, func(i, j int) bool { return snaps[i].CreatedAt.After(snaps[j].CreatedAt) })
 	for _, s := range snaps[min(retention, len(snaps)):] {
-		if err := m.DeleteSnapshot(ctx, s); err != nil {
+		// A snapshot being restored is pruned by a later run.
+		if err := m.DeleteSnapshot(ctx, s); err != nil && !errors.Is(err, ErrRestoreInProgress) {
 			return err
 		}
 	}
@@ -460,10 +519,17 @@ func (m *Manager) applyRetention(ctx context.Context, connectionID, baseID strin
 }
 
 // DeleteSnapshot removes a snapshot's content and metadata. Refuses while the
-// snapshot is still pending or running.
+// snapshot is still pending or running, or while a restore reads it.
 func (m *Manager) DeleteSnapshot(ctx context.Context, s *repo.Snapshot) error {
 	if s.Status == repo.StatusPending || s.Status == repo.StatusRunning {
 		return ErrSnapshotInProgress
+	}
+	active, err := m.repo.ListRestores(ctx, repo.RestoreFilter{SnapshotID: s.ID, ActiveOnly: true, Limit: 1})
+	if err != nil {
+		return err
+	}
+	if len(active) > 0 {
+		return ErrRestoreInProgress
 	}
 	if s.ObjectKey != "" {
 		if err := m.blobs.Delete(ctx, s.ObjectKey); err != nil {

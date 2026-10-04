@@ -16,6 +16,8 @@ type Tx struct {
 	Connection *ConnectionClient
 	// NocoDBBackupPolicy is the client for interacting with the NocoDBBackupPolicy builders.
 	NocoDBBackupPolicy *NocoDBBackupPolicyClient
+	// NocoDBRestore is the client for interacting with the NocoDBRestore builders.
+	NocoDBRestore *NocoDBRestoreClient
 	// NocoDBSnapshot is the client for interacting with the NocoDBSnapshot builders.
 	NocoDBSnapshot *NocoDBSnapshotClient
 	// OAuthState is the client for interacting with the OAuthState builders.
@@ -161,6 +163,7 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Connection = NewConnectionClient(tx.config)
 	tx.NocoDBBackupPolicy = NewNocoDBBackupPolicyClient(tx.config)
+	tx.NocoDBRestore = NewNocoDBRestoreClient(tx.config)
 	tx.NocoDBSnapshot = NewNocoDBSnapshotClient(tx.config)
 	tx.OAuthState = NewOAuthStateClient(tx.config)
 	tx.Session = NewSessionClient(tx.config)

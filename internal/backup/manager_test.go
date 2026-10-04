@@ -4,16 +4,19 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"sort"
+	"fmt"
 	"sync"
 	"testing"
 	"time"
+
+	"golang.org/x/time/rate"
 
 	"go.orx.me/apps/neo-box/internal/blobstore"
 	"go.orx.me/apps/neo-box/internal/connection"
 	"go.orx.me/apps/neo-box/internal/nocodb"
 	connrepo "go.orx.me/apps/neo-box/internal/repo/connection"
 	repo "go.orx.me/apps/neo-box/internal/repo/nocodb"
+	"go.orx.me/apps/neo-box/internal/repo/nocodb/memory"
 )
 
 // memConns is an in-memory Connections. Secrets are stored unsealed.
@@ -50,118 +53,20 @@ func (c *memConns) recorded(id string) []error {
 	return append([]error(nil), c.statuses[id]...)
 }
 
-// memRepo is an in-memory repo.Repository for tests.
-type memRepo struct {
-	mu       sync.Mutex
-	policies map[string]*repo.Policy
-	snaps    map[string]*repo.Snapshot
-}
-
-func newMemRepo() *memRepo {
-	return &memRepo{policies: map[string]*repo.Policy{}, snaps: map[string]*repo.Snapshot{}}
-}
-
-func (r *memRepo) UpsertPolicy(_ context.Context, p *repo.Policy) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	cp := *p
-	r.policies[p.ConnectionID+"/"+p.BaseID] = &cp
-	return nil
-}
-func (r *memRepo) ListPolicies(_ context.Context, userID, connectionID string) ([]*repo.Policy, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	var out []*repo.Policy
-	for _, p := range r.policies {
-		if p.UserID == userID && p.ConnectionID == connectionID {
-			cp := *p
-			out = append(out, &cp)
-		}
-	}
-	return out, nil
-}
-func (r *memRepo) ListEnabledPolicies(context.Context) ([]*repo.Policy, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	var out []*repo.Policy
-	for _, p := range r.policies {
-		if p.Enabled {
-			cp := *p
-			out = append(out, &cp)
-		}
-	}
-	return out, nil
-}
-func (r *memRepo) DeletePoliciesForConnection(_ context.Context, connectionID string) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	for k, p := range r.policies {
-		if p.ConnectionID == connectionID {
-			delete(r.policies, k)
-		}
-	}
-	return nil
-}
-func (r *memRepo) CreateSnapshot(_ context.Context, s *repo.Snapshot) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	cp := *s
-	r.snaps[s.ID] = &cp
-	return nil
-}
-func (r *memRepo) GetSnapshot(_ context.Context, userID, id string) (*repo.Snapshot, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	s, ok := r.snaps[id]
-	if !ok || (userID != "" && s.UserID != userID) {
-		return nil, repo.ErrNotFound
-	}
-	cp := *s
-	return &cp, nil
-}
-func (r *memRepo) UpdateSnapshot(ctx context.Context, s *repo.Snapshot) error {
-	return r.CreateSnapshot(ctx, s)
-}
-func (r *memRepo) UpdateSnapshotProgress(_ context.Context, id, progress string) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	if s, ok := r.snaps[id]; ok {
-		s.Progress = progress
-	}
-	return nil
-}
-func (r *memRepo) ListSnapshots(_ context.Context, f repo.SnapshotFilter) ([]*repo.Snapshot, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	var out []*repo.Snapshot
-	for _, s := range r.snaps {
-		if (f.ConnectionID == "" || s.ConnectionID == f.ConnectionID) &&
-			(f.BaseID == "" || s.BaseID == f.BaseID) &&
-			(f.Trigger == "" || s.Trigger == f.Trigger) &&
-			(f.Status == "" || s.Status == f.Status) {
-			cp := *s
-			out = append(out, &cp)
-		}
-	}
-	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.After(out[j].CreatedAt) })
-	return out, nil
-}
-func (r *memRepo) DeleteSnapshot(_ context.Context, id string) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	delete(r.snaps, id)
-	return nil
-}
-func (r *memRepo) FailUnfinishedSnapshots(context.Context, string, time.Time) (int64, error) {
-	return 0, nil
-}
-
 // fakeNocoDB serves one tiny base; block (when set) stalls ListTables so a
-// test can observe an in-flight snapshot, and err (when set) fails it.
+// test can observe an in-flight snapshot, and err (when set) fails it. As a
+// restore target, writeBlock stalls CreateBase, writeErr fails it, and
+// insertErr fails inserts after the Base exists.
 type fakeNocoDB struct {
 	block chan struct{}
 	fail  bool
 	err   error
+
+	writeBlock chan struct{}
+	writeErr   error
+	insertErr  error
+	mu         sync.Mutex
+	inserted   int
 }
 
 func (f *fakeNocoDB) ListBases(context.Context) ([]nocodb.Base, error) {
@@ -195,10 +100,50 @@ func (f *fakeNocoDB) ListRecords(context.Context, string, string, int, int) (*no
 func (f *fakeNocoDB) ListLinkedIDs(context.Context, string, string, string, string) ([]json.RawMessage, error) {
 	return nil, nil
 }
+func (f *fakeNocoDB) CreateBase(ctx context.Context, _, _ string) (string, error) {
+	if f.writeBlock != nil {
+		select {
+		case <-f.writeBlock:
+		case <-ctx.Done():
+			return "", ctx.Err()
+		}
+	}
+	if f.writeErr != nil {
+		return "", f.writeErr
+	}
+	return "pR", nil
+}
+func (f *fakeNocoDB) CreateTable(context.Context, string, any) (*nocodb.Table, error) {
+	return &nocodb.Table{ID: "mR", Title: "T", Fields: []nocodb.Field{{ID: "fR", Title: "Id", Type: "ID"}}}, nil
+}
+func (f *fakeNocoDB) UpdateTable(context.Context, string, string, any) error { return nil }
+func (f *fakeNocoDB) CreateField(context.Context, string, string, any) (*nocodb.Field, error) {
+	return nil, errors.New("unexpected field")
+}
+func (f *fakeNocoDB) UpdateField(context.Context, string, string, any) error { return nil }
+func (f *fakeNocoDB) InsertRecords(_ context.Context, _, _ string, records []map[string]json.RawMessage) ([]json.RawMessage, error) {
+	if f.insertErr != nil {
+		return nil, f.insertErr
+	}
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	ids := make([]json.RawMessage, len(records))
+	for i := range records {
+		f.inserted++
+		ids[i] = json.RawMessage(fmt.Sprint(f.inserted))
+	}
+	return ids, nil
+}
+func (f *fakeNocoDB) LinkRecords(context.Context, string, string, string, string, []json.RawMessage) error {
+	return nil
+}
+func (f *fakeNocoDB) ListBaseUserEmails(context.Context, string) ([]string, error) {
+	return nil, nil
+}
 
 type harness struct {
 	m     *Manager
-	repo  *memRepo
+	repo  *memory.Store
 	conns *memConns
 	api   *fakeNocoDB
 	conn  *connrepo.Connection
@@ -211,7 +156,7 @@ func newHarness(t *testing.T) *harness {
 	if err != nil {
 		t.Fatal(err)
 	}
-	h := &harness{repo: newMemRepo(), api: &fakeNocoDB{}, clock: time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)}
+	h := &harness{repo: memory.New(), api: &fakeNocoDB{}, clock: time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)}
 	h.conn = &connrepo.Connection{
 		ID: "c1", UserID: "u1", Provider: nocodb.ProviderType,
 		Config: json.RawMessage(`{"base_url":"http://noco"}`), SecretCiphertext: `{"api_token":"tok"}`,
@@ -219,13 +164,17 @@ func newHarness(t *testing.T) *harness {
 	h.conns = &memConns{conns: map[string]*connrepo.Connection{"c1": h.conn}, statuses: map[string][]error{}}
 
 	h.m = New(Config{}, h.repo, h.conns, blobs)
-	h.m.newClient = func(_ nocodb.ConnectionConfig, token string) (NocoDB, error) {
+	h.m.newClient = func(_ nocodb.ConnectionConfig, token string, _ *rate.Limiter) (NocoDB, error) {
 		if token != "tok" {
 			t.Errorf("token = %q", token)
 		}
 		return h.api, nil
 	}
+	// Called from the test and from workers.
+	var clockMu sync.Mutex
 	h.m.now = func() time.Time {
+		clockMu.Lock()
+		defer clockMu.Unlock()
 		h.clock = h.clock.Add(time.Minute)
 		return h.clock
 	}
