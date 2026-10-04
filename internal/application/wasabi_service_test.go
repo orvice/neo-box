@@ -204,3 +204,40 @@ func TestWasabiSyncAndScoping(t *testing.T) {
 		}
 	}
 }
+
+func TestWasabiCostBreakdown(t *testing.T) {
+	f := newWasabiFixture(t, true)
+	resp, err := f.srv.GetWasabiCostBreakdown(asUser("u1"), connect.NewRequest(&neoboxv1.GetWasabiCostBreakdownRequest{ConnectionId: "w1"}))
+	if err != nil {
+		t.Fatalf("GetWasabiCostBreakdown: %v", err)
+	}
+	b := resp.Msg.GetBreakdown()
+	if !b.GetRolling() || b.GetPeriodStart() != "2026-09-01" || b.GetDaysWithData() != 29 || b.GetPricePerTbMonth() != wasabi.DefaultPricePerTBMonth {
+		t.Fatalf("period = %+v", b)
+	}
+	// It matches the overview's cost to date.
+	over, _ := f.srv.GetWasabiOverview(asUser("u1"), connect.NewRequest(&neoboxv1.GetWasabiOverviewRequest{ConnectionId: "w1"}))
+	total := b.GetActiveCost() + b.GetDeletedCost() + b.GetMinimumCost()
+	if d := total - over.Msg.GetCostEstimate().GetCostToDate(); d > 1e-9 || d < -1e-9 {
+		t.Fatalf("breakdown total %v != estimate %v", total, over.Msg.GetCostEstimate().GetCostToDate())
+	}
+	// "media" holds everything; "old" (gone, empty) costs nothing.
+	if len(b.GetBuckets()) != 2 || b.GetBuckets()[0].GetBucket() != "media" || b.GetBuckets()[0].GetDeleted() ||
+		!b.GetBuckets()[1].GetDeleted() || b.GetUnattributedCost() > 1e-9 || b.GetUnattributedCost() < -1e-9 {
+		t.Fatalf("buckets = %+v unattributed = %v", b.GetBuckets(), b.GetUnattributedCost())
+	}
+
+	for name, tc := range map[string]struct {
+		user, conn string
+		code       connect.Code
+	}{
+		"another user's connection": {"u2", "w1", connect.CodeNotFound},
+		"a NocoDB connection":       {"u1", "n1", connect.CodeNotFound},
+		"missing id":                {"u1", "", connect.CodeInvalidArgument},
+	} {
+		_, err := f.srv.GetWasabiCostBreakdown(asUser(tc.user), connect.NewRequest(&neoboxv1.GetWasabiCostBreakdownRequest{ConnectionId: tc.conn}))
+		if connect.CodeOf(err) != tc.code {
+			t.Errorf("%s: err = %v, want %v", name, err, tc.code)
+		}
+	}
+}

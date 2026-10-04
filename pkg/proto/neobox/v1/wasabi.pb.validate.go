@@ -1628,3 +1628,521 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = SyncWasabiConnectionResponseValidationError{}
+
+// Validate checks the field values on WasabiBucketCost with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *WasabiBucketCost) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WasabiBucketCost with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WasabiBucketCostMultiError, or nil if none found.
+func (m *WasabiBucketCost) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WasabiBucketCost) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Bucket
+
+	// no validation rules for Region
+
+	// no validation rules for Deleted
+
+	// no validation rules for ActiveCost
+
+	// no validation rules for DeletedCost
+
+	// no validation rules for ActiveStorageBytes
+
+	// no validation rules for DeletedStorageBytes
+
+	// no validation rules for DeletedInPeriodBytes
+
+	if len(errors) > 0 {
+		return WasabiBucketCostMultiError(errors)
+	}
+
+	return nil
+}
+
+// WasabiBucketCostMultiError is an error wrapping multiple validation errors
+// returned by WasabiBucketCost.ValidateAll() if the designated constraints
+// aren't met.
+type WasabiBucketCostMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WasabiBucketCostMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WasabiBucketCostMultiError) AllErrors() []error { return m }
+
+// WasabiBucketCostValidationError is the validation error returned by
+// WasabiBucketCost.Validate if the designated constraints aren't met.
+type WasabiBucketCostValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WasabiBucketCostValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WasabiBucketCostValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WasabiBucketCostValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WasabiBucketCostValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WasabiBucketCostValidationError) ErrorName() string { return "WasabiBucketCostValidationError" }
+
+// Error satisfies the builtin error interface
+func (e WasabiBucketCostValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWasabiBucketCost.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WasabiBucketCostValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WasabiBucketCostValidationError{}
+
+// Validate checks the field values on WasabiCostBreakdown with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WasabiCostBreakdown) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WasabiCostBreakdown with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WasabiCostBreakdownMultiError, or nil if none found.
+func (m *WasabiCostBreakdown) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WasabiCostBreakdown) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for PeriodStart
+
+	// no validation rules for PeriodEnd
+
+	// no validation rules for Rolling
+
+	// no validation rules for DataThrough
+
+	// no validation rules for DaysWithData
+
+	// no validation rules for PricePerTbMonth
+
+	// no validation rules for ActiveCost
+
+	// no validation rules for DeletedCost
+
+	// no validation rules for MinimumCost
+
+	// no validation rules for UnattributedCost
+
+	for idx, item := range m.GetBuckets() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, WasabiCostBreakdownValidationError{
+						field:  fmt.Sprintf("Buckets[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, WasabiCostBreakdownValidationError{
+						field:  fmt.Sprintf("Buckets[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return WasabiCostBreakdownValidationError{
+					field:  fmt.Sprintf("Buckets[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return WasabiCostBreakdownMultiError(errors)
+	}
+
+	return nil
+}
+
+// WasabiCostBreakdownMultiError is an error wrapping multiple validation
+// errors returned by WasabiCostBreakdown.ValidateAll() if the designated
+// constraints aren't met.
+type WasabiCostBreakdownMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WasabiCostBreakdownMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WasabiCostBreakdownMultiError) AllErrors() []error { return m }
+
+// WasabiCostBreakdownValidationError is the validation error returned by
+// WasabiCostBreakdown.Validate if the designated constraints aren't met.
+type WasabiCostBreakdownValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WasabiCostBreakdownValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WasabiCostBreakdownValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WasabiCostBreakdownValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WasabiCostBreakdownValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WasabiCostBreakdownValidationError) ErrorName() string {
+	return "WasabiCostBreakdownValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WasabiCostBreakdownValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWasabiCostBreakdown.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WasabiCostBreakdownValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WasabiCostBreakdownValidationError{}
+
+// Validate checks the field values on GetWasabiCostBreakdownRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetWasabiCostBreakdownRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetWasabiCostBreakdownRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// GetWasabiCostBreakdownRequestMultiError, or nil if none found.
+func (m *GetWasabiCostBreakdownRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetWasabiCostBreakdownRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := GetWasabiCostBreakdownRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return GetWasabiCostBreakdownRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetWasabiCostBreakdownRequestMultiError is an error wrapping multiple
+// validation errors returned by GetWasabiCostBreakdownRequest.ValidateAll()
+// if the designated constraints aren't met.
+type GetWasabiCostBreakdownRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetWasabiCostBreakdownRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetWasabiCostBreakdownRequestMultiError) AllErrors() []error { return m }
+
+// GetWasabiCostBreakdownRequestValidationError is the validation error
+// returned by GetWasabiCostBreakdownRequest.Validate if the designated
+// constraints aren't met.
+type GetWasabiCostBreakdownRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetWasabiCostBreakdownRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetWasabiCostBreakdownRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetWasabiCostBreakdownRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetWasabiCostBreakdownRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetWasabiCostBreakdownRequestValidationError) ErrorName() string {
+	return "GetWasabiCostBreakdownRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetWasabiCostBreakdownRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetWasabiCostBreakdownRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetWasabiCostBreakdownRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetWasabiCostBreakdownRequestValidationError{}
+
+// Validate checks the field values on GetWasabiCostBreakdownResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetWasabiCostBreakdownResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetWasabiCostBreakdownResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// GetWasabiCostBreakdownResponseMultiError, or nil if none found.
+func (m *GetWasabiCostBreakdownResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetWasabiCostBreakdownResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetBreakdown()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GetWasabiCostBreakdownResponseValidationError{
+					field:  "Breakdown",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GetWasabiCostBreakdownResponseValidationError{
+					field:  "Breakdown",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetBreakdown()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetWasabiCostBreakdownResponseValidationError{
+				field:  "Breakdown",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return GetWasabiCostBreakdownResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetWasabiCostBreakdownResponseMultiError is an error wrapping multiple
+// validation errors returned by GetWasabiCostBreakdownResponse.ValidateAll()
+// if the designated constraints aren't met.
+type GetWasabiCostBreakdownResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetWasabiCostBreakdownResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetWasabiCostBreakdownResponseMultiError) AllErrors() []error { return m }
+
+// GetWasabiCostBreakdownResponseValidationError is the validation error
+// returned by GetWasabiCostBreakdownResponse.Validate if the designated
+// constraints aren't met.
+type GetWasabiCostBreakdownResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetWasabiCostBreakdownResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetWasabiCostBreakdownResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetWasabiCostBreakdownResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetWasabiCostBreakdownResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetWasabiCostBreakdownResponseValidationError) ErrorName() string {
+	return "GetWasabiCostBreakdownResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetWasabiCostBreakdownResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetWasabiCostBreakdownResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetWasabiCostBreakdownResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetWasabiCostBreakdownResponseValidationError{}
