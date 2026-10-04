@@ -16,7 +16,10 @@ protobuf contracts generated with buf, all in one monorepo.
 - **NocoDB Base snapshots**: open-source NocoDB has no Base backup, so neo-box
   captures a Base's schema, records, and record links into point-in-time
   snapshots. You can take them manually or on a cron schedule with retention,
-  browse them in the dashboard, and download them as gzip JSON.
+  browse them in the dashboard, download them as gzip JSON, and restore one
+  into a new Base on any of your NocoDB connections. Attachments, views,
+  and original record IDs are not restored; see
+  [ADR 0004](docs/adr/0004-nocodb-restore-into-new-base.md).
 - **Wasabi usage and cost** (read-only): daily storage, deleted storage
   still billed under the 90-day minimum, egress, and API calls for a Wasabi
   account and each of its buckets, synced from the Wasabi Stats API, plus an
@@ -191,6 +194,7 @@ store:
 #   workers: 1              # snapshots running concurrently
 #   page_size: 200          # records per page when reading tables
 #   snapshot_timeout: 2h    # a run exceeding this is marked failed
+#   restore_timeout: 6h     # a restore exceeding this is marked failed
 # wasabi:
 #   stats_endpoint: "https://stats.wasabisys.com"
 ```
@@ -279,7 +283,8 @@ Backend notes:
 
 - Run **one replica with `strategy: Recreate`**. Snapshot schedules and the
   job queue run in-process; overlapping pods would double-fire schedules, and
-  a starting pod marks unfinished snapshots failed.
+  a starting pod marks unfinished snapshots and restores failed (a failed
+  restore leaves its partial Base in NocoDB).
 - The database user needs rights to create and alter tables: the schema is
   migrated on every startup. Migration never drops tables, columns, or
   indexes.
@@ -346,7 +351,7 @@ cmd/neobox/            entry point
 internal/app/          route registration + bootstrap wiring
 internal/application/  ConnectRPC service implementations
 internal/connection/   connections across providers (secrets, verify, health)
-internal/backup/       NocoDB snapshot queue, cron scheduling, retention
+internal/backup/       NocoDB snapshot and restore queues, cron scheduling, retention
 internal/nocodb/       NocoDB REST client
 internal/snapshot/     snapshot document format, restore into a new Base
 internal/wasabi/       Wasabi Stats API client, settings, cost estimate

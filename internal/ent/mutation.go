@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"go.orx.me/apps/neo-box/internal/ent/connection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
+	"go.orx.me/apps/neo-box/internal/ent/nocodbrestore"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbsnapshot"
 	"go.orx.me/apps/neo-box/internal/ent/oauthstate"
 	"go.orx.me/apps/neo-box/internal/ent/predicate"
@@ -34,6 +35,7 @@ const (
 	// Node types.
 	TypeConnection         = "Connection"
 	TypeNocoDBBackupPolicy = "NocoDBBackupPolicy"
+	TypeNocoDBRestore      = "NocoDBRestore"
 	TypeNocoDBSnapshot     = "NocoDBSnapshot"
 	TypeOAuthState         = "OAuthState"
 	TypeSession            = "Session"
@@ -1566,6 +1568,1435 @@ func (m *NocoDBBackupPolicyMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *NocoDBBackupPolicyMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown NocoDBBackupPolicy edge %s", name)
+}
+
+// NocoDBRestoreMutation represents an operation that mutates the NocoDBRestore nodes in the graph.
+type NocoDBRestoreMutation struct {
+	config
+	op                   Op
+	typ                  string
+	id                   *string
+	user_id              *string
+	snapshot_id          *string
+	source_connection_id *string
+	source_base_id       *string
+	source_base_title    *string
+	target_connection_id *string
+	target_base_id       *string
+	target_base_title    *string
+	status               *string
+	error                *string
+	progress             *string
+	table_count          *int
+	addtable_count       *int
+	record_count         *int64
+	addrecord_count      *int64
+	link_count           *int64
+	addlink_count        *int64
+	warnings             *[]nocodb.RestoreWarning
+	appendwarnings       []nocodb.RestoreWarning
+	created_at           *time.Time
+	started_at           *time.Time
+	finished_at          *time.Time
+	clearedFields        map[string]struct{}
+	done                 bool
+	oldValue             func(context.Context) (*NocoDBRestore, error)
+	predicates           []predicate.NocoDBRestore
+}
+
+var _ ent.Mutation = (*NocoDBRestoreMutation)(nil)
+
+// nocodbrestoreOption allows management of the mutation configuration using functional options.
+type nocodbrestoreOption func(*NocoDBRestoreMutation)
+
+// newNocoDBRestoreMutation creates new mutation for the NocoDBRestore entity.
+func newNocoDBRestoreMutation(c config, op Op, opts ...nocodbrestoreOption) *NocoDBRestoreMutation {
+	m := &NocoDBRestoreMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeNocoDBRestore,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withNocoDBRestoreID sets the ID field of the mutation.
+func withNocoDBRestoreID(id string) nocodbrestoreOption {
+	return func(m *NocoDBRestoreMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *NocoDBRestore
+		)
+		m.oldValue = func(ctx context.Context) (*NocoDBRestore, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().NocoDBRestore.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withNocoDBRestore sets the old NocoDBRestore of the mutation.
+func withNocoDBRestore(node *NocoDBRestore) nocodbrestoreOption {
+	return func(m *NocoDBRestoreMutation) {
+		m.oldValue = func(context.Context) (*NocoDBRestore, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m NocoDBRestoreMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m NocoDBRestoreMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of NocoDBRestore entities.
+func (m *NocoDBRestoreMutation) SetID(id string) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *NocoDBRestoreMutation) ID() (id string, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *NocoDBRestoreMutation) IDs(ctx context.Context) ([]string, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []string{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().NocoDBRestore.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetUserID sets the "user_id" field.
+func (m *NocoDBRestoreMutation) SetUserID(s string) {
+	m.user_id = &s
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *NocoDBRestoreMutation) UserID() (r string, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the NocoDBRestore entity.
+// If the NocoDBRestore object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBRestoreMutation) OldUserID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *NocoDBRestoreMutation) ResetUserID() {
+	m.user_id = nil
+}
+
+// SetSnapshotID sets the "snapshot_id" field.
+func (m *NocoDBRestoreMutation) SetSnapshotID(s string) {
+	m.snapshot_id = &s
+}
+
+// SnapshotID returns the value of the "snapshot_id" field in the mutation.
+func (m *NocoDBRestoreMutation) SnapshotID() (r string, exists bool) {
+	v := m.snapshot_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSnapshotID returns the old "snapshot_id" field's value of the NocoDBRestore entity.
+// If the NocoDBRestore object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBRestoreMutation) OldSnapshotID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSnapshotID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSnapshotID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSnapshotID: %w", err)
+	}
+	return oldValue.SnapshotID, nil
+}
+
+// ResetSnapshotID resets all changes to the "snapshot_id" field.
+func (m *NocoDBRestoreMutation) ResetSnapshotID() {
+	m.snapshot_id = nil
+}
+
+// SetSourceConnectionID sets the "source_connection_id" field.
+func (m *NocoDBRestoreMutation) SetSourceConnectionID(s string) {
+	m.source_connection_id = &s
+}
+
+// SourceConnectionID returns the value of the "source_connection_id" field in the mutation.
+func (m *NocoDBRestoreMutation) SourceConnectionID() (r string, exists bool) {
+	v := m.source_connection_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSourceConnectionID returns the old "source_connection_id" field's value of the NocoDBRestore entity.
+// If the NocoDBRestore object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBRestoreMutation) OldSourceConnectionID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSourceConnectionID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSourceConnectionID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSourceConnectionID: %w", err)
+	}
+	return oldValue.SourceConnectionID, nil
+}
+
+// ResetSourceConnectionID resets all changes to the "source_connection_id" field.
+func (m *NocoDBRestoreMutation) ResetSourceConnectionID() {
+	m.source_connection_id = nil
+}
+
+// SetSourceBaseID sets the "source_base_id" field.
+func (m *NocoDBRestoreMutation) SetSourceBaseID(s string) {
+	m.source_base_id = &s
+}
+
+// SourceBaseID returns the value of the "source_base_id" field in the mutation.
+func (m *NocoDBRestoreMutation) SourceBaseID() (r string, exists bool) {
+	v := m.source_base_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSourceBaseID returns the old "source_base_id" field's value of the NocoDBRestore entity.
+// If the NocoDBRestore object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBRestoreMutation) OldSourceBaseID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSourceBaseID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSourceBaseID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSourceBaseID: %w", err)
+	}
+	return oldValue.SourceBaseID, nil
+}
+
+// ResetSourceBaseID resets all changes to the "source_base_id" field.
+func (m *NocoDBRestoreMutation) ResetSourceBaseID() {
+	m.source_base_id = nil
+}
+
+// SetSourceBaseTitle sets the "source_base_title" field.
+func (m *NocoDBRestoreMutation) SetSourceBaseTitle(s string) {
+	m.source_base_title = &s
+}
+
+// SourceBaseTitle returns the value of the "source_base_title" field in the mutation.
+func (m *NocoDBRestoreMutation) SourceBaseTitle() (r string, exists bool) {
+	v := m.source_base_title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSourceBaseTitle returns the old "source_base_title" field's value of the NocoDBRestore entity.
+// If the NocoDBRestore object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBRestoreMutation) OldSourceBaseTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSourceBaseTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSourceBaseTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSourceBaseTitle: %w", err)
+	}
+	return oldValue.SourceBaseTitle, nil
+}
+
+// ResetSourceBaseTitle resets all changes to the "source_base_title" field.
+func (m *NocoDBRestoreMutation) ResetSourceBaseTitle() {
+	m.source_base_title = nil
+}
+
+// SetTargetConnectionID sets the "target_connection_id" field.
+func (m *NocoDBRestoreMutation) SetTargetConnectionID(s string) {
+	m.target_connection_id = &s
+}
+
+// TargetConnectionID returns the value of the "target_connection_id" field in the mutation.
+func (m *NocoDBRestoreMutation) TargetConnectionID() (r string, exists bool) {
+	v := m.target_connection_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTargetConnectionID returns the old "target_connection_id" field's value of the NocoDBRestore entity.
+// If the NocoDBRestore object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBRestoreMutation) OldTargetConnectionID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTargetConnectionID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTargetConnectionID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTargetConnectionID: %w", err)
+	}
+	return oldValue.TargetConnectionID, nil
+}
+
+// ResetTargetConnectionID resets all changes to the "target_connection_id" field.
+func (m *NocoDBRestoreMutation) ResetTargetConnectionID() {
+	m.target_connection_id = nil
+}
+
+// SetTargetBaseID sets the "target_base_id" field.
+func (m *NocoDBRestoreMutation) SetTargetBaseID(s string) {
+	m.target_base_id = &s
+}
+
+// TargetBaseID returns the value of the "target_base_id" field in the mutation.
+func (m *NocoDBRestoreMutation) TargetBaseID() (r string, exists bool) {
+	v := m.target_base_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTargetBaseID returns the old "target_base_id" field's value of the NocoDBRestore entity.
+// If the NocoDBRestore object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBRestoreMutation) OldTargetBaseID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTargetBaseID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTargetBaseID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTargetBaseID: %w", err)
+	}
+	return oldValue.TargetBaseID, nil
+}
+
+// ResetTargetBaseID resets all changes to the "target_base_id" field.
+func (m *NocoDBRestoreMutation) ResetTargetBaseID() {
+	m.target_base_id = nil
+}
+
+// SetTargetBaseTitle sets the "target_base_title" field.
+func (m *NocoDBRestoreMutation) SetTargetBaseTitle(s string) {
+	m.target_base_title = &s
+}
+
+// TargetBaseTitle returns the value of the "target_base_title" field in the mutation.
+func (m *NocoDBRestoreMutation) TargetBaseTitle() (r string, exists bool) {
+	v := m.target_base_title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTargetBaseTitle returns the old "target_base_title" field's value of the NocoDBRestore entity.
+// If the NocoDBRestore object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBRestoreMutation) OldTargetBaseTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTargetBaseTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTargetBaseTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTargetBaseTitle: %w", err)
+	}
+	return oldValue.TargetBaseTitle, nil
+}
+
+// ResetTargetBaseTitle resets all changes to the "target_base_title" field.
+func (m *NocoDBRestoreMutation) ResetTargetBaseTitle() {
+	m.target_base_title = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *NocoDBRestoreMutation) SetStatus(s string) {
+	m.status = &s
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *NocoDBRestoreMutation) Status() (r string, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the NocoDBRestore entity.
+// If the NocoDBRestore object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBRestoreMutation) OldStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *NocoDBRestoreMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetError sets the "error" field.
+func (m *NocoDBRestoreMutation) SetError(s string) {
+	m.error = &s
+}
+
+// Error returns the value of the "error" field in the mutation.
+func (m *NocoDBRestoreMutation) Error() (r string, exists bool) {
+	v := m.error
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldError returns the old "error" field's value of the NocoDBRestore entity.
+// If the NocoDBRestore object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBRestoreMutation) OldError(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldError is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldError requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldError: %w", err)
+	}
+	return oldValue.Error, nil
+}
+
+// ResetError resets all changes to the "error" field.
+func (m *NocoDBRestoreMutation) ResetError() {
+	m.error = nil
+}
+
+// SetProgress sets the "progress" field.
+func (m *NocoDBRestoreMutation) SetProgress(s string) {
+	m.progress = &s
+}
+
+// Progress returns the value of the "progress" field in the mutation.
+func (m *NocoDBRestoreMutation) Progress() (r string, exists bool) {
+	v := m.progress
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProgress returns the old "progress" field's value of the NocoDBRestore entity.
+// If the NocoDBRestore object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBRestoreMutation) OldProgress(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProgress is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProgress requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProgress: %w", err)
+	}
+	return oldValue.Progress, nil
+}
+
+// ResetProgress resets all changes to the "progress" field.
+func (m *NocoDBRestoreMutation) ResetProgress() {
+	m.progress = nil
+}
+
+// SetTableCount sets the "table_count" field.
+func (m *NocoDBRestoreMutation) SetTableCount(i int) {
+	m.table_count = &i
+	m.addtable_count = nil
+}
+
+// TableCount returns the value of the "table_count" field in the mutation.
+func (m *NocoDBRestoreMutation) TableCount() (r int, exists bool) {
+	v := m.table_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTableCount returns the old "table_count" field's value of the NocoDBRestore entity.
+// If the NocoDBRestore object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBRestoreMutation) OldTableCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTableCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTableCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTableCount: %w", err)
+	}
+	return oldValue.TableCount, nil
+}
+
+// AddTableCount adds i to the "table_count" field.
+func (m *NocoDBRestoreMutation) AddTableCount(i int) {
+	if m.addtable_count != nil {
+		*m.addtable_count += i
+	} else {
+		m.addtable_count = &i
+	}
+}
+
+// AddedTableCount returns the value that was added to the "table_count" field in this mutation.
+func (m *NocoDBRestoreMutation) AddedTableCount() (r int, exists bool) {
+	v := m.addtable_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTableCount resets all changes to the "table_count" field.
+func (m *NocoDBRestoreMutation) ResetTableCount() {
+	m.table_count = nil
+	m.addtable_count = nil
+}
+
+// SetRecordCount sets the "record_count" field.
+func (m *NocoDBRestoreMutation) SetRecordCount(i int64) {
+	m.record_count = &i
+	m.addrecord_count = nil
+}
+
+// RecordCount returns the value of the "record_count" field in the mutation.
+func (m *NocoDBRestoreMutation) RecordCount() (r int64, exists bool) {
+	v := m.record_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRecordCount returns the old "record_count" field's value of the NocoDBRestore entity.
+// If the NocoDBRestore object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBRestoreMutation) OldRecordCount(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRecordCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRecordCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRecordCount: %w", err)
+	}
+	return oldValue.RecordCount, nil
+}
+
+// AddRecordCount adds i to the "record_count" field.
+func (m *NocoDBRestoreMutation) AddRecordCount(i int64) {
+	if m.addrecord_count != nil {
+		*m.addrecord_count += i
+	} else {
+		m.addrecord_count = &i
+	}
+}
+
+// AddedRecordCount returns the value that was added to the "record_count" field in this mutation.
+func (m *NocoDBRestoreMutation) AddedRecordCount() (r int64, exists bool) {
+	v := m.addrecord_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetRecordCount resets all changes to the "record_count" field.
+func (m *NocoDBRestoreMutation) ResetRecordCount() {
+	m.record_count = nil
+	m.addrecord_count = nil
+}
+
+// SetLinkCount sets the "link_count" field.
+func (m *NocoDBRestoreMutation) SetLinkCount(i int64) {
+	m.link_count = &i
+	m.addlink_count = nil
+}
+
+// LinkCount returns the value of the "link_count" field in the mutation.
+func (m *NocoDBRestoreMutation) LinkCount() (r int64, exists bool) {
+	v := m.link_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLinkCount returns the old "link_count" field's value of the NocoDBRestore entity.
+// If the NocoDBRestore object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBRestoreMutation) OldLinkCount(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLinkCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLinkCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLinkCount: %w", err)
+	}
+	return oldValue.LinkCount, nil
+}
+
+// AddLinkCount adds i to the "link_count" field.
+func (m *NocoDBRestoreMutation) AddLinkCount(i int64) {
+	if m.addlink_count != nil {
+		*m.addlink_count += i
+	} else {
+		m.addlink_count = &i
+	}
+}
+
+// AddedLinkCount returns the value that was added to the "link_count" field in this mutation.
+func (m *NocoDBRestoreMutation) AddedLinkCount() (r int64, exists bool) {
+	v := m.addlink_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetLinkCount resets all changes to the "link_count" field.
+func (m *NocoDBRestoreMutation) ResetLinkCount() {
+	m.link_count = nil
+	m.addlink_count = nil
+}
+
+// SetWarnings sets the "warnings" field.
+func (m *NocoDBRestoreMutation) SetWarnings(nw []nocodb.RestoreWarning) {
+	m.warnings = &nw
+	m.appendwarnings = nil
+}
+
+// Warnings returns the value of the "warnings" field in the mutation.
+func (m *NocoDBRestoreMutation) Warnings() (r []nocodb.RestoreWarning, exists bool) {
+	v := m.warnings
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWarnings returns the old "warnings" field's value of the NocoDBRestore entity.
+// If the NocoDBRestore object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBRestoreMutation) OldWarnings(ctx context.Context) (v []nocodb.RestoreWarning, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWarnings is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWarnings requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWarnings: %w", err)
+	}
+	return oldValue.Warnings, nil
+}
+
+// AppendWarnings adds nw to the "warnings" field.
+func (m *NocoDBRestoreMutation) AppendWarnings(nw []nocodb.RestoreWarning) {
+	m.appendwarnings = append(m.appendwarnings, nw...)
+}
+
+// AppendedWarnings returns the list of values that were appended to the "warnings" field in this mutation.
+func (m *NocoDBRestoreMutation) AppendedWarnings() ([]nocodb.RestoreWarning, bool) {
+	if len(m.appendwarnings) == 0 {
+		return nil, false
+	}
+	return m.appendwarnings, true
+}
+
+// ClearWarnings clears the value of the "warnings" field.
+func (m *NocoDBRestoreMutation) ClearWarnings() {
+	m.warnings = nil
+	m.appendwarnings = nil
+	m.clearedFields[nocodbrestore.FieldWarnings] = struct{}{}
+}
+
+// WarningsCleared returns if the "warnings" field was cleared in this mutation.
+func (m *NocoDBRestoreMutation) WarningsCleared() bool {
+	_, ok := m.clearedFields[nocodbrestore.FieldWarnings]
+	return ok
+}
+
+// ResetWarnings resets all changes to the "warnings" field.
+func (m *NocoDBRestoreMutation) ResetWarnings() {
+	m.warnings = nil
+	m.appendwarnings = nil
+	delete(m.clearedFields, nocodbrestore.FieldWarnings)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *NocoDBRestoreMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *NocoDBRestoreMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the NocoDBRestore entity.
+// If the NocoDBRestore object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBRestoreMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *NocoDBRestoreMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetStartedAt sets the "started_at" field.
+func (m *NocoDBRestoreMutation) SetStartedAt(t time.Time) {
+	m.started_at = &t
+}
+
+// StartedAt returns the value of the "started_at" field in the mutation.
+func (m *NocoDBRestoreMutation) StartedAt() (r time.Time, exists bool) {
+	v := m.started_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStartedAt returns the old "started_at" field's value of the NocoDBRestore entity.
+// If the NocoDBRestore object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBRestoreMutation) OldStartedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStartedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStartedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStartedAt: %w", err)
+	}
+	return oldValue.StartedAt, nil
+}
+
+// ClearStartedAt clears the value of the "started_at" field.
+func (m *NocoDBRestoreMutation) ClearStartedAt() {
+	m.started_at = nil
+	m.clearedFields[nocodbrestore.FieldStartedAt] = struct{}{}
+}
+
+// StartedAtCleared returns if the "started_at" field was cleared in this mutation.
+func (m *NocoDBRestoreMutation) StartedAtCleared() bool {
+	_, ok := m.clearedFields[nocodbrestore.FieldStartedAt]
+	return ok
+}
+
+// ResetStartedAt resets all changes to the "started_at" field.
+func (m *NocoDBRestoreMutation) ResetStartedAt() {
+	m.started_at = nil
+	delete(m.clearedFields, nocodbrestore.FieldStartedAt)
+}
+
+// SetFinishedAt sets the "finished_at" field.
+func (m *NocoDBRestoreMutation) SetFinishedAt(t time.Time) {
+	m.finished_at = &t
+}
+
+// FinishedAt returns the value of the "finished_at" field in the mutation.
+func (m *NocoDBRestoreMutation) FinishedAt() (r time.Time, exists bool) {
+	v := m.finished_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFinishedAt returns the old "finished_at" field's value of the NocoDBRestore entity.
+// If the NocoDBRestore object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBRestoreMutation) OldFinishedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFinishedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFinishedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFinishedAt: %w", err)
+	}
+	return oldValue.FinishedAt, nil
+}
+
+// ClearFinishedAt clears the value of the "finished_at" field.
+func (m *NocoDBRestoreMutation) ClearFinishedAt() {
+	m.finished_at = nil
+	m.clearedFields[nocodbrestore.FieldFinishedAt] = struct{}{}
+}
+
+// FinishedAtCleared returns if the "finished_at" field was cleared in this mutation.
+func (m *NocoDBRestoreMutation) FinishedAtCleared() bool {
+	_, ok := m.clearedFields[nocodbrestore.FieldFinishedAt]
+	return ok
+}
+
+// ResetFinishedAt resets all changes to the "finished_at" field.
+func (m *NocoDBRestoreMutation) ResetFinishedAt() {
+	m.finished_at = nil
+	delete(m.clearedFields, nocodbrestore.FieldFinishedAt)
+}
+
+// Where appends a list predicates to the NocoDBRestoreMutation builder.
+func (m *NocoDBRestoreMutation) Where(ps ...predicate.NocoDBRestore) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the NocoDBRestoreMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *NocoDBRestoreMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.NocoDBRestore, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *NocoDBRestoreMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *NocoDBRestoreMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (NocoDBRestore).
+func (m *NocoDBRestoreMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *NocoDBRestoreMutation) Fields() []string {
+	fields := make([]string, 0, 18)
+	if m.user_id != nil {
+		fields = append(fields, nocodbrestore.FieldUserID)
+	}
+	if m.snapshot_id != nil {
+		fields = append(fields, nocodbrestore.FieldSnapshotID)
+	}
+	if m.source_connection_id != nil {
+		fields = append(fields, nocodbrestore.FieldSourceConnectionID)
+	}
+	if m.source_base_id != nil {
+		fields = append(fields, nocodbrestore.FieldSourceBaseID)
+	}
+	if m.source_base_title != nil {
+		fields = append(fields, nocodbrestore.FieldSourceBaseTitle)
+	}
+	if m.target_connection_id != nil {
+		fields = append(fields, nocodbrestore.FieldTargetConnectionID)
+	}
+	if m.target_base_id != nil {
+		fields = append(fields, nocodbrestore.FieldTargetBaseID)
+	}
+	if m.target_base_title != nil {
+		fields = append(fields, nocodbrestore.FieldTargetBaseTitle)
+	}
+	if m.status != nil {
+		fields = append(fields, nocodbrestore.FieldStatus)
+	}
+	if m.error != nil {
+		fields = append(fields, nocodbrestore.FieldError)
+	}
+	if m.progress != nil {
+		fields = append(fields, nocodbrestore.FieldProgress)
+	}
+	if m.table_count != nil {
+		fields = append(fields, nocodbrestore.FieldTableCount)
+	}
+	if m.record_count != nil {
+		fields = append(fields, nocodbrestore.FieldRecordCount)
+	}
+	if m.link_count != nil {
+		fields = append(fields, nocodbrestore.FieldLinkCount)
+	}
+	if m.warnings != nil {
+		fields = append(fields, nocodbrestore.FieldWarnings)
+	}
+	if m.created_at != nil {
+		fields = append(fields, nocodbrestore.FieldCreatedAt)
+	}
+	if m.started_at != nil {
+		fields = append(fields, nocodbrestore.FieldStartedAt)
+	}
+	if m.finished_at != nil {
+		fields = append(fields, nocodbrestore.FieldFinishedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *NocoDBRestoreMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case nocodbrestore.FieldUserID:
+		return m.UserID()
+	case nocodbrestore.FieldSnapshotID:
+		return m.SnapshotID()
+	case nocodbrestore.FieldSourceConnectionID:
+		return m.SourceConnectionID()
+	case nocodbrestore.FieldSourceBaseID:
+		return m.SourceBaseID()
+	case nocodbrestore.FieldSourceBaseTitle:
+		return m.SourceBaseTitle()
+	case nocodbrestore.FieldTargetConnectionID:
+		return m.TargetConnectionID()
+	case nocodbrestore.FieldTargetBaseID:
+		return m.TargetBaseID()
+	case nocodbrestore.FieldTargetBaseTitle:
+		return m.TargetBaseTitle()
+	case nocodbrestore.FieldStatus:
+		return m.Status()
+	case nocodbrestore.FieldError:
+		return m.Error()
+	case nocodbrestore.FieldProgress:
+		return m.Progress()
+	case nocodbrestore.FieldTableCount:
+		return m.TableCount()
+	case nocodbrestore.FieldRecordCount:
+		return m.RecordCount()
+	case nocodbrestore.FieldLinkCount:
+		return m.LinkCount()
+	case nocodbrestore.FieldWarnings:
+		return m.Warnings()
+	case nocodbrestore.FieldCreatedAt:
+		return m.CreatedAt()
+	case nocodbrestore.FieldStartedAt:
+		return m.StartedAt()
+	case nocodbrestore.FieldFinishedAt:
+		return m.FinishedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *NocoDBRestoreMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case nocodbrestore.FieldUserID:
+		return m.OldUserID(ctx)
+	case nocodbrestore.FieldSnapshotID:
+		return m.OldSnapshotID(ctx)
+	case nocodbrestore.FieldSourceConnectionID:
+		return m.OldSourceConnectionID(ctx)
+	case nocodbrestore.FieldSourceBaseID:
+		return m.OldSourceBaseID(ctx)
+	case nocodbrestore.FieldSourceBaseTitle:
+		return m.OldSourceBaseTitle(ctx)
+	case nocodbrestore.FieldTargetConnectionID:
+		return m.OldTargetConnectionID(ctx)
+	case nocodbrestore.FieldTargetBaseID:
+		return m.OldTargetBaseID(ctx)
+	case nocodbrestore.FieldTargetBaseTitle:
+		return m.OldTargetBaseTitle(ctx)
+	case nocodbrestore.FieldStatus:
+		return m.OldStatus(ctx)
+	case nocodbrestore.FieldError:
+		return m.OldError(ctx)
+	case nocodbrestore.FieldProgress:
+		return m.OldProgress(ctx)
+	case nocodbrestore.FieldTableCount:
+		return m.OldTableCount(ctx)
+	case nocodbrestore.FieldRecordCount:
+		return m.OldRecordCount(ctx)
+	case nocodbrestore.FieldLinkCount:
+		return m.OldLinkCount(ctx)
+	case nocodbrestore.FieldWarnings:
+		return m.OldWarnings(ctx)
+	case nocodbrestore.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case nocodbrestore.FieldStartedAt:
+		return m.OldStartedAt(ctx)
+	case nocodbrestore.FieldFinishedAt:
+		return m.OldFinishedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown NocoDBRestore field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NocoDBRestoreMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case nocodbrestore.FieldUserID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case nocodbrestore.FieldSnapshotID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSnapshotID(v)
+		return nil
+	case nocodbrestore.FieldSourceConnectionID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSourceConnectionID(v)
+		return nil
+	case nocodbrestore.FieldSourceBaseID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSourceBaseID(v)
+		return nil
+	case nocodbrestore.FieldSourceBaseTitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSourceBaseTitle(v)
+		return nil
+	case nocodbrestore.FieldTargetConnectionID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTargetConnectionID(v)
+		return nil
+	case nocodbrestore.FieldTargetBaseID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTargetBaseID(v)
+		return nil
+	case nocodbrestore.FieldTargetBaseTitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTargetBaseTitle(v)
+		return nil
+	case nocodbrestore.FieldStatus:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case nocodbrestore.FieldError:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetError(v)
+		return nil
+	case nocodbrestore.FieldProgress:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProgress(v)
+		return nil
+	case nocodbrestore.FieldTableCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTableCount(v)
+		return nil
+	case nocodbrestore.FieldRecordCount:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRecordCount(v)
+		return nil
+	case nocodbrestore.FieldLinkCount:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLinkCount(v)
+		return nil
+	case nocodbrestore.FieldWarnings:
+		v, ok := value.([]nocodb.RestoreWarning)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWarnings(v)
+		return nil
+	case nocodbrestore.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case nocodbrestore.FieldStartedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStartedAt(v)
+		return nil
+	case nocodbrestore.FieldFinishedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFinishedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown NocoDBRestore field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *NocoDBRestoreMutation) AddedFields() []string {
+	var fields []string
+	if m.addtable_count != nil {
+		fields = append(fields, nocodbrestore.FieldTableCount)
+	}
+	if m.addrecord_count != nil {
+		fields = append(fields, nocodbrestore.FieldRecordCount)
+	}
+	if m.addlink_count != nil {
+		fields = append(fields, nocodbrestore.FieldLinkCount)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *NocoDBRestoreMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case nocodbrestore.FieldTableCount:
+		return m.AddedTableCount()
+	case nocodbrestore.FieldRecordCount:
+		return m.AddedRecordCount()
+	case nocodbrestore.FieldLinkCount:
+		return m.AddedLinkCount()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NocoDBRestoreMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case nocodbrestore.FieldTableCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTableCount(v)
+		return nil
+	case nocodbrestore.FieldRecordCount:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRecordCount(v)
+		return nil
+	case nocodbrestore.FieldLinkCount:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLinkCount(v)
+		return nil
+	}
+	return fmt.Errorf("unknown NocoDBRestore numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *NocoDBRestoreMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(nocodbrestore.FieldWarnings) {
+		fields = append(fields, nocodbrestore.FieldWarnings)
+	}
+	if m.FieldCleared(nocodbrestore.FieldStartedAt) {
+		fields = append(fields, nocodbrestore.FieldStartedAt)
+	}
+	if m.FieldCleared(nocodbrestore.FieldFinishedAt) {
+		fields = append(fields, nocodbrestore.FieldFinishedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *NocoDBRestoreMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *NocoDBRestoreMutation) ClearField(name string) error {
+	switch name {
+	case nocodbrestore.FieldWarnings:
+		m.ClearWarnings()
+		return nil
+	case nocodbrestore.FieldStartedAt:
+		m.ClearStartedAt()
+		return nil
+	case nocodbrestore.FieldFinishedAt:
+		m.ClearFinishedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown NocoDBRestore nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *NocoDBRestoreMutation) ResetField(name string) error {
+	switch name {
+	case nocodbrestore.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case nocodbrestore.FieldSnapshotID:
+		m.ResetSnapshotID()
+		return nil
+	case nocodbrestore.FieldSourceConnectionID:
+		m.ResetSourceConnectionID()
+		return nil
+	case nocodbrestore.FieldSourceBaseID:
+		m.ResetSourceBaseID()
+		return nil
+	case nocodbrestore.FieldSourceBaseTitle:
+		m.ResetSourceBaseTitle()
+		return nil
+	case nocodbrestore.FieldTargetConnectionID:
+		m.ResetTargetConnectionID()
+		return nil
+	case nocodbrestore.FieldTargetBaseID:
+		m.ResetTargetBaseID()
+		return nil
+	case nocodbrestore.FieldTargetBaseTitle:
+		m.ResetTargetBaseTitle()
+		return nil
+	case nocodbrestore.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case nocodbrestore.FieldError:
+		m.ResetError()
+		return nil
+	case nocodbrestore.FieldProgress:
+		m.ResetProgress()
+		return nil
+	case nocodbrestore.FieldTableCount:
+		m.ResetTableCount()
+		return nil
+	case nocodbrestore.FieldRecordCount:
+		m.ResetRecordCount()
+		return nil
+	case nocodbrestore.FieldLinkCount:
+		m.ResetLinkCount()
+		return nil
+	case nocodbrestore.FieldWarnings:
+		m.ResetWarnings()
+		return nil
+	case nocodbrestore.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case nocodbrestore.FieldStartedAt:
+		m.ResetStartedAt()
+		return nil
+	case nocodbrestore.FieldFinishedAt:
+		m.ResetFinishedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown NocoDBRestore field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *NocoDBRestoreMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *NocoDBRestoreMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *NocoDBRestoreMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *NocoDBRestoreMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *NocoDBRestoreMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *NocoDBRestoreMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *NocoDBRestoreMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown NocoDBRestore unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *NocoDBRestoreMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown NocoDBRestore edge %s", name)
 }
 
 // NocoDBSnapshotMutation represents an operation that mutates the NocoDBSnapshot nodes in the graph.

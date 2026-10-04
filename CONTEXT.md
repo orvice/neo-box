@@ -42,7 +42,20 @@ one place.
   and retention N. After a scheduled Snapshot succeeds, scheduled Snapshots
   beyond the newest N are deleted. Manual Snapshots are never pruned.
 
-A Base has at most one Snapshot pending or running at a time.
+- **Restore** — a succeeded Snapshot rebuilt into a **new** Base on one of
+  the user's NocoDB Connections (by default the Snapshot's own). A Restore
+  never changes an existing Base. It brings back tables, fields (links,
+  lookups, rollups and formulas included), records and links, but not
+  attachments, views, original record IDs, created/modified time and by,
+  AutoNumber values, or User values for people who aren't members of the
+  new Base. A Restore that fails partway leaves its partial Base in NocoDB
+  and records its ID; trying again builds another new Base.
+- **Restore warning** — one kind of loss in a Restore, grouped by table and
+  field with a count, e.g. "Orders / Files: 12 attachments not restored".
+  Warnings don't fail a Restore.
+
+A Base has at most one Snapshot pending or running at a time. A Snapshot
+can't be deleted while a Restore of it is pending or running.
 
 ### Wasabi
 
@@ -67,5 +80,4 @@ A Base has at most one Snapshot pending or running at a time.
 
 ## Planned (not yet modeled)
 
-- **Restore** — rebuild a Snapshot into a new Base (never overwrite).
 - More **Providers** beyond NocoDB and Wasabi.

@@ -36,7 +36,7 @@ func (p provider) Verify(ctx context.Context, config, secret json.RawMessage) er
 	if err := json.Unmarshal(secret, &sec); err != nil {
 		return fmt.Errorf("decode secret: %w", err)
 	}
-	api, err := p.m.newClient(cfg, sec.APIToken)
+	api, err := p.m.newClient(cfg, sec.APIToken, nil)
 	if err != nil {
 		return err
 	}
@@ -46,8 +46,9 @@ func (p provider) Verify(ctx context.Context, config, secret json.RawMessage) er
 	return nil
 }
 
-// Cleanup deletes the connection's snapshots (content included) and Backup
-// Policies. It refuses while a snapshot is pending or running.
+// Cleanup deletes the connection's snapshots (content included), Backup
+// Policies, and the restores it is the source or target of. It refuses
+// while a snapshot or such a restore is pending or running.
 func (p provider) Cleanup(ctx context.Context, c *connrepo.Connection) error {
 	m := p.m
 	snaps, err := m.repo.ListSnapshots(ctx, repo.SnapshotFilter{UserID: c.UserID, ConnectionID: c.ID})
@@ -59,12 +60,22 @@ func (p provider) Cleanup(ctx context.Context, c *connrepo.Connection) error {
 			return fmt.Errorf("%w: a snapshot is in progress; try again when it finishes", connection.ErrBusy)
 		}
 	}
+	active, err := m.repo.ListRestores(ctx, repo.RestoreFilter{ConnectionID: c.ID, ActiveOnly: true, Limit: 1})
+	if err != nil {
+		return err
+	}
+	if len(active) > 0 {
+		return fmt.Errorf("%w: a restore is in progress; try again when it finishes", connection.ErrBusy)
+	}
 	for _, snap := range snaps {
 		if err := m.DeleteSnapshot(ctx, snap); err != nil {
 			return err
 		}
 	}
 	if err := m.repo.DeletePoliciesForConnection(ctx, c.ID); err != nil {
+		return err
+	}
+	if err := m.repo.DeleteRestoresForConnection(ctx, c.ID); err != nil {
 		return err
 	}
 	if err := m.ReloadSchedules(ctx); err != nil {

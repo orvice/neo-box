@@ -59,6 +59,10 @@ func WithRateLimit(rps float64) Option {
 	}
 }
 
+// WithLimiter shares an existing rate limiter, so several clients for the
+// same instance stay within one request rate together.
+func WithLimiter(l *rate.Limiter) Option { return func(cl *Client) { cl.limiter = l } }
+
 // New builds a client. baseURL is the instance root, e.g.
 // "https://nocodb.example.com" (a trailing slash or /dashboard suffix is
 // tolerated).

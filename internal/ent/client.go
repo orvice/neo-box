@@ -16,6 +16,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"go.orx.me/apps/neo-box/internal/ent/connection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
+	"go.orx.me/apps/neo-box/internal/ent/nocodbrestore"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbsnapshot"
 	"go.orx.me/apps/neo-box/internal/ent/oauthstate"
 	"go.orx.me/apps/neo-box/internal/ent/session"
@@ -33,6 +34,8 @@ type Client struct {
 	Connection *ConnectionClient
 	// NocoDBBackupPolicy is the client for interacting with the NocoDBBackupPolicy builders.
 	NocoDBBackupPolicy *NocoDBBackupPolicyClient
+	// NocoDBRestore is the client for interacting with the NocoDBRestore builders.
+	NocoDBRestore *NocoDBRestoreClient
 	// NocoDBSnapshot is the client for interacting with the NocoDBSnapshot builders.
 	NocoDBSnapshot *NocoDBSnapshotClient
 	// OAuthState is the client for interacting with the OAuthState builders.
@@ -58,6 +61,7 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Connection = NewConnectionClient(c.config)
 	c.NocoDBBackupPolicy = NewNocoDBBackupPolicyClient(c.config)
+	c.NocoDBRestore = NewNocoDBRestoreClient(c.config)
 	c.NocoDBSnapshot = NewNocoDBSnapshotClient(c.config)
 	c.OAuthState = NewOAuthStateClient(c.config)
 	c.Session = NewSessionClient(c.config)
@@ -158,6 +162,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:             cfg,
 		Connection:         NewConnectionClient(cfg),
 		NocoDBBackupPolicy: NewNocoDBBackupPolicyClient(cfg),
+		NocoDBRestore:      NewNocoDBRestoreClient(cfg),
 		NocoDBSnapshot:     NewNocoDBSnapshotClient(cfg),
 		OAuthState:         NewOAuthStateClient(cfg),
 		Session:            NewSessionClient(cfg),
@@ -185,6 +190,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:             cfg,
 		Connection:         NewConnectionClient(cfg),
 		NocoDBBackupPolicy: NewNocoDBBackupPolicyClient(cfg),
+		NocoDBRestore:      NewNocoDBRestoreClient(cfg),
 		NocoDBSnapshot:     NewNocoDBSnapshotClient(cfg),
 		OAuthState:         NewOAuthStateClient(cfg),
 		Session:            NewSessionClient(cfg),
@@ -220,8 +226,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Connection, c.NocoDBBackupPolicy, c.NocoDBSnapshot, c.OAuthState, c.Session,
-		c.User, c.WasabiDailyUsage, c.WasabiSyncState,
+		c.Connection, c.NocoDBBackupPolicy, c.NocoDBRestore, c.NocoDBSnapshot,
+		c.OAuthState, c.Session, c.User, c.WasabiDailyUsage, c.WasabiSyncState,
 	} {
 		n.Use(hooks...)
 	}
@@ -231,8 +237,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Connection, c.NocoDBBackupPolicy, c.NocoDBSnapshot, c.OAuthState, c.Session,
-		c.User, c.WasabiDailyUsage, c.WasabiSyncState,
+		c.Connection, c.NocoDBBackupPolicy, c.NocoDBRestore, c.NocoDBSnapshot,
+		c.OAuthState, c.Session, c.User, c.WasabiDailyUsage, c.WasabiSyncState,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -245,6 +251,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Connection.mutate(ctx, m)
 	case *NocoDBBackupPolicyMutation:
 		return c.NocoDBBackupPolicy.mutate(ctx, m)
+	case *NocoDBRestoreMutation:
+		return c.NocoDBRestore.mutate(ctx, m)
 	case *NocoDBSnapshotMutation:
 		return c.NocoDBSnapshot.mutate(ctx, m)
 	case *OAuthStateMutation:
@@ -525,6 +533,139 @@ func (c *NocoDBBackupPolicyClient) mutate(ctx context.Context, m *NocoDBBackupPo
 		return (&NocoDBBackupPolicyDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown NocoDBBackupPolicy mutation op: %q", m.Op())
+	}
+}
+
+// NocoDBRestoreClient is a client for the NocoDBRestore schema.
+type NocoDBRestoreClient struct {
+	config
+}
+
+// NewNocoDBRestoreClient returns a client for the NocoDBRestore from the given config.
+func NewNocoDBRestoreClient(c config) *NocoDBRestoreClient {
+	return &NocoDBRestoreClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `nocodbrestore.Hooks(f(g(h())))`.
+func (c *NocoDBRestoreClient) Use(hooks ...Hook) {
+	c.hooks.NocoDBRestore = append(c.hooks.NocoDBRestore, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `nocodbrestore.Intercept(f(g(h())))`.
+func (c *NocoDBRestoreClient) Intercept(interceptors ...Interceptor) {
+	c.inters.NocoDBRestore = append(c.inters.NocoDBRestore, interceptors...)
+}
+
+// Create returns a builder for creating a NocoDBRestore entity.
+func (c *NocoDBRestoreClient) Create() *NocoDBRestoreCreate {
+	mutation := newNocoDBRestoreMutation(c.config, OpCreate)
+	return &NocoDBRestoreCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of NocoDBRestore entities.
+func (c *NocoDBRestoreClient) CreateBulk(builders ...*NocoDBRestoreCreate) *NocoDBRestoreCreateBulk {
+	return &NocoDBRestoreCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *NocoDBRestoreClient) MapCreateBulk(slice any, setFunc func(*NocoDBRestoreCreate, int)) *NocoDBRestoreCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &NocoDBRestoreCreateBulk{err: fmt.Errorf("calling to NocoDBRestoreClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*NocoDBRestoreCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &NocoDBRestoreCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for NocoDBRestore.
+func (c *NocoDBRestoreClient) Update() *NocoDBRestoreUpdate {
+	mutation := newNocoDBRestoreMutation(c.config, OpUpdate)
+	return &NocoDBRestoreUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *NocoDBRestoreClient) UpdateOne(_m *NocoDBRestore) *NocoDBRestoreUpdateOne {
+	mutation := newNocoDBRestoreMutation(c.config, OpUpdateOne, withNocoDBRestore(_m))
+	return &NocoDBRestoreUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *NocoDBRestoreClient) UpdateOneID(id string) *NocoDBRestoreUpdateOne {
+	mutation := newNocoDBRestoreMutation(c.config, OpUpdateOne, withNocoDBRestoreID(id))
+	return &NocoDBRestoreUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for NocoDBRestore.
+func (c *NocoDBRestoreClient) Delete() *NocoDBRestoreDelete {
+	mutation := newNocoDBRestoreMutation(c.config, OpDelete)
+	return &NocoDBRestoreDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *NocoDBRestoreClient) DeleteOne(_m *NocoDBRestore) *NocoDBRestoreDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *NocoDBRestoreClient) DeleteOneID(id string) *NocoDBRestoreDeleteOne {
+	builder := c.Delete().Where(nocodbrestore.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &NocoDBRestoreDeleteOne{builder}
+}
+
+// Query returns a query builder for NocoDBRestore.
+func (c *NocoDBRestoreClient) Query() *NocoDBRestoreQuery {
+	return &NocoDBRestoreQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeNocoDBRestore},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a NocoDBRestore entity by its id.
+func (c *NocoDBRestoreClient) Get(ctx context.Context, id string) (*NocoDBRestore, error) {
+	return c.Query().Where(nocodbrestore.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *NocoDBRestoreClient) GetX(ctx context.Context, id string) *NocoDBRestore {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *NocoDBRestoreClient) Hooks() []Hook {
+	return c.hooks.NocoDBRestore
+}
+
+// Interceptors returns the client interceptors.
+func (c *NocoDBRestoreClient) Interceptors() []Interceptor {
+	return c.inters.NocoDBRestore
+}
+
+func (c *NocoDBRestoreClient) mutate(ctx context.Context, m *NocoDBRestoreMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&NocoDBRestoreCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&NocoDBRestoreUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&NocoDBRestoreUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&NocoDBRestoreDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown NocoDBRestore mutation op: %q", m.Op())
 	}
 }
 
@@ -1329,11 +1470,11 @@ func (c *WasabiSyncStateClient) mutate(ctx context.Context, m *WasabiSyncStateMu
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Connection, NocoDBBackupPolicy, NocoDBSnapshot, OAuthState, Session, User,
-		WasabiDailyUsage, WasabiSyncState []ent.Hook
+		Connection, NocoDBBackupPolicy, NocoDBRestore, NocoDBSnapshot, OAuthState,
+		Session, User, WasabiDailyUsage, WasabiSyncState []ent.Hook
 	}
 	inters struct {
-		Connection, NocoDBBackupPolicy, NocoDBSnapshot, OAuthState, Session, User,
-		WasabiDailyUsage, WasabiSyncState []ent.Interceptor
+		Connection, NocoDBBackupPolicy, NocoDBRestore, NocoDBSnapshot, OAuthState,
+		Session, User, WasabiDailyUsage, WasabiSyncState []ent.Interceptor
 	}
 )

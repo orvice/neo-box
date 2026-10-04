@@ -9,9 +9,10 @@ import "validate/validate.proto";
 option go_package = "go.orx.me/apps/neo-box/pkg/proto/neobox/v1;neoboxv1";
 
 // NocoDBService manages point-in-time Snapshots of the Bases (schema +
-// records + links) of NocoDB connections. Connections themselves are managed
-// by ConnectionService; connection_id here must name a NocoDB connection.
-// Every resource is owned by the calling user.
+// records + links) of NocoDB connections, and Restores of them into new
+// Bases. Connections themselves are managed by ConnectionService;
+// connection_id here must name a NocoDB connection. Every resource is owned
+// by the calling user.
 service NocoDBService {
   // ListNocoDBBases lists the Bases visible to the connection's token, each
   // joined with its backup policy and latest snapshot.
@@ -30,6 +31,15 @@ service NocoDBService {
   // ListSnapshotRecords pages through the records of one table inside a
   // succeeded snapshot.
   rpc ListSnapshotRecords(ListSnapshotRecordsRequest) returns (ListSnapshotRecordsResponse);
+
+  // Restores
+  // RestoreSnapshot queues a restore of a succeeded snapshot into a new Base
+  // and returns immediately with a PENDING restore; poll GetRestore for
+  // progress. A restore never changes an existing Base.
+  rpc RestoreSnapshot(RestoreSnapshotRequest) returns (RestoreSnapshotResponse);
+  rpc GetRestore(GetRestoreRequest) returns (GetRestoreResponse);
+  // ListRestores lists restores, newest first.
+  rpc ListRestores(ListRestoresRequest) returns (ListRestoresResponse);
 }
 
 // BackupPolicy controls scheduled snapshots of one Base.
@@ -171,4 +181,85 @@ message ListSnapshotRecordsResponse {
   // Each record is {"id": ..., "fields": {...}} as returned by NocoDB.
   repeated google.protobuf.Struct records = 2;
   int64 total = 3;
+}
+
+enum RestoreStatus {
+  RESTORE_STATUS_UNSPECIFIED = 0;
+  RESTORE_STATUS_PENDING = 1;
+  RESTORE_STATUS_RUNNING = 2;
+  RESTORE_STATUS_SUCCEEDED = 3;
+  RESTORE_STATUS_FAILED = 4;
+}
+
+// RestoreWarning groups one kind of loss in one table (and field), e.g.
+// code "attachments_skipped" with the number of attachments not restored.
+message RestoreWarning {
+  // One of field_skipped, attachments_skipped, user_values_dropped,
+  // records_failed, links_failed, display_field_not_set, relation_guessed.
+  string code = 1;
+  string table = 2;
+  string field = 3;
+  int64 count = 4;
+  string message = 5;
+}
+
+// Restore is one rebuild of a Snapshot into a new Base. The source fields
+// are copied from the snapshot, so they stay readable after it is deleted.
+message Restore {
+  string id = 1;
+  string snapshot_id = 2;
+  string source_connection_id = 3;
+  string source_base_id = 4;
+  string source_base_title = 5;
+  string target_connection_id = 6;
+  // Set as soon as the new Base exists; a failed restore keeps its
+  // partial Base.
+  string target_base_id = 7;
+  string target_base_title = 8;
+  RestoreStatus status = 9;
+  string error = 10;
+  // Human-readable progress while RUNNING.
+  string progress = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp started_at = 13;
+  google.protobuf.Timestamp finished_at = 14;
+  int32 table_count = 15;
+  int64 record_count = 16;
+  int64 link_count = 17;
+  repeated RestoreWarning warnings = 18;
+}
+
+message RestoreSnapshotRequest {
+  string snapshot_id = 1 [(validate.rules).string.min_len = 1];
+  // The NocoDB connection to create the Base on; empty means the
+  // snapshot's own connection.
+  string target_connection_id = 2;
+  // Title of the new Base; empty means
+  // "<base title> (restored from <snapshot date, UTC>)". NocoDB allows
+  // letters, numbers, spaces, and - _ . ( ) & , ' and at most 150
+  // characters.
+  string title = 3;
+}
+
+message RestoreSnapshotResponse {
+  Restore restore = 1;
+}
+
+message GetRestoreRequest {
+  string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetRestoreResponse {
+  Restore restore = 1;
+}
+
+message ListRestoresRequest {
+  // Optional filters. connection_id matches the source or the target.
+  string snapshot_id = 1;
+  string connection_id = 2;
+  int32 limit = 3;
+}
+
+message ListRestoresResponse {
+  repeated Restore restores = 1;
 }

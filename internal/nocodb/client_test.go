@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -213,5 +214,27 @@ func TestInsertRecordsAndLinkRecordsBodies(t *testing.T) {
 	}
 	if err := c.LinkRecords(ctx, "p1", "m1", "c1", "7", []json.RawMessage{json.RawMessage("3"), json.RawMessage(`"k4"`)}); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestBaseTitles(t *testing.T) {
+	for title, want := range map[string]bool{
+		"CRM (restored from 2026-10-01)": true,
+		"测试 Base é, A&B's_v1.2-x":        true,
+		"a:b":                            false,
+		"a/b":                            false,
+		"   ":                            false,
+		strings.Repeat("x", 150):         true,
+		strings.Repeat("x", 151):         false,
+	} {
+		if got := ValidBaseTitle(title); got != want {
+			t.Errorf("ValidBaseTitle(%q) = %v, want %v", title, got, want)
+		}
+	}
+	if got := SanitizeBaseTitle("  Q3: plan /  #1 ", 150); got != "Q3 plan 1" {
+		t.Errorf("SanitizeBaseTitle = %q", got)
+	}
+	if got := SanitizeBaseTitle("abc def", 5); got != "abc d" {
+		t.Errorf("SanitizeBaseTitle cut = %q", got)
 	}
 }

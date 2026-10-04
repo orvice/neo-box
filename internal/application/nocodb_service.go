@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 	"sync"
 	"time"
@@ -26,6 +27,8 @@ import (
 const (
 	defaultSnapshotListLimit = 50
 	maxSnapshotListLimit     = 500
+	defaultRestoreListLimit  = 50
+	maxRestoreListLimit      = 500
 	defaultRecordPageSize    = 50
 	maxRecordPageSize        = 500
 	tableCacheSize           = 4
@@ -224,6 +227,9 @@ func (s *NocoDBServiceServer) DeleteSnapshot(ctx context.Context, req *connect.R
 		if errors.Is(err, backup.ErrSnapshotInProgress) {
 			return nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("snapshot is still in progress"))
 		}
+		if errors.Is(err, backup.ErrRestoreInProgress) {
+			return nil, connect.NewError(connect.CodeFailedPrecondition, err)
+		}
 		return nil, connectx.InternalWith(err)
 	}
 	s.cache.dropSnapshot(snap.ID)
@@ -284,6 +290,95 @@ func (s *NocoDBServiceServer) ListSnapshotRecords(ctx context.Context, req *conn
 		resp.Records = append(resp.Records, st)
 	}
 	return connect.NewResponse(resp), nil
+}
+
+// --- restores ---
+
+func (s *NocoDBServiceServer) RestoreSnapshot(ctx context.Context, req *connect.Request[neoboxv1.RestoreSnapshotRequest]) (*connect.Response[neoboxv1.RestoreSnapshotResponse], error) {
+	userID, r, m, err := s.deps(ctx)
+	if err != nil {
+		return nil, err
+	}
+	snapID := strings.TrimSpace(req.Msg.GetSnapshotId())
+	if snapID == "" {
+		return nil, connectx.RequiredArgument("snapshot_id")
+	}
+	snap, err := r.GetSnapshot(ctx, userID, snapID)
+	if err != nil {
+		return nil, mapRepoErr(err, "snapshot")
+	}
+	if snap.Status != repo.StatusSucceeded {
+		return nil, connect.NewError(connect.CodeFailedPrecondition, backup.ErrNotRestorable)
+	}
+	targetID := strings.TrimSpace(req.Msg.GetTargetConnectionId())
+	if targetID == "" {
+		targetID = snap.ConnectionID
+	}
+	target, err := s.loadConnection(ctx, userID, targetID)
+	if err != nil {
+		return nil, err
+	}
+	title := strings.TrimSpace(req.Msg.GetTitle())
+	if title == "" {
+		title = defaultRestoreTitle(snap)
+	} else if !nocodb.ValidBaseTitle(title) {
+		return nil, connectx.InvalidArgument("title", fmt.Sprintf(
+			"may only contain letters, numbers, spaces, and - _ . ( ) & , ' and be at most %d characters", nocodb.BaseTitleMaxLen))
+	}
+	restore, err := m.EnqueueRestore(ctx, snap, target, title)
+	if err != nil {
+		if errors.Is(err, backup.ErrQueueFull) {
+			return nil, connect.NewError(connect.CodeResourceExhausted, err)
+		}
+		return nil, connectx.InternalWith(err)
+	}
+	return connect.NewResponse(&neoboxv1.RestoreSnapshotResponse{Restore: restoreToProto(restore)}), nil
+}
+
+// defaultRestoreTitle names a restored Base after its source and the
+// snapshot's date (UTC), within NocoDB's rules for Base names.
+func defaultRestoreTitle(snap *repo.Snapshot) string {
+	suffix := " (restored from " + snap.CreatedAt.UTC().Format("2006-01-02") + ")"
+	title := nocodb.SanitizeBaseTitle(snap.BaseTitle, nocodb.BaseTitleMaxLen-len(suffix))
+	if title == "" {
+		title = snap.BaseID
+	}
+	return title + suffix
+}
+
+func (s *NocoDBServiceServer) GetRestore(ctx context.Context, req *connect.Request[neoboxv1.GetRestoreRequest]) (*connect.Response[neoboxv1.GetRestoreResponse], error) {
+	userID, r, _, err := s.deps(ctx)
+	if err != nil {
+		return nil, err
+	}
+	restore, err := r.GetRestore(ctx, userID, req.Msg.GetId())
+	if err != nil {
+		return nil, mapRepoErr(err, "restore")
+	}
+	return connect.NewResponse(&neoboxv1.GetRestoreResponse{Restore: restoreToProto(restore)}), nil
+}
+
+func (s *NocoDBServiceServer) ListRestores(ctx context.Context, req *connect.Request[neoboxv1.ListRestoresRequest]) (*connect.Response[neoboxv1.ListRestoresResponse], error) {
+	userID, r, _, err := s.deps(ctx)
+	if err != nil {
+		return nil, err
+	}
+	limit := int(req.Msg.GetLimit())
+	if limit <= 0 {
+		limit = defaultRestoreListLimit
+	}
+	limit = min(limit, maxRestoreListLimit)
+	restores, err := r.ListRestores(ctx, repo.RestoreFilter{
+		UserID: userID, SnapshotID: req.Msg.GetSnapshotId(), ConnectionID: req.Msg.GetConnectionId(), Limit: limit,
+	})
+	if err != nil {
+		return nil, connectx.InternalWith(err)
+	}
+	out := make([]*neoboxv1.Restore, 0, len(restores))
+	for _, restore := range restores {
+		out = append(out, restoreToProto(restore))
+	}
+	return connect.NewResponse(&neoboxv1.ListRestoresResponse{Restores: out}), nil
 }
 
 // --- helpers ---
@@ -384,6 +479,43 @@ func snapshotTriggerToProto(t repo.SnapshotTrigger) neoboxv1.SnapshotTrigger {
 		return neoboxv1.SnapshotTrigger_SNAPSHOT_TRIGGER_SCHEDULED
 	}
 	return neoboxv1.SnapshotTrigger_SNAPSHOT_TRIGGER_UNSPECIFIED
+}
+
+func restoreToProto(r *repo.Restore) *neoboxv1.Restore {
+	out := &neoboxv1.Restore{
+		Id: r.ID, SnapshotId: r.SnapshotID,
+		SourceConnectionId: r.SourceConnectionID, SourceBaseId: r.SourceBaseID, SourceBaseTitle: r.SourceBaseTitle,
+		TargetConnectionId: r.TargetConnectionID, TargetBaseId: r.TargetBaseID, TargetBaseTitle: r.TargetBaseTitle,
+		Status: restoreStatusToProto(r.Status), Error: r.Error, Progress: r.Progress,
+		CreatedAt:  timestamppb.New(r.CreatedAt),
+		TableCount: int32(r.TableCount), RecordCount: r.RecordCount, LinkCount: r.LinkCount,
+	}
+	if !r.StartedAt.IsZero() {
+		out.StartedAt = timestamppb.New(r.StartedAt)
+	}
+	if !r.FinishedAt.IsZero() {
+		out.FinishedAt = timestamppb.New(r.FinishedAt)
+	}
+	for _, w := range r.Warnings {
+		out.Warnings = append(out.Warnings, &neoboxv1.RestoreWarning{
+			Code: w.Code, Table: w.Table, Field: w.Field, Count: w.Count, Message: w.Message,
+		})
+	}
+	return out
+}
+
+func restoreStatusToProto(s repo.RestoreStatus) neoboxv1.RestoreStatus {
+	switch s {
+	case repo.RestorePending:
+		return neoboxv1.RestoreStatus_RESTORE_STATUS_PENDING
+	case repo.RestoreRunning:
+		return neoboxv1.RestoreStatus_RESTORE_STATUS_RUNNING
+	case repo.RestoreSucceeded:
+		return neoboxv1.RestoreStatus_RESTORE_STATUS_SUCCEEDED
+	case repo.RestoreFailed:
+		return neoboxv1.RestoreStatus_RESTORE_STATUS_FAILED
+	}
+	return neoboxv1.RestoreStatus_RESTORE_STATUS_UNSPECIFIED
 }
 
 // tableCache keeps the most recently browsed snapshot tables in memory so

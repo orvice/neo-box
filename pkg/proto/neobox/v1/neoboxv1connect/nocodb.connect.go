@@ -54,6 +54,15 @@ const (
 	// NocoDBServiceListSnapshotRecordsProcedure is the fully-qualified name of the NocoDBService's
 	// ListSnapshotRecords RPC.
 	NocoDBServiceListSnapshotRecordsProcedure = "/neobox.v1.NocoDBService/ListSnapshotRecords"
+	// NocoDBServiceRestoreSnapshotProcedure is the fully-qualified name of the NocoDBService's
+	// RestoreSnapshot RPC.
+	NocoDBServiceRestoreSnapshotProcedure = "/neobox.v1.NocoDBService/RestoreSnapshot"
+	// NocoDBServiceGetRestoreProcedure is the fully-qualified name of the NocoDBService's GetRestore
+	// RPC.
+	NocoDBServiceGetRestoreProcedure = "/neobox.v1.NocoDBService/GetRestore"
+	// NocoDBServiceListRestoresProcedure is the fully-qualified name of the NocoDBService's
+	// ListRestores RPC.
+	NocoDBServiceListRestoresProcedure = "/neobox.v1.NocoDBService/ListRestores"
 )
 
 // NocoDBServiceClient is a client for the neobox.v1.NocoDBService service.
@@ -73,6 +82,14 @@ type NocoDBServiceClient interface {
 	// ListSnapshotRecords pages through the records of one table inside a
 	// succeeded snapshot.
 	ListSnapshotRecords(context.Context, *connect.Request[v1.ListSnapshotRecordsRequest]) (*connect.Response[v1.ListSnapshotRecordsResponse], error)
+	// Restores
+	// RestoreSnapshot queues a restore of a succeeded snapshot into a new Base
+	// and returns immediately with a PENDING restore; poll GetRestore for
+	// progress. A restore never changes an existing Base.
+	RestoreSnapshot(context.Context, *connect.Request[v1.RestoreSnapshotRequest]) (*connect.Response[v1.RestoreSnapshotResponse], error)
+	GetRestore(context.Context, *connect.Request[v1.GetRestoreRequest]) (*connect.Response[v1.GetRestoreResponse], error)
+	// ListRestores lists restores, newest first.
+	ListRestores(context.Context, *connect.Request[v1.ListRestoresRequest]) (*connect.Response[v1.ListRestoresResponse], error)
 }
 
 // NewNocoDBServiceClient constructs a client for the neobox.v1.NocoDBService service. By default,
@@ -128,6 +145,24 @@ func NewNocoDBServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 			connect.WithSchema(nocoDBServiceMethods.ByName("ListSnapshotRecords")),
 			connect.WithClientOptions(opts...),
 		),
+		restoreSnapshot: connect.NewClient[v1.RestoreSnapshotRequest, v1.RestoreSnapshotResponse](
+			httpClient,
+			baseURL+NocoDBServiceRestoreSnapshotProcedure,
+			connect.WithSchema(nocoDBServiceMethods.ByName("RestoreSnapshot")),
+			connect.WithClientOptions(opts...),
+		),
+		getRestore: connect.NewClient[v1.GetRestoreRequest, v1.GetRestoreResponse](
+			httpClient,
+			baseURL+NocoDBServiceGetRestoreProcedure,
+			connect.WithSchema(nocoDBServiceMethods.ByName("GetRestore")),
+			connect.WithClientOptions(opts...),
+		),
+		listRestores: connect.NewClient[v1.ListRestoresRequest, v1.ListRestoresResponse](
+			httpClient,
+			baseURL+NocoDBServiceListRestoresProcedure,
+			connect.WithSchema(nocoDBServiceMethods.ByName("ListRestores")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -140,6 +175,9 @@ type nocoDBServiceClient struct {
 	getSnapshot         *connect.Client[v1.GetSnapshotRequest, v1.GetSnapshotResponse]
 	deleteSnapshot      *connect.Client[v1.DeleteSnapshotRequest, v1.DeleteSnapshotResponse]
 	listSnapshotRecords *connect.Client[v1.ListSnapshotRecordsRequest, v1.ListSnapshotRecordsResponse]
+	restoreSnapshot     *connect.Client[v1.RestoreSnapshotRequest, v1.RestoreSnapshotResponse]
+	getRestore          *connect.Client[v1.GetRestoreRequest, v1.GetRestoreResponse]
+	listRestores        *connect.Client[v1.ListRestoresRequest, v1.ListRestoresResponse]
 }
 
 // ListNocoDBBases calls neobox.v1.NocoDBService.ListNocoDBBases.
@@ -177,6 +215,21 @@ func (c *nocoDBServiceClient) ListSnapshotRecords(ctx context.Context, req *conn
 	return c.listSnapshotRecords.CallUnary(ctx, req)
 }
 
+// RestoreSnapshot calls neobox.v1.NocoDBService.RestoreSnapshot.
+func (c *nocoDBServiceClient) RestoreSnapshot(ctx context.Context, req *connect.Request[v1.RestoreSnapshotRequest]) (*connect.Response[v1.RestoreSnapshotResponse], error) {
+	return c.restoreSnapshot.CallUnary(ctx, req)
+}
+
+// GetRestore calls neobox.v1.NocoDBService.GetRestore.
+func (c *nocoDBServiceClient) GetRestore(ctx context.Context, req *connect.Request[v1.GetRestoreRequest]) (*connect.Response[v1.GetRestoreResponse], error) {
+	return c.getRestore.CallUnary(ctx, req)
+}
+
+// ListRestores calls neobox.v1.NocoDBService.ListRestores.
+func (c *nocoDBServiceClient) ListRestores(ctx context.Context, req *connect.Request[v1.ListRestoresRequest]) (*connect.Response[v1.ListRestoresResponse], error) {
+	return c.listRestores.CallUnary(ctx, req)
+}
+
 // NocoDBServiceHandler is an implementation of the neobox.v1.NocoDBService service.
 type NocoDBServiceHandler interface {
 	// ListNocoDBBases lists the Bases visible to the connection's token, each
@@ -194,6 +247,14 @@ type NocoDBServiceHandler interface {
 	// ListSnapshotRecords pages through the records of one table inside a
 	// succeeded snapshot.
 	ListSnapshotRecords(context.Context, *connect.Request[v1.ListSnapshotRecordsRequest]) (*connect.Response[v1.ListSnapshotRecordsResponse], error)
+	// Restores
+	// RestoreSnapshot queues a restore of a succeeded snapshot into a new Base
+	// and returns immediately with a PENDING restore; poll GetRestore for
+	// progress. A restore never changes an existing Base.
+	RestoreSnapshot(context.Context, *connect.Request[v1.RestoreSnapshotRequest]) (*connect.Response[v1.RestoreSnapshotResponse], error)
+	GetRestore(context.Context, *connect.Request[v1.GetRestoreRequest]) (*connect.Response[v1.GetRestoreResponse], error)
+	// ListRestores lists restores, newest first.
+	ListRestores(context.Context, *connect.Request[v1.ListRestoresRequest]) (*connect.Response[v1.ListRestoresResponse], error)
 }
 
 // NewNocoDBServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -245,6 +306,24 @@ func NewNocoDBServiceHandler(svc NocoDBServiceHandler, opts ...connect.HandlerOp
 		connect.WithSchema(nocoDBServiceMethods.ByName("ListSnapshotRecords")),
 		connect.WithHandlerOptions(opts...),
 	)
+	nocoDBServiceRestoreSnapshotHandler := connect.NewUnaryHandler(
+		NocoDBServiceRestoreSnapshotProcedure,
+		svc.RestoreSnapshot,
+		connect.WithSchema(nocoDBServiceMethods.ByName("RestoreSnapshot")),
+		connect.WithHandlerOptions(opts...),
+	)
+	nocoDBServiceGetRestoreHandler := connect.NewUnaryHandler(
+		NocoDBServiceGetRestoreProcedure,
+		svc.GetRestore,
+		connect.WithSchema(nocoDBServiceMethods.ByName("GetRestore")),
+		connect.WithHandlerOptions(opts...),
+	)
+	nocoDBServiceListRestoresHandler := connect.NewUnaryHandler(
+		NocoDBServiceListRestoresProcedure,
+		svc.ListRestores,
+		connect.WithSchema(nocoDBServiceMethods.ByName("ListRestores")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/neobox.v1.NocoDBService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case NocoDBServiceListNocoDBBasesProcedure:
@@ -261,6 +340,12 @@ func NewNocoDBServiceHandler(svc NocoDBServiceHandler, opts ...connect.HandlerOp
 			nocoDBServiceDeleteSnapshotHandler.ServeHTTP(w, r)
 		case NocoDBServiceListSnapshotRecordsProcedure:
 			nocoDBServiceListSnapshotRecordsHandler.ServeHTTP(w, r)
+		case NocoDBServiceRestoreSnapshotProcedure:
+			nocoDBServiceRestoreSnapshotHandler.ServeHTTP(w, r)
+		case NocoDBServiceGetRestoreProcedure:
+			nocoDBServiceGetRestoreHandler.ServeHTTP(w, r)
+		case NocoDBServiceListRestoresProcedure:
+			nocoDBServiceListRestoresHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -296,4 +381,16 @@ func (UnimplementedNocoDBServiceHandler) DeleteSnapshot(context.Context, *connec
 
 func (UnimplementedNocoDBServiceHandler) ListSnapshotRecords(context.Context, *connect.Request[v1.ListSnapshotRecordsRequest]) (*connect.Response[v1.ListSnapshotRecordsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.NocoDBService.ListSnapshotRecords is not implemented"))
+}
+
+func (UnimplementedNocoDBServiceHandler) RestoreSnapshot(context.Context, *connect.Request[v1.RestoreSnapshotRequest]) (*connect.Response[v1.RestoreSnapshotResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.NocoDBService.RestoreSnapshot is not implemented"))
+}
+
+func (UnimplementedNocoDBServiceHandler) GetRestore(context.Context, *connect.Request[v1.GetRestoreRequest]) (*connect.Response[v1.GetRestoreResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.NocoDBService.GetRestore is not implemented"))
+}
+
+func (UnimplementedNocoDBServiceHandler) ListRestores(context.Context, *connect.Request[v1.ListRestoresRequest]) (*connect.Response[v1.ListRestoresResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.NocoDBService.ListRestores is not implemented"))
 }

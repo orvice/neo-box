@@ -7,6 +7,7 @@ import (
 
 	"go.orx.me/apps/neo-box/internal/ent"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
+	"go.orx.me/apps/neo-box/internal/ent/nocodbrestore"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbsnapshot"
 	"go.orx.me/apps/neo-box/internal/ent/predicate"
 	repo "go.orx.me/apps/neo-box/internal/repo/nocodb"
@@ -212,6 +213,158 @@ func (s *Store) FailUnfinishedSnapshots(ctx context.Context, reason string, at t
 	return int64(n), nil
 }
 
+// --- restores ---
+
+func (s *Store) CreateRestore(ctx context.Context, r *repo.Restore) error {
+	c := s.client.NocoDBRestore.Create().
+		SetID(r.ID).
+		SetUserID(r.UserID).
+		SetSnapshotID(r.SnapshotID).
+		SetSourceConnectionID(r.SourceConnectionID).
+		SetSourceBaseID(r.SourceBaseID).
+		SetSourceBaseTitle(r.SourceBaseTitle).
+		SetTargetConnectionID(r.TargetConnectionID).
+		SetTargetBaseID(r.TargetBaseID).
+		SetTargetBaseTitle(r.TargetBaseTitle).
+		SetStatus(string(r.Status)).
+		SetError(r.Error).
+		SetProgress(r.Progress).
+		SetTableCount(r.TableCount).
+		SetRecordCount(r.RecordCount).
+		SetLinkCount(r.LinkCount).
+		SetCreatedAt(r.CreatedAt).
+		SetNillableStartedAt(nilIfZero(r.StartedAt)).
+		SetNillableFinishedAt(nilIfZero(r.FinishedAt))
+	if r.Warnings != nil {
+		c.SetWarnings(r.Warnings)
+	}
+	if err := c.Exec(ctx); err != nil {
+		return fmt.Errorf("insert restore: %w", err)
+	}
+	return nil
+}
+
+func (s *Store) GetRestore(ctx context.Context, userID, id string) (*repo.Restore, error) {
+	q := s.client.NocoDBRestore.Query().Where(nocodbrestore.ID(id))
+	if userID != "" {
+		q = q.Where(nocodbrestore.UserID(userID))
+	}
+	row, err := q.Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, repo.ErrNotFound
+		}
+		return nil, fmt.Errorf("find restore: %w", err)
+	}
+	return restoreFromRow(row), nil
+}
+
+func (s *Store) UpdateRestore(ctx context.Context, r *repo.Restore) error {
+	u := s.client.NocoDBRestore.UpdateOneID(r.ID).
+		SetTargetBaseID(r.TargetBaseID).
+		SetStatus(string(r.Status)).
+		SetError(r.Error).
+		SetProgress(r.Progress).
+		SetTableCount(r.TableCount).
+		SetRecordCount(r.RecordCount).
+		SetLinkCount(r.LinkCount)
+	if r.Warnings == nil {
+		u.ClearWarnings()
+	} else {
+		u.SetWarnings(r.Warnings)
+	}
+	if r.StartedAt.IsZero() {
+		u.ClearStartedAt()
+	} else {
+		u.SetStartedAt(r.StartedAt)
+	}
+	if r.FinishedAt.IsZero() {
+		u.ClearFinishedAt()
+	} else {
+		u.SetFinishedAt(r.FinishedAt)
+	}
+	if err := u.Exec(ctx); err != nil {
+		if ent.IsNotFound(err) {
+			return repo.ErrNotFound
+		}
+		return fmt.Errorf("update restore: %w", err)
+	}
+	return nil
+}
+
+func (s *Store) UpdateRestoreProgress(ctx context.Context, id, progress string) error {
+	return s.client.NocoDBRestore.Update().
+		Where(nocodbrestore.ID(id)).
+		SetProgress(progress).
+		Exec(ctx)
+}
+
+func (s *Store) UpdateRestoreTargetBase(ctx context.Context, id, baseID string) error {
+	return s.client.NocoDBRestore.Update().
+		Where(nocodbrestore.ID(id)).
+		SetTargetBaseID(baseID).
+		Exec(ctx)
+}
+
+func (s *Store) ListRestores(ctx context.Context, f repo.RestoreFilter) ([]*repo.Restore, error) {
+	q := s.client.NocoDBRestore.Query()
+	if f.UserID != "" {
+		q = q.Where(nocodbrestore.UserID(f.UserID))
+	}
+	if f.SnapshotID != "" {
+		q = q.Where(nocodbrestore.SnapshotID(f.SnapshotID))
+	}
+	if f.ConnectionID != "" {
+		q = q.Where(nocodbrestore.Or(
+			nocodbrestore.SourceConnectionID(f.ConnectionID),
+			nocodbrestore.TargetConnectionID(f.ConnectionID),
+		))
+	}
+	if f.ActiveOnly {
+		q = q.Where(nocodbrestore.StatusIn(string(repo.RestorePending), string(repo.RestoreRunning)))
+	}
+	q = q.Order(ent.Desc(nocodbrestore.FieldCreatedAt))
+	if f.Limit > 0 {
+		q = q.Limit(f.Limit)
+	}
+	rows, err := q.All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("list restores: %w", err)
+	}
+	out := make([]*repo.Restore, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, restoreFromRow(row))
+	}
+	return out, nil
+}
+
+func (s *Store) DeleteRestoresForConnection(ctx context.Context, connectionID string) error {
+	_, err := s.client.NocoDBRestore.Delete().
+		Where(nocodbrestore.Or(
+			nocodbrestore.SourceConnectionID(connectionID),
+			nocodbrestore.TargetConnectionID(connectionID),
+		)).
+		Exec(ctx)
+	if err != nil {
+		return fmt.Errorf("delete restores: %w", err)
+	}
+	return nil
+}
+
+func (s *Store) FailUnfinishedRestores(ctx context.Context, reason string, at time.Time) (int64, error) {
+	n, err := s.client.NocoDBRestore.Update().
+		Where(nocodbrestore.StatusIn(string(repo.RestorePending), string(repo.RestoreRunning))).
+		SetStatus(string(repo.RestoreFailed)).
+		SetError(reason).
+		SetFinishedAt(at).
+		SetProgress("").
+		Save(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("fail unfinished restores: %w", err)
+	}
+	return int64(n), nil
+}
+
 // --- conversions ---
 
 func policyFromRow(r *ent.NocoDBBackupPolicy) *repo.Policy {
@@ -228,6 +381,17 @@ func snapshotFromRow(r *ent.NocoDBSnapshot) *repo.Snapshot {
 		Progress: r.Progress, ObjectKey: r.ObjectKey, SizeBytes: r.SizeBytes, RecordCount: r.RecordCount,
 		LinkCount: r.LinkCount, Tables: r.Tables, CreatedAt: r.CreatedAt,
 		StartedAt: zeroIfNil(r.StartedAt), FinishedAt: zeroIfNil(r.FinishedAt),
+	}
+}
+
+func restoreFromRow(r *ent.NocoDBRestore) *repo.Restore {
+	return &repo.Restore{
+		ID: r.ID, UserID: r.UserID, SnapshotID: r.SnapshotID,
+		SourceConnectionID: r.SourceConnectionID, SourceBaseID: r.SourceBaseID, SourceBaseTitle: r.SourceBaseTitle,
+		TargetConnectionID: r.TargetConnectionID, TargetBaseID: r.TargetBaseID, TargetBaseTitle: r.TargetBaseTitle,
+		Status: repo.RestoreStatus(r.Status), Error: r.Error, Progress: r.Progress,
+		TableCount: r.TableCount, RecordCount: r.RecordCount, LinkCount: r.LinkCount, Warnings: r.Warnings,
+		CreatedAt: r.CreatedAt, StartedAt: zeroIfNil(r.StartedAt), FinishedAt: zeroIfNil(r.FinishedAt),
 	}
 }
 
