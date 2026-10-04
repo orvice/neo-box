@@ -45,7 +45,25 @@ type Estimate struct {
 	// EgressExceedsStorage reports egress above the average active
 	// storage: outside Wasabi's free-egress allowance.
 	EgressExceedsStorage bool
+
+	// TrendFitted reports whether there were enough recent days (at least
+	// minTrendDays of the last TrendDays) to fit a trend.
+	TrendFitted bool
+	// TrendProjectedCost is ProjectedCost with the days not synced yet
+	// following the trend of recent daily charges instead of repeating the
+	// newest day. Without a trend it equals ProjectedCost.
+	TrendProjectedCost float64
+	// NextCycleCost is the following 30-day cycle on the same trend (the
+	// newest day repeated without one). Zero for a rolling period.
+	NextCycleCost float64
 }
+
+// TrendDays is how many recent days of charges the forecast fits a linear
+// trend to; minTrendDays is the fewest it accepts.
+const (
+	TrendDays    = 30
+	minTrendDays = 7
+)
 
 // DailyCharge is the storage charge of one day of account usage.
 func DailyCharge(u Usage, pricePerTBMonth float64) float64 {
@@ -83,7 +101,66 @@ func EstimateCost(days []Usage, pricePerTBMonth float64, anchor, today time.Time
 	} else {
 		e.ProjectedCost = e.CostToDate + newestCharge*float64(CycleDays-e.DaysWithData)
 	}
+
+	trend, ok := fitTrend(days, newest.Day, pricePerTBMonth)
+	e.TrendFitted = ok
+	if !ok {
+		// Without a trend the newest day repeats, as in ProjectedCost.
+		e.TrendProjectedCost = e.ProjectedCost
+		if !e.Rolling {
+			e.NextCycleCost = newestCharge * CycleDays
+		}
+		return e
+	}
+	sum := func(from time.Time, n int) float64 {
+		var total float64
+		for i := 0; i < n; i++ {
+			total += trend(from.AddDate(0, 0, i))
+		}
+		return total
+	}
+	if e.Rolling {
+		e.TrendProjectedCost = sum(newest.Day.AddDate(0, 0, 1), CycleDays)
+		return e
+	}
+	// Days of the period without data follow the trend.
+	synced := make(map[time.Time]bool, len(inPeriod))
+	for _, u := range inPeriod {
+		synced[u.Day] = true
+	}
+	e.TrendProjectedCost = e.CostToDate
+	for d := e.PeriodStart; !d.After(e.PeriodEnd); d = d.AddDate(0, 0, 1) {
+		if !synced[d] {
+			e.TrendProjectedCost += trend(d)
+		}
+	}
+	e.NextCycleCost = sum(e.PeriodEnd.AddDate(0, 0, 1), CycleDays)
 	return e
+}
+
+// fitTrend fits a least-squares line to the daily charges of the TrendDays
+// days through newest, and returns it as a function of the day. A day's
+// charge never drops below the 1 TB minimum's. ok is false with fewer than
+// minTrendDays days of data.
+func fitTrend(days []Usage, newest time.Time, pricePerTBMonth float64) (func(time.Time) float64, bool) {
+	recent := daysIn(days, newest.AddDate(0, 0, -(TrendDays-1)), newest)
+	n := float64(len(recent))
+	if len(recent) < minTrendDays {
+		return nil, false
+	}
+	x := func(d time.Time) float64 { return d.Sub(newest).Hours() / 24 }
+	var sx, sy, sxx, sxy float64
+	for _, u := range recent {
+		xi, yi := x(u.Day), DailyCharge(u, pricePerTBMonth)
+		sx, sy, sxx, sxy = sx+xi, sy+yi, sxx+xi*xi, sxy+xi*yi
+	}
+	slope := 0.0
+	if d := n*sxx - sx*sx; d != 0 {
+		slope = (n*sxy - sx*sy) / d
+	}
+	intercept := (sy - slope*sx) / n
+	floor := pricePerTBMonth / CycleDays // 1 TB for a day
+	return func(d time.Time) float64 { return math.Max(intercept+slope*x(d), floor) }, true
 }
 
 // Period is what an estimate covers: the 30-day billing cycle containing

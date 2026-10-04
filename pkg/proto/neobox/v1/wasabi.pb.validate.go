@@ -222,6 +222,14 @@ func (m *WasabiCostEstimate) validate(all bool) error {
 
 	// no validation rules for EgressExceedsStorage
 
+	// no validation rules for TrendFitted
+
+	// no validation rules for TrendProjectedCost
+
+	// no validation rules for NextCycleCost
+
+	// no validation rules for BudgetUsd
+
 	if len(errors) > 0 {
 		return WasabiCostEstimateMultiError(errors)
 	}

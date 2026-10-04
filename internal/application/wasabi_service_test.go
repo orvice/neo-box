@@ -54,6 +54,7 @@ func TestWasabiConnectionSettings(t *testing.T) {
 		"bad anchor":    {AccessKeyId: "AK", SecretKey: "sk", BillingCycleAnchor: "01/08/2026"},
 		"future anchor": {AccessKeyId: "AK", SecretKey: "sk", BillingCycleAnchor: time.Now().AddDate(0, 1, 0).Format(wasabi.DateLayout)},
 		"bad price":     {AccessKeyId: "AK", SecretKey: "sk", PricePerTbMonth: -1},
+		"bad budget":    {AccessKeyId: "AK", SecretKey: "sk", BudgetUsd: -5},
 	} {
 		if _, err := srv.CreateConnection(ctx, wasabiCreate("w", s)); connect.CodeOf(err) != connect.CodeInvalidArgument {
 			t.Errorf("%s: err = %v, want InvalidArgument", name, err)
@@ -62,13 +63,14 @@ func TestWasabiConnectionSettings(t *testing.T) {
 
 	created, err := srv.CreateConnection(ctx, wasabiCreate("w", &neoboxv1.WasabiConnectionSettings{
 		AccessKeyId: " AK ", SecretKey: "SK-SECRET", BillingCycleAnchor: "2026-08-01", CostEstimateEnabled: true,
+		BudgetUsd: 25,
 	}))
 	if err != nil {
 		t.Fatalf("Create: %v", err)
 	}
 	cfg := created.Msg.GetConnection().GetWasabi()
 	if cfg.GetAccessKeyId() != "AK" || cfg.GetPricePerTbMonth() != wasabi.DefaultPricePerTBMonth ||
-		cfg.GetBillingCycleAnchor() != "2026-08-01" || !cfg.GetCostEstimateEnabled() ||
+		cfg.GetBillingCycleAnchor() != "2026-08-01" || !cfg.GetCostEstimateEnabled() || cfg.GetBudgetUsd() != 25 ||
 		created.Msg.GetConnection().GetProvider() != neoboxv1.Provider_PROVIDER_WASABI {
 		t.Fatalf("config = %+v", created.Msg.GetConnection())
 	}

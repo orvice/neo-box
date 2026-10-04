@@ -111,10 +111,16 @@ func (c *memConns) GetByID(_ context.Context, id string) (*connrepo.Connection, 
 	return &cp, nil
 }
 func (c *memConns) Open(conn *connrepo.Connection, config, secret any) error {
-	if err := json.Unmarshal(conn.Config, config); err != nil {
-		return err
+	// Like connection.Service.Open, nil skips a part.
+	if config != nil {
+		if err := json.Unmarshal(conn.Config, config); err != nil {
+			return err
+		}
 	}
-	return json.Unmarshal([]byte(conn.SecretCiphertext), secret)
+	if secret != nil {
+		return json.Unmarshal([]byte(conn.SecretCiphertext), secret)
+	}
+	return nil
 }
 func (c *memConns) RecordStatus(_ context.Context, id string, err error) {
 	c.mu.Lock()
