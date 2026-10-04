@@ -580,6 +580,8 @@ func (m *WasabiConnectionConfig) validate(all bool) error {
 
 	// no validation rules for CostEstimateEnabled
 
+	// no validation rules for BudgetUsd
+
 	if len(errors) > 0 {
 		return WasabiConnectionConfigMultiError(errors)
 	}
@@ -709,6 +711,17 @@ func (m *WasabiConnectionSettings) validate(all bool) error {
 	// no validation rules for BillingCycleAnchor
 
 	// no validation rules for CostEstimateEnabled
+
+	if m.GetBudgetUsd() < 0 {
+		err := WasabiConnectionSettingsValidationError{
+			field:  "BudgetUsd",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return WasabiConnectionSettingsMultiError(errors)

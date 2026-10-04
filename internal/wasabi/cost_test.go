@@ -112,3 +112,64 @@ func TestConnectionConfig(t *testing.T) {
 		t.Fatal("a malformed anchor should fail")
 	}
 }
+
+func TestTrendForecast(t *testing.T) {
+	price := 7.99
+	perTBDay := price / 30
+	anchor := day("2026-09-01") // cycle 09-01..09-30, next 10-01..10-30
+	today := day("2026-09-21")
+
+	// Flat at 2 TB: the trend repeats the newest day.
+	flat := days(day("2026-09-01"), 20, Usage{PaddedStorageSizeBytes: 2 * tib})
+	e := EstimateCost(flat, price, anchor, today)
+	if !e.TrendFitted {
+		t.Fatal("trend not fitted")
+	}
+	approx(t, "flat trend projected", e.TrendProjectedCost, e.ProjectedCost)
+	approx(t, "flat next cycle", e.NextCycleCost, 30*2*perTBDay)
+
+	// Growing by 0.1 TB a day from 2 TB: day i holds 2+0.1i TB.
+	var growing []Usage
+	for i := 0; i < 20; i++ {
+		growing = append(growing, Usage{Day: day("2026-09-01").AddDate(0, 0, i), PaddedStorageSizeBytes: int64((2 + 0.1*float64(i)) * tib)})
+	}
+	e = EstimateCost(growing, price, anchor, today)
+	tb := func(i int) float64 { return 2 + 0.1*float64(i) } // day index from 09-01
+	var want, next float64
+	for i := 0; i < 30; i++ {
+		want += tb(i) * perTBDay
+	}
+	for i := 30; i < 60; i++ {
+		next += tb(i) * perTBDay
+	}
+	if math.Abs(e.TrendProjectedCost-want) > 1e-6 || math.Abs(e.NextCycleCost-next) > 1e-6 {
+		t.Fatalf("growing: projected %v want %v, next %v want %v", e.TrendProjectedCost, want, e.NextCycleCost, next)
+	}
+	if e.TrendProjectedCost <= e.ProjectedCost {
+		t.Fatalf("a growing trend should project above the flat estimate: %v <= %v", e.TrendProjectedCost, e.ProjectedCost)
+	}
+
+	// Shrinking fast: the forecast stops at the 1 TB minimum.
+	var shrinking []Usage
+	for i := 0; i < 20; i++ {
+		shrinking = append(shrinking, Usage{Day: day("2026-09-01").AddDate(0, 0, i), PaddedStorageSizeBytes: int64((3 - 0.15*float64(i)) * tib)})
+	}
+	e = EstimateCost(shrinking, price, anchor, today)
+	approx(t, "next cycle at the floor", e.NextCycleCost, 30*perTBDay)
+
+	// Too few days: no trend, the flat projection stands.
+	e = EstimateCost(flat[:5], price, anchor, day("2026-09-06"))
+	if e.TrendFitted || e.TrendProjectedCost != e.ProjectedCost {
+		t.Fatalf("short history: %+v", e)
+	}
+
+	// Rolling: a trend-based 30-day run rate, no next cycle.
+	e = EstimateCost(growing, price, time.Time{}, today)
+	var run float64
+	for i := 20; i < 50; i++ {
+		run += tb(i) * perTBDay
+	}
+	if !e.Rolling || math.Abs(e.TrendProjectedCost-run) > 1e-6 || e.NextCycleCost != 0 {
+		t.Fatalf("rolling: %+v want run rate %v", e, run)
+	}
+}

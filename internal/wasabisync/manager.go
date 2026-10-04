@@ -20,6 +20,7 @@ import (
 	"butterfly.orx.me/core/log"
 	"github.com/robfig/cron/v3"
 
+	"go.orx.me/apps/neo-box/internal/notify"
 	connrepo "go.orx.me/apps/neo-box/internal/repo/connection"
 	repo "go.orx.me/apps/neo-box/internal/repo/wasabi"
 	"go.orx.me/apps/neo-box/internal/wasabi"
@@ -90,6 +91,7 @@ type Manager struct {
 	pending   map[string]bool // queued or running
 	running   string
 	cancelled map[string]bool // deleted while queued
+	notifier  notify.Notifier
 
 	// newClient and now are swapped in tests.
 	newClient func(accessKey, secretKey string) (Stats, error)
@@ -286,6 +288,7 @@ func (m *Manager) run(parent context.Context, j job) {
 		return
 	}
 	logger.Info("wasabi sync succeeded", "connection_id", conn.ID, "refresh", j.refresh)
+	m.checkAlerts(ctx, conn)
 }
 
 func (m *Manager) client(conn *connrepo.Connection) (Stats, error) {

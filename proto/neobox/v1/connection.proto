@@ -88,6 +88,8 @@ message WasabiConnectionConfig {
   // estimates over the last 30 days.
   string billing_cycle_anchor = 3;
   bool cost_estimate_enabled = 4;
+  // USD per billing cycle; 0 means no budget.
+  double budget_usd = 5;
 }
 
 // WasabiConnectionSettings is what a user enters for a Wasabi connection.
@@ -101,6 +103,9 @@ message WasabiConnectionSettings {
   // YYYY-MM-DD, or empty.
   string billing_cycle_anchor = 4;
   bool cost_estimate_enabled = 5;
+  // USD per billing cycle; 0 means no budget. An alert fires when the
+  // estimate goes over it.
+  double budget_usd = 6 [(validate.rules).double.gte = 0];
 }
 
 message ListConnectionsRequest {

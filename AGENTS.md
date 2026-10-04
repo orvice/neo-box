@@ -94,8 +94,10 @@ shadcn/ui + Connect-Web on the frontend.
   secrets) and the alert log; `Notify` stores an alert once per dedupe key
   and a worker delivers it to every enabled channel. A `Sender` per channel
   type (`Telegram`, via the Bot API). Raisers depend on `notify.Notifier`:
-  `connection.Service.RecordStatus` (health turned to error) and
-  `backup.Manager` (scheduled snapshot or restore failed). The live test
+  `connection.Service.RecordStatus` (health turned to error),
+  `backup.Manager` (scheduled snapshot or restore failed), and
+  `wasabisync.Manager` after each successful sync (`alerts.go`: budget,
+  egress over storage, large deletes). The live test
   needs `NEOBOX_TEST_TELEGRAM_BOT_TOKEN` / `NEOBOX_TEST_TELEGRAM_CHAT_ID`.
 - `internal/wasabisync/` — `Manager`: one sync at a time; 12-month backfill in
   30-day chunks that resumes after failures, daily run at 02:30 UTC from the

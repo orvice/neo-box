@@ -149,6 +149,7 @@ func (h *Handlers) bootstrapWasabi(runCtx context.Context, client *ent.Client, c
 	repo := wasabipg.New(client)
 	manager := wasabisync.New(wasabisync.Config{Endpoint: h.cfg.Wasabi.StatsEndpoint}, repo, conns)
 	conns.Register(manager.ConnectionProvider())
+	manager.SetNotifier(h.notifier)
 	if err := manager.Start(runCtx); err != nil {
 		return err
 	}
