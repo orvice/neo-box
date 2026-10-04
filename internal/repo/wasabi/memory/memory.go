@@ -64,6 +64,13 @@ func (s *Store) ListUsage(_ context.Context, connectionID, bucket string, from, 
 	}), nil
 }
 
+func (s *Store) ListBucketUsage(_ context.Context, connectionID string, from, to time.Time) ([]wasabi.Usage, error) {
+	from, to = wasabi.DayOf(from), wasabi.DayOf(to)
+	return s.rows(connectionID, func(u wasabi.Usage) bool {
+		return u.Bucket != "" && !u.Day.Before(from) && !u.Day.After(to)
+	}), nil
+}
+
 func (s *Store) LatestBucketUsage(_ context.Context, connectionID string) ([]wasabi.Usage, error) {
 	latest := map[string]wasabi.Usage{}
 	for _, u := range s.rows(connectionID, func(u wasabi.Usage) bool { return u.Bucket != "" }) {

@@ -23,10 +23,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { Page, PageHeader, PageScroll } from '@/components/common/page-parts'
 import { DataTable, type Column } from '@/components/data-table'
+import { CostBreakdownCard } from './cost-breakdown'
 import { formatCompact, formatDayLong, formatUSD, wasabiConfig } from './format'
 import { StatTile } from './stat-tile'
 import { SyncButton, SyncStatus } from './sync-status'
 import { UsageCharts } from './usage-charts'
+import { UsageDetailsCard } from './usage-details'
 
 /** The detail page of a Wasabi connection: totals, cost, trends, buckets. */
 export function WasabiConnectionDetail({
@@ -102,8 +104,12 @@ export function WasabiConnectionDetail({
           </Alert>
         )}
 
+        {estimate && estimate.daysWithData > 0 && (
+          <CostBreakdownCard connectionId={connection.id} />
+        )}
         <UsageCharts connectionId={connection.id} bucket='' />
         <BucketsCard connectionId={connection.id} />
+        {latest && <UsageDetailsCard usage={latest} account />}
       </PageScroll>
     </Page>
   )

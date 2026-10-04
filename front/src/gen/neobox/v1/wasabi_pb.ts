@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file neobox/v1/wasabi.proto.
  */
 export const file_neobox_v1_wasabi: GenFile = /*@__PURE__*/
-  fileDesc("ChZuZW9ib3gvdjEvd2FzYWJpLnByb3RvEgluZW9ib3gudjEiwgQKC1dhc2FiaVVzYWdlEgsKA2RheRgBIAEoCRIOCgZidWNrZXQYAiABKAkSDgoGcmVnaW9uGAMgASgJEhwKFGFjdGl2ZV9zdG9yYWdlX2J5dGVzGAQgASgDEh0KFWRlbGV0ZWRfc3RvcmFnZV9ieXRlcxgFIAEoAxIYChBiaWxsYWJsZV9vYmplY3RzGAYgASgDEiAKGGJpbGxhYmxlX2RlbGV0ZWRfb2JqZWN0cxgHIAEoAxIZChFyYXdfc3RvcmFnZV9ieXRlcxgIIAEoAxIcChRwYWRkZWRfc3RvcmFnZV9ieXRlcxgJIAEoAxIeChZtZXRhZGF0YV9zdG9yYWdlX2J5dGVzGAogASgDEh4KFm9ycGhhbmVkX3N0b3JhZ2VfYnl0ZXMYCyABKAMSIAoYbWluX3N0b3JhZ2VfY2hhcmdlX2J5dGVzGAwgASgDEhEKCWFwaV9jYWxscxgNIAEoAxIUCgx1cGxvYWRfYnl0ZXMYDiABKAMSFgoOZG93bmxvYWRfYnl0ZXMYDyABKAMSGwoTc3RvcmFnZV93cm90ZV9ieXRlcxgQIAEoAxIaChJzdG9yYWdlX3JlYWRfYnl0ZXMYESABKAMSFAoMZGVsZXRlX2J5dGVzGBIgASgDEhEKCWdldF9jYWxscxgTIAEoAxIRCglwdXRfY2FsbHMYFCABKAMSFAoMZGVsZXRlX2NhbGxzGBUgASgDEhIKCmxpc3RfY2FsbHMYFiABKAMSEgoKaGVhZF9jYWxscxgXIAEoAyL9AQoSV2FzYWJpQ29zdEVzdGltYXRlEhQKDHBlcmlvZF9zdGFydBgBIAEoCRISCgpwZXJpb2RfZW5kGAIgASgJEg8KB3JvbGxpbmcYAyABKAgSFAoMZGF0YV90aHJvdWdoGAQgASgJEhYKDmRheXNfd2l0aF9kYXRhGAUgASgFEhQKDGNvc3RfdG9fZGF0ZRgGIAEoARIWCg5wcm9qZWN0ZWRfY29zdBgHIAEoARIaChJwcmljZV9wZXJfdGJfbW9udGgYCCABKAESFAoMZWdyZXNzX2J5dGVzGAkgASgDEh4KFmVncmVzc19leGNlZWRzX3N0b3JhZ2UYCiABKAgipgEKD1dhc2FiaVN5bmNTdGF0ZRIPCgdzeW5jaW5nGAEgASgIEjMKD2xhc3Rfc3VjY2Vzc19hdBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASFwoPbGFzdF9zeW5jZWRfZGF5GAMgASgJEhkKEWJhY2tmaWxsX2NvbXBsZXRlGAQgASgIEhkKEWJhY2tmaWxsX3Byb2dyZXNzGAUgASgBImUKDFdhc2FiaUJ1Y2tldBIMCgRuYW1lGAEgASgJEg4KBnJlZ2lvbhgCIAEoCRIPCgdkZWxldGVkGAMgASgIEiYKBmxhdGVzdBgEIAEoCzIWLm5lb2JveC52MS5XYXNhYmlVc2FnZSI6ChhHZXRXYXNhYmlPdmVydmlld1JlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQASK5AQoZR2V0V2FzYWJpT3ZlcnZpZXdSZXNwb25zZRImCgZsYXRlc3QYASABKAsyFi5uZW9ib3gudjEuV2FzYWJpVXNhZ2USNAoNY29zdF9lc3RpbWF0ZRgCIAEoCzIdLm5lb2JveC52MS5XYXNhYmlDb3N0RXN0aW1hdGUSKAoEc3luYxgDIAEoCzIaLm5lb2JveC52MS5XYXNhYmlTeW5jU3RhdGUSFAoMYnVja2V0X2NvdW50GAQgASgFIlMKGExpc3RXYXNhYmlCdWNrZXRzUmVxdWVzdBIeCg1jb25uZWN0aW9uX2lkGAEgASgJQgf6QgRyAhABEhcKD2luY2x1ZGVfZGVsZXRlZBgCIAEoCCJFChlMaXN0V2FzYWJpQnVja2V0c1Jlc3BvbnNlEigKB2J1Y2tldHMYASADKAsyFy5uZW9ib3gudjEuV2FzYWJpQnVja2V0ImEKFUdldFdhc2FiaVVzYWdlUmVxdWVzdBIeCg1jb25uZWN0aW9uX2lkGAEgASgJQgf6QgRyAhABEg4KBmJ1Y2tldBgCIAEoCRIMCgRmcm9tGAMgASgJEgoKAnRvGAQgASgJIj4KFkdldFdhc2FiaVVzYWdlUmVzcG9uc2USJAoEZGF5cxgBIAMoCzIWLm5lb2JveC52MS5XYXNhYmlVc2FnZSI9ChtTeW5jV2FzYWJpQ29ubmVjdGlvblJlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQASJIChxTeW5jV2FzYWJpQ29ubmVjdGlvblJlc3BvbnNlEigKBHN5bmMYASABKAsyGi5uZW9ib3gudjEuV2FzYWJpU3luY1N0YXRlMo8DCg1XYXNhYmlTZXJ2aWNlEl4KEUdldFdhc2FiaU92ZXJ2aWV3EiMubmVvYm94LnYxLkdldFdhc2FiaU92ZXJ2aWV3UmVxdWVzdBokLm5lb2JveC52MS5HZXRXYXNhYmlPdmVydmlld1Jlc3BvbnNlEl4KEUxpc3RXYXNhYmlCdWNrZXRzEiMubmVvYm94LnYxLkxpc3RXYXNhYmlCdWNrZXRzUmVxdWVzdBokLm5lb2JveC52MS5MaXN0V2FzYWJpQnVja2V0c1Jlc3BvbnNlElUKDkdldFdhc2FiaVVzYWdlEiAubmVvYm94LnYxLkdldFdhc2FiaVVzYWdlUmVxdWVzdBohLm5lb2JveC52MS5HZXRXYXNhYmlVc2FnZVJlc3BvbnNlEmcKFFN5bmNXYXNhYmlDb25uZWN0aW9uEiYubmVvYm94LnYxLlN5bmNXYXNhYmlDb25uZWN0aW9uUmVxdWVzdBonLm5lb2JveC52MS5TeW5jV2FzYWJpQ29ubmVjdGlvblJlc3BvbnNlQjVaM2dvLm9yeC5tZS9hcHBzL25lby1ib3gvcGtnL3Byb3RvL25lb2JveC92MTtuZW9ib3h2MWIGcHJvdG8z", [file_google_protobuf_timestamp, file_validate_validate]);
+  fileDesc("ChZuZW9ib3gvdjEvd2FzYWJpLnByb3RvEgluZW9ib3gudjEiwgQKC1dhc2FiaVVzYWdlEgsKA2RheRgBIAEoCRIOCgZidWNrZXQYAiABKAkSDgoGcmVnaW9uGAMgASgJEhwKFGFjdGl2ZV9zdG9yYWdlX2J5dGVzGAQgASgDEh0KFWRlbGV0ZWRfc3RvcmFnZV9ieXRlcxgFIAEoAxIYChBiaWxsYWJsZV9vYmplY3RzGAYgASgDEiAKGGJpbGxhYmxlX2RlbGV0ZWRfb2JqZWN0cxgHIAEoAxIZChFyYXdfc3RvcmFnZV9ieXRlcxgIIAEoAxIcChRwYWRkZWRfc3RvcmFnZV9ieXRlcxgJIAEoAxIeChZtZXRhZGF0YV9zdG9yYWdlX2J5dGVzGAogASgDEh4KFm9ycGhhbmVkX3N0b3JhZ2VfYnl0ZXMYCyABKAMSIAoYbWluX3N0b3JhZ2VfY2hhcmdlX2J5dGVzGAwgASgDEhEKCWFwaV9jYWxscxgNIAEoAxIUCgx1cGxvYWRfYnl0ZXMYDiABKAMSFgoOZG93bmxvYWRfYnl0ZXMYDyABKAMSGwoTc3RvcmFnZV93cm90ZV9ieXRlcxgQIAEoAxIaChJzdG9yYWdlX3JlYWRfYnl0ZXMYESABKAMSFAoMZGVsZXRlX2J5dGVzGBIgASgDEhEKCWdldF9jYWxscxgTIAEoAxIRCglwdXRfY2FsbHMYFCABKAMSFAoMZGVsZXRlX2NhbGxzGBUgASgDEhIKCmxpc3RfY2FsbHMYFiABKAMSEgoKaGVhZF9jYWxscxgXIAEoAyL9AQoSV2FzYWJpQ29zdEVzdGltYXRlEhQKDHBlcmlvZF9zdGFydBgBIAEoCRISCgpwZXJpb2RfZW5kGAIgASgJEg8KB3JvbGxpbmcYAyABKAgSFAoMZGF0YV90aHJvdWdoGAQgASgJEhYKDmRheXNfd2l0aF9kYXRhGAUgASgFEhQKDGNvc3RfdG9fZGF0ZRgGIAEoARIWCg5wcm9qZWN0ZWRfY29zdBgHIAEoARIaChJwcmljZV9wZXJfdGJfbW9udGgYCCABKAESFAoMZWdyZXNzX2J5dGVzGAkgASgDEh4KFmVncmVzc19leGNlZWRzX3N0b3JhZ2UYCiABKAgipgEKD1dhc2FiaVN5bmNTdGF0ZRIPCgdzeW5jaW5nGAEgASgIEjMKD2xhc3Rfc3VjY2Vzc19hdBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASFwoPbGFzdF9zeW5jZWRfZGF5GAMgASgJEhkKEWJhY2tmaWxsX2NvbXBsZXRlGAQgASgIEhkKEWJhY2tmaWxsX3Byb2dyZXNzGAUgASgBImUKDFdhc2FiaUJ1Y2tldBIMCgRuYW1lGAEgASgJEg4KBnJlZ2lvbhgCIAEoCRIPCgdkZWxldGVkGAMgASgIEiYKBmxhdGVzdBgEIAEoCzIWLm5lb2JveC52MS5XYXNhYmlVc2FnZSI6ChhHZXRXYXNhYmlPdmVydmlld1JlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQASK5AQoZR2V0V2FzYWJpT3ZlcnZpZXdSZXNwb25zZRImCgZsYXRlc3QYASABKAsyFi5uZW9ib3gudjEuV2FzYWJpVXNhZ2USNAoNY29zdF9lc3RpbWF0ZRgCIAEoCzIdLm5lb2JveC52MS5XYXNhYmlDb3N0RXN0aW1hdGUSKAoEc3luYxgDIAEoCzIaLm5lb2JveC52MS5XYXNhYmlTeW5jU3RhdGUSFAoMYnVja2V0X2NvdW50GAQgASgFIlMKGExpc3RXYXNhYmlCdWNrZXRzUmVxdWVzdBIeCg1jb25uZWN0aW9uX2lkGAEgASgJQgf6QgRyAhABEhcKD2luY2x1ZGVfZGVsZXRlZBgCIAEoCCJFChlMaXN0V2FzYWJpQnVja2V0c1Jlc3BvbnNlEigKB2J1Y2tldHMYASADKAsyFy5uZW9ib3gudjEuV2FzYWJpQnVja2V0ImEKFUdldFdhc2FiaVVzYWdlUmVxdWVzdBIeCg1jb25uZWN0aW9uX2lkGAEgASgJQgf6QgRyAhABEg4KBmJ1Y2tldBgCIAEoCRIMCgRmcm9tGAMgASgJEgoKAnRvGAQgASgJIj4KFkdldFdhc2FiaVVzYWdlUmVzcG9uc2USJAoEZGF5cxgBIAMoCzIWLm5lb2JveC52MS5XYXNhYmlVc2FnZSI9ChtTeW5jV2FzYWJpQ29ubmVjdGlvblJlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQASJIChxTeW5jV2FzYWJpQ29ubmVjdGlvblJlc3BvbnNlEigKBHN5bmMYASABKAsyGi5uZW9ib3gudjEuV2FzYWJpU3luY1N0YXRlIswBChBXYXNhYmlCdWNrZXRDb3N0Eg4KBmJ1Y2tldBgBIAEoCRIOCgZyZWdpb24YAiABKAkSDwoHZGVsZXRlZBgDIAEoCBITCgthY3RpdmVfY29zdBgEIAEoARIUCgxkZWxldGVkX2Nvc3QYBSABKAESHAoUYWN0aXZlX3N0b3JhZ2VfYnl0ZXMYBiABKAMSHQoVZGVsZXRlZF9zdG9yYWdlX2J5dGVzGAcgASgDEh8KF2RlbGV0ZWRfaW5fcGVyaW9kX2J5dGVzGAggASgDIqQCChNXYXNhYmlDb3N0QnJlYWtkb3duEhQKDHBlcmlvZF9zdGFydBgBIAEoCRISCgpwZXJpb2RfZW5kGAIgASgJEg8KB3JvbGxpbmcYAyABKAgSFAoMZGF0YV90aHJvdWdoGAQgASgJEhYKDmRheXNfd2l0aF9kYXRhGAUgASgFEhoKEnByaWNlX3Blcl90Yl9tb250aBgGIAEoARITCgthY3RpdmVfY29zdBgHIAEoARIUCgxkZWxldGVkX2Nvc3QYCCABKAESFAoMbWluaW11bV9jb3N0GAkgASgBEhkKEXVuYXR0cmlidXRlZF9jb3N0GAogASgBEiwKB2J1Y2tldHMYCyADKAsyGy5uZW9ib3gudjEuV2FzYWJpQnVja2V0Q29zdCI/Ch1HZXRXYXNhYmlDb3N0QnJlYWtkb3duUmVxdWVzdBIeCg1jb25uZWN0aW9uX2lkGAEgASgJQgf6QgRyAhABIlMKHkdldFdhc2FiaUNvc3RCcmVha2Rvd25SZXNwb25zZRIxCglicmVha2Rvd24YASABKAsyHi5uZW9ib3gudjEuV2FzYWJpQ29zdEJyZWFrZG93bjL+AwoNV2FzYWJpU2VydmljZRJeChFHZXRXYXNhYmlPdmVydmlldxIjLm5lb2JveC52MS5HZXRXYXNhYmlPdmVydmlld1JlcXVlc3QaJC5uZW9ib3gudjEuR2V0V2FzYWJpT3ZlcnZpZXdSZXNwb25zZRJeChFMaXN0V2FzYWJpQnVja2V0cxIjLm5lb2JveC52MS5MaXN0V2FzYWJpQnVja2V0c1JlcXVlc3QaJC5uZW9ib3gudjEuTGlzdFdhc2FiaUJ1Y2tldHNSZXNwb25zZRJVCg5HZXRXYXNhYmlVc2FnZRIgLm5lb2JveC52MS5HZXRXYXNhYmlVc2FnZVJlcXVlc3QaIS5uZW9ib3gudjEuR2V0V2FzYWJpVXNhZ2VSZXNwb25zZRJnChRTeW5jV2FzYWJpQ29ubmVjdGlvbhImLm5lb2JveC52MS5TeW5jV2FzYWJpQ29ubmVjdGlvblJlcXVlc3QaJy5uZW9ib3gudjEuU3luY1dhc2FiaUNvbm5lY3Rpb25SZXNwb25zZRJtChZHZXRXYXNhYmlDb3N0QnJlYWtkb3duEigubmVvYm94LnYxLkdldFdhc2FiaUNvc3RCcmVha2Rvd25SZXF1ZXN0GikubmVvYm94LnYxLkdldFdhc2FiaUNvc3RCcmVha2Rvd25SZXNwb25zZUI1WjNnby5vcngubWUvYXBwcy9uZW8tYm94L3BrZy9wcm90by9uZW9ib3gvdjE7bmVvYm94djFiBnByb3RvMw", [file_google_protobuf_timestamp, file_validate_validate]);
 
 /**
  * WasabiUsage is one day of Stats API utilization. Storage fields are a
@@ -495,6 +495,178 @@ export const SyncWasabiConnectionResponseSchema: GenMessage<SyncWasabiConnection
   messageDesc(file_neobox_v1_wasabi, 11);
 
 /**
+ * WasabiBucketCost is one bucket's share of a period's charge, in USD.
+ *
+ * @generated from message neobox.v1.WasabiBucketCost
+ */
+export type WasabiBucketCost = Message<"neobox.v1.WasabiBucketCost"> & {
+  /**
+   * @generated from field: string bucket = 1;
+   */
+  bucket: string;
+
+  /**
+   * @generated from field: string region = 2;
+   */
+  region: string;
+
+  /**
+   * The bucket has no row on the period's newest day.
+   *
+   * @generated from field: bool deleted = 3;
+   */
+  deleted: boolean;
+
+  /**
+   * @generated from field: double active_cost = 4;
+   */
+  activeCost: number;
+
+  /**
+   * Deleted data still billed under the minimum storage duration.
+   *
+   * @generated from field: double deleted_cost = 5;
+   */
+  deletedCost: number;
+
+  /**
+   * From the bucket's newest day in the period.
+   *
+   * @generated from field: int64 active_storage_bytes = 6;
+   */
+  activeStorageBytes: bigint;
+
+  /**
+   * @generated from field: int64 deleted_storage_bytes = 7;
+   */
+  deletedStorageBytes: bigint;
+
+  /**
+   * Bytes deleted during the period.
+   *
+   * @generated from field: int64 deleted_in_period_bytes = 8;
+   */
+  deletedInPeriodBytes: bigint;
+};
+
+/**
+ * Describes the message neobox.v1.WasabiBucketCost.
+ * Use `create(WasabiBucketCostSchema)` to create a new message.
+ */
+export const WasabiBucketCostSchema: GenMessage<WasabiBucketCost> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_wasabi, 12);
+
+/**
+ * WasabiCostBreakdown splits the cost estimate's period, in USD. Active,
+ * deleted and minimum add up to the estimate's cost to date. Wasabi doesn't
+ * say whether bucket figures add up to the account's, so what the buckets
+ * don't explain is unattributed_cost (negative when they add up to more).
+ *
+ * @generated from message neobox.v1.WasabiCostBreakdown
+ */
+export type WasabiCostBreakdown = Message<"neobox.v1.WasabiCostBreakdown"> & {
+  /**
+   * @generated from field: string period_start = 1;
+   */
+  periodStart: string;
+
+  /**
+   * @generated from field: string period_end = 2;
+   */
+  periodEnd: string;
+
+  /**
+   * @generated from field: bool rolling = 3;
+   */
+  rolling: boolean;
+
+  /**
+   * @generated from field: string data_through = 4;
+   */
+  dataThrough: string;
+
+  /**
+   * @generated from field: int32 days_with_data = 5;
+   */
+  daysWithData: number;
+
+  /**
+   * @generated from field: double price_per_tb_month = 6;
+   */
+  pricePerTbMonth: number;
+
+  /**
+   * @generated from field: double active_cost = 7;
+   */
+  activeCost: number;
+
+  /**
+   * @generated from field: double deleted_cost = 8;
+   */
+  deletedCost: number;
+
+  /**
+   * Tops active storage up to the 1 TB minimum.
+   *
+   * @generated from field: double minimum_cost = 9;
+   */
+  minimumCost: number;
+
+  /**
+   * @generated from field: double unattributed_cost = 10;
+   */
+  unattributedCost: number;
+
+  /**
+   * Highest total first.
+   *
+   * @generated from field: repeated neobox.v1.WasabiBucketCost buckets = 11;
+   */
+  buckets: WasabiBucketCost[];
+};
+
+/**
+ * Describes the message neobox.v1.WasabiCostBreakdown.
+ * Use `create(WasabiCostBreakdownSchema)` to create a new message.
+ */
+export const WasabiCostBreakdownSchema: GenMessage<WasabiCostBreakdown> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_wasabi, 13);
+
+/**
+ * @generated from message neobox.v1.GetWasabiCostBreakdownRequest
+ */
+export type GetWasabiCostBreakdownRequest = Message<"neobox.v1.GetWasabiCostBreakdownRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+};
+
+/**
+ * Describes the message neobox.v1.GetWasabiCostBreakdownRequest.
+ * Use `create(GetWasabiCostBreakdownRequestSchema)` to create a new message.
+ */
+export const GetWasabiCostBreakdownRequestSchema: GenMessage<GetWasabiCostBreakdownRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_wasabi, 14);
+
+/**
+ * @generated from message neobox.v1.GetWasabiCostBreakdownResponse
+ */
+export type GetWasabiCostBreakdownResponse = Message<"neobox.v1.GetWasabiCostBreakdownResponse"> & {
+  /**
+   * @generated from field: neobox.v1.WasabiCostBreakdown breakdown = 1;
+   */
+  breakdown?: WasabiCostBreakdown;
+};
+
+/**
+ * Describes the message neobox.v1.GetWasabiCostBreakdownResponse.
+ * Use `create(GetWasabiCostBreakdownResponseSchema)` to create a new message.
+ */
+export const GetWasabiCostBreakdownResponseSchema: GenMessage<GetWasabiCostBreakdownResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_wasabi, 15);
+
+/**
  * WasabiService shows the daily usage and estimated cost of Wasabi
  * connections, synced from the Wasabi Stats API. Connections themselves are
  * managed by ConnectionService; connection_id must name one of the caller's
@@ -544,6 +716,18 @@ export const WasabiService: GenService<{
     methodKind: "unary";
     input: typeof SyncWasabiConnectionRequestSchema;
     output: typeof SyncWasabiConnectionResponseSchema;
+  },
+  /**
+   * GetWasabiCostBreakdown splits the cost estimate's period by what the
+   * charge pays for (active storage, deleted storage still billed, the 1 TB
+   * minimum) and by bucket, at the connection's price.
+   *
+   * @generated from rpc neobox.v1.WasabiService.GetWasabiCostBreakdown
+   */
+  getWasabiCostBreakdown: {
+    methodKind: "unary";
+    input: typeof GetWasabiCostBreakdownRequestSchema;
+    output: typeof GetWasabiCostBreakdownResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_neobox_v1_wasabi, 0);

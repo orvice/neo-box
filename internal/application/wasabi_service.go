@@ -225,6 +225,34 @@ func (s *WasabiServiceServer) SyncWasabiConnection(ctx context.Context, req *con
 	return connect.NewResponse(&neoboxv1.SyncWasabiConnectionResponse{Sync: state}), nil
 }
 
+func (s *WasabiServiceServer) GetWasabiCostBreakdown(ctx context.Context, req *connect.Request[neoboxv1.GetWasabiCostBreakdownRequest]) (*connect.Response[neoboxv1.GetWasabiCostBreakdownResponse], error) {
+	userID, d, err := s.deps(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn, cfg, err := d.load(ctx, userID, req.Msg.GetConnectionId())
+	if err != nil {
+		return nil, err
+	}
+	anchor, err := cfg.Anchor()
+	if err != nil {
+		return nil, connectx.InternalWith(err)
+	}
+	today := wasabi.DayOf(s.now())
+	// Two cycles back covers the current cycle or the rolling 30 days.
+	from := today.AddDate(0, 0, -2*wasabi.CycleDays)
+	account, err := d.repo.ListUsage(ctx, conn.ID, "", from, today)
+	if err != nil {
+		return nil, connectx.InternalWith(err)
+	}
+	buckets, err := d.repo.ListBucketUsage(ctx, conn.ID, from, today)
+	if err != nil {
+		return nil, connectx.InternalWith(err)
+	}
+	b := wasabi.CostBreakdown(account, buckets, cfg.Price(), anchor, today)
+	return connect.NewResponse(&neoboxv1.GetWasabiCostBreakdownResponse{Breakdown: breakdownToProto(b, cfg.Price())}), nil
+}
+
 // --- conversions ---
 
 // newestDay is the newest day with data: the account's, or failing that
@@ -267,6 +295,24 @@ func estimateToProto(e wasabi.Estimate, price float64) *neoboxv1.WasabiCostEstim
 		CostToDate: e.CostToDate, ProjectedCost: e.ProjectedCost, PricePerTbMonth: price,
 		EgressBytes: e.EgressBytes, EgressExceedsStorage: e.EgressExceedsStorage,
 	}
+}
+
+func breakdownToProto(b wasabi.Breakdown, price float64) *neoboxv1.WasabiCostBreakdown {
+	out := &neoboxv1.WasabiCostBreakdown{
+		PeriodStart: formatDay(b.PeriodStart), PeriodEnd: formatDay(b.PeriodEnd), Rolling: b.Rolling,
+		DataThrough: formatDay(b.DataThrough), DaysWithData: int32(b.DaysWithData), PricePerTbMonth: price,
+		ActiveCost: b.ActiveCost, DeletedCost: b.DeletedCost, MinimumCost: b.MinimumCost,
+		UnattributedCost: b.Unattributed,
+	}
+	for _, c := range b.Buckets {
+		out.Buckets = append(out.Buckets, &neoboxv1.WasabiBucketCost{
+			Bucket: c.Bucket, Region: c.Region, Deleted: c.Gone,
+			ActiveCost: c.ActiveCost, DeletedCost: c.DeletedCost,
+			ActiveStorageBytes: c.ActiveBytes, DeletedStorageBytes: c.DeletedBytes,
+			DeletedInPeriodBytes: c.DeletedInPeriodBytes,
+		})
+	}
+	return out
 }
 
 func usageToProto(u wasabi.Usage) *neoboxv1.WasabiUsage {

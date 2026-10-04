@@ -8,6 +8,7 @@ import { Page, PageHeader, PageScroll } from '@/components/common/page-parts'
 import { formatCompact, formatDayLong } from './format'
 import { StatTile } from './stat-tile'
 import { UsageCharts } from './usage-charts'
+import { UsageDetailsCard } from './usage-details'
 
 const route = getRouteApi(
   '/_authenticated/connections/$connectionId/buckets/$bucket'
@@ -62,6 +63,7 @@ export function WasabiBucketPage() {
           </div>
         )}
         <UsageCharts connectionId={connectionId} bucket={bucket} />
+        {latest && <UsageDetailsCard usage={latest} />}
       </PageScroll>
     </Page>
   )

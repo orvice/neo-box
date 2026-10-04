@@ -22,6 +22,10 @@ service WasabiService {
   // SyncWasabiConnection re-fetches the last 7 days in the background (a
   // backfill first, if it has not finished).
   rpc SyncWasabiConnection(SyncWasabiConnectionRequest) returns (SyncWasabiConnectionResponse);
+  // GetWasabiCostBreakdown splits the cost estimate's period by what the
+  // charge pays for (active storage, deleted storage still billed, the 1 TB
+  // minimum) and by bucket, at the connection's price.
+  rpc GetWasabiCostBreakdown(GetWasabiCostBreakdownRequest) returns (GetWasabiCostBreakdownResponse);
 }
 
 // WasabiUsage is one day of Stats API utilization. Storage fields are a
@@ -142,4 +146,48 @@ message SyncWasabiConnectionRequest {
 
 message SyncWasabiConnectionResponse {
   WasabiSyncState sync = 1;
+}
+
+// WasabiBucketCost is one bucket's share of a period's charge, in USD.
+message WasabiBucketCost {
+  string bucket = 1;
+  string region = 2;
+  // The bucket has no row on the period's newest day.
+  bool deleted = 3;
+  double active_cost = 4;
+  // Deleted data still billed under the minimum storage duration.
+  double deleted_cost = 5;
+  // From the bucket's newest day in the period.
+  int64 active_storage_bytes = 6;
+  int64 deleted_storage_bytes = 7;
+  // Bytes deleted during the period.
+  int64 deleted_in_period_bytes = 8;
+}
+
+// WasabiCostBreakdown splits the cost estimate's period, in USD. Active,
+// deleted and minimum add up to the estimate's cost to date. Wasabi doesn't
+// say whether bucket figures add up to the account's, so what the buckets
+// don't explain is unattributed_cost (negative when they add up to more).
+message WasabiCostBreakdown {
+  string period_start = 1;
+  string period_end = 2;
+  bool rolling = 3;
+  string data_through = 4;
+  int32 days_with_data = 5;
+  double price_per_tb_month = 6;
+  double active_cost = 7;
+  double deleted_cost = 8;
+  // Tops active storage up to the 1 TB minimum.
+  double minimum_cost = 9;
+  double unattributed_cost = 10;
+  // Highest total first.
+  repeated WasabiBucketCost buckets = 11;
+}
+
+message GetWasabiCostBreakdownRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetWasabiCostBreakdownResponse {
+  WasabiCostBreakdown breakdown = 1;
 }

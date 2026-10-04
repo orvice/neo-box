@@ -5,6 +5,8 @@ import { makeClient } from './transport'
 
 export {
   type WasabiBucket,
+  type WasabiBucketCost,
+  type WasabiCostBreakdown,
   type WasabiCostEstimate,
   type WasabiSyncState,
   type WasabiUsage,
@@ -20,6 +22,8 @@ const keys = {
     ['wasabi', connectionId, 'buckets', includeDeleted] as const,
   usage: (connectionId: string, bucket: string, from: string, to: string) =>
     ['wasabi', connectionId, 'usage', bucket, from, to] as const,
+  breakdown: (connectionId: string) =>
+    ['wasabi', connectionId, 'breakdown'] as const,
 }
 
 // While a sync runs, poll so the page fills in as days arrive.
@@ -79,6 +83,16 @@ export function useWasabiUsage(
       (await client.getWasabiUsage({ connectionId, bucket, from, to })).days,
     // Keep the previous range on screen while the next one loads.
     placeholderData: (prev) => prev,
+  })
+}
+
+/** The cost estimate's period split by what it pays for and by bucket. */
+export function useWasabiCostBreakdown(connectionId: string, enabled = true) {
+  return useQuery({
+    queryKey: keys.breakdown(connectionId),
+    queryFn: async () =>
+      (await client.getWasabiCostBreakdown({ connectionId })).breakdown,
+    enabled,
   })
 }
 

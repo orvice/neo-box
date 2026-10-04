@@ -75,6 +75,10 @@ can't be deleted while a Restore of it is pending or running.
 - **Estimated cost** — Neo Box's estimate of a billing cycle's storage charge
   (or of the last 30 days without an anchor), from Daily usage and the
   connection's price. Never an invoice; egress is not priced.
+- **Cost breakdown** — the Estimated cost's period split by what the charge
+  pays for (active storage, deleted storage still billed, the 1 TB minimum)
+  and by bucket. Wasabi doesn't say that bucket figures add up to the
+  account's, so any difference is shown as unattributed.
 - **Backfill** — the first sync of a Wasabi Connection, covering the last 12
   months.
 

@@ -84,6 +84,22 @@ func (s *Store) ListUsage(ctx context.Context, connectionID, bucket string, from
 	return fromRows(rows), nil
 }
 
+func (s *Store) ListBucketUsage(ctx context.Context, connectionID string, from, to time.Time) ([]wasabi.Usage, error) {
+	rows, err := s.client.WasabiDailyUsage.Query().
+		Where(
+			wasabidailyusage.ConnectionID(connectionID),
+			wasabidailyusage.BucketNEQ(""),
+			wasabidailyusage.DayGTE(wasabi.DayOf(from)),
+			wasabidailyusage.DayLTE(wasabi.DayOf(to)),
+		).
+		Order(ent.Asc(wasabidailyusage.FieldDay), ent.Asc(wasabidailyusage.FieldBucket)).
+		All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("list wasabi bucket usage: %w", err)
+	}
+	return fromRows(rows), nil
+}
+
 func (s *Store) LatestBucketUsage(ctx context.Context, connectionID string) ([]wasabi.Usage, error) {
 	var latest []struct {
 		Bucket string    `json:"bucket"`
