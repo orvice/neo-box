@@ -184,22 +184,38 @@ func (w *Writer) Close() error {
 // (nil, nil) when it is absent. Other tables are skipped without being kept
 // in memory.
 func ReadTable(r io.Reader, tableID string) (*Header, *Table, error) {
+	var found *Table
+	header, err := ReadTables(r, func(t *Table) error {
+		if t.ID == tableID {
+			found = t
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	return header, found, nil
+}
+
+// ReadTables scans a gzip document and calls fn with each table in document
+// order. Only one table is held in memory at a time. The header is complete
+// before the first call, because writers put "tables" last.
+func ReadTables(r io.Reader, fn func(*Table) error) (*Header, error) {
 	gz, err := gzip.NewReader(r)
 	if err != nil {
-		return nil, nil, fmt.Errorf("snapshot: open gzip: %w", err)
+		return nil, fmt.Errorf("snapshot: open gzip: %w", err)
 	}
 	defer gz.Close()
 	dec := json.NewDecoder(bufio.NewReader(gz))
 
 	if err := expectDelim(dec, '{'); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	header := &Header{}
-	var found *Table
 	for dec.More() {
 		keyTok, err := dec.Token()
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 		key, _ := keyTok.(string)
 		switch key {
@@ -215,15 +231,15 @@ func ReadTable(r io.Reader, tableID string) (*Header, *Table, error) {
 			err = dec.Decode(&header.Base)
 		case "tables":
 			if err = expectDelim(dec, '['); err != nil {
-				return nil, nil, err
+				return nil, err
 			}
 			for dec.More() {
 				var t Table
 				if err := dec.Decode(&t); err != nil {
-					return nil, nil, fmt.Errorf("snapshot: decode table: %w", err)
+					return nil, fmt.Errorf("snapshot: decode table: %w", err)
 				}
-				if t.ID == tableID {
-					found = &t
+				if err := fn(&t); err != nil {
+					return nil, err
 				}
 			}
 			err = expectDelim(dec, ']')
@@ -232,13 +248,13 @@ func ReadTable(r io.Reader, tableID string) (*Header, *Table, error) {
 			err = dec.Decode(&skip)
 		}
 		if err != nil {
-			return nil, nil, fmt.Errorf("snapshot: decode %q: %w", key, err)
+			return nil, fmt.Errorf("snapshot: decode %q: %w", key, err)
 		}
 		if header.Format != "" && header.Format != FormatName {
-			return nil, nil, fmt.Errorf("snapshot: unexpected format %q", header.Format)
+			return nil, fmt.Errorf("snapshot: unexpected format %q", header.Format)
 		}
 	}
-	return header, found, nil
+	return header, nil
 }
 
 func expectDelim(dec *json.Decoder, want json.Delim) error {

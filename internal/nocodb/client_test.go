@@ -3,6 +3,7 @@ package nocodb
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
@@ -132,5 +133,85 @@ func TestListRecordsAndLinkedIDsPaginate(t *testing.T) {
 	got, _ := json.Marshal(ids)
 	if string(got) != "[7,8]" {
 		t.Fatalf("linked ids = %s", got)
+	}
+}
+
+func TestWriteRetriedOnlyOn429(t *testing.T) {
+	for _, tc := range []struct {
+		status    int
+		wantCalls int32
+	}{
+		{http.StatusTooManyRequests, 3},
+		{http.StatusInternalServerError, 1},
+		{http.StatusBadGateway, 1},
+	} {
+		var calls atomic.Int32
+		c := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			if calls.Add(1) < 3 {
+				w.WriteHeader(tc.status)
+				return
+			}
+			_, _ = w.Write([]byte(`{"records":[{"id":1}]}`))
+		})
+		_, err := c.InsertRecords(context.Background(), "p1", "m1", []map[string]json.RawMessage{{"Name": json.RawMessage(`"a"`)}})
+		if calls.Load() != tc.wantCalls {
+			t.Errorf("status %d: calls = %d, want %d", tc.status, calls.Load(), tc.wantCalls)
+		}
+		if (err == nil) != (tc.status == http.StatusTooManyRequests) {
+			t.Errorf("status %d: err = %v", tc.status, err)
+		}
+	}
+}
+
+func TestWriteNotRetriedAfterTransportError(t *testing.T) {
+	var calls atomic.Int32
+	c := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+		calls.Add(1)
+		hj, _ := w.(http.Hijacker)
+		conn, _, _ := hj.Hijack()
+		_ = conn.Close()
+	})
+	if err := c.LinkRecords(context.Background(), "p1", "m1", "c1", "1", []json.RawMessage{json.RawMessage("2")}); err == nil {
+		t.Fatal("expected an error")
+	}
+	if calls.Load() != 1 {
+		t.Fatalf("calls = %d, want 1", calls.Load())
+	}
+}
+
+func TestInsertRecordsAndLinkRecordsBodies(t *testing.T) {
+	c := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		if r.Header.Get("Content-Type") != "application/json" {
+			t.Errorf("content-type = %q", r.Header.Get("Content-Type"))
+		}
+		switch r.Method + " " + r.URL.Path {
+		case "POST /api/v3/data/p1/m1/records":
+			if string(body) != `[{"fields":{"Name":"a"}},{"fields":{"Name":"b"}}]` {
+				t.Errorf("insert body = %s", body)
+			}
+			_, _ = w.Write([]byte(`{"records":[{"id":7,"fields":{}},{"id":8,"fields":{}}]}`))
+		case "POST /api/v3/data/p1/m1/links/c1/7":
+			if string(body) != `[{"id":3},{"id":"k4"}]` {
+				t.Errorf("link body = %s", body)
+			}
+			_, _ = w.Write([]byte(`true`))
+		default:
+			t.Errorf("unexpected %s %s", r.Method, r.URL.Path)
+			w.WriteHeader(404)
+		}
+	})
+	ctx := context.Background()
+	ids, err := c.InsertRecords(ctx, "p1", "m1", []map[string]json.RawMessage{
+		{"Name": json.RawMessage(`"a"`)}, {"Name": json.RawMessage(`"b"`)},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := json.Marshal(ids); string(got) != "[7,8]" {
+		t.Fatalf("ids = %s", got)
+	}
+	if err := c.LinkRecords(ctx, "p1", "m1", "c1", "7", []json.RawMessage{json.RawMessage("3"), json.RawMessage(`"k4"`)}); err != nil {
+		t.Fatal(err)
 	}
 }
