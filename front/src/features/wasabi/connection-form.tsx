@@ -28,6 +28,9 @@ export function WasabiConnectionForm({
   )
   const [anchor, setAnchor] = useState(current?.billingCycleAnchor ?? '')
   const [estimate, setEstimate] = useState(current?.costEstimateEnabled ?? true)
+  const [budget, setBudget] = useState(
+    current?.budgetUsd ? String(current.budgetUsd) : ''
+  )
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -44,6 +47,11 @@ export function WasabiConnectionForm({
       toast.error('Price must be 0 or a positive number')
       return
     }
+    const budgetUsd = Number.parseFloat(budget || '0')
+    if (Number.isNaN(budgetUsd) || budgetUsd < 0) {
+      toast.error('Budget must be empty, 0, or a positive number')
+      return
+    }
     onSubmit(name.trim(), {
       case: 'wasabi',
       value: {
@@ -52,6 +60,7 @@ export function WasabiConnectionForm({
         pricePerTbMonth: perTB,
         billingCycleAnchor: anchor,
         costEstimateEnabled: estimate,
+        budgetUsd,
       },
     })
   }
@@ -139,6 +148,24 @@ export function WasabiConnectionForm({
             <p className='text-xs text-muted-foreground'>
               Any past invoice's start day. Without it, the estimate covers the
               last 30 days.
+            </p>
+          </div>
+          <div className='space-y-2'>
+            <Label htmlFor='conn-budget'>
+              Budget (USD per cycle, optional)
+            </Label>
+            <Input
+              id='conn-budget'
+              type='number'
+              min={0}
+              step='1'
+              placeholder='No budget'
+              value={budget}
+              onChange={(e) => setBudget(e.target.value)}
+            />
+            <p className='text-xs text-muted-foreground'>
+              Alerts fire when the estimate is on track to go over it, and again
+              when it does.
             </p>
           </div>
         </div>

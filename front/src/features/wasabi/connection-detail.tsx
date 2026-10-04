@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { ChevronLeft, TriangleAlert } from 'lucide-react'
+import { ChevronLeft, CircleAlert, TriangleAlert } from 'lucide-react'
 import { type Connection } from '@/api/connections'
 import {
   useWasabiBuckets,
@@ -9,6 +9,7 @@ import {
   type WasabiCostEstimate,
 } from '@/api/wasabi'
 import { formatBytes } from '@/lib/format'
+import { cn } from '@/lib/utils'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -18,6 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { ChartStyle, type ChartConfig } from '@/components/ui/chart'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
@@ -25,6 +27,7 @@ import { Page, PageHeader, PageScroll } from '@/components/common/page-parts'
 import { DataTable, type Column } from '@/components/data-table'
 import { CostBreakdownCard } from './cost-breakdown'
 import { formatCompact, formatDayLong, formatUSD, wasabiConfig } from './format'
+import { BLUE } from './palette'
 import { StatTile } from './stat-tile'
 import { SyncButton, SyncStatus } from './sync-status'
 import { UsageCharts } from './usage-charts'
@@ -130,12 +133,79 @@ function CostTile({ estimate }: { estimate: WasabiCostEstimate }) {
   const period = estimate.rolling
     ? 'monthly run rate from the newest day'
     : `cycle ${formatDayLong(estimate.periodStart)} – ${formatDayLong(estimate.periodEnd)}`
+  const trendDiffers =
+    estimate.trendFitted &&
+    Math.abs(estimate.trendProjectedCost - estimate.projectedCost) >= 0.01
   return (
     <StatTile
       label='Estimated cost'
       value={formatUSD(estimate.projectedCost)}
-      detail={`${formatUSD(estimate.costToDate)} so far · ${period} · at ${formatUSD(estimate.pricePerTbMonth)}/TB-month`}
+      detail={
+        <div className='space-y-2'>
+          <div>
+            {formatUSD(estimate.costToDate)} so far · {period} · at{' '}
+            {formatUSD(estimate.pricePerTbMonth)}/TB-month
+          </div>
+          {estimate.trendFitted && (
+            <div>
+              {trendDiffers
+                ? `${formatUSD(estimate.trendProjectedCost)} on the 30-day trend`
+                : 'Steady over the last 30 days'}
+              {!estimate.rolling &&
+                ` · next cycle ≈ ${formatUSD(estimate.nextCycleCost)}`}
+            </div>
+          )}
+          {estimate.budgetUsd > 0 && <BudgetMeter estimate={estimate} />}
+        </div>
+      }
     />
+  )
+}
+
+const budgetConfig = {
+  used: { label: 'Used', theme: BLUE },
+} satisfies ChartConfig
+
+/** Cost so far against the budget, with where the period is headed. */
+function BudgetMeter({ estimate: e }: { estimate: WasabiCostEstimate }) {
+  const id = `budget-${useId().replace(/:/g, '')}`
+  const used = e.costToDate / e.budgetUsd
+  const headed = Math.max(e.projectedCost, e.trendProjectedCost) / e.budgetUsd
+  const over = used > 1
+  return (
+    <div data-chart={id} className='space-y-1'>
+      <ChartStyle id={id} config={budgetConfig} />
+      <div
+        className='h-1.5 w-full rounded-full bg-muted'
+        role='meter'
+        aria-valuemin={0}
+        aria-valuemax={e.budgetUsd}
+        aria-valuenow={e.costToDate}
+        aria-label='Budget used'
+      >
+        <div
+          className={cn('h-full rounded-full', over && 'bg-danger')}
+          style={{
+            width: `${Math.min(used, 1) * 100}%`,
+            background: over ? undefined : 'var(--color-used)',
+          }}
+        />
+      </div>
+      <div className='flex flex-wrap items-center gap-x-2'>
+        <span>
+          {Math.round(used * 100)}% of the {formatUSD(e.budgetUsd)} budget
+        </span>
+        {over ? (
+          <span className='inline-flex items-center gap-1 text-danger-foreground'>
+            <CircleAlert className='h-3 w-3' /> Over budget
+          </span>
+        ) : headed > 1 ? (
+          <span className='inline-flex items-center gap-1 text-warning-foreground'>
+            <TriangleAlert className='h-3 w-3' /> On track to go over
+          </span>
+        ) : null}
+      </div>
+    </div>
   )
 }
 

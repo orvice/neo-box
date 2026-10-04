@@ -80,6 +80,16 @@ message WasabiCostEstimate {
   // Egress above the average active storage: outside Wasabi's free-egress
   // allowance.
   bool egress_exceeds_storage = 10;
+  // Whether enough recent days (7 of the last 30) were synced to fit a
+  // trend to the daily charges.
+  bool trend_fitted = 11;
+  // projected_cost with the days not synced yet following that trend
+  // instead of repeating the newest day; equal to it without a trend.
+  double trend_projected_cost = 12;
+  // The following 30-day cycle on the same trend; 0 for a rolling period.
+  double next_cycle_cost = 13;
+  // The connection's budget per billing cycle; 0 means none.
+  double budget_usd = 14;
 }
 
 message WasabiSyncState {

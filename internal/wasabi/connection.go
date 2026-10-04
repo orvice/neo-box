@@ -25,6 +25,9 @@ type ConnectionConfig struct {
 	// cycle started; empty estimates over the last 30 days instead.
 	BillingCycleAnchor  string `json:"billing_cycle_anchor,omitempty"`
 	CostEstimateEnabled bool   `json:"cost_estimate_enabled"`
+	// BudgetUSD is the most the user wants to spend per billing cycle; zero
+	// means no budget. Alerts fire when the estimate goes over it.
+	BudgetUSD float64 `json:"budget_usd,omitempty"`
 }
 
 // ConnectionSecret is a Wasabi connection's secret settings.

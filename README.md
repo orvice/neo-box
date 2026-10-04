@@ -208,9 +208,10 @@ UTC, so prefix expressions with a zone when needed, e.g.
 
 ### Notifications
 
-Neo Box raises an alert when a scheduled snapshot or a restore fails, and
-when a connection stops working (for example a revoked token or a failing
-Wasabi sync). Each problem is reported once. Alerts are listed under
+Neo Box raises an alert when a scheduled snapshot or a restore fails, when
+a connection stops working (for example a revoked token or a failing Wasabi
+sync), and when a Wasabi account goes over its budget or egress or deletes
+look costly. Each problem is reported once. Alerts are listed under
 **Settings → Notifications** and sent to your Telegram channels:
 
 1. Message `@BotFather` in Telegram with `/newbot` and copy the token.
@@ -250,6 +251,15 @@ the current 30-day cycle; without one, the last 30 days. It is an estimate,
 not your invoice (Wasabi exposes no invoice API for standalone accounts),
 and can be turned off per connection, e.g. for Reserved Capacity plans.
 Egress is not priced; the page warns when it exceeds the stored volume.
+
+With a budget set on the connection, the cost tile shows how much of it is
+used, and Neo Box raises an alert when the estimate is on track to go over
+it and again when it does. The tile also projects the period, and the next
+cycle, on the trend of the last 30 days. After every sync Neo Box also
+alerts when the period's egress exceeds the stored volume, and when a day's
+deletes exceed a quarter of the storage (and 10 GB): objects deleted before
+they are 90 days old stay billed until then. See
+[Notifications](#notifications).
 
 "Where the cost goes" splits the same period's charge into active storage,
 deleted data still billed (objects deleted before they are 90 days old stay

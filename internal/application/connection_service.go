@@ -231,11 +231,16 @@ func wasabiSettings(in *neoboxv1.WasabiConnectionSettings) (*providerSettings, e
 	if price < 0 || math.IsNaN(price) || math.IsInf(price, 0) {
 		return nil, connectx.InvalidArgument("price_per_tb_month", "must be a non-negative number")
 	}
+	budget := in.GetBudgetUsd()
+	if budget < 0 || math.IsNaN(budget) || math.IsInf(budget, 0) {
+		return nil, connectx.InvalidArgument("budget_usd", "must be a non-negative number")
+	}
 	cfg := wasabi.ConnectionConfig{
 		AccessKeyID:         keyID,
 		PricePerTBMonth:     price,
 		BillingCycleAnchor:  strings.TrimSpace(in.GetBillingCycleAnchor()),
 		CostEstimateEnabled: in.GetCostEstimateEnabled(),
+		BudgetUSD:           budget,
 	}
 	anchor, err := cfg.Anchor()
 	if err != nil {
@@ -266,6 +271,7 @@ func configToProto(c *connrepo.Connection, out *neoboxv1.Connection) {
 			out.Config = &neoboxv1.Connection_Wasabi{Wasabi: &neoboxv1.WasabiConnectionConfig{
 				AccessKeyId: cfg.AccessKeyID, PricePerTbMonth: cfg.Price(),
 				BillingCycleAnchor: cfg.BillingCycleAnchor, CostEstimateEnabled: cfg.CostEstimateEnabled,
+				BudgetUsd: cfg.BudgetUSD,
 			}}
 		}
 	}

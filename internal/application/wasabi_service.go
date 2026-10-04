@@ -122,7 +122,7 @@ func (s *WasabiServiceServer) GetWasabiOverview(ctx context.Context, req *connec
 		if err != nil {
 			return nil, connectx.InternalWith(err)
 		}
-		resp.CostEstimate = estimateToProto(wasabi.EstimateCost(days, cfg.Price(), anchor, today), cfg.Price())
+		resp.CostEstimate = estimateToProto(wasabi.EstimateCost(days, cfg.Price(), anchor, today), cfg)
 	}
 
 	if resp.Sync, err = syncStateToProto(ctx, d, conn.ID, today); err != nil {
@@ -288,12 +288,14 @@ func syncStateToProto(ctx context.Context, d *wasabiDeps, connectionID string, t
 	return out, nil
 }
 
-func estimateToProto(e wasabi.Estimate, price float64) *neoboxv1.WasabiCostEstimate {
+func estimateToProto(e wasabi.Estimate, cfg wasabi.ConnectionConfig) *neoboxv1.WasabiCostEstimate {
 	return &neoboxv1.WasabiCostEstimate{
 		PeriodStart: formatDay(e.PeriodStart), PeriodEnd: formatDay(e.PeriodEnd), Rolling: e.Rolling,
 		DataThrough: formatDay(e.DataThrough), DaysWithData: int32(e.DaysWithData),
-		CostToDate: e.CostToDate, ProjectedCost: e.ProjectedCost, PricePerTbMonth: price,
+		CostToDate: e.CostToDate, ProjectedCost: e.ProjectedCost, PricePerTbMonth: cfg.Price(),
 		EgressBytes: e.EgressBytes, EgressExceedsStorage: e.EgressExceedsStorage,
+		TrendFitted: e.TrendFitted, TrendProjectedCost: e.TrendProjectedCost, NextCycleCost: e.NextCycleCost,
+		BudgetUsd: cfg.BudgetUSD,
 	}
 }
 

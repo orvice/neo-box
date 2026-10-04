@@ -79,6 +79,12 @@ can't be deleted while a Restore of it is pending or running.
   pays for (active storage, deleted storage still billed, the 1 TB minimum)
   and by bucket. Wasabi doesn't say that bucket figures add up to the
   account's, so any difference is shown as unattributed.
+- **Budget** — what a user wants to spend on a Wasabi Connection per billing
+  cycle (or per 30 days without an anchor). Alerts fire when the Estimated
+  cost is on track to go over it, and again when it does.
+- **Trend forecast** — the Estimated cost with the days still to come
+  following a line fitted to the last 30 days' charges (never below the 1 TB
+  minimum), plus the next cycle on the same line.
 - **Backfill** — the first sync of a Wasabi Connection, covering the last 12
   months.
 
@@ -89,8 +95,10 @@ can't be deleted while a Restore of it is pending or running.
   token) is sealed like a Connection's credentials and never returned. A
   channel can be turned off without deleting it.
 - **Alert** — something background work wants a User to know: a failed
-  scheduled Snapshot, a failed Restore, or a Connection whose health turned
-  to error. Each Alert has a dedupe key chosen by whatever raised it, so a
+  scheduled Snapshot, a failed Restore, a Connection whose health turned to
+  error, or a Wasabi Connection that is over or on track to go over its
+  Budget, downloading more than it stores, or deleting a large share of its
+  data in a day. Each Alert has a dedupe key chosen by whatever raised it, so a
   problem is reported once however often it is seen. Alerts go to every
   enabled channel of the User and are kept as a log with their delivery
   outcome.
