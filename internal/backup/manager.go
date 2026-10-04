@@ -26,6 +26,7 @@ import (
 
 	"go.orx.me/apps/neo-box/internal/blobstore"
 	"go.orx.me/apps/neo-box/internal/nocodb"
+	"go.orx.me/apps/neo-box/internal/notify"
 	connrepo "go.orx.me/apps/neo-box/internal/repo/connection"
 	repo "go.orx.me/apps/neo-box/internal/repo/nocodb"
 	"go.orx.me/apps/neo-box/internal/snapshot"
@@ -108,6 +109,7 @@ type Manager struct {
 	entries  map[string]cron.EntryID // policy key -> entry
 	inFlight map[string]string       // connection/base -> snapshot id
 	limiters map[string]*connLimiter // connection id -> shared limiter
+	notifier notify.Notifier
 
 	// newClient is swapped in tests. limiter is nil for a connection that
 	// isn't stored yet.
@@ -172,6 +174,23 @@ func (m *Manager) Start(ctx context.Context) error {
 		<-stopCtx.Done()
 	}()
 	return m.ReloadSchedules(ctx)
+}
+
+// SetNotifier makes failed scheduled snapshots and failed restores raise
+// alerts.
+func (m *Manager) SetNotifier(n notify.Notifier) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.notifier = n
+}
+
+func (m *Manager) notify(ctx context.Context, a notify.Alert) {
+	m.mu.Lock()
+	n := m.notifier
+	m.mu.Unlock()
+	if n != nil {
+		n.Notify(ctx, a)
+	}
 }
 
 // Wait blocks until all workers exit (after the Start context is cancelled).
@@ -394,6 +413,22 @@ func (m *Manager) execute(parent context.Context, snapshotID string) {
 	if err := m.repo.UpdateSnapshot(finishCtx, snap); err != nil {
 		logger.Error("snapshot finish update failed", "snapshot_id", snap.ID, "err", err)
 		return
+	}
+	// Manual snapshots are watched in the dashboard; scheduled ones run
+	// unattended.
+	if runErr != nil && snap.Trigger == repo.TriggerScheduled {
+		title := snap.BaseTitle
+		if title == "" {
+			title = snap.BaseID
+		}
+		m.notify(finishCtx, notify.Alert{
+			UserID: snap.UserID, Source: "nocodb", ConnectionID: snap.ConnectionID, Kind: "snapshot_failed",
+			Key:      "nocodb:snapshot_failed:" + snap.ID,
+			Severity: notify.Warning,
+			Title:    fmt.Sprintf("Scheduled snapshot of %q failed", title),
+			Body:     snap.Error,
+			Link:     fmt.Sprintf("/connections/%s/snapshots/%s", snap.ConnectionID, snap.ID),
+		})
 	}
 	if runErr == nil && snap.Trigger == repo.TriggerScheduled {
 		if err := m.applyRetention(finishCtx, snap.ConnectionID, snap.BaseID); err != nil {

@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 
 	"go.orx.me/apps/neo-box/internal/nocodb"
+	"go.orx.me/apps/neo-box/internal/notify"
 	connrepo "go.orx.me/apps/neo-box/internal/repo/connection"
 	repo "go.orx.me/apps/neo-box/internal/repo/nocodb"
 	"go.orx.me/apps/neo-box/internal/snapshot"
@@ -103,6 +104,24 @@ func (m *Manager) executeRestore(parent context.Context, restoreID string) {
 	}
 	if err := m.repo.UpdateRestore(finishCtx, r); err != nil {
 		logger.Error("restore finish update failed", "restore_id", r.ID, "err", err)
+	}
+	if runErr != nil {
+		title := r.SourceBaseTitle
+		if title == "" {
+			title = r.SourceBaseID
+		}
+		body := r.Error
+		if r.TargetBaseID != "" {
+			body += fmt.Sprintf("\nThe partial Base %s (%q) is left in NocoDB.", r.TargetBaseID, r.TargetBaseTitle)
+		}
+		m.notify(finishCtx, notify.Alert{
+			UserID: r.UserID, Source: "nocodb", ConnectionID: r.TargetConnectionID, Kind: "restore_failed",
+			Key:      "nocodb:restore_failed:" + r.ID,
+			Severity: notify.Warning,
+			Title:    fmt.Sprintf("Restore of %q failed", title),
+			Body:     body,
+			Link:     fmt.Sprintf("/connections/%s/snapshots/%s", r.SourceConnectionID, r.SnapshotID),
+		})
 	}
 }
 

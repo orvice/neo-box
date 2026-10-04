@@ -12,6 +12,8 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// Alert is the client for interacting with the Alert builders.
+	Alert *AlertClient
 	// Connection is the client for interacting with the Connection builders.
 	Connection *ConnectionClient
 	// NocoDBBackupPolicy is the client for interacting with the NocoDBBackupPolicy builders.
@@ -20,6 +22,8 @@ type Tx struct {
 	NocoDBRestore *NocoDBRestoreClient
 	// NocoDBSnapshot is the client for interacting with the NocoDBSnapshot builders.
 	NocoDBSnapshot *NocoDBSnapshotClient
+	// NotificationChannel is the client for interacting with the NotificationChannel builders.
+	NotificationChannel *NotificationChannelClient
 	// OAuthState is the client for interacting with the OAuthState builders.
 	OAuthState *OAuthStateClient
 	// Session is the client for interacting with the Session builders.
@@ -161,10 +165,12 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.Alert = NewAlertClient(tx.config)
 	tx.Connection = NewConnectionClient(tx.config)
 	tx.NocoDBBackupPolicy = NewNocoDBBackupPolicyClient(tx.config)
 	tx.NocoDBRestore = NewNocoDBRestoreClient(tx.config)
 	tx.NocoDBSnapshot = NewNocoDBSnapshotClient(tx.config)
+	tx.NotificationChannel = NewNotificationChannelClient(tx.config)
 	tx.OAuthState = NewOAuthStateClient(tx.config)
 	tx.Session = NewSessionClient(tx.config)
 	tx.User = NewUserClient(tx.config)
@@ -179,7 +185,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: Connection.QueryXXX(), the query will be executed
+// applies a query, for example: Alert.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

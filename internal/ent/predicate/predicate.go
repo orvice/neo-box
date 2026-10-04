@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Alert is the predicate function for alert builders.
+type Alert func(*sql.Selector)
+
 // Connection is the predicate function for connection builders.
 type Connection func(*sql.Selector)
 
@@ -17,6 +20,9 @@ type NocoDBRestore func(*sql.Selector)
 
 // NocoDBSnapshot is the predicate function for nocodbsnapshot builders.
 type NocoDBSnapshot func(*sql.Selector)
+
+// NotificationChannel is the predicate function for notificationchannel builders.
+type NotificationChannel func(*sql.Selector)
 
 // OAuthState is the predicate function for oauthstate builders.
 type OAuthState func(*sql.Selector)

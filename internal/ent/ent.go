@@ -12,10 +12,12 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"go.orx.me/apps/neo-box/internal/ent/alert"
 	"go.orx.me/apps/neo-box/internal/ent/connection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbrestore"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbsnapshot"
+	"go.orx.me/apps/neo-box/internal/ent/notificationchannel"
 	"go.orx.me/apps/neo-box/internal/ent/oauthstate"
 	"go.orx.me/apps/neo-box/internal/ent/session"
 	"go.orx.me/apps/neo-box/internal/ent/user"
@@ -81,15 +83,17 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			connection.Table:         connection.ValidColumn,
-			nocodbbackuppolicy.Table: nocodbbackuppolicy.ValidColumn,
-			nocodbrestore.Table:      nocodbrestore.ValidColumn,
-			nocodbsnapshot.Table:     nocodbsnapshot.ValidColumn,
-			oauthstate.Table:         oauthstate.ValidColumn,
-			session.Table:            session.ValidColumn,
-			user.Table:               user.ValidColumn,
-			wasabidailyusage.Table:   wasabidailyusage.ValidColumn,
-			wasabisyncstate.Table:    wasabisyncstate.ValidColumn,
+			alert.Table:               alert.ValidColumn,
+			connection.Table:          connection.ValidColumn,
+			nocodbbackuppolicy.Table:  nocodbbackuppolicy.ValidColumn,
+			nocodbrestore.Table:       nocodbrestore.ValidColumn,
+			nocodbsnapshot.Table:      nocodbsnapshot.ValidColumn,
+			notificationchannel.Table: notificationchannel.ValidColumn,
+			oauthstate.Table:          oauthstate.ValidColumn,
+			session.Table:             session.ValidColumn,
+			user.Table:                user.ValidColumn,
+			wasabidailyusage.Table:    wasabidailyusage.ValidColumn,
+			wasabisyncstate.Table:     wasabisyncstate.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

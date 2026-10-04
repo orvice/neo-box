@@ -82,6 +82,19 @@ can't be deleted while a Restore of it is pending or running.
 - **Backfill** — the first sync of a Wasabi Connection, covering the last 12
   months.
 
+### Notifications
+
+- **Notification channel** — one place a User's alerts are delivered; today a
+  Telegram chat reached through the User's own bot. Its secret (the bot
+  token) is sealed like a Connection's credentials and never returned. A
+  channel can be turned off without deleting it.
+- **Alert** — something background work wants a User to know: a failed
+  scheduled Snapshot, a failed Restore, or a Connection whose health turned
+  to error. Each Alert has a dedupe key chosen by whatever raised it, so a
+  problem is reported once however often it is seen. Alerts go to every
+  enabled channel of the User and are kept as a log with their delivery
+  outcome.
+
 ## Planned (not yet modeled)
 
 - More **Providers** beyond NocoDB and Wasabi.

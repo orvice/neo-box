@@ -1,0 +1,137 @@
+syntax = "proto3";
+
+package neobox.v1;
+
+import "google/protobuf/timestamp.proto";
+import "validate/validate.proto";
+
+option go_package = "go.orx.me/apps/neo-box/pkg/proto/neobox/v1;neoboxv1";
+
+// NotificationService manages where the calling user's alerts are delivered
+// (notification channels) and lists the alerts raised for them. Alerts are
+// raised by background work: failed scheduled snapshots and restores, and
+// connections that stop working.
+service NotificationService {
+  rpc ListNotificationChannels(ListNotificationChannelsRequest) returns (ListNotificationChannelsResponse);
+  rpc CreateNotificationChannel(CreateNotificationChannelRequest) returns (CreateNotificationChannelResponse);
+  rpc UpdateNotificationChannel(UpdateNotificationChannelRequest) returns (UpdateNotificationChannelResponse);
+  rpc DeleteNotificationChannel(DeleteNotificationChannelRequest) returns (DeleteNotificationChannelResponse);
+  // TestNotificationChannel sends a test message now and returns the
+  // channel with the outcome recorded.
+  rpc TestNotificationChannel(TestNotificationChannelRequest) returns (TestNotificationChannelResponse);
+  // ListAlerts lists the user's alerts, newest first.
+  rpc ListAlerts(ListAlertsRequest) returns (ListAlertsResponse);
+}
+
+// TelegramChannelConfig is a Telegram channel as returned; the bot token is
+// write-only.
+message TelegramChannelConfig {
+  string chat_id = 1;
+}
+
+// TelegramChannelSettings is what a user enters for a Telegram channel.
+message TelegramChannelSettings {
+  // A numeric chat ID (negative for groups) or @channelname.
+  string chat_id = 1 [(validate.rules).string.min_len = 1];
+  // From @BotFather. Required on create; on update, empty keeps the stored
+  // token.
+  string bot_token = 2;
+}
+
+message NotificationChannel {
+  string id = 1;
+  string name = 2;
+  bool enabled = 3;
+  oneof config {
+    TelegramChannelConfig telegram = 20;
+  }
+  // The last successful delivery.
+  google.protobuf.Timestamp last_sent_at = 4;
+  // The last delivery's error; empty when it succeeded.
+  string last_error = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message ListNotificationChannelsRequest {}
+
+message ListNotificationChannelsResponse {
+  repeated NotificationChannel channels = 1;
+}
+
+message CreateNotificationChannelRequest {
+  string name = 1 [(validate.rules).string.min_len = 1];
+  oneof settings {
+    option (validate.required) = true;
+    TelegramChannelSettings telegram = 20;
+  }
+}
+
+message CreateNotificationChannelResponse {
+  NotificationChannel channel = 1;
+}
+
+message UpdateNotificationChannelRequest {
+  string id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  bool enabled = 3;
+  // Must match the channel's type.
+  oneof settings {
+    option (validate.required) = true;
+    TelegramChannelSettings telegram = 20;
+  }
+}
+
+message UpdateNotificationChannelResponse {
+  NotificationChannel channel = 1;
+}
+
+message DeleteNotificationChannelRequest {
+  string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message DeleteNotificationChannelResponse {}
+
+message TestNotificationChannelRequest {
+  string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message TestNotificationChannelResponse {
+  NotificationChannel channel = 1;
+  // Empty when the test message was delivered.
+  string error = 2;
+}
+
+enum AlertSeverity {
+  ALERT_SEVERITY_UNSPECIFIED = 0;
+  ALERT_SEVERITY_INFO = 1;
+  ALERT_SEVERITY_WARNING = 2;
+  ALERT_SEVERITY_CRITICAL = 3;
+}
+
+message Alert {
+  string id = 1;
+  // What raised it: "nocodb", "wasabi", or "connection".
+  string source = 2;
+  string connection_id = 3;
+  // The rule, e.g. "snapshot_failed", "restore_failed", "connection_error".
+  string kind = 4;
+  AlertSeverity severity = 5;
+  string title = 6;
+  string body = 7;
+  // A dashboard path, e.g. "/connections/<id>".
+  string link = 8;
+  google.protobuf.Timestamp created_at = 9;
+  // Set once delivered to at least one channel.
+  google.protobuf.Timestamp delivered_at = 10;
+  // Why delivery failed, per channel; empty when every channel took it.
+  string delivery_error = 11;
+}
+
+message ListAlertsRequest {
+  int32 limit = 1;
+}
+
+message ListAlertsResponse {
+  repeated Alert alerts = 1;
+}
