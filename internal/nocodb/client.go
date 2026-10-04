@@ -1,10 +1,10 @@
 // Package nocodb is a minimal REST client for self-hosted (OSS) NocoDB.
 //
-// It speaks the subset of the API that snapshots need: v2 for listing Bases
-// (OSS has no workspaces, and the v3 base list is workspace-scoped) and v3 for
-// base/table schema, paged records, and linked records. Requests are
-// authenticated with the `xc-token` header, rate limited per client, and
-// retried on 429 / 5xx.
+// It speaks the subset of the API that snapshots and restores need: v2 for
+// listing and creating Bases (OSS has no workspaces, and the v3 base routes
+// are workspace-scoped) and v3 for base/table schema, records, and links.
+// Requests are authenticated with the `xc-token` header, rate limited per
+// client, and retried on 429 / 5xx (writes only on 429).
 package nocodb
 
 import (
@@ -118,6 +118,14 @@ func IsNotFound(err error) bool {
 	return errors.As(err, &apiErr) && apiErr.StatusCode == http.StatusNotFound
 }
 
+// IsBadRequest reports whether err is a 400 or 422 from NocoDB: the request
+// itself was rejected, so sending it again unchanged won't help.
+func IsBadRequest(err error) bool {
+	var apiErr *APIError
+	return errors.As(err, &apiErr) &&
+		(apiErr.StatusCode == http.StatusBadRequest || apiErr.StatusCode == http.StatusUnprocessableEntity)
+}
+
 // IsAuthError reports whether err is a 401 or 403 from NocoDB: the API token
 // is invalid or lacks access.
 func IsAuthError(err error) bool {
@@ -169,9 +177,10 @@ func (c *Client) ListTables(ctx context.Context, baseID string) ([]TableSummary,
 
 // Field is the part of a v3 field definition snapshots reason about.
 type Field struct {
-	ID    string `json:"id"`
-	Title string `json:"title"`
-	Type  string `json:"type"`
+	ID      string          `json:"id"`
+	Title   string          `json:"title"`
+	Type    string          `json:"type"`
+	Options json.RawMessage `json:"options,omitempty"`
 }
 
 // IsLink reports whether the field holds relations to other records.
@@ -194,13 +203,17 @@ func (c *Client) GetTable(ctx context.Context, baseID, tableID string) (*Table, 
 	if err := c.getJSON(ctx, path, nil, &raw); err != nil {
 		return nil, err
 	}
+	return parseTable(raw)
+}
+
+func parseTable(raw json.RawMessage) (*Table, error) {
 	var parsed struct {
 		ID     string  `json:"id"`
 		Title  string  `json:"title"`
 		Fields []Field `json:"fields"`
 	}
 	if err := json.Unmarshal(raw, &parsed); err != nil {
-		return nil, fmt.Errorf("nocodb: decode table %s: %w", tableID, err)
+		return nil, fmt.Errorf("nocodb: decode table: %w", err)
 	}
 	return &Table{ID: parsed.ID, Title: parsed.Title, Fields: parsed.Fields, Raw: raw}, nil
 }
@@ -278,7 +291,7 @@ func (c *Client) ListLinkedIDs(ctx context.Context, baseID, tableID, linkFieldID
 }
 
 func (c *Client) getJSON(ctx context.Context, path string, query url.Values, out any) error {
-	body, err := c.do(ctx, http.MethodGet, path, query)
+	body, err := c.do(ctx, http.MethodGet, path, query, nil)
 	if err != nil {
 		return err
 	}
@@ -288,11 +301,35 @@ func (c *Client) getJSON(ctx context.Context, path string, query url.Values, out
 	return nil
 }
 
-func (c *Client) do(ctx context.Context, method, path string, query url.Values) ([]byte, error) {
+// sendJSON sends in as the JSON body of a write request and decodes the
+// response into out, which may be nil.
+func (c *Client) sendJSON(ctx context.Context, method, path string, in, out any) error {
+	payload, err := json.Marshal(in)
+	if err != nil {
+		return fmt.Errorf("nocodb: encode %s: %w", path, err)
+	}
+	body, err := c.do(ctx, method, path, nil, payload)
+	if err != nil {
+		return err
+	}
+	if out == nil {
+		return nil
+	}
+	if err := json.Unmarshal(body, out); err != nil {
+		return fmt.Errorf("nocodb: decode %s: %w", path, err)
+	}
+	return nil
+}
+
+// do sends one request, retrying per retryable. A write (anything but GET)
+// is retried only on 429: after a 5xx or a transport error it may already
+// have been applied, and repeating an insert would duplicate records.
+func (c *Client) do(ctx context.Context, method, path string, query url.Values, payload []byte) ([]byte, error) {
 	target := c.baseURL + path
 	if len(query) > 0 {
 		target += "?" + query.Encode()
 	}
+	write := method != http.MethodGet
 	var lastErr error
 	for attempt := 0; ; attempt++ {
 		if c.limiter != nil {
@@ -300,13 +337,20 @@ func (c *Client) do(ctx context.Context, method, path string, query url.Values) 
 				return nil, err
 			}
 		}
-		req, err := http.NewRequestWithContext(ctx, method, target, nil)
+		var reqBody io.Reader
+		if payload != nil {
+			reqBody = bytes.NewReader(payload)
+		}
+		req, err := http.NewRequestWithContext(ctx, method, target, reqBody)
 		if err != nil {
 			return nil, err
 		}
 		req.Header.Set("xc-token", c.token)
 		req.Header.Set("Accept", "application/json")
 		req.Header.Set("User-Agent", userAgent)
+		if payload != nil {
+			req.Header.Set("Content-Type", "application/json")
+		}
 
 		resp, err := c.http.Do(req)
 		if err != nil {
@@ -314,16 +358,22 @@ func (c *Client) do(ctx context.Context, method, path string, query url.Values) 
 				return nil, ctx.Err()
 			}
 			lastErr = fmt.Errorf("nocodb: %s %s: %w", method, path, err)
+			if write {
+				return nil, lastErr
+			}
 		} else {
 			body, readErr := io.ReadAll(resp.Body)
 			resp.Body.Close()
 			if readErr != nil {
 				lastErr = fmt.Errorf("nocodb: read %s: %w", path, readErr)
+				if write {
+					return nil, lastErr
+				}
 			} else if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 				return body, nil
 			} else {
 				apiErr := &APIError{StatusCode: resp.StatusCode, Method: method, Path: path, Message: errorMessage(body)}
-				if !retryable(resp.StatusCode) {
+				if !retryable(resp.StatusCode) || (write && resp.StatusCode != http.StatusTooManyRequests) {
 					return nil, apiErr
 				}
 				lastErr = apiErr

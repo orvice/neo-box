@@ -327,6 +327,18 @@ schema, and are skipped unless `NEOBOX_TEST_POSTGRES_DSN` is set:
 NEOBOX_TEST_POSTGRES_DSN='postgres://neobox:neobox@localhost:5432/neobox?sslmode=disable' go test ./...
 ```
 
+The NocoDB restore round trip (`internal/snapshot`) builds a fixture Base,
+snapshots it, restores it into a new Base and compares the two. It runs
+against a real NocoDB, a local `nocodb/nocodb` container is enough, and is
+skipped unless these are set:
+
+```bash
+NEOBOX_TEST_NOCODB_URL=http://localhost:8080 \
+NEOBOX_TEST_NOCODB_TOKEN=<api token> \
+NEOBOX_TEST_NOCODB_EMAIL=<the token owner's email> \
+go test ./internal/snapshot -run TestLiveRestoreRoundTrip -v
+```
+
 ## Layout
 
 ```
@@ -336,7 +348,7 @@ internal/application/  ConnectRPC service implementations
 internal/connection/   connections across providers (secrets, verify, health)
 internal/backup/       NocoDB snapshot queue, cron scheduling, retention
 internal/nocodb/       NocoDB REST client
-internal/snapshot/     snapshot document format
+internal/snapshot/     snapshot document format, restore into a new Base
 internal/wasabi/       Wasabi Stats API client, settings, cost estimate
 internal/wasabisync/   Wasabi usage sync: backfill, daily run, provider
 internal/ent/          ent schema (schema/) + generated client (do not edit)

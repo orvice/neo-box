@@ -73,10 +73,15 @@ shadcn/ui + Connect-Web on the frontend.
   `crypto.encryption_key`).
 - `internal/blobstore/` — object storage: S3 (butterfly `store.s3`, selected
   by `storage.s3_store`) or a local directory fallback for development.
-- `internal/nocodb/` — NocoDB REST client (v2 base list, v3 meta/data),
-  `xc-token` auth, rate limiting, 429/5xx retry.
+- `internal/nocodb/` — NocoDB REST client (v2 base list/create, v3
+  meta/data reads and writes), `xc-token` auth, rate limiting, 429/5xx
+  retry for reads and 429-only retry for writes.
 - `internal/snapshot/` — builds and reads the Snapshot document (streaming
-  gzip JSON; format in `format.go`, rationale in `docs/adr/0001`).
+  gzip JSON; format in `format.go`, rationale in `docs/adr/0001`), and
+  `Restore` rebuilds one into a new Base (`restore*.go`, `docs/adr/0004`).
+  The live round-trip test needs `NEOBOX_TEST_NOCODB_URL`,
+  `NEOBOX_TEST_NOCODB_TOKEN` and `NEOBOX_TEST_NOCODB_EMAIL` (the token
+  owner's email); an OSS `nocodb/nocodb` container is enough.
 - `internal/backup/` — `Manager`: worker queue running snapshots, in-process
   cron for Backup Policies, retention, and one-snapshot-per-Base guarding.
 - `internal/wasabi/` — Wasabi Stats API client (`Authorization: AK:SK`,
