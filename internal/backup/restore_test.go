@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
 	"go.orx.me/apps/neo-box/internal/blobstore"
 	"go.orx.me/apps/neo-box/internal/connection"
 	"go.orx.me/apps/neo-box/internal/nocodb"
+	"go.orx.me/apps/neo-box/internal/notify"
 	connrepo "go.orx.me/apps/neo-box/internal/repo/connection"
 	repo "go.orx.me/apps/neo-box/internal/repo/nocodb"
 )
@@ -203,5 +205,64 @@ func TestLimiterSharedPerConnection(t *testing.T) {
 	}
 	if h.m.limiter("c1", 10) == a {
 		t.Fatal("a new rate should replace the limiter")
+	}
+}
+
+type recordingNotifier struct {
+	mu     sync.Mutex
+	alerts []notify.Alert
+}
+
+func (n *recordingNotifier) Notify(_ context.Context, a notify.Alert) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	n.alerts = append(n.alerts, a)
+}
+
+func (n *recordingNotifier) kinds() []string {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	var out []string
+	for _, a := range n.alerts {
+		out = append(out, a.Kind)
+	}
+	return out
+}
+
+func TestFailuresRaiseAlerts(t *testing.T) {
+	h := newHarness(t)
+	n := &recordingNotifier{}
+	h.m.SetNotifier(n)
+	ctx := context.Background()
+
+	// A failed manual snapshot is watched in the dashboard: no alert.
+	h.api.fail = true
+	manual, _ := h.m.Enqueue(ctx, h.conn, "p1", "CRM", repo.TriggerManual)
+	h.waitDone(t, manual.ID)
+	scheduled, _ := h.m.Enqueue(ctx, h.conn, "p1", "CRM", repo.TriggerScheduled)
+	h.waitDone(t, scheduled.ID)
+	if got := n.kinds(); len(got) != 1 || got[0] != "snapshot_failed" {
+		t.Fatalf("alerts after snapshots = %v", got)
+	}
+	a := n.alerts[0]
+	if a.UserID != "u1" || a.Key != "nocodb:snapshot_failed:"+scheduled.ID || a.Title != `Scheduled snapshot of "CRM" failed` ||
+		a.Link != "/connections/c1/snapshots/"+scheduled.ID || a.Body == "" {
+		t.Fatalf("snapshot alert = %+v", a)
+	}
+
+	h.api.fail = false
+	snap := h.snapshot(t)
+	h.api.insertErr = &nocodb.APIError{StatusCode: 500, Method: "POST", Path: "/records", Message: "boom"}
+	r, err := h.m.EnqueueRestore(ctx, snap, h.conn, "CRM copy")
+	if err != nil {
+		t.Fatal(err)
+	}
+	h.waitRestore(t, r.ID)
+	if got := n.kinds(); len(got) != 2 || got[1] != "restore_failed" {
+		t.Fatalf("alerts after restore = %v", got)
+	}
+	a = n.alerts[1]
+	if a.Key != "nocodb:restore_failed:"+r.ID || !strings.Contains(a.Body, `The partial Base pR ("CRM copy") is left in NocoDB.`) {
+		t.Fatalf("restore alert = %+v", a)
 	}
 }

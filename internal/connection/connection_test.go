@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"go.orx.me/apps/neo-box/internal/notify"
 	repo "go.orx.me/apps/neo-box/internal/repo/connection"
 	"go.orx.me/apps/neo-box/internal/repo/connection/memory"
 	"go.orx.me/apps/neo-box/internal/secretbox"
@@ -240,5 +241,38 @@ func TestActivateOnCreateAndSettingsChange(t *testing.T) {
 	}
 	if len(p.activated) != 2 || p.activated[0] != "created" || p.activated[1] != "new config" {
 		t.Fatalf("Activate calls = %v, want create and the config change only", p.activated)
+	}
+}
+
+type recordingNotifier struct{ alerts []notify.Alert }
+
+func (n *recordingNotifier) Notify(_ context.Context, a notify.Alert) { n.alerts = append(n.alerts, a) }
+
+func TestRecordStatusAlertsOncePerOutage(t *testing.T) {
+	s, _, _ := newService(t)
+	n := &recordingNotifier{}
+	s.SetNotifier(n)
+	ctx := context.Background()
+	c, err := s.Create(ctx, "u1", "fake", "home", testConfig{}, testSecret{Token: "t"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	s.RecordStatus(ctx, c.ID, nil)
+	s.RecordStatus(ctx, c.ID, errors.New("401 unauthorized")) // ok -> error: alert
+	s.RecordStatus(ctx, c.ID, errors.New("401 again"))        // still failing: no alert
+	s.RecordStatus(ctx, c.ID, nil)                            // recovered
+	s.RecordStatus(ctx, c.ID, errors.New("timeout"))          // a new outage: alert
+
+	if len(n.alerts) != 2 {
+		t.Fatalf("alerts = %+v", n.alerts)
+	}
+	a := n.alerts[0]
+	if a.UserID != "u1" || a.ConnectionID != c.ID || a.Kind != "connection_error" || a.Severity != notify.Critical ||
+		a.Title != `Connection "home" stopped working` || a.Body != "401 unauthorized" || a.Link != "/connections/"+c.ID {
+		t.Fatalf("alert = %+v", a)
+	}
+	if n.alerts[0].Key == n.alerts[1].Key {
+		t.Fatal("two outages share a dedupe key")
 	}
 }

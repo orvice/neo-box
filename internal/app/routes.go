@@ -12,6 +12,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/backup"
 	"go.orx.me/apps/neo-box/internal/config"
 	httpHandler "go.orx.me/apps/neo-box/internal/handler/http"
+	"go.orx.me/apps/neo-box/internal/notify"
 	"go.orx.me/apps/neo-box/internal/repo/auth"
 	nocodbrepo "go.orx.me/apps/neo-box/internal/repo/nocodb"
 	"go.orx.me/apps/neo-box/internal/transport/connectx"
@@ -28,12 +29,14 @@ type Handlers struct {
 	connectionSvcServer *application.ConnectionServiceServer
 	nocodbSvcServer     *application.NocoDBServiceServer
 	wasabiSvcServer     *application.WasabiServiceServer
+	notifySvcServer     *application.NotificationServiceServer
 	authRepo            atomic.Value // auth.Repository
 	snapshots           atomic.Value // *snapshotContent
 
-	stop    context.CancelFunc
-	manager *backup.Manager
-	wasabi  *wasabisync.Manager
+	stop     context.CancelFunc
+	manager  *backup.Manager
+	wasabi   *wasabisync.Manager
+	notifier *notify.Service
 }
 
 func (h *Handlers) authRepoFromHolder() auth.Repository {
@@ -77,6 +80,8 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 	nocodbConnectPath, nocodbConnectHandler := neoboxv1connect.NewNocoDBServiceHandler(nocodbSvcServer, connectOpts...)
 	wasabiSvcServer := application.NewWasabiServiceServer()
 	wasabiConnectPath, wasabiConnectHandler := neoboxv1connect.NewWasabiServiceHandler(wasabiSvcServer, connectOpts...)
+	notifySvcServer := application.NewNotificationServiceServer()
+	notifyConnectPath, notifyConnectHandler := neoboxv1connect.NewNotificationServiceHandler(notifySvcServer, connectOpts...)
 
 	handlers := &Handlers{
 		cfg:                 cfg,
@@ -84,6 +89,7 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 		connectionSvcServer: connectionSvcServer,
 		nocodbSvcServer:     nocodbSvcServer,
 		wasabiSvcServer:     wasabiSvcServer,
+		notifySvcServer:     notifySvcServer,
 	}
 
 	router := func(r *gin.Engine) {
@@ -95,6 +101,7 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 		r.Any("/api"+connectionConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", connectionConnectHandler)))
 		r.Any("/api"+nocodbConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", nocodbConnectHandler)))
 		r.Any("/api"+wasabiConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", wasabiConnectHandler)))
+		r.Any("/api"+notifyConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", notifyConnectHandler)))
 	}
 
 	return router, handlers

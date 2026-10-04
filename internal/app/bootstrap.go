@@ -18,9 +18,11 @@ import (
 	"go.orx.me/apps/neo-box/internal/config"
 	"go.orx.me/apps/neo-box/internal/connection"
 	"go.orx.me/apps/neo-box/internal/ent"
+	"go.orx.me/apps/neo-box/internal/notify"
 	authpg "go.orx.me/apps/neo-box/internal/repo/auth/postgres"
 	connectionpg "go.orx.me/apps/neo-box/internal/repo/connection/postgres"
 	nocodbpg "go.orx.me/apps/neo-box/internal/repo/nocodb/postgres"
+	notifypg "go.orx.me/apps/neo-box/internal/repo/notify/postgres"
 	oauthstatepg "go.orx.me/apps/neo-box/internal/repo/oauthstate/postgres"
 	wasabipg "go.orx.me/apps/neo-box/internal/repo/wasabi/postgres"
 	"go.orx.me/apps/neo-box/internal/secretbox"
@@ -56,6 +58,16 @@ func (h *Handlers) Bootstrap(ctx context.Context) error {
 	h.connectionSvcServer.SetService(conns)
 
 	runCtx, stop := context.WithCancel(context.Background())
+	notifier := notify.NewService(notifypg.New(client), cipher, cfg.Notify.DashboardURL)
+	notifier.Register(&notify.Telegram{Endpoint: cfg.Notify.TelegramEndpoint})
+	if err := notifier.Start(runCtx); err != nil {
+		stop()
+		return err
+	}
+	h.notifier = notifier
+	h.notifySvcServer.SetService(notifier)
+	conns.SetNotifier(notifier)
+
 	if err := h.bootstrapNocoDB(ctx, runCtx, client, conns); err != nil {
 		stop()
 		return err
@@ -95,6 +107,7 @@ func (h *Handlers) bootstrapNocoDB(ctx, runCtx context.Context, client *ent.Clie
 		RestoreTimeout:  cfg.NocoDB.RestoreTimeout,
 	}, nocodbRepo, conns, blobs)
 	conns.Register(manager.ConnectionProvider())
+	manager.SetNotifier(h.notifier)
 
 	if err := manager.Start(runCtx); err != nil {
 		return err
@@ -156,6 +169,7 @@ func (h *Handlers) Shutdown() error {
 	go func() {
 		h.manager.Wait()
 		h.wasabi.Wait()
+		h.notifier.Wait()
 		close(done)
 	}()
 	select {
