@@ -294,6 +294,27 @@ var (
 			},
 		},
 	}
+	// WasabiBucketConfigsColumns holds the columns for the "wasabi_bucket_configs" table.
+	WasabiBucketConfigsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "connection_id", Type: field.TypeString},
+		{Name: "bucket", Type: field.TypeString},
+		{Name: "config", Type: field.TypeString, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "fetched_at", Type: field.TypeTime},
+	}
+	// WasabiBucketConfigsTable holds the schema information for the "wasabi_bucket_configs" table.
+	WasabiBucketConfigsTable = &schema.Table{
+		Name:       "wasabi_bucket_configs",
+		Columns:    WasabiBucketConfigsColumns,
+		PrimaryKey: []*schema.Column{WasabiBucketConfigsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "wasabibucketconfig_connection_id_bucket",
+				Unique:  true,
+				Columns: []*schema.Column{WasabiBucketConfigsColumns[1], WasabiBucketConfigsColumns[2]},
+			},
+		},
+	}
 	// WasabiDailyUsageColumns holds the columns for the "wasabi_daily_usage" table.
 	WasabiDailyUsageColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -342,6 +363,8 @@ var (
 		{Name: "backfill_from", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "date"}},
 		{Name: "backfill_through", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "date"}},
 		{Name: "backfill_completed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "config_fetched_at", Type: field.TypeTime, Nullable: true},
+		{Name: "config_error", Type: field.TypeString, Size: 2147483647, Default: ""},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// WasabiSyncStatesTable holds the schema information for the "wasabi_sync_states" table.
@@ -361,6 +384,7 @@ var (
 		OauthStatesTable,
 		AuthSessionsTable,
 		UsersTable,
+		WasabiBucketConfigsTable,
 		WasabiDailyUsageTable,
 		WasabiSyncStatesTable,
 	}
@@ -393,6 +417,9 @@ func init() {
 	}
 	UsersTable.Annotation = &entsql.Annotation{
 		Table: "users",
+	}
+	WasabiBucketConfigsTable.Annotation = &entsql.Annotation{
+		Table: "wasabi_bucket_configs",
 	}
 	WasabiDailyUsageTable.Annotation = &entsql.Annotation{
 		Table: "wasabi_daily_usage",

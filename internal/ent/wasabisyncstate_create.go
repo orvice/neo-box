@@ -93,6 +93,34 @@ func (_c *WasabiSyncStateCreate) SetNillableBackfillCompletedAt(v *time.Time) *W
 	return _c
 }
 
+// SetConfigFetchedAt sets the "config_fetched_at" field.
+func (_c *WasabiSyncStateCreate) SetConfigFetchedAt(v time.Time) *WasabiSyncStateCreate {
+	_c.mutation.SetConfigFetchedAt(v)
+	return _c
+}
+
+// SetNillableConfigFetchedAt sets the "config_fetched_at" field if the given value is not nil.
+func (_c *WasabiSyncStateCreate) SetNillableConfigFetchedAt(v *time.Time) *WasabiSyncStateCreate {
+	if v != nil {
+		_c.SetConfigFetchedAt(*v)
+	}
+	return _c
+}
+
+// SetConfigError sets the "config_error" field.
+func (_c *WasabiSyncStateCreate) SetConfigError(v string) *WasabiSyncStateCreate {
+	_c.mutation.SetConfigError(v)
+	return _c
+}
+
+// SetNillableConfigError sets the "config_error" field if the given value is not nil.
+func (_c *WasabiSyncStateCreate) SetNillableConfigError(v *string) *WasabiSyncStateCreate {
+	if v != nil {
+		_c.SetConfigError(*v)
+	}
+	return _c
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_c *WasabiSyncStateCreate) SetUpdatedAt(v time.Time) *WasabiSyncStateCreate {
 	_c.mutation.SetUpdatedAt(v)
@@ -112,6 +140,7 @@ func (_c *WasabiSyncStateCreate) Mutation() *WasabiSyncStateMutation {
 
 // Save creates the WasabiSyncState in the database.
 func (_c *WasabiSyncStateCreate) Save(ctx context.Context) (*WasabiSyncState, error) {
+	_c.defaults()
 	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
@@ -137,8 +166,19 @@ func (_c *WasabiSyncStateCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (_c *WasabiSyncStateCreate) defaults() {
+	if _, ok := _c.mutation.ConfigError(); !ok {
+		v := wasabisyncstate.DefaultConfigError
+		_c.mutation.SetConfigError(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (_c *WasabiSyncStateCreate) check() error {
+	if _, ok := _c.mutation.ConfigError(); !ok {
+		return &ValidationError{Name: "config_error", err: errors.New(`ent: missing required field "WasabiSyncState.config_error"`)}
+	}
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "WasabiSyncState.updated_at"`)}
 	}
@@ -197,6 +237,14 @@ func (_c *WasabiSyncStateCreate) createSpec() (*WasabiSyncState, *sqlgraph.Creat
 	if value, ok := _c.mutation.BackfillCompletedAt(); ok {
 		_spec.SetField(wasabisyncstate.FieldBackfillCompletedAt, field.TypeTime, value)
 		_node.BackfillCompletedAt = &value
+	}
+	if value, ok := _c.mutation.ConfigFetchedAt(); ok {
+		_spec.SetField(wasabisyncstate.FieldConfigFetchedAt, field.TypeTime, value)
+		_node.ConfigFetchedAt = &value
+	}
+	if value, ok := _c.mutation.ConfigError(); ok {
+		_spec.SetField(wasabisyncstate.FieldConfigError, field.TypeString, value)
+		_node.ConfigError = value
 	}
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(wasabisyncstate.FieldUpdatedAt, field.TypeTime, value)
@@ -341,6 +389,36 @@ func (u *WasabiSyncStateUpsert) UpdateBackfillCompletedAt() *WasabiSyncStateUpse
 // ClearBackfillCompletedAt clears the value of the "backfill_completed_at" field.
 func (u *WasabiSyncStateUpsert) ClearBackfillCompletedAt() *WasabiSyncStateUpsert {
 	u.SetNull(wasabisyncstate.FieldBackfillCompletedAt)
+	return u
+}
+
+// SetConfigFetchedAt sets the "config_fetched_at" field.
+func (u *WasabiSyncStateUpsert) SetConfigFetchedAt(v time.Time) *WasabiSyncStateUpsert {
+	u.Set(wasabisyncstate.FieldConfigFetchedAt, v)
+	return u
+}
+
+// UpdateConfigFetchedAt sets the "config_fetched_at" field to the value that was provided on create.
+func (u *WasabiSyncStateUpsert) UpdateConfigFetchedAt() *WasabiSyncStateUpsert {
+	u.SetExcluded(wasabisyncstate.FieldConfigFetchedAt)
+	return u
+}
+
+// ClearConfigFetchedAt clears the value of the "config_fetched_at" field.
+func (u *WasabiSyncStateUpsert) ClearConfigFetchedAt() *WasabiSyncStateUpsert {
+	u.SetNull(wasabisyncstate.FieldConfigFetchedAt)
+	return u
+}
+
+// SetConfigError sets the "config_error" field.
+func (u *WasabiSyncStateUpsert) SetConfigError(v string) *WasabiSyncStateUpsert {
+	u.Set(wasabisyncstate.FieldConfigError, v)
+	return u
+}
+
+// UpdateConfigError sets the "config_error" field to the value that was provided on create.
+func (u *WasabiSyncStateUpsert) UpdateConfigError() *WasabiSyncStateUpsert {
+	u.SetExcluded(wasabisyncstate.FieldConfigError)
 	return u
 }
 
@@ -509,6 +587,41 @@ func (u *WasabiSyncStateUpsertOne) ClearBackfillCompletedAt() *WasabiSyncStateUp
 	})
 }
 
+// SetConfigFetchedAt sets the "config_fetched_at" field.
+func (u *WasabiSyncStateUpsertOne) SetConfigFetchedAt(v time.Time) *WasabiSyncStateUpsertOne {
+	return u.Update(func(s *WasabiSyncStateUpsert) {
+		s.SetConfigFetchedAt(v)
+	})
+}
+
+// UpdateConfigFetchedAt sets the "config_fetched_at" field to the value that was provided on create.
+func (u *WasabiSyncStateUpsertOne) UpdateConfigFetchedAt() *WasabiSyncStateUpsertOne {
+	return u.Update(func(s *WasabiSyncStateUpsert) {
+		s.UpdateConfigFetchedAt()
+	})
+}
+
+// ClearConfigFetchedAt clears the value of the "config_fetched_at" field.
+func (u *WasabiSyncStateUpsertOne) ClearConfigFetchedAt() *WasabiSyncStateUpsertOne {
+	return u.Update(func(s *WasabiSyncStateUpsert) {
+		s.ClearConfigFetchedAt()
+	})
+}
+
+// SetConfigError sets the "config_error" field.
+func (u *WasabiSyncStateUpsertOne) SetConfigError(v string) *WasabiSyncStateUpsertOne {
+	return u.Update(func(s *WasabiSyncStateUpsert) {
+		s.SetConfigError(v)
+	})
+}
+
+// UpdateConfigError sets the "config_error" field to the value that was provided on create.
+func (u *WasabiSyncStateUpsertOne) UpdateConfigError() *WasabiSyncStateUpsertOne {
+	return u.Update(func(s *WasabiSyncStateUpsert) {
+		s.UpdateConfigError()
+	})
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (u *WasabiSyncStateUpsertOne) SetUpdatedAt(v time.Time) *WasabiSyncStateUpsertOne {
 	return u.Update(func(s *WasabiSyncStateUpsert) {
@@ -580,6 +693,7 @@ func (_c *WasabiSyncStateCreateBulk) Save(ctx context.Context) ([]*WasabiSyncSta
 	for i := range _c.builders {
 		func(i int, root context.Context) {
 			builder := _c.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*WasabiSyncStateMutation)
 				if !ok {
@@ -839,6 +953,41 @@ func (u *WasabiSyncStateUpsertBulk) UpdateBackfillCompletedAt() *WasabiSyncState
 func (u *WasabiSyncStateUpsertBulk) ClearBackfillCompletedAt() *WasabiSyncStateUpsertBulk {
 	return u.Update(func(s *WasabiSyncStateUpsert) {
 		s.ClearBackfillCompletedAt()
+	})
+}
+
+// SetConfigFetchedAt sets the "config_fetched_at" field.
+func (u *WasabiSyncStateUpsertBulk) SetConfigFetchedAt(v time.Time) *WasabiSyncStateUpsertBulk {
+	return u.Update(func(s *WasabiSyncStateUpsert) {
+		s.SetConfigFetchedAt(v)
+	})
+}
+
+// UpdateConfigFetchedAt sets the "config_fetched_at" field to the value that was provided on create.
+func (u *WasabiSyncStateUpsertBulk) UpdateConfigFetchedAt() *WasabiSyncStateUpsertBulk {
+	return u.Update(func(s *WasabiSyncStateUpsert) {
+		s.UpdateConfigFetchedAt()
+	})
+}
+
+// ClearConfigFetchedAt clears the value of the "config_fetched_at" field.
+func (u *WasabiSyncStateUpsertBulk) ClearConfigFetchedAt() *WasabiSyncStateUpsertBulk {
+	return u.Update(func(s *WasabiSyncStateUpsert) {
+		s.ClearConfigFetchedAt()
+	})
+}
+
+// SetConfigError sets the "config_error" field.
+func (u *WasabiSyncStateUpsertBulk) SetConfigError(v string) *WasabiSyncStateUpsertBulk {
+	return u.Update(func(s *WasabiSyncStateUpsert) {
+		s.SetConfigError(v)
+	})
+}
+
+// UpdateConfigError sets the "config_error" field to the value that was provided on create.
+func (u *WasabiSyncStateUpsertBulk) UpdateConfigError() *WasabiSyncStateUpsertBulk {
+	return u.Update(func(s *WasabiSyncStateUpsert) {
+		s.UpdateConfigError()
 	})
 }
 

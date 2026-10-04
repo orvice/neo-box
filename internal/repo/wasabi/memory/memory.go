@@ -3,6 +3,7 @@ package memory
 
 import (
 	"context"
+	"slices"
 	"sort"
 	"sync"
 	"time"
@@ -17,9 +18,10 @@ type key struct {
 }
 
 type Store struct {
-	mu     sync.Mutex
-	usage  map[key]wasabi.Usage
-	states map[string]repo.SyncState
+	mu      sync.Mutex
+	usage   map[key]wasabi.Usage
+	states  map[string]repo.SyncState
+	configs map[string][]wasabi.BucketConfig
 }
 
 var _ repo.Repository = (*Store)(nil)
@@ -109,6 +111,24 @@ func (s *Store) SaveSyncState(_ context.Context, st *repo.SyncState) error {
 	return nil
 }
 
+func (s *Store) ReplaceBucketConfigs(_ context.Context, connectionID string, configs []wasabi.BucketConfig) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.configs == nil {
+		s.configs = map[string][]wasabi.BucketConfig{}
+	}
+	s.configs[connectionID] = slices.Clone(configs)
+	return nil
+}
+
+func (s *Store) ListBucketConfigs(_ context.Context, connectionID string) ([]wasabi.BucketConfig, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	out := slices.Clone(s.configs[connectionID])
+	sort.Slice(out, func(i, j int) bool { return out[i].Bucket < out[j].Bucket })
+	return out, nil
+}
+
 func (s *Store) DeleteConnectionData(_ context.Context, connectionID string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -118,5 +138,6 @@ func (s *Store) DeleteConnectionData(_ context.Context, connectionID string) err
 		}
 	}
 	delete(s.states, connectionID)
+	delete(s.configs, connectionID)
 	return nil
 }

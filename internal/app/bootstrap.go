@@ -147,7 +147,10 @@ func purgeExpired(ctx context.Context, sessions *authpg.Store, states *oauthstat
 
 func (h *Handlers) bootstrapWasabi(runCtx context.Context, client *ent.Client, conns *connection.Service) error {
 	repo := wasabipg.New(client)
-	manager := wasabisync.New(wasabisync.Config{Endpoint: h.cfg.Wasabi.StatsEndpoint}, repo, conns)
+	manager := wasabisync.New(wasabisync.Config{
+		Endpoint:   h.cfg.Wasabi.StatsEndpoint,
+		S3Endpoint: h.cfg.Wasabi.S3Endpoint,
+	}, repo, conns)
 	conns.Register(manager.ConnectionProvider())
 	manager.SetNotifier(h.notifier)
 	if err := manager.Start(runCtx); err != nil {

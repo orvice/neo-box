@@ -145,3 +145,54 @@ func TestSyncStateAndDelete(t *testing.T) {
 		t.Fatalf("another connection's usage was deleted")
 	}
 }
+
+func TestBucketConfigs(t *testing.T) {
+	s := New(pgtest.NewClient(t))
+	ctx := context.Background()
+	at := time.Now().UTC().Truncate(time.Microsecond)
+	media := wasabi.BucketConfig{
+		Bucket: "media", Region: "eu-central-1", FetchedAt: at,
+		Versioning: &wasabi.Versioning{Status: "Enabled"},
+		Lifecycle:  []wasabi.LifecycleRule{{ID: "r1", Enabled: true, NoncurrentDays: 7}},
+		Errors:     map[string]string{wasabi.SettingACL: wasabi.ErrAccessDenied},
+	}
+	old := wasabi.BucketConfig{Bucket: "old", FetchedAt: at}
+	if err := s.ReplaceBucketConfigs(ctx, "c1", []wasabi.BucketConfig{media, old}); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.ReplaceBucketConfigs(ctx, "c2", []wasabi.BucketConfig{{Bucket: "other", FetchedAt: at}}); err != nil {
+		t.Fatal(err)
+	}
+	// The next read no longer lists "old".
+	media.Versioning.Status = "Suspended"
+	if err := s.ReplaceBucketConfigs(ctx, "c1", []wasabi.BucketConfig{media}); err != nil {
+		t.Fatal(err)
+	}
+	got, err := s.ListBucketConfigs(ctx, "c1")
+	if err != nil || len(got) != 1 {
+		t.Fatalf("ListBucketConfigs = %+v, %v", got, err)
+	}
+	c := got[0]
+	if c.Bucket != "media" || c.Region != "eu-central-1" || c.Versioning.Status != "Suspended" || len(c.Lifecycle) != 1 ||
+		c.Errors[wasabi.SettingACL] != wasabi.ErrAccessDenied || !c.FetchedAt.Equal(at) {
+		t.Fatalf("config = %+v", c)
+	}
+	if other, _ := s.ListBucketConfigs(ctx, "c2"); len(other) != 1 {
+		t.Fatalf("c2 configs = %+v", other)
+	}
+
+	st := &repo.SyncState{ConnectionID: "c1", ConfigFetchedAt: at, ConfigError: "access_denied", UpdatedAt: at}
+	if err := s.SaveSyncState(ctx, st); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := s.GetSyncState(ctx, "c1"); !got.ConfigFetchedAt.Equal(at) || got.ConfigError != "access_denied" {
+		t.Fatalf("sync state = %+v", got)
+	}
+
+	if err := s.DeleteConnectionData(ctx, "c1"); err != nil {
+		t.Fatal(err)
+	}
+	if left, _ := s.ListBucketConfigs(ctx, "c1"); len(left) != 0 {
+		t.Fatalf("configs left = %+v", left)
+	}
+}

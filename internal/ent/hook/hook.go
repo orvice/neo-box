@@ -117,6 +117,18 @@ func (f UserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserMutation", m)
 }
 
+// The WasabiBucketConfigFunc type is an adapter to allow the use of ordinary
+// function as WasabiBucketConfig mutator.
+type WasabiBucketConfigFunc func(context.Context, *ent.WasabiBucketConfigMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WasabiBucketConfigFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.WasabiBucketConfigMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WasabiBucketConfigMutation", m)
+}
+
 // The WasabiDailyUsageFunc type is an adapter to allow the use of ordinary
 // function as WasabiDailyUsage mutator.
 type WasabiDailyUsageFunc func(context.Context, *ent.WasabiDailyUsageMutation) (ent.Value, error)

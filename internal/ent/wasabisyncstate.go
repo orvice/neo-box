@@ -27,6 +27,10 @@ type WasabiSyncState struct {
 	BackfillThrough *time.Time `json:"backfill_through,omitempty"`
 	// BackfillCompletedAt holds the value of the "backfill_completed_at" field.
 	BackfillCompletedAt *time.Time `json:"backfill_completed_at,omitempty"`
+	// ConfigFetchedAt holds the value of the "config_fetched_at" field.
+	ConfigFetchedAt *time.Time `json:"config_fetched_at,omitempty"`
+	// ConfigError holds the value of the "config_error" field.
+	ConfigError string `json:"config_error,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt    time.Time `json:"updated_at,omitempty"`
 	selectValues sql.SelectValues
@@ -37,9 +41,9 @@ func (*WasabiSyncState) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case wasabisyncstate.FieldID:
+		case wasabisyncstate.FieldID, wasabisyncstate.FieldConfigError:
 			values[i] = new(sql.NullString)
-		case wasabisyncstate.FieldLastSyncedDay, wasabisyncstate.FieldLastSuccessAt, wasabisyncstate.FieldBackfillFrom, wasabisyncstate.FieldBackfillThrough, wasabisyncstate.FieldBackfillCompletedAt, wasabisyncstate.FieldUpdatedAt:
+		case wasabisyncstate.FieldLastSyncedDay, wasabisyncstate.FieldLastSuccessAt, wasabisyncstate.FieldBackfillFrom, wasabisyncstate.FieldBackfillThrough, wasabisyncstate.FieldBackfillCompletedAt, wasabisyncstate.FieldConfigFetchedAt, wasabisyncstate.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -96,6 +100,19 @@ func (_m *WasabiSyncState) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.BackfillCompletedAt = new(time.Time)
 				*_m.BackfillCompletedAt = value.Time
+			}
+		case wasabisyncstate.FieldConfigFetchedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field config_fetched_at", values[i])
+			} else if value.Valid {
+				_m.ConfigFetchedAt = new(time.Time)
+				*_m.ConfigFetchedAt = value.Time
+			}
+		case wasabisyncstate.FieldConfigError:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field config_error", values[i])
+			} else if value.Valid {
+				_m.ConfigError = value.String
 			}
 		case wasabisyncstate.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -163,6 +180,14 @@ func (_m *WasabiSyncState) String() string {
 		builder.WriteString("backfill_completed_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
+	builder.WriteString(", ")
+	if v := _m.ConfigFetchedAt; v != nil {
+		builder.WriteString("config_fetched_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("config_error=")
+	builder.WriteString(_m.ConfigError)
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))

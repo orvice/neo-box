@@ -21,6 +21,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent/oauthstate"
 	"go.orx.me/apps/neo-box/internal/ent/session"
 	"go.orx.me/apps/neo-box/internal/ent/user"
+	"go.orx.me/apps/neo-box/internal/ent/wasabibucketconfig"
 	"go.orx.me/apps/neo-box/internal/ent/wasabidailyusage"
 	"go.orx.me/apps/neo-box/internal/ent/wasabisyncstate"
 )
@@ -92,6 +93,7 @@ func checkColumn(t, c string) error {
 			oauthstate.Table:          oauthstate.ValidColumn,
 			session.Table:             session.ValidColumn,
 			user.Table:                user.ValidColumn,
+			wasabibucketconfig.Table:  wasabibucketconfig.ValidColumn,
 			wasabidailyusage.Table:    wasabidailyusage.ValidColumn,
 			wasabisyncstate.Table:     wasabisyncstate.ValidColumn,
 		})

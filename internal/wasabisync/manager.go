@@ -32,6 +32,13 @@ type Stats interface {
 	BucketUsage(ctx context.Context, from, to time.Time) ([]wasabi.Usage, error)
 }
 
+// BucketReader reads bucket settings through the S3 API
+// (*wasabi.ConfigReader).
+type BucketReader interface {
+	ListBuckets(ctx context.Context) ([]wasabi.BucketInfo, error)
+	Read(ctx context.Context, b wasabi.BucketInfo) wasabi.BucketConfig
+}
+
 // Connections is what the manager needs from the connection service
 // (*connection.Service).
 type Connections interface {
@@ -44,6 +51,9 @@ type Connections interface {
 type Config struct {
 	// Endpoint is the Stats API host; empty means wasabi.DefaultEndpoint.
 	Endpoint string
+	// S3Endpoint sends every S3 request to one host (tests); empty uses
+	// each bucket's regional Wasabi endpoint.
+	S3Endpoint string
 	// Schedule is the daily run's cron expression.
 	Schedule string
 	// BackfillDays is how far back a new connection is filled.
@@ -93,9 +103,10 @@ type Manager struct {
 	cancelled map[string]bool // deleted while queued
 	notifier  notify.Notifier
 
-	// newClient and now are swapped in tests.
-	newClient func(accessKey, secretKey string) (Stats, error)
-	now       func() time.Time
+	// newClient, newBucketReader and now are swapped in tests.
+	newClient       func(accessKey, secretKey string) (Stats, error)
+	newBucketReader func(accessKey, secretKey string) BucketReader
+	now             func() time.Time
 }
 
 func New(cfg Config, r repo.Repository, conns Connections) *Manager {
@@ -109,6 +120,13 @@ func New(cfg Config, r repo.Repository, conns Connections) *Manager {
 		cancelled: make(map[string]bool),
 		newClient: func(accessKey, secretKey string) (Stats, error) {
 			return wasabi.New(accessKey, secretKey, wasabi.WithEndpoint(cfg.Endpoint))
+		},
+		newBucketReader: func(accessKey, secretKey string) BucketReader {
+			var opts []wasabi.ConfigReaderOption
+			if cfg.S3Endpoint != "" {
+				opts = append(opts, wasabi.WithS3Endpoint(cfg.S3Endpoint))
+			}
+			return wasabi.NewConfigReader(accessKey, secretKey, opts...)
 		},
 		now: time.Now,
 	}
@@ -288,18 +306,27 @@ func (m *Manager) run(parent context.Context, j job) {
 		return
 	}
 	logger.Info("wasabi sync succeeded", "connection_id", conn.ID, "refresh", j.refresh)
+	m.readBucketConfigs(ctx, conn)
 	m.checkAlerts(ctx, conn)
 }
 
 func (m *Manager) client(conn *connrepo.Connection) (Stats, error) {
+	ak, sk, err := m.keys(conn)
+	if err != nil {
+		return nil, err
+	}
+	return m.newClient(ak, sk)
+}
+
+func (m *Manager) keys(conn *connrepo.Connection) (accessKey, secretKey string, err error) {
 	var (
 		cfg wasabi.ConnectionConfig
 		sec wasabi.ConnectionSecret
 	)
 	if err := m.conns.Open(conn, &cfg, &sec); err != nil {
-		return nil, err
+		return "", "", err
 	}
-	return m.newClient(cfg.AccessKeyID, sec.SecretKey)
+	return cfg.AccessKeyID, sec.SecretKey, nil
 }
 
 // sync backfills (resuming where a previous run stopped) or pulls the days

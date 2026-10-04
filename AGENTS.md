@@ -99,6 +99,10 @@ shadcn/ui + Connect-Web on the frontend.
   `wasabisync.Manager` after each successful sync (`alerts.go`: budget,
   egress over storage, large deletes). The live test
   needs `NEOBOX_TEST_TELEGRAM_BOT_TOKEN` / `NEOBOX_TEST_TELEGRAM_CHAT_ID`.
+- `internal/wasabi/configreader.go` — `ConfigReader`: bucket settings through
+  the S3 API (aws-sdk-go-v2 per region, plus a SigV4-signed raw request for
+  Wasabi's `?compliance`), per-setting errors (`access_denied`,
+  `not_supported`); `BucketFindings` flags risky settings.
 - `internal/wasabisync/` — `Manager`: one sync at a time; 12-month backfill in
   30-day chunks that resumes after failures, daily run at 02:30 UTC from the
   last synced day, `Refresh` for the last 7 days, catch-up at startup. Also
@@ -129,7 +133,8 @@ caller's NocoDB connection.
 **Wasabi usage** (`proto/neobox/v1/wasabi.proto`, `WasabiService`):
 overview (newest account totals, cost estimate, sync state), buckets with
 their newest day (gone buckets flagged `deleted`), daily usage of the
-account or a bucket, the cost breakdown (`wasabi.CostBreakdown`: the
+account or a bucket (each bucket with its stored settings and findings),
+the cost breakdown (`wasabi.CostBreakdown`: the
 estimate's period by active / deleted / 1 TB minimum and by bucket), and
 "sync now". Days are UTC `YYYY-MM-DD` strings.
 `connection_id` must be the caller's Wasabi connection. The live Stats API

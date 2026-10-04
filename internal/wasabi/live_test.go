@@ -2,6 +2,7 @@ package wasabi
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"testing"
 	"time"
@@ -46,6 +47,36 @@ func TestLiveStatsAPI(t *testing.T) {
 	for _, u := range buckets {
 		if u.Bucket == "" || u.Region == "" {
 			t.Errorf("bucket record without bucket or region: %+v", u)
+		}
+	}
+}
+
+// TestLiveBucketConfig reads every bucket's settings through the S3 API.
+// It is skipped unless NEOBOX_TEST_WASABI_ACCESS_KEY and
+// NEOBOX_TEST_WASABI_SECRET_KEY are set; the key needs the bucket-settings
+// policy from the README. It logs what it read so the undocumented parts
+// (region names, not-configured errors, tagging support) can be checked.
+func TestLiveBucketConfig(t *testing.T) {
+	ak, sk := os.Getenv("NEOBOX_TEST_WASABI_ACCESS_KEY"), os.Getenv("NEOBOX_TEST_WASABI_SECRET_KEY")
+	if ak == "" || sk == "" {
+		t.Skip("NEOBOX_TEST_WASABI_ACCESS_KEY / NEOBOX_TEST_WASABI_SECRET_KEY are not set")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+	r := NewConfigReader(ak, sk)
+	buckets, err := r.ListBuckets(ctx)
+	if err != nil {
+		t.Fatalf("ListBuckets: %v (reason %q)", err, ErrorReason(err))
+	}
+	t.Logf("%d buckets", len(buckets))
+	for _, b := range buckets {
+		c := r.Read(ctx, b)
+		raw, _ := json.MarshalIndent(c, "  ", "  ")
+		t.Logf("%s (created %s):\n  %s", b.Name, b.CreatedAt.Format(time.RFC3339), raw)
+		for setting, why := range c.Errors {
+			if why != ErrAccessDenied && why != ErrNotSupported {
+				t.Errorf("%s: %s: unexpected error %q", b.Name, setting, why)
+			}
 		}
 	}
 }

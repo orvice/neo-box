@@ -21,6 +21,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent/predicate"
 	"go.orx.me/apps/neo-box/internal/ent/session"
 	"go.orx.me/apps/neo-box/internal/ent/user"
+	"go.orx.me/apps/neo-box/internal/ent/wasabibucketconfig"
 	"go.orx.me/apps/neo-box/internal/ent/wasabidailyusage"
 	"go.orx.me/apps/neo-box/internal/ent/wasabisyncstate"
 	"go.orx.me/apps/neo-box/internal/repo/nocodb"
@@ -44,6 +45,7 @@ const (
 	TypeOAuthState          = "OAuthState"
 	TypeSession             = "Session"
 	TypeUser                = "User"
+	TypeWasabiBucketConfig  = "WasabiBucketConfig"
 	TypeWasabiDailyUsage    = "WasabiDailyUsage"
 	TypeWasabiSyncState     = "WasabiSyncState"
 )
@@ -8102,6 +8104,494 @@ func (m *UserMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown User edge %s", name)
 }
 
+// WasabiBucketConfigMutation represents an operation that mutates the WasabiBucketConfig nodes in the graph.
+type WasabiBucketConfigMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	connection_id *string
+	bucket        *string
+	_config       *string
+	fetched_at    *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*WasabiBucketConfig, error)
+	predicates    []predicate.WasabiBucketConfig
+}
+
+var _ ent.Mutation = (*WasabiBucketConfigMutation)(nil)
+
+// wasabibucketconfigOption allows management of the mutation configuration using functional options.
+type wasabibucketconfigOption func(*WasabiBucketConfigMutation)
+
+// newWasabiBucketConfigMutation creates new mutation for the WasabiBucketConfig entity.
+func newWasabiBucketConfigMutation(c config, op Op, opts ...wasabibucketconfigOption) *WasabiBucketConfigMutation {
+	m := &WasabiBucketConfigMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeWasabiBucketConfig,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withWasabiBucketConfigID sets the ID field of the mutation.
+func withWasabiBucketConfigID(id int) wasabibucketconfigOption {
+	return func(m *WasabiBucketConfigMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *WasabiBucketConfig
+		)
+		m.oldValue = func(ctx context.Context) (*WasabiBucketConfig, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().WasabiBucketConfig.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withWasabiBucketConfig sets the old WasabiBucketConfig of the mutation.
+func withWasabiBucketConfig(node *WasabiBucketConfig) wasabibucketconfigOption {
+	return func(m *WasabiBucketConfigMutation) {
+		m.oldValue = func(context.Context) (*WasabiBucketConfig, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m WasabiBucketConfigMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m WasabiBucketConfigMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *WasabiBucketConfigMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *WasabiBucketConfigMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().WasabiBucketConfig.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetConnectionID sets the "connection_id" field.
+func (m *WasabiBucketConfigMutation) SetConnectionID(s string) {
+	m.connection_id = &s
+}
+
+// ConnectionID returns the value of the "connection_id" field in the mutation.
+func (m *WasabiBucketConfigMutation) ConnectionID() (r string, exists bool) {
+	v := m.connection_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConnectionID returns the old "connection_id" field's value of the WasabiBucketConfig entity.
+// If the WasabiBucketConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiBucketConfigMutation) OldConnectionID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConnectionID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConnectionID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConnectionID: %w", err)
+	}
+	return oldValue.ConnectionID, nil
+}
+
+// ResetConnectionID resets all changes to the "connection_id" field.
+func (m *WasabiBucketConfigMutation) ResetConnectionID() {
+	m.connection_id = nil
+}
+
+// SetBucket sets the "bucket" field.
+func (m *WasabiBucketConfigMutation) SetBucket(s string) {
+	m.bucket = &s
+}
+
+// Bucket returns the value of the "bucket" field in the mutation.
+func (m *WasabiBucketConfigMutation) Bucket() (r string, exists bool) {
+	v := m.bucket
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBucket returns the old "bucket" field's value of the WasabiBucketConfig entity.
+// If the WasabiBucketConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiBucketConfigMutation) OldBucket(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBucket is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBucket requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBucket: %w", err)
+	}
+	return oldValue.Bucket, nil
+}
+
+// ResetBucket resets all changes to the "bucket" field.
+func (m *WasabiBucketConfigMutation) ResetBucket() {
+	m.bucket = nil
+}
+
+// SetConfig sets the "config" field.
+func (m *WasabiBucketConfigMutation) SetConfig(s string) {
+	m._config = &s
+}
+
+// Config returns the value of the "config" field in the mutation.
+func (m *WasabiBucketConfigMutation) Config() (r string, exists bool) {
+	v := m._config
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConfig returns the old "config" field's value of the WasabiBucketConfig entity.
+// If the WasabiBucketConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiBucketConfigMutation) OldConfig(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConfig is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConfig requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConfig: %w", err)
+	}
+	return oldValue.Config, nil
+}
+
+// ResetConfig resets all changes to the "config" field.
+func (m *WasabiBucketConfigMutation) ResetConfig() {
+	m._config = nil
+}
+
+// SetFetchedAt sets the "fetched_at" field.
+func (m *WasabiBucketConfigMutation) SetFetchedAt(t time.Time) {
+	m.fetched_at = &t
+}
+
+// FetchedAt returns the value of the "fetched_at" field in the mutation.
+func (m *WasabiBucketConfigMutation) FetchedAt() (r time.Time, exists bool) {
+	v := m.fetched_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFetchedAt returns the old "fetched_at" field's value of the WasabiBucketConfig entity.
+// If the WasabiBucketConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiBucketConfigMutation) OldFetchedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFetchedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFetchedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFetchedAt: %w", err)
+	}
+	return oldValue.FetchedAt, nil
+}
+
+// ResetFetchedAt resets all changes to the "fetched_at" field.
+func (m *WasabiBucketConfigMutation) ResetFetchedAt() {
+	m.fetched_at = nil
+}
+
+// Where appends a list predicates to the WasabiBucketConfigMutation builder.
+func (m *WasabiBucketConfigMutation) Where(ps ...predicate.WasabiBucketConfig) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the WasabiBucketConfigMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *WasabiBucketConfigMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.WasabiBucketConfig, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *WasabiBucketConfigMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *WasabiBucketConfigMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (WasabiBucketConfig).
+func (m *WasabiBucketConfigMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *WasabiBucketConfigMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.connection_id != nil {
+		fields = append(fields, wasabibucketconfig.FieldConnectionID)
+	}
+	if m.bucket != nil {
+		fields = append(fields, wasabibucketconfig.FieldBucket)
+	}
+	if m._config != nil {
+		fields = append(fields, wasabibucketconfig.FieldConfig)
+	}
+	if m.fetched_at != nil {
+		fields = append(fields, wasabibucketconfig.FieldFetchedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *WasabiBucketConfigMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case wasabibucketconfig.FieldConnectionID:
+		return m.ConnectionID()
+	case wasabibucketconfig.FieldBucket:
+		return m.Bucket()
+	case wasabibucketconfig.FieldConfig:
+		return m.Config()
+	case wasabibucketconfig.FieldFetchedAt:
+		return m.FetchedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *WasabiBucketConfigMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case wasabibucketconfig.FieldConnectionID:
+		return m.OldConnectionID(ctx)
+	case wasabibucketconfig.FieldBucket:
+		return m.OldBucket(ctx)
+	case wasabibucketconfig.FieldConfig:
+		return m.OldConfig(ctx)
+	case wasabibucketconfig.FieldFetchedAt:
+		return m.OldFetchedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown WasabiBucketConfig field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *WasabiBucketConfigMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case wasabibucketconfig.FieldConnectionID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConnectionID(v)
+		return nil
+	case wasabibucketconfig.FieldBucket:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBucket(v)
+		return nil
+	case wasabibucketconfig.FieldConfig:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConfig(v)
+		return nil
+	case wasabibucketconfig.FieldFetchedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFetchedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown WasabiBucketConfig field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *WasabiBucketConfigMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *WasabiBucketConfigMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *WasabiBucketConfigMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown WasabiBucketConfig numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *WasabiBucketConfigMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *WasabiBucketConfigMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *WasabiBucketConfigMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown WasabiBucketConfig nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *WasabiBucketConfigMutation) ResetField(name string) error {
+	switch name {
+	case wasabibucketconfig.FieldConnectionID:
+		m.ResetConnectionID()
+		return nil
+	case wasabibucketconfig.FieldBucket:
+		m.ResetBucket()
+		return nil
+	case wasabibucketconfig.FieldConfig:
+		m.ResetConfig()
+		return nil
+	case wasabibucketconfig.FieldFetchedAt:
+		m.ResetFetchedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown WasabiBucketConfig field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *WasabiBucketConfigMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *WasabiBucketConfigMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *WasabiBucketConfigMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *WasabiBucketConfigMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *WasabiBucketConfigMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *WasabiBucketConfigMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *WasabiBucketConfigMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown WasabiBucketConfig unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *WasabiBucketConfigMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown WasabiBucketConfig edge %s", name)
+}
+
 // WasabiDailyUsageMutation represents an operation that mutates the WasabiDailyUsage nodes in the graph.
 type WasabiDailyUsageMutation struct {
 	config
@@ -10257,6 +10747,8 @@ type WasabiSyncStateMutation struct {
 	backfill_from         *time.Time
 	backfill_through      *time.Time
 	backfill_completed_at *time.Time
+	config_fetched_at     *time.Time
+	config_error          *string
 	updated_at            *time.Time
 	clearedFields         map[string]struct{}
 	done                  bool
@@ -10613,6 +11105,91 @@ func (m *WasabiSyncStateMutation) ResetBackfillCompletedAt() {
 	delete(m.clearedFields, wasabisyncstate.FieldBackfillCompletedAt)
 }
 
+// SetConfigFetchedAt sets the "config_fetched_at" field.
+func (m *WasabiSyncStateMutation) SetConfigFetchedAt(t time.Time) {
+	m.config_fetched_at = &t
+}
+
+// ConfigFetchedAt returns the value of the "config_fetched_at" field in the mutation.
+func (m *WasabiSyncStateMutation) ConfigFetchedAt() (r time.Time, exists bool) {
+	v := m.config_fetched_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConfigFetchedAt returns the old "config_fetched_at" field's value of the WasabiSyncState entity.
+// If the WasabiSyncState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiSyncStateMutation) OldConfigFetchedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConfigFetchedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConfigFetchedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConfigFetchedAt: %w", err)
+	}
+	return oldValue.ConfigFetchedAt, nil
+}
+
+// ClearConfigFetchedAt clears the value of the "config_fetched_at" field.
+func (m *WasabiSyncStateMutation) ClearConfigFetchedAt() {
+	m.config_fetched_at = nil
+	m.clearedFields[wasabisyncstate.FieldConfigFetchedAt] = struct{}{}
+}
+
+// ConfigFetchedAtCleared returns if the "config_fetched_at" field was cleared in this mutation.
+func (m *WasabiSyncStateMutation) ConfigFetchedAtCleared() bool {
+	_, ok := m.clearedFields[wasabisyncstate.FieldConfigFetchedAt]
+	return ok
+}
+
+// ResetConfigFetchedAt resets all changes to the "config_fetched_at" field.
+func (m *WasabiSyncStateMutation) ResetConfigFetchedAt() {
+	m.config_fetched_at = nil
+	delete(m.clearedFields, wasabisyncstate.FieldConfigFetchedAt)
+}
+
+// SetConfigError sets the "config_error" field.
+func (m *WasabiSyncStateMutation) SetConfigError(s string) {
+	m.config_error = &s
+}
+
+// ConfigError returns the value of the "config_error" field in the mutation.
+func (m *WasabiSyncStateMutation) ConfigError() (r string, exists bool) {
+	v := m.config_error
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConfigError returns the old "config_error" field's value of the WasabiSyncState entity.
+// If the WasabiSyncState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WasabiSyncStateMutation) OldConfigError(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConfigError is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConfigError requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConfigError: %w", err)
+	}
+	return oldValue.ConfigError, nil
+}
+
+// ResetConfigError resets all changes to the "config_error" field.
+func (m *WasabiSyncStateMutation) ResetConfigError() {
+	m.config_error = nil
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (m *WasabiSyncStateMutation) SetUpdatedAt(t time.Time) {
 	m.updated_at = &t
@@ -10683,7 +11260,7 @@ func (m *WasabiSyncStateMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *WasabiSyncStateMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 8)
 	if m.last_synced_day != nil {
 		fields = append(fields, wasabisyncstate.FieldLastSyncedDay)
 	}
@@ -10698,6 +11275,12 @@ func (m *WasabiSyncStateMutation) Fields() []string {
 	}
 	if m.backfill_completed_at != nil {
 		fields = append(fields, wasabisyncstate.FieldBackfillCompletedAt)
+	}
+	if m.config_fetched_at != nil {
+		fields = append(fields, wasabisyncstate.FieldConfigFetchedAt)
+	}
+	if m.config_error != nil {
+		fields = append(fields, wasabisyncstate.FieldConfigError)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, wasabisyncstate.FieldUpdatedAt)
@@ -10720,6 +11303,10 @@ func (m *WasabiSyncStateMutation) Field(name string) (ent.Value, bool) {
 		return m.BackfillThrough()
 	case wasabisyncstate.FieldBackfillCompletedAt:
 		return m.BackfillCompletedAt()
+	case wasabisyncstate.FieldConfigFetchedAt:
+		return m.ConfigFetchedAt()
+	case wasabisyncstate.FieldConfigError:
+		return m.ConfigError()
 	case wasabisyncstate.FieldUpdatedAt:
 		return m.UpdatedAt()
 	}
@@ -10741,6 +11328,10 @@ func (m *WasabiSyncStateMutation) OldField(ctx context.Context, name string) (en
 		return m.OldBackfillThrough(ctx)
 	case wasabisyncstate.FieldBackfillCompletedAt:
 		return m.OldBackfillCompletedAt(ctx)
+	case wasabisyncstate.FieldConfigFetchedAt:
+		return m.OldConfigFetchedAt(ctx)
+	case wasabisyncstate.FieldConfigError:
+		return m.OldConfigError(ctx)
 	case wasabisyncstate.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
 	}
@@ -10786,6 +11377,20 @@ func (m *WasabiSyncStateMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetBackfillCompletedAt(v)
+		return nil
+	case wasabisyncstate.FieldConfigFetchedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConfigFetchedAt(v)
+		return nil
+	case wasabisyncstate.FieldConfigError:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConfigError(v)
 		return nil
 	case wasabisyncstate.FieldUpdatedAt:
 		v, ok := value.(time.Time)
@@ -10839,6 +11444,9 @@ func (m *WasabiSyncStateMutation) ClearedFields() []string {
 	if m.FieldCleared(wasabisyncstate.FieldBackfillCompletedAt) {
 		fields = append(fields, wasabisyncstate.FieldBackfillCompletedAt)
 	}
+	if m.FieldCleared(wasabisyncstate.FieldConfigFetchedAt) {
+		fields = append(fields, wasabisyncstate.FieldConfigFetchedAt)
+	}
 	return fields
 }
 
@@ -10868,6 +11476,9 @@ func (m *WasabiSyncStateMutation) ClearField(name string) error {
 	case wasabisyncstate.FieldBackfillCompletedAt:
 		m.ClearBackfillCompletedAt()
 		return nil
+	case wasabisyncstate.FieldConfigFetchedAt:
+		m.ClearConfigFetchedAt()
+		return nil
 	}
 	return fmt.Errorf("unknown WasabiSyncState nullable field %s", name)
 }
@@ -10890,6 +11501,12 @@ func (m *WasabiSyncStateMutation) ResetField(name string) error {
 		return nil
 	case wasabisyncstate.FieldBackfillCompletedAt:
 		m.ResetBackfillCompletedAt()
+		return nil
+	case wasabisyncstate.FieldConfigFetchedAt:
+		m.ResetConfigFetchedAt()
+		return nil
+	case wasabisyncstate.FieldConfigError:
+		m.ResetConfigError()
 		return nil
 	case wasabisyncstate.FieldUpdatedAt:
 		m.ResetUpdatedAt()
