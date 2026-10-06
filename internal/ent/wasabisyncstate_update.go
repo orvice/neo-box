@@ -128,6 +128,40 @@ func (_u *WasabiSyncStateUpdate) ClearBackfillCompletedAt() *WasabiSyncStateUpda
 	return _u
 }
 
+// SetConfigFetchedAt sets the "config_fetched_at" field.
+func (_u *WasabiSyncStateUpdate) SetConfigFetchedAt(v time.Time) *WasabiSyncStateUpdate {
+	_u.mutation.SetConfigFetchedAt(v)
+	return _u
+}
+
+// SetNillableConfigFetchedAt sets the "config_fetched_at" field if the given value is not nil.
+func (_u *WasabiSyncStateUpdate) SetNillableConfigFetchedAt(v *time.Time) *WasabiSyncStateUpdate {
+	if v != nil {
+		_u.SetConfigFetchedAt(*v)
+	}
+	return _u
+}
+
+// ClearConfigFetchedAt clears the value of the "config_fetched_at" field.
+func (_u *WasabiSyncStateUpdate) ClearConfigFetchedAt() *WasabiSyncStateUpdate {
+	_u.mutation.ClearConfigFetchedAt()
+	return _u
+}
+
+// SetConfigError sets the "config_error" field.
+func (_u *WasabiSyncStateUpdate) SetConfigError(v string) *WasabiSyncStateUpdate {
+	_u.mutation.SetConfigError(v)
+	return _u
+}
+
+// SetNillableConfigError sets the "config_error" field if the given value is not nil.
+func (_u *WasabiSyncStateUpdate) SetNillableConfigError(v *string) *WasabiSyncStateUpdate {
+	if v != nil {
+		_u.SetConfigError(*v)
+	}
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *WasabiSyncStateUpdate) SetUpdatedAt(v time.Time) *WasabiSyncStateUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -212,6 +246,15 @@ func (_u *WasabiSyncStateUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	if _u.mutation.BackfillCompletedAtCleared() {
 		_spec.ClearField(wasabisyncstate.FieldBackfillCompletedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ConfigFetchedAt(); ok {
+		_spec.SetField(wasabisyncstate.FieldConfigFetchedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ConfigFetchedAtCleared() {
+		_spec.ClearField(wasabisyncstate.FieldConfigFetchedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ConfigError(); ok {
+		_spec.SetField(wasabisyncstate.FieldConfigError, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(wasabisyncstate.FieldUpdatedAt, field.TypeTime, value)
@@ -336,6 +379,40 @@ func (_u *WasabiSyncStateUpdateOne) ClearBackfillCompletedAt() *WasabiSyncStateU
 	return _u
 }
 
+// SetConfigFetchedAt sets the "config_fetched_at" field.
+func (_u *WasabiSyncStateUpdateOne) SetConfigFetchedAt(v time.Time) *WasabiSyncStateUpdateOne {
+	_u.mutation.SetConfigFetchedAt(v)
+	return _u
+}
+
+// SetNillableConfigFetchedAt sets the "config_fetched_at" field if the given value is not nil.
+func (_u *WasabiSyncStateUpdateOne) SetNillableConfigFetchedAt(v *time.Time) *WasabiSyncStateUpdateOne {
+	if v != nil {
+		_u.SetConfigFetchedAt(*v)
+	}
+	return _u
+}
+
+// ClearConfigFetchedAt clears the value of the "config_fetched_at" field.
+func (_u *WasabiSyncStateUpdateOne) ClearConfigFetchedAt() *WasabiSyncStateUpdateOne {
+	_u.mutation.ClearConfigFetchedAt()
+	return _u
+}
+
+// SetConfigError sets the "config_error" field.
+func (_u *WasabiSyncStateUpdateOne) SetConfigError(v string) *WasabiSyncStateUpdateOne {
+	_u.mutation.SetConfigError(v)
+	return _u
+}
+
+// SetNillableConfigError sets the "config_error" field if the given value is not nil.
+func (_u *WasabiSyncStateUpdateOne) SetNillableConfigError(v *string) *WasabiSyncStateUpdateOne {
+	if v != nil {
+		_u.SetConfigError(*v)
+	}
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *WasabiSyncStateUpdateOne) SetUpdatedAt(v time.Time) *WasabiSyncStateUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
@@ -450,6 +527,15 @@ func (_u *WasabiSyncStateUpdateOne) sqlSave(ctx context.Context) (_node *WasabiS
 	}
 	if _u.mutation.BackfillCompletedAtCleared() {
 		_spec.ClearField(wasabisyncstate.FieldBackfillCompletedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ConfigFetchedAt(); ok {
+		_spec.SetField(wasabisyncstate.FieldConfigFetchedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ConfigFetchedAtCleared() {
+		_spec.ClearField(wasabisyncstate.FieldConfigFetchedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ConfigError(); ok {
+		_spec.SetField(wasabisyncstate.FieldConfigError, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(wasabisyncstate.FieldUpdatedAt, field.TypeTime, value)

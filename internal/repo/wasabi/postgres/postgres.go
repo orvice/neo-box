@@ -2,11 +2,13 @@ package postgres
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"go.orx.me/apps/neo-box/internal/ent"
 	"go.orx.me/apps/neo-box/internal/ent/predicate"
+	"go.orx.me/apps/neo-box/internal/ent/wasabibucketconfig"
 	"go.orx.me/apps/neo-box/internal/ent/wasabidailyusage"
 	"go.orx.me/apps/neo-box/internal/ent/wasabisyncstate"
 	repo "go.orx.me/apps/neo-box/internal/repo/wasabi"
@@ -162,6 +164,8 @@ func (s *Store) GetSyncState(ctx context.Context, connectionID string) (*repo.Sy
 		BackfillFrom:        deref(row.BackfillFrom),
 		BackfillThrough:     deref(row.BackfillThrough),
 		BackfillCompletedAt: deref(row.BackfillCompletedAt),
+		ConfigFetchedAt:     deref(row.ConfigFetchedAt),
+		ConfigError:         row.ConfigError,
 		UpdatedAt:           row.UpdatedAt,
 	}, nil
 }
@@ -174,6 +178,8 @@ func (s *Store) SaveSyncState(ctx context.Context, st *repo.SyncState) error {
 		SetNillableBackfillFrom(nilIfZero(st.BackfillFrom)).
 		SetNillableBackfillThrough(nilIfZero(st.BackfillThrough)).
 		SetNillableBackfillCompletedAt(nilIfZero(st.BackfillCompletedAt)).
+		SetNillableConfigFetchedAt(nilIfZero(st.ConfigFetchedAt)).
+		SetConfigError(st.ConfigError).
 		SetUpdatedAt(st.UpdatedAt).
 		OnConflictColumns(wasabisyncstate.FieldID).
 		UpdateNewValues().
@@ -184,9 +190,67 @@ func (s *Store) SaveSyncState(ctx context.Context, st *repo.SyncState) error {
 	return nil
 }
 
+func (s *Store) ReplaceBucketConfigs(ctx context.Context, connectionID string, configs []wasabi.BucketConfig) error {
+	tx, err := s.client.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("begin: %w", err)
+	}
+	names := make([]string, 0, len(configs))
+	for _, c := range configs {
+		raw, err := json.Marshal(c)
+		if err != nil {
+			_ = tx.Rollback()
+			return fmt.Errorf("encode bucket config %s: %w", c.Bucket, err)
+		}
+		err = tx.WasabiBucketConfig.Create().
+			SetConnectionID(connectionID).
+			SetBucket(c.Bucket).
+			SetConfig(string(raw)).
+			SetFetchedAt(c.FetchedAt).
+			OnConflictColumns(wasabibucketconfig.FieldConnectionID, wasabibucketconfig.FieldBucket).
+			UpdateNewValues().
+			Exec(ctx)
+		if err != nil {
+			_ = tx.Rollback()
+			return fmt.Errorf("upsert bucket config %s: %w", c.Bucket, err)
+		}
+		names = append(names, c.Bucket)
+	}
+	_, err = tx.WasabiBucketConfig.Delete().
+		Where(wasabibucketconfig.ConnectionID(connectionID), wasabibucketconfig.BucketNotIn(names...)).
+		Exec(ctx)
+	if err != nil {
+		_ = tx.Rollback()
+		return fmt.Errorf("drop old bucket configs: %w", err)
+	}
+	return tx.Commit()
+}
+
+func (s *Store) ListBucketConfigs(ctx context.Context, connectionID string) ([]wasabi.BucketConfig, error) {
+	rows, err := s.client.WasabiBucketConfig.Query().
+		Where(wasabibucketconfig.ConnectionID(connectionID)).
+		Order(ent.Asc(wasabibucketconfig.FieldBucket)).
+		All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("list bucket configs: %w", err)
+	}
+	out := make([]wasabi.BucketConfig, 0, len(rows))
+	for _, r := range rows {
+		var c wasabi.BucketConfig
+		if err := json.Unmarshal([]byte(r.Config), &c); err != nil {
+			return nil, fmt.Errorf("decode bucket config %s: %w", r.Bucket, err)
+		}
+		out = append(out, c)
+	}
+	return out, nil
+}
+
 func (s *Store) DeleteConnectionData(ctx context.Context, connectionID string) error {
 	if _, err := s.client.WasabiDailyUsage.Delete().Where(wasabidailyusage.ConnectionID(connectionID)).Exec(ctx); err != nil {
 		return fmt.Errorf("delete wasabi usage: %w", err)
+	}
+	if _, err := s.client.WasabiBucketConfig.Delete().Where(wasabibucketconfig.ConnectionID(connectionID)).Exec(ctx); err != nil {
+		return fmt.Errorf("delete wasabi bucket configs: %w", err)
 	}
 	if _, err := s.client.WasabiSyncState.Delete().Where(wasabisyncstate.ID(connectionID)).Exec(ctx); err != nil {
 		return fmt.Errorf("delete wasabi sync state: %w", err)

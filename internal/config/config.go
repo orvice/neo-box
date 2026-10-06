@@ -34,6 +34,9 @@ type WasabiConfig struct {
 	// StatsEndpoint overrides the Stats API host
 	// (https://stats.wasabisys.com).
 	StatsEndpoint string `yaml:"stats_endpoint"`
+	// S3Endpoint sends every S3 request (bucket settings) to one host,
+	// for development; empty uses each bucket's regional Wasabi endpoint.
+	S3Endpoint string `yaml:"s3_endpoint"`
 }
 
 func (c *AppConfig) EffectiveDBStore() string {

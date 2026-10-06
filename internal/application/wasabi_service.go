@@ -158,6 +158,14 @@ func (s *WasabiServiceServer) ListWasabiBuckets(ctx context.Context, req *connec
 	if err != nil && !errors.Is(err, wasabirepo.ErrNotFound) {
 		return nil, connectx.InternalWith(err)
 	}
+	configs, err := d.repo.ListBucketConfigs(ctx, conn.ID)
+	if err != nil {
+		return nil, connectx.InternalWith(err)
+	}
+	byName := make(map[string]wasabi.BucketConfig, len(configs))
+	for _, c := range configs {
+		byName[c.Bucket] = c
+	}
 	newest := newestDay(latest, buckets)
 	out := make([]*neoboxv1.WasabiBucket, 0, len(buckets))
 	for _, b := range buckets {
@@ -165,7 +173,11 @@ func (s *WasabiServiceServer) ListWasabiBuckets(ctx context.Context, req *connec
 		if deleted && !req.Msg.GetIncludeDeleted() {
 			continue
 		}
-		out = append(out, &neoboxv1.WasabiBucket{Name: b.Bucket, Region: b.Region, Deleted: deleted, Latest: usageToProto(b)})
+		wb := &neoboxv1.WasabiBucket{Name: b.Bucket, Region: b.Region, Deleted: deleted, Latest: usageToProto(b)}
+		if c, ok := byName[b.Bucket]; ok {
+			wb.Config = bucketConfigToProto(c)
+		}
+		out = append(out, wb)
 	}
 	return connect.NewResponse(&neoboxv1.ListWasabiBucketsResponse{Buckets: out}), nil
 }
@@ -285,6 +297,10 @@ func syncStateToProto(ctx context.Context, d *wasabiDeps, connectionID string, t
 	out.LastSyncedDay = formatDay(st.LastSyncedDay)
 	out.BackfillComplete = !st.BackfillCompletedAt.IsZero()
 	out.BackfillProgress = wasabisync.BackfillProgress(st, today)
+	if !st.ConfigFetchedAt.IsZero() {
+		out.ConfigFetchedAt = timestamppb.New(st.ConfigFetchedAt)
+	}
+	out.ConfigError = st.ConfigError
 	return out, nil
 }
 
@@ -315,6 +331,75 @@ func breakdownToProto(b wasabi.Breakdown, price float64) *neoboxv1.WasabiCostBre
 		})
 	}
 	return out
+}
+
+func bucketConfigToProto(c wasabi.BucketConfig) *neoboxv1.WasabiBucketConfig {
+	out := &neoboxv1.WasabiBucketConfig{
+		Region: c.Region, Tags: c.Tags, Errors: c.Errors, Public: c.Public(),
+	}
+	if !c.FetchedAt.IsZero() {
+		out.FetchedAt = timestamppb.New(c.FetchedAt)
+	}
+	if !c.CreatedAt.IsZero() {
+		out.CreatedAt = timestamppb.New(c.CreatedAt)
+	}
+	if v := c.Versioning; v != nil {
+		out.Versioning = &neoboxv1.WasabiVersioning{Status: v.Status, MfaDelete: v.MFADelete}
+	}
+	if ol := c.ObjectLock; ol != nil && ol.Enabled {
+		out.ObjectLock = &neoboxv1.WasabiObjectLock{Mode: ol.Mode, Days: int32(ol.Days), Years: int32(ol.Years)}
+	}
+	if cp := c.Compliance; cp != nil && cp.Enabled {
+		out.Compliance = &neoboxv1.WasabiCompliance{
+			RetentionDays: int32(cp.RetentionDays), ConditionalHold: cp.ConditionalHold,
+			DeleteAfterRetention: cp.DeleteAfterRetention, Locked: cp.Locked,
+		}
+		if !cp.LockTime.IsZero() {
+			out.Compliance.LockTime = timestamppb.New(cp.LockTime)
+		}
+	}
+	for _, r := range c.Lifecycle {
+		out.LifecycleRules = append(out.LifecycleRules, &neoboxv1.WasabiLifecycleRule{
+			Id: r.ID, Enabled: r.Enabled, Prefix: r.Prefix, ExpirationDays: int32(r.ExpirationDays),
+			ExpiredObjectDeleteMarker: r.ExpiredObjectDeleteMarker, NoncurrentDays: int32(r.NoncurrentDays),
+			AbortMultipartDays: int32(r.AbortMultipartDays),
+		})
+	}
+	if p := c.Policy; p != nil {
+		out.Policy = &neoboxv1.WasabiBucketPolicy{Document: p.Document, Public: p.Public}
+	}
+	if a := c.ACL; a != nil {
+		out.Acl = &neoboxv1.WasabiBucketAcl{Owner: a.Owner, Public: a.Public}
+		for _, g := range a.Grants {
+			out.Acl.Grants = append(out.Acl.Grants, &neoboxv1.WasabiAclGrant{Grantee: g.Grantee, Permission: g.Permission})
+		}
+	}
+	if l := c.Logging; l != nil {
+		out.Logging = &neoboxv1.WasabiBucketLogging{TargetBucket: l.TargetBucket, TargetPrefix: l.TargetPrefix}
+	}
+	for _, r := range c.Replication {
+		out.ReplicationRules = append(out.ReplicationRules, &neoboxv1.WasabiReplicationRule{
+			Id: r.ID, Enabled: r.Enabled, Prefix: r.Prefix, DestinationBucket: r.DestinationBucket,
+		})
+	}
+	for _, f := range wasabi.BucketFindings(c) {
+		out.Findings = append(out.Findings, &neoboxv1.WasabiBucketFinding{
+			Code: f.Code, Severity: findingSeverityToProto(f.Severity), Message: f.Message,
+		})
+	}
+	return out
+}
+
+func findingSeverityToProto(s string) neoboxv1.WasabiFindingSeverity {
+	switch s {
+	case wasabi.FindingInfo:
+		return neoboxv1.WasabiFindingSeverity_WASABI_FINDING_SEVERITY_INFO
+	case wasabi.FindingWarning:
+		return neoboxv1.WasabiFindingSeverity_WASABI_FINDING_SEVERITY_WARNING
+	case wasabi.FindingCritical:
+		return neoboxv1.WasabiFindingSeverity_WASABI_FINDING_SEVERITY_CRITICAL
+	}
+	return neoboxv1.WasabiFindingSeverity_WASABI_FINDING_SEVERITY_UNSPECIFIED
 }
 
 func usageToProto(u wasabi.Usage) *neoboxv1.WasabiUsage {

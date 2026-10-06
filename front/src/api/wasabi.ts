@@ -4,6 +4,9 @@ import { WasabiService } from '@/gen/neobox/v1/wasabi_pb'
 import { makeClient } from './transport'
 
 export {
+  WasabiFindingSeverity,
+  type WasabiBucketConfig,
+  type WasabiBucketFinding,
   type WasabiBucket,
   type WasabiBucketCost,
   type WasabiCostBreakdown,

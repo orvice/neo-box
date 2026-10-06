@@ -89,6 +89,16 @@ func BackfillCompletedAt(v time.Time) predicate.WasabiSyncState {
 	return predicate.WasabiSyncState(sql.FieldEQ(FieldBackfillCompletedAt, v))
 }
 
+// ConfigFetchedAt applies equality check predicate on the "config_fetched_at" field. It's identical to ConfigFetchedAtEQ.
+func ConfigFetchedAt(v time.Time) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldEQ(FieldConfigFetchedAt, v))
+}
+
+// ConfigError applies equality check predicate on the "config_error" field. It's identical to ConfigErrorEQ.
+func ConfigError(v string) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldEQ(FieldConfigError, v))
+}
+
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.WasabiSyncState {
 	return predicate.WasabiSyncState(sql.FieldEQ(FieldUpdatedAt, v))
@@ -342,6 +352,121 @@ func BackfillCompletedAtIsNil() predicate.WasabiSyncState {
 // BackfillCompletedAtNotNil applies the NotNil predicate on the "backfill_completed_at" field.
 func BackfillCompletedAtNotNil() predicate.WasabiSyncState {
 	return predicate.WasabiSyncState(sql.FieldNotNull(FieldBackfillCompletedAt))
+}
+
+// ConfigFetchedAtEQ applies the EQ predicate on the "config_fetched_at" field.
+func ConfigFetchedAtEQ(v time.Time) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldEQ(FieldConfigFetchedAt, v))
+}
+
+// ConfigFetchedAtNEQ applies the NEQ predicate on the "config_fetched_at" field.
+func ConfigFetchedAtNEQ(v time.Time) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldNEQ(FieldConfigFetchedAt, v))
+}
+
+// ConfigFetchedAtIn applies the In predicate on the "config_fetched_at" field.
+func ConfigFetchedAtIn(vs ...time.Time) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldIn(FieldConfigFetchedAt, vs...))
+}
+
+// ConfigFetchedAtNotIn applies the NotIn predicate on the "config_fetched_at" field.
+func ConfigFetchedAtNotIn(vs ...time.Time) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldNotIn(FieldConfigFetchedAt, vs...))
+}
+
+// ConfigFetchedAtGT applies the GT predicate on the "config_fetched_at" field.
+func ConfigFetchedAtGT(v time.Time) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldGT(FieldConfigFetchedAt, v))
+}
+
+// ConfigFetchedAtGTE applies the GTE predicate on the "config_fetched_at" field.
+func ConfigFetchedAtGTE(v time.Time) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldGTE(FieldConfigFetchedAt, v))
+}
+
+// ConfigFetchedAtLT applies the LT predicate on the "config_fetched_at" field.
+func ConfigFetchedAtLT(v time.Time) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldLT(FieldConfigFetchedAt, v))
+}
+
+// ConfigFetchedAtLTE applies the LTE predicate on the "config_fetched_at" field.
+func ConfigFetchedAtLTE(v time.Time) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldLTE(FieldConfigFetchedAt, v))
+}
+
+// ConfigFetchedAtIsNil applies the IsNil predicate on the "config_fetched_at" field.
+func ConfigFetchedAtIsNil() predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldIsNull(FieldConfigFetchedAt))
+}
+
+// ConfigFetchedAtNotNil applies the NotNil predicate on the "config_fetched_at" field.
+func ConfigFetchedAtNotNil() predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldNotNull(FieldConfigFetchedAt))
+}
+
+// ConfigErrorEQ applies the EQ predicate on the "config_error" field.
+func ConfigErrorEQ(v string) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldEQ(FieldConfigError, v))
+}
+
+// ConfigErrorNEQ applies the NEQ predicate on the "config_error" field.
+func ConfigErrorNEQ(v string) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldNEQ(FieldConfigError, v))
+}
+
+// ConfigErrorIn applies the In predicate on the "config_error" field.
+func ConfigErrorIn(vs ...string) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldIn(FieldConfigError, vs...))
+}
+
+// ConfigErrorNotIn applies the NotIn predicate on the "config_error" field.
+func ConfigErrorNotIn(vs ...string) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldNotIn(FieldConfigError, vs...))
+}
+
+// ConfigErrorGT applies the GT predicate on the "config_error" field.
+func ConfigErrorGT(v string) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldGT(FieldConfigError, v))
+}
+
+// ConfigErrorGTE applies the GTE predicate on the "config_error" field.
+func ConfigErrorGTE(v string) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldGTE(FieldConfigError, v))
+}
+
+// ConfigErrorLT applies the LT predicate on the "config_error" field.
+func ConfigErrorLT(v string) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldLT(FieldConfigError, v))
+}
+
+// ConfigErrorLTE applies the LTE predicate on the "config_error" field.
+func ConfigErrorLTE(v string) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldLTE(FieldConfigError, v))
+}
+
+// ConfigErrorContains applies the Contains predicate on the "config_error" field.
+func ConfigErrorContains(v string) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldContains(FieldConfigError, v))
+}
+
+// ConfigErrorHasPrefix applies the HasPrefix predicate on the "config_error" field.
+func ConfigErrorHasPrefix(v string) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldHasPrefix(FieldConfigError, v))
+}
+
+// ConfigErrorHasSuffix applies the HasSuffix predicate on the "config_error" field.
+func ConfigErrorHasSuffix(v string) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldHasSuffix(FieldConfigError, v))
+}
+
+// ConfigErrorEqualFold applies the EqualFold predicate on the "config_error" field.
+func ConfigErrorEqualFold(v string) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldEqualFold(FieldConfigError, v))
+}
+
+// ConfigErrorContainsFold applies the ContainsFold predicate on the "config_error" field.
+func ConfigErrorContainsFold(v string) predicate.WasabiSyncState {
+	return predicate.WasabiSyncState(sql.FieldContainsFold(FieldConfigError, v))
 }
 
 // UpdatedAtEQ applies the EQ predicate on the "updated_at" field.

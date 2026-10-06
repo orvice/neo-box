@@ -181,6 +181,8 @@ func newHarness(t *testing.T, conns ...*connrepo.Connection) *harness {
 		}
 		return h.api, nil
 	}
+	// Never reach Wasabi's S3 API from tests.
+	h.m.newBucketReader = func(string, string) BucketReader { return fakeBuckets{} }
 	return h
 }
 

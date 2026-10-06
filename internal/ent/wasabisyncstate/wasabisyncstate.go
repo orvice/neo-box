@@ -21,6 +21,10 @@ const (
 	FieldBackfillThrough = "backfill_through"
 	// FieldBackfillCompletedAt holds the string denoting the backfill_completed_at field in the database.
 	FieldBackfillCompletedAt = "backfill_completed_at"
+	// FieldConfigFetchedAt holds the string denoting the config_fetched_at field in the database.
+	FieldConfigFetchedAt = "config_fetched_at"
+	// FieldConfigError holds the string denoting the config_error field in the database.
+	FieldConfigError = "config_error"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// Table holds the table name of the wasabisyncstate in the database.
@@ -35,6 +39,8 @@ var Columns = []string{
 	FieldBackfillFrom,
 	FieldBackfillThrough,
 	FieldBackfillCompletedAt,
+	FieldConfigFetchedAt,
+	FieldConfigError,
 	FieldUpdatedAt,
 }
 
@@ -47,6 +53,11 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultConfigError holds the default value on creation for the "config_error" field.
+	DefaultConfigError string
+)
 
 // OrderOption defines the ordering options for the WasabiSyncState queries.
 type OrderOption func(*sql.Selector)
@@ -79,6 +90,16 @@ func ByBackfillThrough(opts ...sql.OrderTermOption) OrderOption {
 // ByBackfillCompletedAt orders the results by the backfill_completed_at field.
 func ByBackfillCompletedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldBackfillCompletedAt, opts...).ToFunc()
+}
+
+// ByConfigFetchedAt orders the results by the config_fetched_at field.
+func ByConfigFetchedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldConfigFetchedAt, opts...).ToFunc()
+}
+
+// ByConfigError orders the results by the config_error field.
+func ByConfigError(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldConfigError, opts...).ToFunc()
 }
 
 // ByUpdatedAt orders the results by the updated_at field.

@@ -24,7 +24,11 @@ type SyncState struct {
 	BackfillFrom        time.Time
 	BackfillThrough     time.Time
 	BackfillCompletedAt time.Time
-	UpdatedAt           time.Time
+	// ConfigFetchedAt is when bucket settings were last read; ConfigError
+	// says why the buckets could not be listed.
+	ConfigFetchedAt time.Time
+	ConfigError     string
+	UpdatedAt       time.Time
 }
 
 type Repository interface {
@@ -43,10 +47,17 @@ type Repository interface {
 	// ErrNotFound.
 	LatestAccountUsage(ctx context.Context, connectionID string) (*wasabi.Usage, error)
 
+	// ReplaceBucketConfigs stores the latest settings of every bucket and
+	// drops those of buckets not in configs.
+	ReplaceBucketConfigs(ctx context.Context, connectionID string, configs []wasabi.BucketConfig) error
+	// ListBucketConfigs returns the stored settings, by bucket name.
+	ListBucketConfigs(ctx context.Context, connectionID string) ([]wasabi.BucketConfig, error)
+
 	// GetSyncState returns ErrNotFound for a connection never synced.
 	GetSyncState(ctx context.Context, connectionID string) (*SyncState, error)
 	SaveSyncState(ctx context.Context, s *SyncState) error
 
-	// DeleteConnectionData removes a connection's usage and sync state.
+	// DeleteConnectionData removes a connection's usage, bucket settings
+	// and sync state.
 	DeleteConnectionData(ctx context.Context, connectionID string) error
 }

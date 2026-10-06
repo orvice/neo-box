@@ -243,3 +243,42 @@ func TestWasabiCostBreakdown(t *testing.T) {
 		}
 	}
 }
+
+func TestWasabiBucketSettings(t *testing.T) {
+	f := newWasabiFixture(t, true)
+	ctx := context.Background()
+	_ = f.usage.ReplaceBucketConfigs(ctx, "w1", []wasabi.BucketConfig{{
+		Bucket: "media", Region: "us-east-1", FetchedAt: wasabiDay("2026-09-30"),
+		Versioning: &wasabi.Versioning{Status: "Enabled"},
+		Policy:     &wasabi.BucketPolicy{Document: `{"Statement":[]}`, Public: true},
+		Lifecycle:  []wasabi.LifecycleRule{{ID: "r1", Enabled: true, ExpirationDays: 30}},
+		Errors:     map[string]string{wasabi.SettingACL: wasabi.ErrAccessDenied},
+	}})
+	st, _ := f.usage.GetSyncState(ctx, "w1")
+	st.ConfigFetchedAt = wasabiDay("2026-09-30")
+	_ = f.usage.SaveSyncState(ctx, st)
+
+	resp, err := f.srv.ListWasabiBuckets(asUser("u1"), connect.NewRequest(&neoboxv1.ListWasabiBucketsRequest{ConnectionId: "w1"}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	media := resp.Msg.GetBuckets()[0]
+	c := media.GetConfig()
+	if media.GetName() != "media" || c == nil || !c.GetPublic() || c.GetVersioning().GetStatus() != "Enabled" ||
+		c.GetPolicy().GetDocument() == "" || len(c.GetLifecycleRules()) != 1 || c.GetErrors()["acl"] != "access_denied" {
+		t.Fatalf("media config = %+v", c)
+	}
+	var codes []string
+	for _, fd := range c.GetFindings() {
+		codes = append(codes, fd.GetCode())
+	}
+	if strings.Join(codes, ",") != "public_policy,old_versions_kept,settings_unreadable" ||
+		c.GetFindings()[0].GetSeverity() != neoboxv1.WasabiFindingSeverity_WASABI_FINDING_SEVERITY_CRITICAL {
+		t.Fatalf("findings = %+v", c.GetFindings())
+	}
+
+	over, _ := f.srv.GetWasabiOverview(asUser("u1"), connect.NewRequest(&neoboxv1.GetWasabiOverviewRequest{ConnectionId: "w1"}))
+	if over.Msg.GetSync().GetConfigFetchedAt() == nil || over.Msg.GetSync().GetConfigError() != "" {
+		t.Fatalf("sync = %+v", over.Msg.GetSync())
+	}
+}

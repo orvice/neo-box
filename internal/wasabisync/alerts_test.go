@@ -8,6 +8,8 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/aws/smithy-go"
+
 	"go.orx.me/apps/neo-box/internal/notify"
 	connrepo "go.orx.me/apps/neo-box/internal/repo/connection"
 	"go.orx.me/apps/neo-box/internal/wasabi"
@@ -150,5 +152,59 @@ func TestSyncChecksAlerts(t *testing.T) {
 	h.waitIdle(t, "w1")
 	if _, ok := n.byKind()["budget_exceeded"]; !ok {
 		t.Fatalf("alerts after sync = %+v", n.alerts)
+	}
+}
+
+// fakeBuckets serves two buckets, or err from ListBuckets.
+type fakeBuckets struct{ err error }
+
+func (f fakeBuckets) ListBuckets(context.Context) ([]wasabi.BucketInfo, error) {
+	if f.err != nil {
+		return nil, f.err
+	}
+	return []wasabi.BucketInfo{{Name: "media"}, {Name: "logs"}}, nil
+}
+
+func (f fakeBuckets) Read(_ context.Context, b wasabi.BucketInfo) wasabi.BucketConfig {
+	return wasabi.BucketConfig{Bucket: b.Name, Versioning: &wasabi.Versioning{Status: "Enabled"}}
+}
+
+func TestSyncReadsBucketSettings(t *testing.T) {
+	conn := wasabiConn("w1")
+	h := newHarness(t, conn)
+	reader := &fakeBuckets{}
+	h.m.newBucketReader = func(ak, sk string) BucketReader {
+		if ak != "AK" || sk != "SK" {
+			t.Errorf("keys = %q/%q", ak, sk)
+		}
+		return reader
+	}
+	h.start(t)
+	h.m.Refresh("w1")
+	h.waitIdle(t, "w1")
+
+	configs, _ := h.repo.ListBucketConfigs(context.Background(), "w1")
+	if len(configs) != 2 || configs[0].Bucket != "logs" || configs[1].Versioning.Status != "Enabled" {
+		t.Fatalf("configs = %+v", configs)
+	}
+	st, _ := h.repo.GetSyncState(context.Background(), "w1")
+	if st.ConfigFetchedAt.IsZero() || st.ConfigError != "" {
+		t.Fatalf("sync state = %+v", st)
+	}
+
+	// Without S3 access the sync still succeeds; the reason is recorded and
+	// the previous settings stay.
+	reader.err = &smithy.GenericAPIError{Code: "AccessDenied", Message: "no"}
+	h.m.Refresh("w1")
+	h.waitIdle(t, "w1")
+	st, _ = h.repo.GetSyncState(context.Background(), "w1")
+	if st.ConfigError != wasabi.ErrAccessDenied {
+		t.Fatalf("config error = %q", st.ConfigError)
+	}
+	if got := h.conns.recorded("w1"); len(got) != 2 || got[1] != nil {
+		t.Fatalf("health recorded %v, want two successes", got)
+	}
+	if configs, _ := h.repo.ListBucketConfigs(context.Background(), "w1"); len(configs) != 2 {
+		t.Fatalf("configs after failed read = %+v", configs)
 	}
 }

@@ -70,6 +70,35 @@ func (WasabiSyncState) Fields() []ent.Field {
 		field.Time("backfill_from").SchemaType(dateType).Optional().Nillable(),
 		field.Time("backfill_through").SchemaType(dateType).Optional().Nillable(),
 		field.Time("backfill_completed_at").Optional().Nillable(),
+		// config_fetched_at is when bucket settings were last read;
+		// config_error says why they could not be listed at all.
+		field.Time("config_fetched_at").Optional().Nillable(),
+		field.Text("config_error").Default(""),
 		field.Time("updated_at"),
 	}
+}
+
+// WasabiBucketConfig is the latest read of one bucket's settings through
+// the S3 API, replaced on every read.
+type WasabiBucketConfig struct {
+	ent.Schema
+}
+
+func (WasabiBucketConfig) Annotations() []schema.Annotation {
+	return []schema.Annotation{entsql.Annotation{Table: "wasabi_bucket_configs"}}
+}
+
+func (WasabiBucketConfig) Fields() []ent.Field {
+	return []ent.Field{
+		field.String("connection_id").Immutable(),
+		field.String("bucket").Immutable(),
+		// config is a wasabi.BucketConfig as JSON (a string field for the
+		// same reason as Connection.config).
+		field.String("config").SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
+		field.Time("fetched_at"),
+	}
+}
+
+func (WasabiBucketConfig) Indexes() []ent.Index {
+	return []ent.Index{index.Fields("connection_id", "bucket").Unique()}
 }

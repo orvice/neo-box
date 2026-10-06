@@ -101,6 +101,11 @@ message WasabiSyncState {
   bool backfill_complete = 4;
   // Share of the 12-month backfill done, 0..1.
   double backfill_progress = 5;
+  // When bucket settings were last read through the S3 API.
+  google.protobuf.Timestamp config_fetched_at = 6;
+  // Why buckets could not be listed: "access_denied" when the key lacks
+  // S3 read access, otherwise an error message. Empty when they were.
+  string config_error = 7;
 }
 
 message WasabiBucket {
@@ -109,6 +114,119 @@ message WasabiBucket {
   // The bucket is missing from the newest day of data.
   bool deleted = 3;
   WasabiUsage latest = 4;
+  // The bucket's settings, once read; absent before the first read or for
+  // a bucket the S3 API no longer lists.
+  WasabiBucketConfig config = 5;
+}
+
+// WasabiBucketConfig is a bucket's settings as last read through the S3
+// API. An absent message means the setting is off (or has no rules); a
+// setting that could not be read has an entry in errors instead.
+message WasabiBucketConfig {
+  google.protobuf.Timestamp fetched_at = 1;
+  // When the bucket was created.
+  google.protobuf.Timestamp created_at = 2;
+  // The region the bucket lives in.
+  string region = 3;
+  WasabiVersioning versioning = 4;
+  WasabiObjectLock object_lock = 5;
+  WasabiCompliance compliance = 6;
+  repeated WasabiLifecycleRule lifecycle_rules = 7;
+  WasabiBucketPolicy policy = 8;
+  WasabiBucketAcl acl = 9;
+  WasabiBucketLogging logging = 10;
+  repeated WasabiReplicationRule replication_rules = 11;
+  map<string, string> tags = 12;
+  // Setting ("versioning", "object_lock", "compliance", "lifecycle",
+  // "policy", "acl", "logging", "replication", "tags", "location") to why
+  // it could not be read: "access_denied", "not_supported", or a message.
+  map<string, string> errors = 13;
+  // The policy or ACL lets anyone in. Wasabi's console "Public Access
+  // Override" can't be read through the API, so false doesn't rule it out.
+  bool public = 14;
+  // Settings worth a look, most severe first.
+  repeated WasabiBucketFinding findings = 15;
+}
+
+message WasabiVersioning {
+  // "Enabled" or "Suspended".
+  string status = 1;
+  bool mfa_delete = 2;
+}
+
+message WasabiObjectLock {
+  // "GOVERNANCE" or "COMPLIANCE" when a default retention is set.
+  string mode = 1;
+  int32 days = 2;
+  int32 years = 3;
+}
+
+// WasabiCompliance is Wasabi's own retention setting; a bucket has it or
+// Object Lock, never both.
+message WasabiCompliance {
+  int32 retention_days = 1;
+  bool conditional_hold = 2;
+  bool delete_after_retention = 3;
+  // The settings can no longer be reduced.
+  bool locked = 4;
+  google.protobuf.Timestamp lock_time = 5;
+}
+
+// WasabiLifecycleRule is one lifecycle rule; zero day counts mean the action
+// is not set.
+message WasabiLifecycleRule {
+  string id = 1;
+  bool enabled = 2;
+  string prefix = 3;
+  int32 expiration_days = 4;
+  bool expired_object_delete_marker = 5;
+  int32 noncurrent_days = 6;
+  int32 abort_multipart_days = 7;
+}
+
+message WasabiBucketPolicy {
+  // The policy JSON.
+  string document = 1;
+  bool public = 2;
+}
+
+message WasabiBucketAcl {
+  string owner = 1;
+  repeated WasabiAclGrant grants = 2;
+  bool public = 3;
+}
+
+message WasabiAclGrant {
+  // A user's name or ID, or a group URI.
+  string grantee = 1;
+  string permission = 2;
+}
+
+message WasabiBucketLogging {
+  string target_bucket = 1;
+  string target_prefix = 2;
+}
+
+message WasabiReplicationRule {
+  string id = 1;
+  bool enabled = 2;
+  string prefix = 3;
+  string destination_bucket = 4;
+}
+
+enum WasabiFindingSeverity {
+  WASABI_FINDING_SEVERITY_UNSPECIFIED = 0;
+  WASABI_FINDING_SEVERITY_INFO = 1;
+  WASABI_FINDING_SEVERITY_WARNING = 2;
+  WASABI_FINDING_SEVERITY_CRITICAL = 3;
+}
+
+message WasabiBucketFinding {
+  // "public_policy", "public_acl", "old_versions_kept",
+  // "versioning_suspended", or "settings_unreadable".
+  string code = 1;
+  WasabiFindingSeverity severity = 2;
+  string message = 3;
 }
 
 message GetWasabiOverviewRequest {

@@ -23,6 +23,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent/oauthstate"
 	"go.orx.me/apps/neo-box/internal/ent/session"
 	"go.orx.me/apps/neo-box/internal/ent/user"
+	"go.orx.me/apps/neo-box/internal/ent/wasabibucketconfig"
 	"go.orx.me/apps/neo-box/internal/ent/wasabidailyusage"
 	"go.orx.me/apps/neo-box/internal/ent/wasabisyncstate"
 )
@@ -50,6 +51,8 @@ type Client struct {
 	Session *SessionClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// WasabiBucketConfig is the client for interacting with the WasabiBucketConfig builders.
+	WasabiBucketConfig *WasabiBucketConfigClient
 	// WasabiDailyUsage is the client for interacting with the WasabiDailyUsage builders.
 	WasabiDailyUsage *WasabiDailyUsageClient
 	// WasabiSyncState is the client for interacting with the WasabiSyncState builders.
@@ -74,6 +77,7 @@ func (c *Client) init() {
 	c.OAuthState = NewOAuthStateClient(c.config)
 	c.Session = NewSessionClient(c.config)
 	c.User = NewUserClient(c.config)
+	c.WasabiBucketConfig = NewWasabiBucketConfigClient(c.config)
 	c.WasabiDailyUsage = NewWasabiDailyUsageClient(c.config)
 	c.WasabiSyncState = NewWasabiSyncStateClient(c.config)
 }
@@ -177,6 +181,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		OAuthState:          NewOAuthStateClient(cfg),
 		Session:             NewSessionClient(cfg),
 		User:                NewUserClient(cfg),
+		WasabiBucketConfig:  NewWasabiBucketConfigClient(cfg),
 		WasabiDailyUsage:    NewWasabiDailyUsageClient(cfg),
 		WasabiSyncState:     NewWasabiSyncStateClient(cfg),
 	}, nil
@@ -207,6 +212,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		OAuthState:          NewOAuthStateClient(cfg),
 		Session:             NewSessionClient(cfg),
 		User:                NewUserClient(cfg),
+		WasabiBucketConfig:  NewWasabiBucketConfigClient(cfg),
 		WasabiDailyUsage:    NewWasabiDailyUsageClient(cfg),
 		WasabiSyncState:     NewWasabiSyncStateClient(cfg),
 	}, nil
@@ -239,8 +245,8 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Alert, c.Connection, c.NocoDBBackupPolicy, c.NocoDBRestore, c.NocoDBSnapshot,
-		c.NotificationChannel, c.OAuthState, c.Session, c.User, c.WasabiDailyUsage,
-		c.WasabiSyncState,
+		c.NotificationChannel, c.OAuthState, c.Session, c.User, c.WasabiBucketConfig,
+		c.WasabiDailyUsage, c.WasabiSyncState,
 	} {
 		n.Use(hooks...)
 	}
@@ -251,8 +257,8 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Alert, c.Connection, c.NocoDBBackupPolicy, c.NocoDBRestore, c.NocoDBSnapshot,
-		c.NotificationChannel, c.OAuthState, c.Session, c.User, c.WasabiDailyUsage,
-		c.WasabiSyncState,
+		c.NotificationChannel, c.OAuthState, c.Session, c.User, c.WasabiBucketConfig,
+		c.WasabiDailyUsage, c.WasabiSyncState,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -279,6 +285,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Session.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
+	case *WasabiBucketConfigMutation:
+		return c.WasabiBucketConfig.mutate(ctx, m)
 	case *WasabiDailyUsageMutation:
 		return c.WasabiDailyUsage.mutate(ctx, m)
 	case *WasabiSyncStateMutation:
@@ -1485,6 +1493,139 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 	}
 }
 
+// WasabiBucketConfigClient is a client for the WasabiBucketConfig schema.
+type WasabiBucketConfigClient struct {
+	config
+}
+
+// NewWasabiBucketConfigClient returns a client for the WasabiBucketConfig from the given config.
+func NewWasabiBucketConfigClient(c config) *WasabiBucketConfigClient {
+	return &WasabiBucketConfigClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `wasabibucketconfig.Hooks(f(g(h())))`.
+func (c *WasabiBucketConfigClient) Use(hooks ...Hook) {
+	c.hooks.WasabiBucketConfig = append(c.hooks.WasabiBucketConfig, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `wasabibucketconfig.Intercept(f(g(h())))`.
+func (c *WasabiBucketConfigClient) Intercept(interceptors ...Interceptor) {
+	c.inters.WasabiBucketConfig = append(c.inters.WasabiBucketConfig, interceptors...)
+}
+
+// Create returns a builder for creating a WasabiBucketConfig entity.
+func (c *WasabiBucketConfigClient) Create() *WasabiBucketConfigCreate {
+	mutation := newWasabiBucketConfigMutation(c.config, OpCreate)
+	return &WasabiBucketConfigCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of WasabiBucketConfig entities.
+func (c *WasabiBucketConfigClient) CreateBulk(builders ...*WasabiBucketConfigCreate) *WasabiBucketConfigCreateBulk {
+	return &WasabiBucketConfigCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *WasabiBucketConfigClient) MapCreateBulk(slice any, setFunc func(*WasabiBucketConfigCreate, int)) *WasabiBucketConfigCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &WasabiBucketConfigCreateBulk{err: fmt.Errorf("calling to WasabiBucketConfigClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*WasabiBucketConfigCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &WasabiBucketConfigCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for WasabiBucketConfig.
+func (c *WasabiBucketConfigClient) Update() *WasabiBucketConfigUpdate {
+	mutation := newWasabiBucketConfigMutation(c.config, OpUpdate)
+	return &WasabiBucketConfigUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *WasabiBucketConfigClient) UpdateOne(_m *WasabiBucketConfig) *WasabiBucketConfigUpdateOne {
+	mutation := newWasabiBucketConfigMutation(c.config, OpUpdateOne, withWasabiBucketConfig(_m))
+	return &WasabiBucketConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *WasabiBucketConfigClient) UpdateOneID(id int) *WasabiBucketConfigUpdateOne {
+	mutation := newWasabiBucketConfigMutation(c.config, OpUpdateOne, withWasabiBucketConfigID(id))
+	return &WasabiBucketConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for WasabiBucketConfig.
+func (c *WasabiBucketConfigClient) Delete() *WasabiBucketConfigDelete {
+	mutation := newWasabiBucketConfigMutation(c.config, OpDelete)
+	return &WasabiBucketConfigDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *WasabiBucketConfigClient) DeleteOne(_m *WasabiBucketConfig) *WasabiBucketConfigDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *WasabiBucketConfigClient) DeleteOneID(id int) *WasabiBucketConfigDeleteOne {
+	builder := c.Delete().Where(wasabibucketconfig.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &WasabiBucketConfigDeleteOne{builder}
+}
+
+// Query returns a query builder for WasabiBucketConfig.
+func (c *WasabiBucketConfigClient) Query() *WasabiBucketConfigQuery {
+	return &WasabiBucketConfigQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeWasabiBucketConfig},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a WasabiBucketConfig entity by its id.
+func (c *WasabiBucketConfigClient) Get(ctx context.Context, id int) (*WasabiBucketConfig, error) {
+	return c.Query().Where(wasabibucketconfig.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *WasabiBucketConfigClient) GetX(ctx context.Context, id int) *WasabiBucketConfig {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *WasabiBucketConfigClient) Hooks() []Hook {
+	return c.hooks.WasabiBucketConfig
+}
+
+// Interceptors returns the client interceptors.
+func (c *WasabiBucketConfigClient) Interceptors() []Interceptor {
+	return c.inters.WasabiBucketConfig
+}
+
+func (c *WasabiBucketConfigClient) mutate(ctx context.Context, m *WasabiBucketConfigMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&WasabiBucketConfigCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&WasabiBucketConfigUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&WasabiBucketConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&WasabiBucketConfigDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown WasabiBucketConfig mutation op: %q", m.Op())
+	}
+}
+
 // WasabiDailyUsageClient is a client for the WasabiDailyUsage schema.
 type WasabiDailyUsageClient struct {
 	config
@@ -1755,12 +1896,12 @@ func (c *WasabiSyncStateClient) mutate(ctx context.Context, m *WasabiSyncStateMu
 type (
 	hooks struct {
 		Alert, Connection, NocoDBBackupPolicy, NocoDBRestore, NocoDBSnapshot,
-		NotificationChannel, OAuthState, Session, User, WasabiDailyUsage,
-		WasabiSyncState []ent.Hook
+		NotificationChannel, OAuthState, Session, User, WasabiBucketConfig,
+		WasabiDailyUsage, WasabiSyncState []ent.Hook
 	}
 	inters struct {
 		Alert, Connection, NocoDBBackupPolicy, NocoDBRestore, NocoDBSnapshot,
-		NotificationChannel, OAuthState, Session, User, WasabiDailyUsage,
-		WasabiSyncState []ent.Interceptor
+		NotificationChannel, OAuthState, Session, User, WasabiBucketConfig,
+		WasabiDailyUsage, WasabiSyncState []ent.Interceptor
 	}
 )

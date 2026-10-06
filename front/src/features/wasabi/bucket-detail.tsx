@@ -5,6 +5,7 @@ import { useWasabiBuckets } from '@/api/wasabi'
 import { formatBytes } from '@/lib/format'
 import { Badge } from '@/components/ui/badge'
 import { Page, PageHeader, PageScroll } from '@/components/common/page-parts'
+import { BucketSettingsCard } from './bucket-settings'
 import { formatCompact, formatDayLong } from './format'
 import { StatTile } from './stat-tile'
 import { UsageCharts } from './usage-charts'
@@ -62,6 +63,7 @@ export function WasabiBucketPage() {
             />
           </div>
         )}
+        {row?.config && <BucketSettingsCard config={row.config} />}
         <UsageCharts connectionId={connectionId} bucket={bucket} />
         {latest && <UsageDetailsCard usage={latest} />}
       </PageScroll>

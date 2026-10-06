@@ -30,6 +30,8 @@ type Tx struct {
 	Session *SessionClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// WasabiBucketConfig is the client for interacting with the WasabiBucketConfig builders.
+	WasabiBucketConfig *WasabiBucketConfigClient
 	// WasabiDailyUsage is the client for interacting with the WasabiDailyUsage builders.
 	WasabiDailyUsage *WasabiDailyUsageClient
 	// WasabiSyncState is the client for interacting with the WasabiSyncState builders.
@@ -174,6 +176,7 @@ func (tx *Tx) init() {
 	tx.OAuthState = NewOAuthStateClient(tx.config)
 	tx.Session = NewSessionClient(tx.config)
 	tx.User = NewUserClient(tx.config)
+	tx.WasabiBucketConfig = NewWasabiBucketConfigClient(tx.config)
 	tx.WasabiDailyUsage = NewWasabiDailyUsageClient(tx.config)
 	tx.WasabiSyncState = NewWasabiSyncStateClient(tx.config)
 }

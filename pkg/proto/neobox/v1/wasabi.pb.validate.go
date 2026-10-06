@@ -369,6 +369,37 @@ func (m *WasabiSyncState) validate(all bool) error {
 
 	// no validation rules for BackfillProgress
 
+	if all {
+		switch v := interface{}(m.GetConfigFetchedAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, WasabiSyncStateValidationError{
+					field:  "ConfigFetchedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, WasabiSyncStateValidationError{
+					field:  "ConfigFetchedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetConfigFetchedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return WasabiSyncStateValidationError{
+				field:  "ConfigFetchedAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for ConfigError
+
 	if len(errors) > 0 {
 		return WasabiSyncStateMultiError(errors)
 	}
@@ -504,6 +535,35 @@ func (m *WasabiBucket) validate(all bool) error {
 		}
 	}
 
+	if all {
+		switch v := interface{}(m.GetConfig()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, WasabiBucketValidationError{
+					field:  "Config",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, WasabiBucketValidationError{
+					field:  "Config",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetConfig()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return WasabiBucketValidationError{
+				field:  "Config",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
 	if len(errors) > 0 {
 		return WasabiBucketMultiError(errors)
 	}
@@ -580,6 +640,1585 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = WasabiBucketValidationError{}
+
+// Validate checks the field values on WasabiBucketConfig with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WasabiBucketConfig) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WasabiBucketConfig with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WasabiBucketConfigMultiError, or nil if none found.
+func (m *WasabiBucketConfig) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WasabiBucketConfig) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetFetchedAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, WasabiBucketConfigValidationError{
+					field:  "FetchedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, WasabiBucketConfigValidationError{
+					field:  "FetchedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetFetchedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return WasabiBucketConfigValidationError{
+				field:  "FetchedAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetCreatedAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, WasabiBucketConfigValidationError{
+					field:  "CreatedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, WasabiBucketConfigValidationError{
+					field:  "CreatedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetCreatedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return WasabiBucketConfigValidationError{
+				field:  "CreatedAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for Region
+
+	if all {
+		switch v := interface{}(m.GetVersioning()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, WasabiBucketConfigValidationError{
+					field:  "Versioning",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, WasabiBucketConfigValidationError{
+					field:  "Versioning",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetVersioning()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return WasabiBucketConfigValidationError{
+				field:  "Versioning",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetObjectLock()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, WasabiBucketConfigValidationError{
+					field:  "ObjectLock",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, WasabiBucketConfigValidationError{
+					field:  "ObjectLock",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetObjectLock()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return WasabiBucketConfigValidationError{
+				field:  "ObjectLock",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetCompliance()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, WasabiBucketConfigValidationError{
+					field:  "Compliance",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, WasabiBucketConfigValidationError{
+					field:  "Compliance",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetCompliance()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return WasabiBucketConfigValidationError{
+				field:  "Compliance",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	for idx, item := range m.GetLifecycleRules() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, WasabiBucketConfigValidationError{
+						field:  fmt.Sprintf("LifecycleRules[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, WasabiBucketConfigValidationError{
+						field:  fmt.Sprintf("LifecycleRules[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return WasabiBucketConfigValidationError{
+					field:  fmt.Sprintf("LifecycleRules[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if all {
+		switch v := interface{}(m.GetPolicy()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, WasabiBucketConfigValidationError{
+					field:  "Policy",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, WasabiBucketConfigValidationError{
+					field:  "Policy",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetPolicy()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return WasabiBucketConfigValidationError{
+				field:  "Policy",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetAcl()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, WasabiBucketConfigValidationError{
+					field:  "Acl",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, WasabiBucketConfigValidationError{
+					field:  "Acl",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetAcl()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return WasabiBucketConfigValidationError{
+				field:  "Acl",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetLogging()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, WasabiBucketConfigValidationError{
+					field:  "Logging",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, WasabiBucketConfigValidationError{
+					field:  "Logging",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetLogging()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return WasabiBucketConfigValidationError{
+				field:  "Logging",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	for idx, item := range m.GetReplicationRules() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, WasabiBucketConfigValidationError{
+						field:  fmt.Sprintf("ReplicationRules[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, WasabiBucketConfigValidationError{
+						field:  fmt.Sprintf("ReplicationRules[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return WasabiBucketConfigValidationError{
+					field:  fmt.Sprintf("ReplicationRules[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for Tags
+
+	// no validation rules for Errors
+
+	// no validation rules for Public
+
+	for idx, item := range m.GetFindings() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, WasabiBucketConfigValidationError{
+						field:  fmt.Sprintf("Findings[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, WasabiBucketConfigValidationError{
+						field:  fmt.Sprintf("Findings[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return WasabiBucketConfigValidationError{
+					field:  fmt.Sprintf("Findings[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return WasabiBucketConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// WasabiBucketConfigMultiError is an error wrapping multiple validation errors
+// returned by WasabiBucketConfig.ValidateAll() if the designated constraints
+// aren't met.
+type WasabiBucketConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WasabiBucketConfigMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WasabiBucketConfigMultiError) AllErrors() []error { return m }
+
+// WasabiBucketConfigValidationError is the validation error returned by
+// WasabiBucketConfig.Validate if the designated constraints aren't met.
+type WasabiBucketConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WasabiBucketConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WasabiBucketConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WasabiBucketConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WasabiBucketConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WasabiBucketConfigValidationError) ErrorName() string {
+	return "WasabiBucketConfigValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WasabiBucketConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWasabiBucketConfig.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WasabiBucketConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WasabiBucketConfigValidationError{}
+
+// Validate checks the field values on WasabiVersioning with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *WasabiVersioning) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WasabiVersioning with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WasabiVersioningMultiError, or nil if none found.
+func (m *WasabiVersioning) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WasabiVersioning) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Status
+
+	// no validation rules for MfaDelete
+
+	if len(errors) > 0 {
+		return WasabiVersioningMultiError(errors)
+	}
+
+	return nil
+}
+
+// WasabiVersioningMultiError is an error wrapping multiple validation errors
+// returned by WasabiVersioning.ValidateAll() if the designated constraints
+// aren't met.
+type WasabiVersioningMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WasabiVersioningMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WasabiVersioningMultiError) AllErrors() []error { return m }
+
+// WasabiVersioningValidationError is the validation error returned by
+// WasabiVersioning.Validate if the designated constraints aren't met.
+type WasabiVersioningValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WasabiVersioningValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WasabiVersioningValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WasabiVersioningValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WasabiVersioningValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WasabiVersioningValidationError) ErrorName() string { return "WasabiVersioningValidationError" }
+
+// Error satisfies the builtin error interface
+func (e WasabiVersioningValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWasabiVersioning.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WasabiVersioningValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WasabiVersioningValidationError{}
+
+// Validate checks the field values on WasabiObjectLock with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *WasabiObjectLock) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WasabiObjectLock with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WasabiObjectLockMultiError, or nil if none found.
+func (m *WasabiObjectLock) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WasabiObjectLock) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Mode
+
+	// no validation rules for Days
+
+	// no validation rules for Years
+
+	if len(errors) > 0 {
+		return WasabiObjectLockMultiError(errors)
+	}
+
+	return nil
+}
+
+// WasabiObjectLockMultiError is an error wrapping multiple validation errors
+// returned by WasabiObjectLock.ValidateAll() if the designated constraints
+// aren't met.
+type WasabiObjectLockMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WasabiObjectLockMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WasabiObjectLockMultiError) AllErrors() []error { return m }
+
+// WasabiObjectLockValidationError is the validation error returned by
+// WasabiObjectLock.Validate if the designated constraints aren't met.
+type WasabiObjectLockValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WasabiObjectLockValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WasabiObjectLockValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WasabiObjectLockValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WasabiObjectLockValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WasabiObjectLockValidationError) ErrorName() string { return "WasabiObjectLockValidationError" }
+
+// Error satisfies the builtin error interface
+func (e WasabiObjectLockValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWasabiObjectLock.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WasabiObjectLockValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WasabiObjectLockValidationError{}
+
+// Validate checks the field values on WasabiCompliance with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *WasabiCompliance) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WasabiCompliance with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WasabiComplianceMultiError, or nil if none found.
+func (m *WasabiCompliance) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WasabiCompliance) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for RetentionDays
+
+	// no validation rules for ConditionalHold
+
+	// no validation rules for DeleteAfterRetention
+
+	// no validation rules for Locked
+
+	if all {
+		switch v := interface{}(m.GetLockTime()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, WasabiComplianceValidationError{
+					field:  "LockTime",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, WasabiComplianceValidationError{
+					field:  "LockTime",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetLockTime()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return WasabiComplianceValidationError{
+				field:  "LockTime",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return WasabiComplianceMultiError(errors)
+	}
+
+	return nil
+}
+
+// WasabiComplianceMultiError is an error wrapping multiple validation errors
+// returned by WasabiCompliance.ValidateAll() if the designated constraints
+// aren't met.
+type WasabiComplianceMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WasabiComplianceMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WasabiComplianceMultiError) AllErrors() []error { return m }
+
+// WasabiComplianceValidationError is the validation error returned by
+// WasabiCompliance.Validate if the designated constraints aren't met.
+type WasabiComplianceValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WasabiComplianceValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WasabiComplianceValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WasabiComplianceValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WasabiComplianceValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WasabiComplianceValidationError) ErrorName() string { return "WasabiComplianceValidationError" }
+
+// Error satisfies the builtin error interface
+func (e WasabiComplianceValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWasabiCompliance.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WasabiComplianceValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WasabiComplianceValidationError{}
+
+// Validate checks the field values on WasabiLifecycleRule with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WasabiLifecycleRule) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WasabiLifecycleRule with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WasabiLifecycleRuleMultiError, or nil if none found.
+func (m *WasabiLifecycleRule) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WasabiLifecycleRule) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Enabled
+
+	// no validation rules for Prefix
+
+	// no validation rules for ExpirationDays
+
+	// no validation rules for ExpiredObjectDeleteMarker
+
+	// no validation rules for NoncurrentDays
+
+	// no validation rules for AbortMultipartDays
+
+	if len(errors) > 0 {
+		return WasabiLifecycleRuleMultiError(errors)
+	}
+
+	return nil
+}
+
+// WasabiLifecycleRuleMultiError is an error wrapping multiple validation
+// errors returned by WasabiLifecycleRule.ValidateAll() if the designated
+// constraints aren't met.
+type WasabiLifecycleRuleMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WasabiLifecycleRuleMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WasabiLifecycleRuleMultiError) AllErrors() []error { return m }
+
+// WasabiLifecycleRuleValidationError is the validation error returned by
+// WasabiLifecycleRule.Validate if the designated constraints aren't met.
+type WasabiLifecycleRuleValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WasabiLifecycleRuleValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WasabiLifecycleRuleValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WasabiLifecycleRuleValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WasabiLifecycleRuleValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WasabiLifecycleRuleValidationError) ErrorName() string {
+	return "WasabiLifecycleRuleValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WasabiLifecycleRuleValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWasabiLifecycleRule.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WasabiLifecycleRuleValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WasabiLifecycleRuleValidationError{}
+
+// Validate checks the field values on WasabiBucketPolicy with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WasabiBucketPolicy) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WasabiBucketPolicy with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WasabiBucketPolicyMultiError, or nil if none found.
+func (m *WasabiBucketPolicy) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WasabiBucketPolicy) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Document
+
+	// no validation rules for Public
+
+	if len(errors) > 0 {
+		return WasabiBucketPolicyMultiError(errors)
+	}
+
+	return nil
+}
+
+// WasabiBucketPolicyMultiError is an error wrapping multiple validation errors
+// returned by WasabiBucketPolicy.ValidateAll() if the designated constraints
+// aren't met.
+type WasabiBucketPolicyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WasabiBucketPolicyMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WasabiBucketPolicyMultiError) AllErrors() []error { return m }
+
+// WasabiBucketPolicyValidationError is the validation error returned by
+// WasabiBucketPolicy.Validate if the designated constraints aren't met.
+type WasabiBucketPolicyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WasabiBucketPolicyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WasabiBucketPolicyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WasabiBucketPolicyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WasabiBucketPolicyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WasabiBucketPolicyValidationError) ErrorName() string {
+	return "WasabiBucketPolicyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WasabiBucketPolicyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWasabiBucketPolicy.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WasabiBucketPolicyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WasabiBucketPolicyValidationError{}
+
+// Validate checks the field values on WasabiBucketAcl with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *WasabiBucketAcl) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WasabiBucketAcl with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WasabiBucketAclMultiError, or nil if none found.
+func (m *WasabiBucketAcl) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WasabiBucketAcl) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Owner
+
+	for idx, item := range m.GetGrants() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, WasabiBucketAclValidationError{
+						field:  fmt.Sprintf("Grants[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, WasabiBucketAclValidationError{
+						field:  fmt.Sprintf("Grants[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return WasabiBucketAclValidationError{
+					field:  fmt.Sprintf("Grants[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for Public
+
+	if len(errors) > 0 {
+		return WasabiBucketAclMultiError(errors)
+	}
+
+	return nil
+}
+
+// WasabiBucketAclMultiError is an error wrapping multiple validation errors
+// returned by WasabiBucketAcl.ValidateAll() if the designated constraints
+// aren't met.
+type WasabiBucketAclMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WasabiBucketAclMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WasabiBucketAclMultiError) AllErrors() []error { return m }
+
+// WasabiBucketAclValidationError is the validation error returned by
+// WasabiBucketAcl.Validate if the designated constraints aren't met.
+type WasabiBucketAclValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WasabiBucketAclValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WasabiBucketAclValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WasabiBucketAclValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WasabiBucketAclValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WasabiBucketAclValidationError) ErrorName() string { return "WasabiBucketAclValidationError" }
+
+// Error satisfies the builtin error interface
+func (e WasabiBucketAclValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWasabiBucketAcl.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WasabiBucketAclValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WasabiBucketAclValidationError{}
+
+// Validate checks the field values on WasabiAclGrant with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *WasabiAclGrant) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WasabiAclGrant with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in WasabiAclGrantMultiError,
+// or nil if none found.
+func (m *WasabiAclGrant) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WasabiAclGrant) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Grantee
+
+	// no validation rules for Permission
+
+	if len(errors) > 0 {
+		return WasabiAclGrantMultiError(errors)
+	}
+
+	return nil
+}
+
+// WasabiAclGrantMultiError is an error wrapping multiple validation errors
+// returned by WasabiAclGrant.ValidateAll() if the designated constraints
+// aren't met.
+type WasabiAclGrantMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WasabiAclGrantMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WasabiAclGrantMultiError) AllErrors() []error { return m }
+
+// WasabiAclGrantValidationError is the validation error returned by
+// WasabiAclGrant.Validate if the designated constraints aren't met.
+type WasabiAclGrantValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WasabiAclGrantValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WasabiAclGrantValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WasabiAclGrantValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WasabiAclGrantValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WasabiAclGrantValidationError) ErrorName() string { return "WasabiAclGrantValidationError" }
+
+// Error satisfies the builtin error interface
+func (e WasabiAclGrantValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWasabiAclGrant.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WasabiAclGrantValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WasabiAclGrantValidationError{}
+
+// Validate checks the field values on WasabiBucketLogging with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WasabiBucketLogging) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WasabiBucketLogging with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WasabiBucketLoggingMultiError, or nil if none found.
+func (m *WasabiBucketLogging) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WasabiBucketLogging) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for TargetBucket
+
+	// no validation rules for TargetPrefix
+
+	if len(errors) > 0 {
+		return WasabiBucketLoggingMultiError(errors)
+	}
+
+	return nil
+}
+
+// WasabiBucketLoggingMultiError is an error wrapping multiple validation
+// errors returned by WasabiBucketLogging.ValidateAll() if the designated
+// constraints aren't met.
+type WasabiBucketLoggingMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WasabiBucketLoggingMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WasabiBucketLoggingMultiError) AllErrors() []error { return m }
+
+// WasabiBucketLoggingValidationError is the validation error returned by
+// WasabiBucketLogging.Validate if the designated constraints aren't met.
+type WasabiBucketLoggingValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WasabiBucketLoggingValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WasabiBucketLoggingValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WasabiBucketLoggingValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WasabiBucketLoggingValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WasabiBucketLoggingValidationError) ErrorName() string {
+	return "WasabiBucketLoggingValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WasabiBucketLoggingValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWasabiBucketLogging.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WasabiBucketLoggingValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WasabiBucketLoggingValidationError{}
+
+// Validate checks the field values on WasabiReplicationRule with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WasabiReplicationRule) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WasabiReplicationRule with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WasabiReplicationRuleMultiError, or nil if none found.
+func (m *WasabiReplicationRule) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WasabiReplicationRule) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Enabled
+
+	// no validation rules for Prefix
+
+	// no validation rules for DestinationBucket
+
+	if len(errors) > 0 {
+		return WasabiReplicationRuleMultiError(errors)
+	}
+
+	return nil
+}
+
+// WasabiReplicationRuleMultiError is an error wrapping multiple validation
+// errors returned by WasabiReplicationRule.ValidateAll() if the designated
+// constraints aren't met.
+type WasabiReplicationRuleMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WasabiReplicationRuleMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WasabiReplicationRuleMultiError) AllErrors() []error { return m }
+
+// WasabiReplicationRuleValidationError is the validation error returned by
+// WasabiReplicationRule.Validate if the designated constraints aren't met.
+type WasabiReplicationRuleValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WasabiReplicationRuleValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WasabiReplicationRuleValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WasabiReplicationRuleValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WasabiReplicationRuleValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WasabiReplicationRuleValidationError) ErrorName() string {
+	return "WasabiReplicationRuleValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WasabiReplicationRuleValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWasabiReplicationRule.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WasabiReplicationRuleValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WasabiReplicationRuleValidationError{}
+
+// Validate checks the field values on WasabiBucketFinding with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WasabiBucketFinding) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WasabiBucketFinding with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WasabiBucketFindingMultiError, or nil if none found.
+func (m *WasabiBucketFinding) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WasabiBucketFinding) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Code
+
+	// no validation rules for Severity
+
+	// no validation rules for Message
+
+	if len(errors) > 0 {
+		return WasabiBucketFindingMultiError(errors)
+	}
+
+	return nil
+}
+
+// WasabiBucketFindingMultiError is an error wrapping multiple validation
+// errors returned by WasabiBucketFinding.ValidateAll() if the designated
+// constraints aren't met.
+type WasabiBucketFindingMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WasabiBucketFindingMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WasabiBucketFindingMultiError) AllErrors() []error { return m }
+
+// WasabiBucketFindingValidationError is the validation error returned by
+// WasabiBucketFinding.Validate if the designated constraints aren't met.
+type WasabiBucketFindingValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WasabiBucketFindingValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WasabiBucketFindingValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WasabiBucketFindingValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WasabiBucketFindingValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WasabiBucketFindingValidationError) ErrorName() string {
+	return "WasabiBucketFindingValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WasabiBucketFindingValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWasabiBucketFinding.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WasabiBucketFindingValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WasabiBucketFindingValidationError{}
 
 // Validate checks the field values on GetWasabiOverviewRequest with the rules
 // defined in the proto definition for this message. If any rules are

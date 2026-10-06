@@ -2,8 +2,8 @@
 // @generated from file neobox/v1/wasabi.proto (package neobox.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv1";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv1";
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv1";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv1";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import { file_validate_validate } from "../../validate/validate_pb";
@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file neobox/v1/wasabi.proto.
  */
 export const file_neobox_v1_wasabi: GenFile = /*@__PURE__*/
-  fileDesc("ChZuZW9ib3gvdjEvd2FzYWJpLnByb3RvEgluZW9ib3gudjEiwgQKC1dhc2FiaVVzYWdlEgsKA2RheRgBIAEoCRIOCgZidWNrZXQYAiABKAkSDgoGcmVnaW9uGAMgASgJEhwKFGFjdGl2ZV9zdG9yYWdlX2J5dGVzGAQgASgDEh0KFWRlbGV0ZWRfc3RvcmFnZV9ieXRlcxgFIAEoAxIYChBiaWxsYWJsZV9vYmplY3RzGAYgASgDEiAKGGJpbGxhYmxlX2RlbGV0ZWRfb2JqZWN0cxgHIAEoAxIZChFyYXdfc3RvcmFnZV9ieXRlcxgIIAEoAxIcChRwYWRkZWRfc3RvcmFnZV9ieXRlcxgJIAEoAxIeChZtZXRhZGF0YV9zdG9yYWdlX2J5dGVzGAogASgDEh4KFm9ycGhhbmVkX3N0b3JhZ2VfYnl0ZXMYCyABKAMSIAoYbWluX3N0b3JhZ2VfY2hhcmdlX2J5dGVzGAwgASgDEhEKCWFwaV9jYWxscxgNIAEoAxIUCgx1cGxvYWRfYnl0ZXMYDiABKAMSFgoOZG93bmxvYWRfYnl0ZXMYDyABKAMSGwoTc3RvcmFnZV93cm90ZV9ieXRlcxgQIAEoAxIaChJzdG9yYWdlX3JlYWRfYnl0ZXMYESABKAMSFAoMZGVsZXRlX2J5dGVzGBIgASgDEhEKCWdldF9jYWxscxgTIAEoAxIRCglwdXRfY2FsbHMYFCABKAMSFAoMZGVsZXRlX2NhbGxzGBUgASgDEhIKCmxpc3RfY2FsbHMYFiABKAMSEgoKaGVhZF9jYWxscxgXIAEoAyLeAgoSV2FzYWJpQ29zdEVzdGltYXRlEhQKDHBlcmlvZF9zdGFydBgBIAEoCRISCgpwZXJpb2RfZW5kGAIgASgJEg8KB3JvbGxpbmcYAyABKAgSFAoMZGF0YV90aHJvdWdoGAQgASgJEhYKDmRheXNfd2l0aF9kYXRhGAUgASgFEhQKDGNvc3RfdG9fZGF0ZRgGIAEoARIWCg5wcm9qZWN0ZWRfY29zdBgHIAEoARIaChJwcmljZV9wZXJfdGJfbW9udGgYCCABKAESFAoMZWdyZXNzX2J5dGVzGAkgASgDEh4KFmVncmVzc19leGNlZWRzX3N0b3JhZ2UYCiABKAgSFAoMdHJlbmRfZml0dGVkGAsgASgIEhwKFHRyZW5kX3Byb2plY3RlZF9jb3N0GAwgASgBEhcKD25leHRfY3ljbGVfY29zdBgNIAEoARISCgpidWRnZXRfdXNkGA4gASgBIqYBCg9XYXNhYmlTeW5jU3RhdGUSDwoHc3luY2luZxgBIAEoCBIzCg9sYXN0X3N1Y2Nlc3NfYXQYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhcKD2xhc3Rfc3luY2VkX2RheRgDIAEoCRIZChFiYWNrZmlsbF9jb21wbGV0ZRgEIAEoCBIZChFiYWNrZmlsbF9wcm9ncmVzcxgFIAEoASJlCgxXYXNhYmlCdWNrZXQSDAoEbmFtZRgBIAEoCRIOCgZyZWdpb24YAiABKAkSDwoHZGVsZXRlZBgDIAEoCBImCgZsYXRlc3QYBCABKAsyFi5uZW9ib3gudjEuV2FzYWJpVXNhZ2UiOgoYR2V0V2FzYWJpT3ZlcnZpZXdSZXF1ZXN0Eh4KDWNvbm5lY3Rpb25faWQYASABKAlCB/pCBHICEAEiuQEKGUdldFdhc2FiaU92ZXJ2aWV3UmVzcG9uc2USJgoGbGF0ZXN0GAEgASgLMhYubmVvYm94LnYxLldhc2FiaVVzYWdlEjQKDWNvc3RfZXN0aW1hdGUYAiABKAsyHS5uZW9ib3gudjEuV2FzYWJpQ29zdEVzdGltYXRlEigKBHN5bmMYAyABKAsyGi5uZW9ib3gudjEuV2FzYWJpU3luY1N0YXRlEhQKDGJ1Y2tldF9jb3VudBgEIAEoBSJTChhMaXN0V2FzYWJpQnVja2V0c1JlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQARIXCg9pbmNsdWRlX2RlbGV0ZWQYAiABKAgiRQoZTGlzdFdhc2FiaUJ1Y2tldHNSZXNwb25zZRIoCgdidWNrZXRzGAEgAygLMhcubmVvYm94LnYxLldhc2FiaUJ1Y2tldCJhChVHZXRXYXNhYmlVc2FnZVJlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQARIOCgZidWNrZXQYAiABKAkSDAoEZnJvbRgDIAEoCRIKCgJ0bxgEIAEoCSI+ChZHZXRXYXNhYmlVc2FnZVJlc3BvbnNlEiQKBGRheXMYASADKAsyFi5uZW9ib3gudjEuV2FzYWJpVXNhZ2UiPQobU3luY1dhc2FiaUNvbm5lY3Rpb25SZXF1ZXN0Eh4KDWNvbm5lY3Rpb25faWQYASABKAlCB/pCBHICEAEiSAocU3luY1dhc2FiaUNvbm5lY3Rpb25SZXNwb25zZRIoCgRzeW5jGAEgASgLMhoubmVvYm94LnYxLldhc2FiaVN5bmNTdGF0ZSLMAQoQV2FzYWJpQnVja2V0Q29zdBIOCgZidWNrZXQYASABKAkSDgoGcmVnaW9uGAIgASgJEg8KB2RlbGV0ZWQYAyABKAgSEwoLYWN0aXZlX2Nvc3QYBCABKAESFAoMZGVsZXRlZF9jb3N0GAUgASgBEhwKFGFjdGl2ZV9zdG9yYWdlX2J5dGVzGAYgASgDEh0KFWRlbGV0ZWRfc3RvcmFnZV9ieXRlcxgHIAEoAxIfChdkZWxldGVkX2luX3BlcmlvZF9ieXRlcxgIIAEoAyKkAgoTV2FzYWJpQ29zdEJyZWFrZG93bhIUCgxwZXJpb2Rfc3RhcnQYASABKAkSEgoKcGVyaW9kX2VuZBgCIAEoCRIPCgdyb2xsaW5nGAMgASgIEhQKDGRhdGFfdGhyb3VnaBgEIAEoCRIWCg5kYXlzX3dpdGhfZGF0YRgFIAEoBRIaChJwcmljZV9wZXJfdGJfbW9udGgYBiABKAESEwoLYWN0aXZlX2Nvc3QYByABKAESFAoMZGVsZXRlZF9jb3N0GAggASgBEhQKDG1pbmltdW1fY29zdBgJIAEoARIZChF1bmF0dHJpYnV0ZWRfY29zdBgKIAEoARIsCgdidWNrZXRzGAsgAygLMhsubmVvYm94LnYxLldhc2FiaUJ1Y2tldENvc3QiPwodR2V0V2FzYWJpQ29zdEJyZWFrZG93blJlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQASJTCh5HZXRXYXNhYmlDb3N0QnJlYWtkb3duUmVzcG9uc2USMQoJYnJlYWtkb3duGAEgASgLMh4ubmVvYm94LnYxLldhc2FiaUNvc3RCcmVha2Rvd24y/gMKDVdhc2FiaVNlcnZpY2USXgoRR2V0V2FzYWJpT3ZlcnZpZXcSIy5uZW9ib3gudjEuR2V0V2FzYWJpT3ZlcnZpZXdSZXF1ZXN0GiQubmVvYm94LnYxLkdldFdhc2FiaU92ZXJ2aWV3UmVzcG9uc2USXgoRTGlzdFdhc2FiaUJ1Y2tldHMSIy5uZW9ib3gudjEuTGlzdFdhc2FiaUJ1Y2tldHNSZXF1ZXN0GiQubmVvYm94LnYxLkxpc3RXYXNhYmlCdWNrZXRzUmVzcG9uc2USVQoOR2V0V2FzYWJpVXNhZ2USIC5uZW9ib3gudjEuR2V0V2FzYWJpVXNhZ2VSZXF1ZXN0GiEubmVvYm94LnYxLkdldFdhc2FiaVVzYWdlUmVzcG9uc2USZwoUU3luY1dhc2FiaUNvbm5lY3Rpb24SJi5uZW9ib3gudjEuU3luY1dhc2FiaUNvbm5lY3Rpb25SZXF1ZXN0GicubmVvYm94LnYxLlN5bmNXYXNhYmlDb25uZWN0aW9uUmVzcG9uc2USbQoWR2V0V2FzYWJpQ29zdEJyZWFrZG93bhIoLm5lb2JveC52MS5HZXRXYXNhYmlDb3N0QnJlYWtkb3duUmVxdWVzdBopLm5lb2JveC52MS5HZXRXYXNhYmlDb3N0QnJlYWtkb3duUmVzcG9uc2VCNVozZ28ub3J4Lm1lL2FwcHMvbmVvLWJveC9wa2cvcHJvdG8vbmVvYm94L3YxO25lb2JveHYxYgZwcm90bzM", [file_google_protobuf_timestamp, file_validate_validate]);
+  fileDesc("ChZuZW9ib3gvdjEvd2FzYWJpLnByb3RvEgluZW9ib3gudjEiwgQKC1dhc2FiaVVzYWdlEgsKA2RheRgBIAEoCRIOCgZidWNrZXQYAiABKAkSDgoGcmVnaW9uGAMgASgJEhwKFGFjdGl2ZV9zdG9yYWdlX2J5dGVzGAQgASgDEh0KFWRlbGV0ZWRfc3RvcmFnZV9ieXRlcxgFIAEoAxIYChBiaWxsYWJsZV9vYmplY3RzGAYgASgDEiAKGGJpbGxhYmxlX2RlbGV0ZWRfb2JqZWN0cxgHIAEoAxIZChFyYXdfc3RvcmFnZV9ieXRlcxgIIAEoAxIcChRwYWRkZWRfc3RvcmFnZV9ieXRlcxgJIAEoAxIeChZtZXRhZGF0YV9zdG9yYWdlX2J5dGVzGAogASgDEh4KFm9ycGhhbmVkX3N0b3JhZ2VfYnl0ZXMYCyABKAMSIAoYbWluX3N0b3JhZ2VfY2hhcmdlX2J5dGVzGAwgASgDEhEKCWFwaV9jYWxscxgNIAEoAxIUCgx1cGxvYWRfYnl0ZXMYDiABKAMSFgoOZG93bmxvYWRfYnl0ZXMYDyABKAMSGwoTc3RvcmFnZV93cm90ZV9ieXRlcxgQIAEoAxIaChJzdG9yYWdlX3JlYWRfYnl0ZXMYESABKAMSFAoMZGVsZXRlX2J5dGVzGBIgASgDEhEKCWdldF9jYWxscxgTIAEoAxIRCglwdXRfY2FsbHMYFCABKAMSFAoMZGVsZXRlX2NhbGxzGBUgASgDEhIKCmxpc3RfY2FsbHMYFiABKAMSEgoKaGVhZF9jYWxscxgXIAEoAyLeAgoSV2FzYWJpQ29zdEVzdGltYXRlEhQKDHBlcmlvZF9zdGFydBgBIAEoCRISCgpwZXJpb2RfZW5kGAIgASgJEg8KB3JvbGxpbmcYAyABKAgSFAoMZGF0YV90aHJvdWdoGAQgASgJEhYKDmRheXNfd2l0aF9kYXRhGAUgASgFEhQKDGNvc3RfdG9fZGF0ZRgGIAEoARIWCg5wcm9qZWN0ZWRfY29zdBgHIAEoARIaChJwcmljZV9wZXJfdGJfbW9udGgYCCABKAESFAoMZWdyZXNzX2J5dGVzGAkgASgDEh4KFmVncmVzc19leGNlZWRzX3N0b3JhZ2UYCiABKAgSFAoMdHJlbmRfZml0dGVkGAsgASgIEhwKFHRyZW5kX3Byb2plY3RlZF9jb3N0GAwgASgBEhcKD25leHRfY3ljbGVfY29zdBgNIAEoARISCgpidWRnZXRfdXNkGA4gASgBIvMBCg9XYXNhYmlTeW5jU3RhdGUSDwoHc3luY2luZxgBIAEoCBIzCg9sYXN0X3N1Y2Nlc3NfYXQYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhcKD2xhc3Rfc3luY2VkX2RheRgDIAEoCRIZChFiYWNrZmlsbF9jb21wbGV0ZRgEIAEoCBIZChFiYWNrZmlsbF9wcm9ncmVzcxgFIAEoARI1ChFjb25maWdfZmV0Y2hlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASFAoMY29uZmlnX2Vycm9yGAcgASgJIpQBCgxXYXNhYmlCdWNrZXQSDAoEbmFtZRgBIAEoCRIOCgZyZWdpb24YAiABKAkSDwoHZGVsZXRlZBgDIAEoCBImCgZsYXRlc3QYBCABKAsyFi5uZW9ib3gudjEuV2FzYWJpVXNhZ2USLQoGY29uZmlnGAUgASgLMh0ubmVvYm94LnYxLldhc2FiaUJ1Y2tldENvbmZpZyKnBgoSV2FzYWJpQnVja2V0Q29uZmlnEi4KCmZldGNoZWRfYXQYASABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCmNyZWF0ZWRfYXQYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg4KBnJlZ2lvbhgDIAEoCRIvCgp2ZXJzaW9uaW5nGAQgASgLMhsubmVvYm94LnYxLldhc2FiaVZlcnNpb25pbmcSMAoLb2JqZWN0X2xvY2sYBSABKAsyGy5uZW9ib3gudjEuV2FzYWJpT2JqZWN0TG9jaxIvCgpjb21wbGlhbmNlGAYgASgLMhsubmVvYm94LnYxLldhc2FiaUNvbXBsaWFuY2USNwoPbGlmZWN5Y2xlX3J1bGVzGAcgAygLMh4ubmVvYm94LnYxLldhc2FiaUxpZmVjeWNsZVJ1bGUSLQoGcG9saWN5GAggASgLMh0ubmVvYm94LnYxLldhc2FiaUJ1Y2tldFBvbGljeRInCgNhY2wYCSABKAsyGi5uZW9ib3gudjEuV2FzYWJpQnVja2V0QWNsEi8KB2xvZ2dpbmcYCiABKAsyHi5uZW9ib3gudjEuV2FzYWJpQnVja2V0TG9nZ2luZxI7ChFyZXBsaWNhdGlvbl9ydWxlcxgLIAMoCzIgLm5lb2JveC52MS5XYXNhYmlSZXBsaWNhdGlvblJ1bGUSNQoEdGFncxgMIAMoCzInLm5lb2JveC52MS5XYXNhYmlCdWNrZXRDb25maWcuVGFnc0VudHJ5EjkKBmVycm9ycxgNIAMoCzIpLm5lb2JveC52MS5XYXNhYmlCdWNrZXRDb25maWcuRXJyb3JzRW50cnkSDgoGcHVibGljGA4gASgIEjAKCGZpbmRpbmdzGA8gAygLMh4ubmVvYm94LnYxLldhc2FiaUJ1Y2tldEZpbmRpbmcaKwoJVGFnc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEaLQoLRXJyb3JzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASI2ChBXYXNhYmlWZXJzaW9uaW5nEg4KBnN0YXR1cxgBIAEoCRISCgptZmFfZGVsZXRlGAIgASgIIj0KEFdhc2FiaU9iamVjdExvY2sSDAoEbW9kZRgBIAEoCRIMCgRkYXlzGAIgASgFEg0KBXllYXJzGAMgASgFIqMBChBXYXNhYmlDb21wbGlhbmNlEhYKDnJldGVudGlvbl9kYXlzGAEgASgFEhgKEGNvbmRpdGlvbmFsX2hvbGQYAiABKAgSHgoWZGVsZXRlX2FmdGVyX3JldGVudGlvbhgDIAEoCBIOCgZsb2NrZWQYBCABKAgSLQoJbG9ja190aW1lGAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCK4AQoTV2FzYWJpTGlmZWN5Y2xlUnVsZRIKCgJpZBgBIAEoCRIPCgdlbmFibGVkGAIgASgIEg4KBnByZWZpeBgDIAEoCRIXCg9leHBpcmF0aW9uX2RheXMYBCABKAUSJAocZXhwaXJlZF9vYmplY3RfZGVsZXRlX21hcmtlchgFIAEoCBIXCg9ub25jdXJyZW50X2RheXMYBiABKAUSHAoUYWJvcnRfbXVsdGlwYXJ0X2RheXMYByABKAUiNgoSV2FzYWJpQnVja2V0UG9saWN5EhAKCGRvY3VtZW50GAEgASgJEg4KBnB1YmxpYxgCIAEoCCJbCg9XYXNhYmlCdWNrZXRBY2wSDQoFb3duZXIYASABKAkSKQoGZ3JhbnRzGAIgAygLMhkubmVvYm94LnYxLldhc2FiaUFjbEdyYW50Eg4KBnB1YmxpYxgDIAEoCCI1Cg5XYXNhYmlBY2xHcmFudBIPCgdncmFudGVlGAEgASgJEhIKCnBlcm1pc3Npb24YAiABKAkiQwoTV2FzYWJpQnVja2V0TG9nZ2luZxIVCg10YXJnZXRfYnVja2V0GAEgASgJEhUKDXRhcmdldF9wcmVmaXgYAiABKAkiYAoVV2FzYWJpUmVwbGljYXRpb25SdWxlEgoKAmlkGAEgASgJEg8KB2VuYWJsZWQYAiABKAgSDgoGcHJlZml4GAMgASgJEhoKEmRlc3RpbmF0aW9uX2J1Y2tldBgEIAEoCSJoChNXYXNhYmlCdWNrZXRGaW5kaW5nEgwKBGNvZGUYASABKAkSMgoIc2V2ZXJpdHkYAiABKA4yIC5uZW9ib3gudjEuV2FzYWJpRmluZGluZ1NldmVyaXR5Eg8KB21lc3NhZ2UYAyABKAkiOgoYR2V0V2FzYWJpT3ZlcnZpZXdSZXF1ZXN0Eh4KDWNvbm5lY3Rpb25faWQYASABKAlCB/pCBHICEAEiuQEKGUdldFdhc2FiaU92ZXJ2aWV3UmVzcG9uc2USJgoGbGF0ZXN0GAEgASgLMhYubmVvYm94LnYxLldhc2FiaVVzYWdlEjQKDWNvc3RfZXN0aW1hdGUYAiABKAsyHS5uZW9ib3gudjEuV2FzYWJpQ29zdEVzdGltYXRlEigKBHN5bmMYAyABKAsyGi5uZW9ib3gudjEuV2FzYWJpU3luY1N0YXRlEhQKDGJ1Y2tldF9jb3VudBgEIAEoBSJTChhMaXN0V2FzYWJpQnVja2V0c1JlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQARIXCg9pbmNsdWRlX2RlbGV0ZWQYAiABKAgiRQoZTGlzdFdhc2FiaUJ1Y2tldHNSZXNwb25zZRIoCgdidWNrZXRzGAEgAygLMhcubmVvYm94LnYxLldhc2FiaUJ1Y2tldCJhChVHZXRXYXNhYmlVc2FnZVJlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQARIOCgZidWNrZXQYAiABKAkSDAoEZnJvbRgDIAEoCRIKCgJ0bxgEIAEoCSI+ChZHZXRXYXNhYmlVc2FnZVJlc3BvbnNlEiQKBGRheXMYASADKAsyFi5uZW9ib3gudjEuV2FzYWJpVXNhZ2UiPQobU3luY1dhc2FiaUNvbm5lY3Rpb25SZXF1ZXN0Eh4KDWNvbm5lY3Rpb25faWQYASABKAlCB/pCBHICEAEiSAocU3luY1dhc2FiaUNvbm5lY3Rpb25SZXNwb25zZRIoCgRzeW5jGAEgASgLMhoubmVvYm94LnYxLldhc2FiaVN5bmNTdGF0ZSLMAQoQV2FzYWJpQnVja2V0Q29zdBIOCgZidWNrZXQYASABKAkSDgoGcmVnaW9uGAIgASgJEg8KB2RlbGV0ZWQYAyABKAgSEwoLYWN0aXZlX2Nvc3QYBCABKAESFAoMZGVsZXRlZF9jb3N0GAUgASgBEhwKFGFjdGl2ZV9zdG9yYWdlX2J5dGVzGAYgASgDEh0KFWRlbGV0ZWRfc3RvcmFnZV9ieXRlcxgHIAEoAxIfChdkZWxldGVkX2luX3BlcmlvZF9ieXRlcxgIIAEoAyKkAgoTV2FzYWJpQ29zdEJyZWFrZG93bhIUCgxwZXJpb2Rfc3RhcnQYASABKAkSEgoKcGVyaW9kX2VuZBgCIAEoCRIPCgdyb2xsaW5nGAMgASgIEhQKDGRhdGFfdGhyb3VnaBgEIAEoCRIWCg5kYXlzX3dpdGhfZGF0YRgFIAEoBRIaChJwcmljZV9wZXJfdGJfbW9udGgYBiABKAESEwoLYWN0aXZlX2Nvc3QYByABKAESFAoMZGVsZXRlZF9jb3N0GAggASgBEhQKDG1pbmltdW1fY29zdBgJIAEoARIZChF1bmF0dHJpYnV0ZWRfY29zdBgKIAEoARIsCgdidWNrZXRzGAsgAygLMhsubmVvYm94LnYxLldhc2FiaUJ1Y2tldENvc3QiPwodR2V0V2FzYWJpQ29zdEJyZWFrZG93blJlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQASJTCh5HZXRXYXNhYmlDb3N0QnJlYWtkb3duUmVzcG9uc2USMQoJYnJlYWtkb3duGAEgASgLMh4ubmVvYm94LnYxLldhc2FiaUNvc3RCcmVha2Rvd24qrQEKFVdhc2FiaUZpbmRpbmdTZXZlcml0eRInCiNXQVNBQklfRklORElOR19TRVZFUklUWV9VTlNQRUNJRklFRBAAEiAKHFdBU0FCSV9GSU5ESU5HX1NFVkVSSVRZX0lORk8QARIjCh9XQVNBQklfRklORElOR19TRVZFUklUWV9XQVJOSU5HEAISJAogV0FTQUJJX0ZJTkRJTkdfU0VWRVJJVFlfQ1JJVElDQUwQAzL+AwoNV2FzYWJpU2VydmljZRJeChFHZXRXYXNhYmlPdmVydmlldxIjLm5lb2JveC52MS5HZXRXYXNhYmlPdmVydmlld1JlcXVlc3QaJC5uZW9ib3gudjEuR2V0V2FzYWJpT3ZlcnZpZXdSZXNwb25zZRJeChFMaXN0V2FzYWJpQnVja2V0cxIjLm5lb2JveC52MS5MaXN0V2FzYWJpQnVja2V0c1JlcXVlc3QaJC5uZW9ib3gudjEuTGlzdFdhc2FiaUJ1Y2tldHNSZXNwb25zZRJVCg5HZXRXYXNhYmlVc2FnZRIgLm5lb2JveC52MS5HZXRXYXNhYmlVc2FnZVJlcXVlc3QaIS5uZW9ib3gudjEuR2V0V2FzYWJpVXNhZ2VSZXNwb25zZRJnChRTeW5jV2FzYWJpQ29ubmVjdGlvbhImLm5lb2JveC52MS5TeW5jV2FzYWJpQ29ubmVjdGlvblJlcXVlc3QaJy5uZW9ib3gudjEuU3luY1dhc2FiaUNvbm5lY3Rpb25SZXNwb25zZRJtChZHZXRXYXNhYmlDb3N0QnJlYWtkb3duEigubmVvYm94LnYxLkdldFdhc2FiaUNvc3RCcmVha2Rvd25SZXF1ZXN0GikubmVvYm94LnYxLkdldFdhc2FiaUNvc3RCcmVha2Rvd25SZXNwb25zZUI1WjNnby5vcngubWUvYXBwcy9uZW8tYm94L3BrZy9wcm90by9uZW9ib3gvdjE7bmVvYm94djFiBnByb3RvMw", [file_google_protobuf_timestamp, file_validate_validate]);
 
 /**
  * WasabiUsage is one day of Stats API utilization. Storage fields are a
@@ -294,6 +294,21 @@ export type WasabiSyncState = Message<"neobox.v1.WasabiSyncState"> & {
    * @generated from field: double backfill_progress = 5;
    */
   backfillProgress: number;
+
+  /**
+   * When bucket settings were last read through the S3 API.
+   *
+   * @generated from field: google.protobuf.Timestamp config_fetched_at = 6;
+   */
+  configFetchedAt?: Timestamp;
+
+  /**
+   * Why buckets could not be listed: "access_denied" when the key lacks
+   * S3 read access, otherwise an error message. Empty when they were.
+   *
+   * @generated from field: string config_error = 7;
+   */
+  configError: string;
 };
 
 /**
@@ -328,6 +343,14 @@ export type WasabiBucket = Message<"neobox.v1.WasabiBucket"> & {
    * @generated from field: neobox.v1.WasabiUsage latest = 4;
    */
   latest?: WasabiUsage;
+
+  /**
+   * The bucket's settings, once read; absent before the first read or for
+   * a bucket the S3 API no longer lists.
+   *
+   * @generated from field: neobox.v1.WasabiBucketConfig config = 5;
+   */
+  config?: WasabiBucketConfig;
 };
 
 /**
@@ -336,6 +359,414 @@ export type WasabiBucket = Message<"neobox.v1.WasabiBucket"> & {
  */
 export const WasabiBucketSchema: GenMessage<WasabiBucket> = /*@__PURE__*/
   messageDesc(file_neobox_v1_wasabi, 3);
+
+/**
+ * WasabiBucketConfig is a bucket's settings as last read through the S3
+ * API. An absent message means the setting is off (or has no rules); a
+ * setting that could not be read has an entry in errors instead.
+ *
+ * @generated from message neobox.v1.WasabiBucketConfig
+ */
+export type WasabiBucketConfig = Message<"neobox.v1.WasabiBucketConfig"> & {
+  /**
+   * @generated from field: google.protobuf.Timestamp fetched_at = 1;
+   */
+  fetchedAt?: Timestamp;
+
+  /**
+   * When the bucket was created.
+   *
+   * @generated from field: google.protobuf.Timestamp created_at = 2;
+   */
+  createdAt?: Timestamp;
+
+  /**
+   * The region the bucket lives in.
+   *
+   * @generated from field: string region = 3;
+   */
+  region: string;
+
+  /**
+   * @generated from field: neobox.v1.WasabiVersioning versioning = 4;
+   */
+  versioning?: WasabiVersioning;
+
+  /**
+   * @generated from field: neobox.v1.WasabiObjectLock object_lock = 5;
+   */
+  objectLock?: WasabiObjectLock;
+
+  /**
+   * @generated from field: neobox.v1.WasabiCompliance compliance = 6;
+   */
+  compliance?: WasabiCompliance;
+
+  /**
+   * @generated from field: repeated neobox.v1.WasabiLifecycleRule lifecycle_rules = 7;
+   */
+  lifecycleRules: WasabiLifecycleRule[];
+
+  /**
+   * @generated from field: neobox.v1.WasabiBucketPolicy policy = 8;
+   */
+  policy?: WasabiBucketPolicy;
+
+  /**
+   * @generated from field: neobox.v1.WasabiBucketAcl acl = 9;
+   */
+  acl?: WasabiBucketAcl;
+
+  /**
+   * @generated from field: neobox.v1.WasabiBucketLogging logging = 10;
+   */
+  logging?: WasabiBucketLogging;
+
+  /**
+   * @generated from field: repeated neobox.v1.WasabiReplicationRule replication_rules = 11;
+   */
+  replicationRules: WasabiReplicationRule[];
+
+  /**
+   * @generated from field: map<string, string> tags = 12;
+   */
+  tags: { [key: string]: string };
+
+  /**
+   * Setting ("versioning", "object_lock", "compliance", "lifecycle",
+   * "policy", "acl", "logging", "replication", "tags", "location") to why
+   * it could not be read: "access_denied", "not_supported", or a message.
+   *
+   * @generated from field: map<string, string> errors = 13;
+   */
+  errors: { [key: string]: string };
+
+  /**
+   * The policy or ACL lets anyone in. Wasabi's console "Public Access
+   * Override" can't be read through the API, so false doesn't rule it out.
+   *
+   * @generated from field: bool public = 14;
+   */
+  public: boolean;
+
+  /**
+   * Settings worth a look, most severe first.
+   *
+   * @generated from field: repeated neobox.v1.WasabiBucketFinding findings = 15;
+   */
+  findings: WasabiBucketFinding[];
+};
+
+/**
+ * Describes the message neobox.v1.WasabiBucketConfig.
+ * Use `create(WasabiBucketConfigSchema)` to create a new message.
+ */
+export const WasabiBucketConfigSchema: GenMessage<WasabiBucketConfig> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_wasabi, 4);
+
+/**
+ * @generated from message neobox.v1.WasabiVersioning
+ */
+export type WasabiVersioning = Message<"neobox.v1.WasabiVersioning"> & {
+  /**
+   * "Enabled" or "Suspended".
+   *
+   * @generated from field: string status = 1;
+   */
+  status: string;
+
+  /**
+   * @generated from field: bool mfa_delete = 2;
+   */
+  mfaDelete: boolean;
+};
+
+/**
+ * Describes the message neobox.v1.WasabiVersioning.
+ * Use `create(WasabiVersioningSchema)` to create a new message.
+ */
+export const WasabiVersioningSchema: GenMessage<WasabiVersioning> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_wasabi, 5);
+
+/**
+ * @generated from message neobox.v1.WasabiObjectLock
+ */
+export type WasabiObjectLock = Message<"neobox.v1.WasabiObjectLock"> & {
+  /**
+   * "GOVERNANCE" or "COMPLIANCE" when a default retention is set.
+   *
+   * @generated from field: string mode = 1;
+   */
+  mode: string;
+
+  /**
+   * @generated from field: int32 days = 2;
+   */
+  days: number;
+
+  /**
+   * @generated from field: int32 years = 3;
+   */
+  years: number;
+};
+
+/**
+ * Describes the message neobox.v1.WasabiObjectLock.
+ * Use `create(WasabiObjectLockSchema)` to create a new message.
+ */
+export const WasabiObjectLockSchema: GenMessage<WasabiObjectLock> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_wasabi, 6);
+
+/**
+ * WasabiCompliance is Wasabi's own retention setting; a bucket has it or
+ * Object Lock, never both.
+ *
+ * @generated from message neobox.v1.WasabiCompliance
+ */
+export type WasabiCompliance = Message<"neobox.v1.WasabiCompliance"> & {
+  /**
+   * @generated from field: int32 retention_days = 1;
+   */
+  retentionDays: number;
+
+  /**
+   * @generated from field: bool conditional_hold = 2;
+   */
+  conditionalHold: boolean;
+
+  /**
+   * @generated from field: bool delete_after_retention = 3;
+   */
+  deleteAfterRetention: boolean;
+
+  /**
+   * The settings can no longer be reduced.
+   *
+   * @generated from field: bool locked = 4;
+   */
+  locked: boolean;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp lock_time = 5;
+   */
+  lockTime?: Timestamp;
+};
+
+/**
+ * Describes the message neobox.v1.WasabiCompliance.
+ * Use `create(WasabiComplianceSchema)` to create a new message.
+ */
+export const WasabiComplianceSchema: GenMessage<WasabiCompliance> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_wasabi, 7);
+
+/**
+ * WasabiLifecycleRule is one lifecycle rule; zero day counts mean the action
+ * is not set.
+ *
+ * @generated from message neobox.v1.WasabiLifecycleRule
+ */
+export type WasabiLifecycleRule = Message<"neobox.v1.WasabiLifecycleRule"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: bool enabled = 2;
+   */
+  enabled: boolean;
+
+  /**
+   * @generated from field: string prefix = 3;
+   */
+  prefix: string;
+
+  /**
+   * @generated from field: int32 expiration_days = 4;
+   */
+  expirationDays: number;
+
+  /**
+   * @generated from field: bool expired_object_delete_marker = 5;
+   */
+  expiredObjectDeleteMarker: boolean;
+
+  /**
+   * @generated from field: int32 noncurrent_days = 6;
+   */
+  noncurrentDays: number;
+
+  /**
+   * @generated from field: int32 abort_multipart_days = 7;
+   */
+  abortMultipartDays: number;
+};
+
+/**
+ * Describes the message neobox.v1.WasabiLifecycleRule.
+ * Use `create(WasabiLifecycleRuleSchema)` to create a new message.
+ */
+export const WasabiLifecycleRuleSchema: GenMessage<WasabiLifecycleRule> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_wasabi, 8);
+
+/**
+ * @generated from message neobox.v1.WasabiBucketPolicy
+ */
+export type WasabiBucketPolicy = Message<"neobox.v1.WasabiBucketPolicy"> & {
+  /**
+   * The policy JSON.
+   *
+   * @generated from field: string document = 1;
+   */
+  document: string;
+
+  /**
+   * @generated from field: bool public = 2;
+   */
+  public: boolean;
+};
+
+/**
+ * Describes the message neobox.v1.WasabiBucketPolicy.
+ * Use `create(WasabiBucketPolicySchema)` to create a new message.
+ */
+export const WasabiBucketPolicySchema: GenMessage<WasabiBucketPolicy> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_wasabi, 9);
+
+/**
+ * @generated from message neobox.v1.WasabiBucketAcl
+ */
+export type WasabiBucketAcl = Message<"neobox.v1.WasabiBucketAcl"> & {
+  /**
+   * @generated from field: string owner = 1;
+   */
+  owner: string;
+
+  /**
+   * @generated from field: repeated neobox.v1.WasabiAclGrant grants = 2;
+   */
+  grants: WasabiAclGrant[];
+
+  /**
+   * @generated from field: bool public = 3;
+   */
+  public: boolean;
+};
+
+/**
+ * Describes the message neobox.v1.WasabiBucketAcl.
+ * Use `create(WasabiBucketAclSchema)` to create a new message.
+ */
+export const WasabiBucketAclSchema: GenMessage<WasabiBucketAcl> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_wasabi, 10);
+
+/**
+ * @generated from message neobox.v1.WasabiAclGrant
+ */
+export type WasabiAclGrant = Message<"neobox.v1.WasabiAclGrant"> & {
+  /**
+   * A user's name or ID, or a group URI.
+   *
+   * @generated from field: string grantee = 1;
+   */
+  grantee: string;
+
+  /**
+   * @generated from field: string permission = 2;
+   */
+  permission: string;
+};
+
+/**
+ * Describes the message neobox.v1.WasabiAclGrant.
+ * Use `create(WasabiAclGrantSchema)` to create a new message.
+ */
+export const WasabiAclGrantSchema: GenMessage<WasabiAclGrant> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_wasabi, 11);
+
+/**
+ * @generated from message neobox.v1.WasabiBucketLogging
+ */
+export type WasabiBucketLogging = Message<"neobox.v1.WasabiBucketLogging"> & {
+  /**
+   * @generated from field: string target_bucket = 1;
+   */
+  targetBucket: string;
+
+  /**
+   * @generated from field: string target_prefix = 2;
+   */
+  targetPrefix: string;
+};
+
+/**
+ * Describes the message neobox.v1.WasabiBucketLogging.
+ * Use `create(WasabiBucketLoggingSchema)` to create a new message.
+ */
+export const WasabiBucketLoggingSchema: GenMessage<WasabiBucketLogging> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_wasabi, 12);
+
+/**
+ * @generated from message neobox.v1.WasabiReplicationRule
+ */
+export type WasabiReplicationRule = Message<"neobox.v1.WasabiReplicationRule"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: bool enabled = 2;
+   */
+  enabled: boolean;
+
+  /**
+   * @generated from field: string prefix = 3;
+   */
+  prefix: string;
+
+  /**
+   * @generated from field: string destination_bucket = 4;
+   */
+  destinationBucket: string;
+};
+
+/**
+ * Describes the message neobox.v1.WasabiReplicationRule.
+ * Use `create(WasabiReplicationRuleSchema)` to create a new message.
+ */
+export const WasabiReplicationRuleSchema: GenMessage<WasabiReplicationRule> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_wasabi, 13);
+
+/**
+ * @generated from message neobox.v1.WasabiBucketFinding
+ */
+export type WasabiBucketFinding = Message<"neobox.v1.WasabiBucketFinding"> & {
+  /**
+   * "public_policy", "public_acl", "old_versions_kept",
+   * "versioning_suspended", or "settings_unreadable".
+   *
+   * @generated from field: string code = 1;
+   */
+  code: string;
+
+  /**
+   * @generated from field: neobox.v1.WasabiFindingSeverity severity = 2;
+   */
+  severity: WasabiFindingSeverity;
+
+  /**
+   * @generated from field: string message = 3;
+   */
+  message: string;
+};
+
+/**
+ * Describes the message neobox.v1.WasabiBucketFinding.
+ * Use `create(WasabiBucketFindingSchema)` to create a new message.
+ */
+export const WasabiBucketFindingSchema: GenMessage<WasabiBucketFinding> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_wasabi, 14);
 
 /**
  * @generated from message neobox.v1.GetWasabiOverviewRequest
@@ -352,7 +783,7 @@ export type GetWasabiOverviewRequest = Message<"neobox.v1.GetWasabiOverviewReque
  * Use `create(GetWasabiOverviewRequestSchema)` to create a new message.
  */
 export const GetWasabiOverviewRequestSchema: GenMessage<GetWasabiOverviewRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_wasabi, 4);
+  messageDesc(file_neobox_v1_wasabi, 15);
 
 /**
  * @generated from message neobox.v1.GetWasabiOverviewResponse
@@ -390,7 +821,7 @@ export type GetWasabiOverviewResponse = Message<"neobox.v1.GetWasabiOverviewResp
  * Use `create(GetWasabiOverviewResponseSchema)` to create a new message.
  */
 export const GetWasabiOverviewResponseSchema: GenMessage<GetWasabiOverviewResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_wasabi, 5);
+  messageDesc(file_neobox_v1_wasabi, 16);
 
 /**
  * @generated from message neobox.v1.ListWasabiBucketsRequest
@@ -414,7 +845,7 @@ export type ListWasabiBucketsRequest = Message<"neobox.v1.ListWasabiBucketsReque
  * Use `create(ListWasabiBucketsRequestSchema)` to create a new message.
  */
 export const ListWasabiBucketsRequestSchema: GenMessage<ListWasabiBucketsRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_wasabi, 6);
+  messageDesc(file_neobox_v1_wasabi, 17);
 
 /**
  * @generated from message neobox.v1.ListWasabiBucketsResponse
@@ -431,7 +862,7 @@ export type ListWasabiBucketsResponse = Message<"neobox.v1.ListWasabiBucketsResp
  * Use `create(ListWasabiBucketsResponseSchema)` to create a new message.
  */
 export const ListWasabiBucketsResponseSchema: GenMessage<ListWasabiBucketsResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_wasabi, 7);
+  messageDesc(file_neobox_v1_wasabi, 18);
 
 /**
  * @generated from message neobox.v1.GetWasabiUsageRequest
@@ -469,7 +900,7 @@ export type GetWasabiUsageRequest = Message<"neobox.v1.GetWasabiUsageRequest"> &
  * Use `create(GetWasabiUsageRequestSchema)` to create a new message.
  */
 export const GetWasabiUsageRequestSchema: GenMessage<GetWasabiUsageRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_wasabi, 8);
+  messageDesc(file_neobox_v1_wasabi, 19);
 
 /**
  * @generated from message neobox.v1.GetWasabiUsageResponse
@@ -488,7 +919,7 @@ export type GetWasabiUsageResponse = Message<"neobox.v1.GetWasabiUsageResponse">
  * Use `create(GetWasabiUsageResponseSchema)` to create a new message.
  */
 export const GetWasabiUsageResponseSchema: GenMessage<GetWasabiUsageResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_wasabi, 9);
+  messageDesc(file_neobox_v1_wasabi, 20);
 
 /**
  * @generated from message neobox.v1.SyncWasabiConnectionRequest
@@ -505,7 +936,7 @@ export type SyncWasabiConnectionRequest = Message<"neobox.v1.SyncWasabiConnectio
  * Use `create(SyncWasabiConnectionRequestSchema)` to create a new message.
  */
 export const SyncWasabiConnectionRequestSchema: GenMessage<SyncWasabiConnectionRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_wasabi, 10);
+  messageDesc(file_neobox_v1_wasabi, 21);
 
 /**
  * @generated from message neobox.v1.SyncWasabiConnectionResponse
@@ -522,7 +953,7 @@ export type SyncWasabiConnectionResponse = Message<"neobox.v1.SyncWasabiConnecti
  * Use `create(SyncWasabiConnectionResponseSchema)` to create a new message.
  */
 export const SyncWasabiConnectionResponseSchema: GenMessage<SyncWasabiConnectionResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_wasabi, 11);
+  messageDesc(file_neobox_v1_wasabi, 22);
 
 /**
  * WasabiBucketCost is one bucket's share of a period's charge, in USD.
@@ -584,7 +1015,7 @@ export type WasabiBucketCost = Message<"neobox.v1.WasabiBucketCost"> & {
  * Use `create(WasabiBucketCostSchema)` to create a new message.
  */
 export const WasabiBucketCostSchema: GenMessage<WasabiBucketCost> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_wasabi, 12);
+  messageDesc(file_neobox_v1_wasabi, 23);
 
 /**
  * WasabiCostBreakdown splits the cost estimate's period, in USD. Active,
@@ -660,7 +1091,7 @@ export type WasabiCostBreakdown = Message<"neobox.v1.WasabiCostBreakdown"> & {
  * Use `create(WasabiCostBreakdownSchema)` to create a new message.
  */
 export const WasabiCostBreakdownSchema: GenMessage<WasabiCostBreakdown> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_wasabi, 13);
+  messageDesc(file_neobox_v1_wasabi, 24);
 
 /**
  * @generated from message neobox.v1.GetWasabiCostBreakdownRequest
@@ -677,7 +1108,7 @@ export type GetWasabiCostBreakdownRequest = Message<"neobox.v1.GetWasabiCostBrea
  * Use `create(GetWasabiCostBreakdownRequestSchema)` to create a new message.
  */
 export const GetWasabiCostBreakdownRequestSchema: GenMessage<GetWasabiCostBreakdownRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_wasabi, 14);
+  messageDesc(file_neobox_v1_wasabi, 25);
 
 /**
  * @generated from message neobox.v1.GetWasabiCostBreakdownResponse
@@ -694,7 +1125,38 @@ export type GetWasabiCostBreakdownResponse = Message<"neobox.v1.GetWasabiCostBre
  * Use `create(GetWasabiCostBreakdownResponseSchema)` to create a new message.
  */
 export const GetWasabiCostBreakdownResponseSchema: GenMessage<GetWasabiCostBreakdownResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_wasabi, 15);
+  messageDesc(file_neobox_v1_wasabi, 26);
+
+/**
+ * @generated from enum neobox.v1.WasabiFindingSeverity
+ */
+export enum WasabiFindingSeverity {
+  /**
+   * @generated from enum value: WASABI_FINDING_SEVERITY_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: WASABI_FINDING_SEVERITY_INFO = 1;
+   */
+  INFO = 1,
+
+  /**
+   * @generated from enum value: WASABI_FINDING_SEVERITY_WARNING = 2;
+   */
+  WARNING = 2,
+
+  /**
+   * @generated from enum value: WASABI_FINDING_SEVERITY_CRITICAL = 3;
+   */
+  CRITICAL = 3,
+}
+
+/**
+ * Describes the enum neobox.v1.WasabiFindingSeverity.
+ */
+export const WasabiFindingSeveritySchema: GenEnum<WasabiFindingSeverity> = /*@__PURE__*/
+  enumDesc(file_neobox_v1_wasabi, 0);
 
 /**
  * WasabiService shows the daily usage and estimated cost of Wasabi

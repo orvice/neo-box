@@ -25,6 +25,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { Page, PageHeader, PageScroll } from '@/components/common/page-parts'
 import { DataTable, type Column } from '@/components/data-table'
+import { POLICY_GUIDE, SettingsBadges } from './bucket-settings'
 import { CostBreakdownCard } from './cost-breakdown'
 import { formatCompact, formatDayLong, formatUSD, wasabiConfig } from './format'
 import { BLUE } from './palette'
@@ -66,6 +67,25 @@ export function WasabiConnectionDetail({
       />
       <PageScroll className='space-y-6'>
         <SyncStatus state={data?.sync} />
+        {data?.sync?.configError && (
+          <Alert>
+            <TriangleAlert />
+            <AlertTitle>Bucket settings can&apos;t be read</AlertTitle>
+            <AlertDescription>
+              {data.sync.configError === 'access_denied'
+                ? 'This key may read usage but not bucket settings. Add the read-only bucket settings policy to its sub-user; settings appear after the next sync.'
+                : data.sync.configError}{' '}
+              <a
+                href={POLICY_GUIDE}
+                target='_blank'
+                rel='noreferrer'
+                className='underline underline-offset-2'
+              >
+                Policy to grant
+              </a>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {overview.isLoading ? (
           <Skeleton className='h-28' />
@@ -253,6 +273,10 @@ function BucketsCard({ connectionId }: { connectionId: string }) {
           {formatCompact(b.latest?.billableObjects ?? 0n)}
         </span>
       ),
+    },
+    {
+      header: 'Settings',
+      cell: (b) => <SettingsBadges config={b.config} />,
     },
     {
       header: 'As of',

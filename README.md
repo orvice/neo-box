@@ -197,6 +197,7 @@ store:
 #   restore_timeout: 6h     # a restore exceeding this is marked failed
 # wasabi:
 #   stats_endpoint: "https://stats.wasabisys.com"
+#   s3_endpoint: ""            # development only: one host for all S3 calls
 # notify:
 #   dashboard_url: "https://neobox.example.com"  # alerts link here; empty = no links
 #   telegram_endpoint: "https://api.telegram.org"
@@ -243,6 +244,47 @@ previous day around 01:30 UTC). "Sync now" re-fetches the last 7 days. A
 failed sync is picked up by the next daily run. The Stats API's bucket
 endpoint is slow (9–25 s per page of 100 records in testing), so the
 backfill of an account with many buckets can take a while.
+
+### Bucket settings
+
+After every sync Neo Box also reads each bucket's settings through the S3
+API with the same key: versioning, Object Lock, Wasabi compliance,
+lifecycle rules, bucket policy and ACL, access logging, replication, tags,
+region and creation date. They are shown on each bucket's page and flagged
+when risky (a public bucket, versioning without a rule that expires old
+versions). Reading them needs a read-only policy on the key's sub-user in
+addition to `WasabiAccountStatsAccess`; it grants no access to objects:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListAllMyBuckets",
+        "s3:GetBucketLocation",
+        "s3:GetBucketVersioning",
+        "s3:GetBucketObjectLockConfiguration",
+        "s3:GetBucketCompliance",
+        "s3:GetLifecycleConfiguration",
+        "s3:GetBucketPolicy",
+        "s3:GetBucketAcl",
+        "s3:GetBucketLogging",
+        "s3:GetReplicationConfiguration",
+        "s3:GetBucketTagging"
+      ],
+      "Resource": "arn:aws:s3:::*"
+    }
+  ]
+}
+```
+
+Without it, usage and cost still work; the connection page says bucket
+settings can't be read, and each setting the key can't read shows "Needs
+permission". Event notifications, CORS and encryption are not readable
+through Wasabi's API, and neither is the console's "Public Access
+Override", so "public" covers the bucket policy and ACL only.
 
 The cost estimate follows Wasabi's published formula: per day, active
 storage (at least 1 TB) plus deleted storage, at the connection's price per

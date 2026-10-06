@@ -13,6 +13,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent/session"
 	"go.orx.me/apps/neo-box/internal/ent/user"
 	"go.orx.me/apps/neo-box/internal/ent/wasabidailyusage"
+	"go.orx.me/apps/neo-box/internal/ent/wasabisyncstate"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -249,4 +250,10 @@ func init() {
 	wasabidailyusageDescNumHeadCalls := wasabidailyusageFields[22].Descriptor()
 	// wasabidailyusage.DefaultNumHeadCalls holds the default value on creation for the num_head_calls field.
 	wasabidailyusage.DefaultNumHeadCalls = wasabidailyusageDescNumHeadCalls.Default.(int64)
+	wasabisyncstateFields := schema.WasabiSyncState{}.Fields()
+	_ = wasabisyncstateFields
+	// wasabisyncstateDescConfigError is the schema descriptor for config_error field.
+	wasabisyncstateDescConfigError := wasabisyncstateFields[7].Descriptor()
+	// wasabisyncstate.DefaultConfigError holds the default value on creation for the config_error field.
+	wasabisyncstate.DefaultConfigError = wasabisyncstateDescConfigError.Default.(string)
 }
