@@ -77,15 +77,18 @@ shadcn/ui + Connect-Web on the frontend.
   meta/data reads and writes), `xc-token` auth, rate limiting, 429/5xx
   retry for reads and 429-only retry for writes.
 - `internal/snapshot/` — builds and reads the Snapshot document (streaming
-  gzip JSON; format in `format.go`, rationale in `docs/adr/0001`), and
-  `Restore` rebuilds one into a new Base (`restore*.go`, `docs/adr/0004`).
+  gzip JSON; format in `format.go`, rationale in `docs/adr/0001` and
+  `0005`), and `Restore` rebuilds one into a new Base (`restore*.go`,
+  `docs/adr/0004`). Attachment files go through the `Files` interface
+  (capture) and `RestoreOptions.OpenFile` (restore).
   The live round-trip test needs `NEOBOX_TEST_NOCODB_URL`,
   `NEOBOX_TEST_NOCODB_TOKEN` and `NEOBOX_TEST_NOCODB_EMAIL` (the token
   owner's email); an OSS `nocodb/nocodb` container is enough.
 - `internal/backup/` — `Manager`: worker queue running snapshots, in-process
   cron for Backup Policies, retention, and one-snapshot-per-Base guarding;
   a separate one-at-a-time queue running restores (`restore.go`). Clients
-  of one connection share a rate limiter.
+  of one connection share a rate limiter. `files.go` stores attachment
+  files once per user by sha256 and deletes those no snapshot uses.
 - `internal/wasabi/` — Wasabi Stats API client (`Authorization: AK:SK`,
   pages until a short page, accepts both the paged-object and bare-array
   response shapes), connection settings, and `EstimateCost` (Wasabi's

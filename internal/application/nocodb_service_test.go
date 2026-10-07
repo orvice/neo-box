@@ -192,3 +192,33 @@ func TestDeleteSnapshotRefusedWhileRestoring(t *testing.T) {
 		t.Fatalf("GetRestore after snapshot delete = %v, %v", got, err)
 	}
 }
+
+func TestUpsertBackupPolicyIncludeAttachments(t *testing.T) {
+	srv, _ := newNocoDBServer(t)
+	ctx := asUser("u1")
+	upsert := func(include *bool) *neoboxv1.BackupPolicy {
+		t.Helper()
+		resp, err := srv.UpsertBackupPolicy(ctx, connect.NewRequest(&neoboxv1.UpsertBackupPolicyRequest{
+			ConnectionId: "c1", BaseId: "p1", Enabled: true, Cron: "@daily", Retention: 3, IncludeAttachments: include,
+		}))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return resp.Msg.GetPolicy()
+	}
+	off, on := false, true
+	// A new policy includes attachments unless told otherwise; an update
+	// that doesn't say keeps the current setting.
+	if !upsert(nil).GetIncludeAttachments() {
+		t.Fatal("new policy without the flag should include attachments")
+	}
+	if upsert(&off).GetIncludeAttachments() {
+		t.Fatal("flag not turned off")
+	}
+	if upsert(nil).GetIncludeAttachments() {
+		t.Fatal("an update without the flag turned it back on")
+	}
+	if !upsert(&on).GetIncludeAttachments() {
+		t.Fatal("flag not turned on")
+	}
+}

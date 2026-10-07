@@ -77,6 +77,20 @@ func (_u *NocoDBBackupPolicyUpdate) AddRetention(v int) *NocoDBBackupPolicyUpdat
 	return _u
 }
 
+// SetIncludeAttachments sets the "include_attachments" field.
+func (_u *NocoDBBackupPolicyUpdate) SetIncludeAttachments(v bool) *NocoDBBackupPolicyUpdate {
+	_u.mutation.SetIncludeAttachments(v)
+	return _u
+}
+
+// SetNillableIncludeAttachments sets the "include_attachments" field if the given value is not nil.
+func (_u *NocoDBBackupPolicyUpdate) SetNillableIncludeAttachments(v *bool) *NocoDBBackupPolicyUpdate {
+	if v != nil {
+		_u.SetIncludeAttachments(*v)
+	}
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *NocoDBBackupPolicyUpdate) SetUpdatedAt(v time.Time) *NocoDBBackupPolicyUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -143,6 +157,9 @@ func (_u *NocoDBBackupPolicyUpdate) sqlSave(ctx context.Context) (_node int, err
 	}
 	if value, ok := _u.mutation.AddedRetention(); ok {
 		_spec.AddField(nocodbbackuppolicy.FieldRetention, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.IncludeAttachments(); ok {
+		_spec.SetField(nocodbbackuppolicy.FieldIncludeAttachments, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(nocodbbackuppolicy.FieldUpdatedAt, field.TypeTime, value)
@@ -213,6 +230,20 @@ func (_u *NocoDBBackupPolicyUpdateOne) SetNillableRetention(v *int) *NocoDBBacku
 // AddRetention adds value to the "retention" field.
 func (_u *NocoDBBackupPolicyUpdateOne) AddRetention(v int) *NocoDBBackupPolicyUpdateOne {
 	_u.mutation.AddRetention(v)
+	return _u
+}
+
+// SetIncludeAttachments sets the "include_attachments" field.
+func (_u *NocoDBBackupPolicyUpdateOne) SetIncludeAttachments(v bool) *NocoDBBackupPolicyUpdateOne {
+	_u.mutation.SetIncludeAttachments(v)
+	return _u
+}
+
+// SetNillableIncludeAttachments sets the "include_attachments" field if the given value is not nil.
+func (_u *NocoDBBackupPolicyUpdateOne) SetNillableIncludeAttachments(v *bool) *NocoDBBackupPolicyUpdateOne {
+	if v != nil {
+		_u.SetIncludeAttachments(*v)
+	}
 	return _u
 }
 
@@ -312,6 +343,9 @@ func (_u *NocoDBBackupPolicyUpdateOne) sqlSave(ctx context.Context) (_node *Noco
 	}
 	if value, ok := _u.mutation.AddedRetention(); ok {
 		_spec.AddField(nocodbbackuppolicy.FieldRetention, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.IncludeAttachments(); ok {
+		_spec.SetField(nocodbbackuppolicy.FieldIncludeAttachments, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(nocodbbackuppolicy.FieldUpdatedAt, field.TypeTime, value)

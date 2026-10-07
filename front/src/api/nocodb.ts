@@ -69,6 +69,7 @@ export function useUpsertBackupPolicy() {
       enabled: boolean
       cron: string
       retention: number
+      includeAttachments?: boolean
     }) => (await client.upsertBackupPolicy(input)).policy,
     onSuccess: (_data, input) =>
       qc.invalidateQueries({ queryKey: keys.bases(input.connectionId) }),

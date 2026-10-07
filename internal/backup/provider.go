@@ -46,9 +46,10 @@ func (p provider) Verify(ctx context.Context, config, secret json.RawMessage) er
 	return nil
 }
 
-// Cleanup deletes the connection's snapshots (content included), Backup
-// Policies, and the restores it is the source or target of. It refuses
-// while a snapshot or such a restore is pending or running.
+// Cleanup deletes the connection's snapshots (content and attachment files
+// no other snapshot uses included), Backup Policies, and the restores it is
+// the source or target of. It refuses while a snapshot or such a restore is
+// pending or running.
 func (p provider) Cleanup(ctx context.Context, c *connrepo.Connection) error {
 	m := p.m
 	snaps, err := m.repo.ListSnapshots(ctx, repo.SnapshotFilter{UserID: c.UserID, ConnectionID: c.ID})
@@ -73,6 +74,9 @@ func (p provider) Cleanup(ctx context.Context, c *connrepo.Connection) error {
 		}
 	}
 	if err := m.repo.DeletePoliciesForConnection(ctx, c.ID); err != nil {
+		return err
+	}
+	if err := m.repo.DeleteFileSourcesForConnection(ctx, c.ID); err != nil {
 		return err
 	}
 	if err := m.repo.DeleteRestoresForConnection(ctx, c.ID); err != nil {

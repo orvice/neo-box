@@ -119,8 +119,9 @@ func (r *restorer) restoreRecords(ctx context.Context) error {
 				fmt.Sprintf("%s (e.g. record %s)", firstErr, strings.Join(examples, ", ")))
 		}
 		for _, f := range writable {
-			if c := attachment[f.Title]; c > 0 {
-				r.warn(WarnAttachmentsSkipped, t.title, f.Title, c, "attachments are not restored")
+			// With files in the snapshot, the files pass sets attachments.
+			if c := attachment[f.Title]; c > 0 && !r.filesCaptured() {
+				r.warn(WarnAttachmentsSkipped, t.title, f.Title, c, "the snapshot holds no attachment files")
 			}
 			if c := dropped[f.Title]; c > 0 {
 				r.warn(WarnUserValuesDropped, t.title, f.Title, c, "the user is not a member of the new base")

@@ -29,6 +29,8 @@ type NocoDBBackupPolicy struct {
 	Cron string `json:"cron,omitempty"`
 	// Retention holds the value of the "retention" field.
 	Retention int `json:"retention,omitempty"`
+	// IncludeAttachments holds the value of the "include_attachments" field.
+	IncludeAttachments bool `json:"include_attachments,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt    time.Time `json:"updated_at,omitempty"`
 	selectValues sql.SelectValues
@@ -39,7 +41,7 @@ func (*NocoDBBackupPolicy) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case nocodbbackuppolicy.FieldEnabled:
+		case nocodbbackuppolicy.FieldEnabled, nocodbbackuppolicy.FieldIncludeAttachments:
 			values[i] = new(sql.NullBool)
 		case nocodbbackuppolicy.FieldID, nocodbbackuppolicy.FieldRetention:
 			values[i] = new(sql.NullInt64)
@@ -104,6 +106,12 @@ func (_m *NocoDBBackupPolicy) assignValues(columns []string, values []any) error
 			} else if value.Valid {
 				_m.Retention = int(value.Int64)
 			}
+		case nocodbbackuppolicy.FieldIncludeAttachments:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field include_attachments", values[i])
+			} else if value.Valid {
+				_m.IncludeAttachments = value.Bool
+			}
 		case nocodbbackuppolicy.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
@@ -163,6 +171,9 @@ func (_m *NocoDBBackupPolicy) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("retention=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Retention))
+	builder.WriteString(", ")
+	builder.WriteString("include_attachments=")
+	builder.WriteString(fmt.Sprintf("%v", _m.IncludeAttachments))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))

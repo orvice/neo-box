@@ -134,6 +134,11 @@ func LinkCount(v int64) predicate.NocoDBRestore {
 	return predicate.NocoDBRestore(sql.FieldEQ(FieldLinkCount, v))
 }
 
+// FileCount applies equality check predicate on the "file_count" field. It's identical to FileCountEQ.
+func FileCount(v int64) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldEQ(FieldFileCount, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.NocoDBRestore {
 	return predicate.NocoDBRestore(sql.FieldEQ(FieldCreatedAt, v))
@@ -982,6 +987,46 @@ func LinkCountLT(v int64) predicate.NocoDBRestore {
 // LinkCountLTE applies the LTE predicate on the "link_count" field.
 func LinkCountLTE(v int64) predicate.NocoDBRestore {
 	return predicate.NocoDBRestore(sql.FieldLTE(FieldLinkCount, v))
+}
+
+// FileCountEQ applies the EQ predicate on the "file_count" field.
+func FileCountEQ(v int64) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldEQ(FieldFileCount, v))
+}
+
+// FileCountNEQ applies the NEQ predicate on the "file_count" field.
+func FileCountNEQ(v int64) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldNEQ(FieldFileCount, v))
+}
+
+// FileCountIn applies the In predicate on the "file_count" field.
+func FileCountIn(vs ...int64) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldIn(FieldFileCount, vs...))
+}
+
+// FileCountNotIn applies the NotIn predicate on the "file_count" field.
+func FileCountNotIn(vs ...int64) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldNotIn(FieldFileCount, vs...))
+}
+
+// FileCountGT applies the GT predicate on the "file_count" field.
+func FileCountGT(v int64) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldGT(FieldFileCount, v))
+}
+
+// FileCountGTE applies the GTE predicate on the "file_count" field.
+func FileCountGTE(v int64) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldGTE(FieldFileCount, v))
+}
+
+// FileCountLT applies the LT predicate on the "file_count" field.
+func FileCountLT(v int64) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldLT(FieldFileCount, v))
+}
+
+// FileCountLTE applies the LTE predicate on the "file_count" field.
+func FileCountLTE(v int64) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldLTE(FieldFileCount, v))
 }
 
 // WarningsIsNil applies the IsNil predicate on the "warnings" field.

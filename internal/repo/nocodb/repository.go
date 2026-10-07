@@ -1,9 +1,10 @@
-// Package nocodb persists NocoDB Backup Policies, Snapshot metadata, and
-// Restores.
+// Package nocodb persists NocoDB Backup Policies, Snapshot metadata,
+// Restores, and the attachment files snapshots use.
 // Connections are generic (see internal/repo/connection); policies and
 // snapshots refer to one by ConnectionID. Snapshot content lives in the blob
-// store under Snapshot.ObjectKey. Every record is owned by one user; reads
-// and writes are scoped by UserID.
+// store under Snapshot.ObjectKey; attachment files are stored once per user
+// by sha256 and shared by the snapshots that use them. Every record is
+// owned by one user; reads and writes are scoped by UserID.
 package nocodb
 
 import (
@@ -24,7 +25,9 @@ type Policy struct {
 	Enabled      bool
 	Cron         string
 	Retention    int
-	UpdatedAt    time.Time
+	// IncludeAttachments makes snapshots store attachment files.
+	IncludeAttachments bool
+	UpdatedAt          time.Time
 }
 
 type SnapshotStatus string
@@ -44,11 +47,14 @@ const (
 )
 
 type SnapshotTable struct {
-	ID          string `json:"id"`
-	Title       string `json:"title"`
-	RecordCount int64  `json:"record_count"`
-	FieldCount  int    `json:"field_count"`
-	LinkCount   int64  `json:"link_count"`
+	ID           string `json:"id"`
+	Title        string `json:"title"`
+	RecordCount  int64  `json:"record_count"`
+	FieldCount   int    `json:"field_count"`
+	LinkCount    int64  `json:"link_count"`
+	FileCount    int64  `json:"file_count,omitempty"`
+	FileBytes    int64  `json:"file_bytes,omitempty"`
+	FilesMissing int64  `json:"files_missing,omitempty"`
 }
 
 // Snapshot is the metadata of one capture of a Base.
@@ -66,10 +72,25 @@ type Snapshot struct {
 	SizeBytes    int64
 	RecordCount  int64
 	LinkCount    int64
-	Tables       []SnapshotTable
-	CreatedAt    time.Time
-	StartedAt    time.Time
-	FinishedAt   time.Time
+	// AttachmentsIncluded is set when the snapshot stored attachment
+	// files; FileCount and FileBytes count them (each distinct file of a
+	// table once), FilesMissing those that could not be downloaded.
+	AttachmentsIncluded bool
+	FileCount           int64
+	FileBytes           int64
+	FilesMissing        int64
+	Tables              []SnapshotTable
+	CreatedAt           time.Time
+	StartedAt           time.Time
+	FinishedAt          time.Time
+}
+
+// File is an attachment file stored once per user under its sha256.
+type File struct {
+	UserID    string
+	SHA256    string
+	Size      int64
+	CreatedAt time.Time
 }
 
 // SnapshotFilter narrows ListSnapshots. Zero fields are ignored.
@@ -120,6 +141,7 @@ type Restore struct {
 	TableCount      int
 	RecordCount     int64
 	LinkCount       int64
+	FileCount       int64
 	Warnings        []RestoreWarning
 	CreatedAt       time.Time
 	StartedAt       time.Time
@@ -155,6 +177,7 @@ type Repository interface {
 	// UpdateSnapshotProgress writes only the progress text.
 	UpdateSnapshotProgress(ctx context.Context, id, progress string) error
 	ListSnapshots(ctx context.Context, f SnapshotFilter) ([]*Snapshot, error)
+	// DeleteSnapshot deletes the snapshot and its file references.
 	DeleteSnapshot(ctx context.Context, id string) error
 	// FailUnfinishedSnapshots marks every pending/running snapshot failed;
 	// called at startup because in-flight work does not survive a restart.
@@ -177,4 +200,25 @@ type Repository interface {
 	// FailUnfinishedRestores marks every pending/running restore failed;
 	// called at startup, like FailUnfinishedSnapshots.
 	FailUnfinishedRestores(ctx context.Context, reason string, at time.Time) (int64, error)
+
+	// FileExists reports whether the user has the file stored.
+	FileExists(ctx context.Context, userID, sha256 string) (bool, error)
+	// CreateFile records a stored file; recording it again is a no-op.
+	CreateFile(ctx context.Context, f *File) error
+	// AddSnapshotFile records that a snapshot uses a file; adding it again
+	// is a no-op.
+	AddSnapshotFile(ctx context.Context, snapshotID, userID, sha256 string) error
+	// DeleteSnapshotFiles forgets every file a snapshot uses.
+	DeleteSnapshotFiles(ctx context.Context, snapshotID string) error
+	// ListUnusedFiles returns the sha256 of each of the user's files that
+	// no snapshot uses.
+	ListUnusedFiles(ctx context.Context, userID string) ([]string, error)
+	// DeleteFile deletes a file's record.
+	DeleteFile(ctx context.Context, userID, sha256 string) error
+	// FileSource returns the sha256 last stored for a connection's
+	// attachment, identified by source and size.
+	FileSource(ctx context.Context, connectionID, source string, size int64) (sha256 string, ok bool, err error)
+	// PutFileSource records the sha256 of a connection's attachment.
+	PutFileSource(ctx context.Context, connectionID, source string, size int64, sha256 string) error
+	DeleteFileSourcesForConnection(ctx context.Context, connectionID string) error
 }

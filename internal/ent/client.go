@@ -17,8 +17,11 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent/alert"
 	"go.orx.me/apps/neo-box/internal/ent/connection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
+	"go.orx.me/apps/neo-box/internal/ent/nocodbfile"
+	"go.orx.me/apps/neo-box/internal/ent/nocodbfilesource"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbrestore"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbsnapshot"
+	"go.orx.me/apps/neo-box/internal/ent/nocodbsnapshotfile"
 	"go.orx.me/apps/neo-box/internal/ent/notificationchannel"
 	"go.orx.me/apps/neo-box/internal/ent/oauthstate"
 	"go.orx.me/apps/neo-box/internal/ent/session"
@@ -39,10 +42,16 @@ type Client struct {
 	Connection *ConnectionClient
 	// NocoDBBackupPolicy is the client for interacting with the NocoDBBackupPolicy builders.
 	NocoDBBackupPolicy *NocoDBBackupPolicyClient
+	// NocoDBFile is the client for interacting with the NocoDBFile builders.
+	NocoDBFile *NocoDBFileClient
+	// NocoDBFileSource is the client for interacting with the NocoDBFileSource builders.
+	NocoDBFileSource *NocoDBFileSourceClient
 	// NocoDBRestore is the client for interacting with the NocoDBRestore builders.
 	NocoDBRestore *NocoDBRestoreClient
 	// NocoDBSnapshot is the client for interacting with the NocoDBSnapshot builders.
 	NocoDBSnapshot *NocoDBSnapshotClient
+	// NocoDBSnapshotFile is the client for interacting with the NocoDBSnapshotFile builders.
+	NocoDBSnapshotFile *NocoDBSnapshotFileClient
 	// NotificationChannel is the client for interacting with the NotificationChannel builders.
 	NotificationChannel *NotificationChannelClient
 	// OAuthState is the client for interacting with the OAuthState builders.
@@ -71,8 +80,11 @@ func (c *Client) init() {
 	c.Alert = NewAlertClient(c.config)
 	c.Connection = NewConnectionClient(c.config)
 	c.NocoDBBackupPolicy = NewNocoDBBackupPolicyClient(c.config)
+	c.NocoDBFile = NewNocoDBFileClient(c.config)
+	c.NocoDBFileSource = NewNocoDBFileSourceClient(c.config)
 	c.NocoDBRestore = NewNocoDBRestoreClient(c.config)
 	c.NocoDBSnapshot = NewNocoDBSnapshotClient(c.config)
+	c.NocoDBSnapshotFile = NewNocoDBSnapshotFileClient(c.config)
 	c.NotificationChannel = NewNotificationChannelClient(c.config)
 	c.OAuthState = NewOAuthStateClient(c.config)
 	c.Session = NewSessionClient(c.config)
@@ -175,8 +187,11 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Alert:               NewAlertClient(cfg),
 		Connection:          NewConnectionClient(cfg),
 		NocoDBBackupPolicy:  NewNocoDBBackupPolicyClient(cfg),
+		NocoDBFile:          NewNocoDBFileClient(cfg),
+		NocoDBFileSource:    NewNocoDBFileSourceClient(cfg),
 		NocoDBRestore:       NewNocoDBRestoreClient(cfg),
 		NocoDBSnapshot:      NewNocoDBSnapshotClient(cfg),
+		NocoDBSnapshotFile:  NewNocoDBSnapshotFileClient(cfg),
 		NotificationChannel: NewNotificationChannelClient(cfg),
 		OAuthState:          NewOAuthStateClient(cfg),
 		Session:             NewSessionClient(cfg),
@@ -206,8 +221,11 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Alert:               NewAlertClient(cfg),
 		Connection:          NewConnectionClient(cfg),
 		NocoDBBackupPolicy:  NewNocoDBBackupPolicyClient(cfg),
+		NocoDBFile:          NewNocoDBFileClient(cfg),
+		NocoDBFileSource:    NewNocoDBFileSourceClient(cfg),
 		NocoDBRestore:       NewNocoDBRestoreClient(cfg),
 		NocoDBSnapshot:      NewNocoDBSnapshotClient(cfg),
+		NocoDBSnapshotFile:  NewNocoDBSnapshotFileClient(cfg),
 		NotificationChannel: NewNotificationChannelClient(cfg),
 		OAuthState:          NewOAuthStateClient(cfg),
 		Session:             NewSessionClient(cfg),
@@ -244,9 +262,10 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Alert, c.Connection, c.NocoDBBackupPolicy, c.NocoDBRestore, c.NocoDBSnapshot,
-		c.NotificationChannel, c.OAuthState, c.Session, c.User, c.WasabiBucketConfig,
-		c.WasabiDailyUsage, c.WasabiSyncState,
+		c.Alert, c.Connection, c.NocoDBBackupPolicy, c.NocoDBFile, c.NocoDBFileSource,
+		c.NocoDBRestore, c.NocoDBSnapshot, c.NocoDBSnapshotFile, c.NotificationChannel,
+		c.OAuthState, c.Session, c.User, c.WasabiBucketConfig, c.WasabiDailyUsage,
+		c.WasabiSyncState,
 	} {
 		n.Use(hooks...)
 	}
@@ -256,9 +275,10 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Alert, c.Connection, c.NocoDBBackupPolicy, c.NocoDBRestore, c.NocoDBSnapshot,
-		c.NotificationChannel, c.OAuthState, c.Session, c.User, c.WasabiBucketConfig,
-		c.WasabiDailyUsage, c.WasabiSyncState,
+		c.Alert, c.Connection, c.NocoDBBackupPolicy, c.NocoDBFile, c.NocoDBFileSource,
+		c.NocoDBRestore, c.NocoDBSnapshot, c.NocoDBSnapshotFile, c.NotificationChannel,
+		c.OAuthState, c.Session, c.User, c.WasabiBucketConfig, c.WasabiDailyUsage,
+		c.WasabiSyncState,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -273,10 +293,16 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Connection.mutate(ctx, m)
 	case *NocoDBBackupPolicyMutation:
 		return c.NocoDBBackupPolicy.mutate(ctx, m)
+	case *NocoDBFileMutation:
+		return c.NocoDBFile.mutate(ctx, m)
+	case *NocoDBFileSourceMutation:
+		return c.NocoDBFileSource.mutate(ctx, m)
 	case *NocoDBRestoreMutation:
 		return c.NocoDBRestore.mutate(ctx, m)
 	case *NocoDBSnapshotMutation:
 		return c.NocoDBSnapshot.mutate(ctx, m)
+	case *NocoDBSnapshotFileMutation:
+		return c.NocoDBSnapshotFile.mutate(ctx, m)
 	case *NotificationChannelMutation:
 		return c.NotificationChannel.mutate(ctx, m)
 	case *OAuthStateMutation:
@@ -695,6 +721,272 @@ func (c *NocoDBBackupPolicyClient) mutate(ctx context.Context, m *NocoDBBackupPo
 	}
 }
 
+// NocoDBFileClient is a client for the NocoDBFile schema.
+type NocoDBFileClient struct {
+	config
+}
+
+// NewNocoDBFileClient returns a client for the NocoDBFile from the given config.
+func NewNocoDBFileClient(c config) *NocoDBFileClient {
+	return &NocoDBFileClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `nocodbfile.Hooks(f(g(h())))`.
+func (c *NocoDBFileClient) Use(hooks ...Hook) {
+	c.hooks.NocoDBFile = append(c.hooks.NocoDBFile, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `nocodbfile.Intercept(f(g(h())))`.
+func (c *NocoDBFileClient) Intercept(interceptors ...Interceptor) {
+	c.inters.NocoDBFile = append(c.inters.NocoDBFile, interceptors...)
+}
+
+// Create returns a builder for creating a NocoDBFile entity.
+func (c *NocoDBFileClient) Create() *NocoDBFileCreate {
+	mutation := newNocoDBFileMutation(c.config, OpCreate)
+	return &NocoDBFileCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of NocoDBFile entities.
+func (c *NocoDBFileClient) CreateBulk(builders ...*NocoDBFileCreate) *NocoDBFileCreateBulk {
+	return &NocoDBFileCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *NocoDBFileClient) MapCreateBulk(slice any, setFunc func(*NocoDBFileCreate, int)) *NocoDBFileCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &NocoDBFileCreateBulk{err: fmt.Errorf("calling to NocoDBFileClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*NocoDBFileCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &NocoDBFileCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for NocoDBFile.
+func (c *NocoDBFileClient) Update() *NocoDBFileUpdate {
+	mutation := newNocoDBFileMutation(c.config, OpUpdate)
+	return &NocoDBFileUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *NocoDBFileClient) UpdateOne(_m *NocoDBFile) *NocoDBFileUpdateOne {
+	mutation := newNocoDBFileMutation(c.config, OpUpdateOne, withNocoDBFile(_m))
+	return &NocoDBFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *NocoDBFileClient) UpdateOneID(id int) *NocoDBFileUpdateOne {
+	mutation := newNocoDBFileMutation(c.config, OpUpdateOne, withNocoDBFileID(id))
+	return &NocoDBFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for NocoDBFile.
+func (c *NocoDBFileClient) Delete() *NocoDBFileDelete {
+	mutation := newNocoDBFileMutation(c.config, OpDelete)
+	return &NocoDBFileDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *NocoDBFileClient) DeleteOne(_m *NocoDBFile) *NocoDBFileDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *NocoDBFileClient) DeleteOneID(id int) *NocoDBFileDeleteOne {
+	builder := c.Delete().Where(nocodbfile.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &NocoDBFileDeleteOne{builder}
+}
+
+// Query returns a query builder for NocoDBFile.
+func (c *NocoDBFileClient) Query() *NocoDBFileQuery {
+	return &NocoDBFileQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeNocoDBFile},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a NocoDBFile entity by its id.
+func (c *NocoDBFileClient) Get(ctx context.Context, id int) (*NocoDBFile, error) {
+	return c.Query().Where(nocodbfile.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *NocoDBFileClient) GetX(ctx context.Context, id int) *NocoDBFile {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *NocoDBFileClient) Hooks() []Hook {
+	return c.hooks.NocoDBFile
+}
+
+// Interceptors returns the client interceptors.
+func (c *NocoDBFileClient) Interceptors() []Interceptor {
+	return c.inters.NocoDBFile
+}
+
+func (c *NocoDBFileClient) mutate(ctx context.Context, m *NocoDBFileMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&NocoDBFileCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&NocoDBFileUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&NocoDBFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&NocoDBFileDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown NocoDBFile mutation op: %q", m.Op())
+	}
+}
+
+// NocoDBFileSourceClient is a client for the NocoDBFileSource schema.
+type NocoDBFileSourceClient struct {
+	config
+}
+
+// NewNocoDBFileSourceClient returns a client for the NocoDBFileSource from the given config.
+func NewNocoDBFileSourceClient(c config) *NocoDBFileSourceClient {
+	return &NocoDBFileSourceClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `nocodbfilesource.Hooks(f(g(h())))`.
+func (c *NocoDBFileSourceClient) Use(hooks ...Hook) {
+	c.hooks.NocoDBFileSource = append(c.hooks.NocoDBFileSource, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `nocodbfilesource.Intercept(f(g(h())))`.
+func (c *NocoDBFileSourceClient) Intercept(interceptors ...Interceptor) {
+	c.inters.NocoDBFileSource = append(c.inters.NocoDBFileSource, interceptors...)
+}
+
+// Create returns a builder for creating a NocoDBFileSource entity.
+func (c *NocoDBFileSourceClient) Create() *NocoDBFileSourceCreate {
+	mutation := newNocoDBFileSourceMutation(c.config, OpCreate)
+	return &NocoDBFileSourceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of NocoDBFileSource entities.
+func (c *NocoDBFileSourceClient) CreateBulk(builders ...*NocoDBFileSourceCreate) *NocoDBFileSourceCreateBulk {
+	return &NocoDBFileSourceCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *NocoDBFileSourceClient) MapCreateBulk(slice any, setFunc func(*NocoDBFileSourceCreate, int)) *NocoDBFileSourceCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &NocoDBFileSourceCreateBulk{err: fmt.Errorf("calling to NocoDBFileSourceClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*NocoDBFileSourceCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &NocoDBFileSourceCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for NocoDBFileSource.
+func (c *NocoDBFileSourceClient) Update() *NocoDBFileSourceUpdate {
+	mutation := newNocoDBFileSourceMutation(c.config, OpUpdate)
+	return &NocoDBFileSourceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *NocoDBFileSourceClient) UpdateOne(_m *NocoDBFileSource) *NocoDBFileSourceUpdateOne {
+	mutation := newNocoDBFileSourceMutation(c.config, OpUpdateOne, withNocoDBFileSource(_m))
+	return &NocoDBFileSourceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *NocoDBFileSourceClient) UpdateOneID(id int) *NocoDBFileSourceUpdateOne {
+	mutation := newNocoDBFileSourceMutation(c.config, OpUpdateOne, withNocoDBFileSourceID(id))
+	return &NocoDBFileSourceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for NocoDBFileSource.
+func (c *NocoDBFileSourceClient) Delete() *NocoDBFileSourceDelete {
+	mutation := newNocoDBFileSourceMutation(c.config, OpDelete)
+	return &NocoDBFileSourceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *NocoDBFileSourceClient) DeleteOne(_m *NocoDBFileSource) *NocoDBFileSourceDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *NocoDBFileSourceClient) DeleteOneID(id int) *NocoDBFileSourceDeleteOne {
+	builder := c.Delete().Where(nocodbfilesource.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &NocoDBFileSourceDeleteOne{builder}
+}
+
+// Query returns a query builder for NocoDBFileSource.
+func (c *NocoDBFileSourceClient) Query() *NocoDBFileSourceQuery {
+	return &NocoDBFileSourceQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeNocoDBFileSource},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a NocoDBFileSource entity by its id.
+func (c *NocoDBFileSourceClient) Get(ctx context.Context, id int) (*NocoDBFileSource, error) {
+	return c.Query().Where(nocodbfilesource.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *NocoDBFileSourceClient) GetX(ctx context.Context, id int) *NocoDBFileSource {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *NocoDBFileSourceClient) Hooks() []Hook {
+	return c.hooks.NocoDBFileSource
+}
+
+// Interceptors returns the client interceptors.
+func (c *NocoDBFileSourceClient) Interceptors() []Interceptor {
+	return c.inters.NocoDBFileSource
+}
+
+func (c *NocoDBFileSourceClient) mutate(ctx context.Context, m *NocoDBFileSourceMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&NocoDBFileSourceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&NocoDBFileSourceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&NocoDBFileSourceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&NocoDBFileSourceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown NocoDBFileSource mutation op: %q", m.Op())
+	}
+}
+
 // NocoDBRestoreClient is a client for the NocoDBRestore schema.
 type NocoDBRestoreClient struct {
 	config
@@ -958,6 +1250,139 @@ func (c *NocoDBSnapshotClient) mutate(ctx context.Context, m *NocoDBSnapshotMuta
 		return (&NocoDBSnapshotDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown NocoDBSnapshot mutation op: %q", m.Op())
+	}
+}
+
+// NocoDBSnapshotFileClient is a client for the NocoDBSnapshotFile schema.
+type NocoDBSnapshotFileClient struct {
+	config
+}
+
+// NewNocoDBSnapshotFileClient returns a client for the NocoDBSnapshotFile from the given config.
+func NewNocoDBSnapshotFileClient(c config) *NocoDBSnapshotFileClient {
+	return &NocoDBSnapshotFileClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `nocodbsnapshotfile.Hooks(f(g(h())))`.
+func (c *NocoDBSnapshotFileClient) Use(hooks ...Hook) {
+	c.hooks.NocoDBSnapshotFile = append(c.hooks.NocoDBSnapshotFile, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `nocodbsnapshotfile.Intercept(f(g(h())))`.
+func (c *NocoDBSnapshotFileClient) Intercept(interceptors ...Interceptor) {
+	c.inters.NocoDBSnapshotFile = append(c.inters.NocoDBSnapshotFile, interceptors...)
+}
+
+// Create returns a builder for creating a NocoDBSnapshotFile entity.
+func (c *NocoDBSnapshotFileClient) Create() *NocoDBSnapshotFileCreate {
+	mutation := newNocoDBSnapshotFileMutation(c.config, OpCreate)
+	return &NocoDBSnapshotFileCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of NocoDBSnapshotFile entities.
+func (c *NocoDBSnapshotFileClient) CreateBulk(builders ...*NocoDBSnapshotFileCreate) *NocoDBSnapshotFileCreateBulk {
+	return &NocoDBSnapshotFileCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *NocoDBSnapshotFileClient) MapCreateBulk(slice any, setFunc func(*NocoDBSnapshotFileCreate, int)) *NocoDBSnapshotFileCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &NocoDBSnapshotFileCreateBulk{err: fmt.Errorf("calling to NocoDBSnapshotFileClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*NocoDBSnapshotFileCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &NocoDBSnapshotFileCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for NocoDBSnapshotFile.
+func (c *NocoDBSnapshotFileClient) Update() *NocoDBSnapshotFileUpdate {
+	mutation := newNocoDBSnapshotFileMutation(c.config, OpUpdate)
+	return &NocoDBSnapshotFileUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *NocoDBSnapshotFileClient) UpdateOne(_m *NocoDBSnapshotFile) *NocoDBSnapshotFileUpdateOne {
+	mutation := newNocoDBSnapshotFileMutation(c.config, OpUpdateOne, withNocoDBSnapshotFile(_m))
+	return &NocoDBSnapshotFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *NocoDBSnapshotFileClient) UpdateOneID(id int) *NocoDBSnapshotFileUpdateOne {
+	mutation := newNocoDBSnapshotFileMutation(c.config, OpUpdateOne, withNocoDBSnapshotFileID(id))
+	return &NocoDBSnapshotFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for NocoDBSnapshotFile.
+func (c *NocoDBSnapshotFileClient) Delete() *NocoDBSnapshotFileDelete {
+	mutation := newNocoDBSnapshotFileMutation(c.config, OpDelete)
+	return &NocoDBSnapshotFileDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *NocoDBSnapshotFileClient) DeleteOne(_m *NocoDBSnapshotFile) *NocoDBSnapshotFileDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *NocoDBSnapshotFileClient) DeleteOneID(id int) *NocoDBSnapshotFileDeleteOne {
+	builder := c.Delete().Where(nocodbsnapshotfile.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &NocoDBSnapshotFileDeleteOne{builder}
+}
+
+// Query returns a query builder for NocoDBSnapshotFile.
+func (c *NocoDBSnapshotFileClient) Query() *NocoDBSnapshotFileQuery {
+	return &NocoDBSnapshotFileQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeNocoDBSnapshotFile},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a NocoDBSnapshotFile entity by its id.
+func (c *NocoDBSnapshotFileClient) Get(ctx context.Context, id int) (*NocoDBSnapshotFile, error) {
+	return c.Query().Where(nocodbsnapshotfile.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *NocoDBSnapshotFileClient) GetX(ctx context.Context, id int) *NocoDBSnapshotFile {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *NocoDBSnapshotFileClient) Hooks() []Hook {
+	return c.hooks.NocoDBSnapshotFile
+}
+
+// Interceptors returns the client interceptors.
+func (c *NocoDBSnapshotFileClient) Interceptors() []Interceptor {
+	return c.inters.NocoDBSnapshotFile
+}
+
+func (c *NocoDBSnapshotFileClient) mutate(ctx context.Context, m *NocoDBSnapshotFileMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&NocoDBSnapshotFileCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&NocoDBSnapshotFileUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&NocoDBSnapshotFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&NocoDBSnapshotFileDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown NocoDBSnapshotFile mutation op: %q", m.Op())
 	}
 }
 
@@ -1895,13 +2320,15 @@ func (c *WasabiSyncStateClient) mutate(ctx context.Context, m *WasabiSyncStateMu
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Alert, Connection, NocoDBBackupPolicy, NocoDBRestore, NocoDBSnapshot,
-		NotificationChannel, OAuthState, Session, User, WasabiBucketConfig,
-		WasabiDailyUsage, WasabiSyncState []ent.Hook
+		Alert, Connection, NocoDBBackupPolicy, NocoDBFile, NocoDBFileSource,
+		NocoDBRestore, NocoDBSnapshot, NocoDBSnapshotFile, NotificationChannel,
+		OAuthState, Session, User, WasabiBucketConfig, WasabiDailyUsage,
+		WasabiSyncState []ent.Hook
 	}
 	inters struct {
-		Alert, Connection, NocoDBBackupPolicy, NocoDBRestore, NocoDBSnapshot,
-		NotificationChannel, OAuthState, Session, User, WasabiBucketConfig,
-		WasabiDailyUsage, WasabiSyncState []ent.Interceptor
+		Alert, Connection, NocoDBBackupPolicy, NocoDBFile, NocoDBFileSource,
+		NocoDBRestore, NocoDBSnapshot, NocoDBSnapshotFile, NotificationChannel,
+		OAuthState, Session, User, WasabiBucketConfig, WasabiDailyUsage,
+		WasabiSyncState []ent.Interceptor
 	}
 )

@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -67,6 +69,16 @@ type fakeNocoDB struct {
 	insertErr  error
 	mu         sync.Mutex
 	inserted   int
+
+	// docs, when set, is record 1's Attachment value; files serves
+	// downloads by reference. failTable fails a second table's schema
+	// read, after the first table's files are stored.
+	docs      string
+	files     map[string]string
+	failTable bool
+	downloads []string
+	uploads   []nocodb.UploadFile
+	updates   []map[string]json.RawMessage
 }
 
 func (f *fakeNocoDB) ListBases(context.Context) ([]nocodb.Base, error) {
@@ -89,13 +101,53 @@ func (f *fakeNocoDB) ListTables(ctx context.Context, _ string) ([]nocodb.TableSu
 	if f.fail {
 		return nil, errors.New("boom")
 	}
+	if f.failTable {
+		return []nocodb.TableSummary{{ID: "m1", Title: "T"}, {ID: "m2", Title: "Broken"}}, nil
+	}
 	return []nocodb.TableSummary{{ID: "m1", Title: "T"}}, nil
 }
-func (f *fakeNocoDB) GetTable(context.Context, string, string) (*nocodb.Table, error) {
+func (f *fakeNocoDB) GetTable(_ context.Context, _, tableID string) (*nocodb.Table, error) {
+	if tableID == "m2" {
+		return nil, errors.New("schema read failed")
+	}
+	if f.docs != "" {
+		fields := []nocodb.Field{{ID: "f1", Title: "Docs", Type: "Attachment"}}
+		return &nocodb.Table{ID: "m1", Title: "T", Fields: fields, Raw: json.RawMessage(`{"id":"m1","fields":[{"id":"f1","title":"Docs","type":"Attachment"}]}`)}, nil
+	}
 	return &nocodb.Table{ID: "m1", Title: "T", Raw: json.RawMessage(`{"id":"m1","fields":[]}`)}, nil
 }
 func (f *fakeNocoDB) ListRecords(context.Context, string, string, int, int) (*nocodb.RecordPage, error) {
-	return &nocodb.RecordPage{Records: []nocodb.Record{{ID: json.RawMessage("1"), Fields: map[string]json.RawMessage{}}}}, nil
+	fields := map[string]json.RawMessage{}
+	if f.docs != "" {
+		fields["Docs"] = json.RawMessage(f.docs)
+	}
+	return &nocodb.RecordPage{Records: []nocodb.Record{{ID: json.RawMessage("1"), Fields: fields}}}, nil
+}
+func (f *fakeNocoDB) Download(_ context.Context, ref string) (io.ReadCloser, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.downloads = append(f.downloads, ref)
+	content, ok := f.files[ref]
+	if !ok {
+		return nil, &nocodb.APIError{StatusCode: 404, Method: "GET", Path: ref, Message: "not found"}
+	}
+	return io.NopCloser(strings.NewReader(content)), nil
+}
+func (f *fakeNocoDB) UploadFiles(_ context.Context, files []nocodb.UploadFile) ([]json.RawMessage, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	out := make([]json.RawMessage, len(files))
+	for i, file := range files {
+		f.uploads = append(f.uploads, file)
+		out[i] = json.RawMessage(fmt.Sprintf(`{"path":"download/new/%s","title":%q}`, file.Title, file.Title))
+	}
+	return out, nil
+}
+func (f *fakeNocoDB) UpdateRecordsV2(_ context.Context, _ string, rows []map[string]json.RawMessage) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.updates = append(f.updates, rows...)
+	return nil
 }
 func (f *fakeNocoDB) ListLinkedIDs(context.Context, string, string, string, string) ([]json.RawMessage, error) {
 	return nil, nil
@@ -113,8 +165,18 @@ func (f *fakeNocoDB) CreateBase(ctx context.Context, _, _ string) (string, error
 	}
 	return "pR", nil
 }
-func (f *fakeNocoDB) CreateTable(context.Context, string, any) (*nocodb.Table, error) {
-	return &nocodb.Table{ID: "mR", Title: "T", Fields: []nocodb.Field{{ID: "fR", Title: "Id", Type: "ID"}}}, nil
+func (f *fakeNocoDB) CreateTable(_ context.Context, _ string, def any) (*nocodb.Table, error) {
+	t := &nocodb.Table{ID: "mR", Title: "T", Fields: []nocodb.Field{{ID: "fR", Title: "Id", Type: "ID"}}}
+	raw, _ := json.Marshal(def)
+	var d struct {
+		Fields []nocodb.Field `json:"fields"`
+	}
+	_ = json.Unmarshal(raw, &d)
+	for i, fd := range d.Fields {
+		fd.ID = fmt.Sprintf("fR%d", i)
+		t.Fields = append(t.Fields, fd)
+	}
+	return t, nil
 }
 func (f *fakeNocoDB) UpdateTable(context.Context, string, string, any) error { return nil }
 func (f *fakeNocoDB) CreateField(context.Context, string, string, any) (*nocodb.Field, error) {
@@ -147,6 +209,7 @@ type harness struct {
 	conns *memConns
 	api   *fakeNocoDB
 	conn  *connrepo.Connection
+	blobs blobstore.Store
 	clock time.Time
 }
 
@@ -156,7 +219,7 @@ func newHarness(t *testing.T) *harness {
 	if err != nil {
 		t.Fatal(err)
 	}
-	h := &harness{repo: memory.New(), api: &fakeNocoDB{}, clock: time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)}
+	h := &harness{repo: memory.New(), api: &fakeNocoDB{}, blobs: blobs, clock: time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)}
 	h.conn = &connrepo.Connection{
 		ID: "c1", UserID: "u1", Provider: nocodb.ProviderType,
 		Config: json.RawMessage(`{"base_url":"http://noco"}`), SecretCiphertext: `{"api_token":"tok"}`,

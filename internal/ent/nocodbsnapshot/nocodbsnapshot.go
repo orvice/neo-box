@@ -35,6 +35,14 @@ const (
 	FieldRecordCount = "record_count"
 	// FieldLinkCount holds the string denoting the link_count field in the database.
 	FieldLinkCount = "link_count"
+	// FieldAttachmentsIncluded holds the string denoting the attachments_included field in the database.
+	FieldAttachmentsIncluded = "attachments_included"
+	// FieldFileCount holds the string denoting the file_count field in the database.
+	FieldFileCount = "file_count"
+	// FieldFileBytes holds the string denoting the file_bytes field in the database.
+	FieldFileBytes = "file_bytes"
+	// FieldFilesMissing holds the string denoting the files_missing field in the database.
+	FieldFilesMissing = "files_missing"
 	// FieldTables holds the string denoting the tables field in the database.
 	FieldTables = "tables"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -62,6 +70,10 @@ var Columns = []string{
 	FieldSizeBytes,
 	FieldRecordCount,
 	FieldLinkCount,
+	FieldAttachmentsIncluded,
+	FieldFileCount,
+	FieldFileBytes,
+	FieldFilesMissing,
 	FieldTables,
 	FieldCreatedAt,
 	FieldStartedAt,
@@ -93,6 +105,14 @@ var (
 	DefaultRecordCount int64
 	// DefaultLinkCount holds the default value on creation for the "link_count" field.
 	DefaultLinkCount int64
+	// DefaultAttachmentsIncluded holds the default value on creation for the "attachments_included" field.
+	DefaultAttachmentsIncluded bool
+	// DefaultFileCount holds the default value on creation for the "file_count" field.
+	DefaultFileCount int64
+	// DefaultFileBytes holds the default value on creation for the "file_bytes" field.
+	DefaultFileBytes int64
+	// DefaultFilesMissing holds the default value on creation for the "files_missing" field.
+	DefaultFilesMissing int64
 )
 
 // OrderOption defines the ordering options for the NocoDBSnapshot queries.
@@ -161,6 +181,26 @@ func ByRecordCount(opts ...sql.OrderTermOption) OrderOption {
 // ByLinkCount orders the results by the link_count field.
 func ByLinkCount(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLinkCount, opts...).ToFunc()
+}
+
+// ByAttachmentsIncluded orders the results by the attachments_included field.
+func ByAttachmentsIncluded(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAttachmentsIncluded, opts...).ToFunc()
+}
+
+// ByFileCount orders the results by the file_count field.
+func ByFileCount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFileCount, opts...).ToFunc()
+}
+
+// ByFileBytes orders the results by the file_bytes field.
+func ByFileBytes(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFileBytes, opts...).ToFunc()
+}
+
+// ByFilesMissing orders the results by the files_missing field.
+func ByFilesMissing(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFilesMissing, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

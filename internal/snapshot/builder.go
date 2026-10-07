@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -23,20 +24,39 @@ type API interface {
 	ListLinkedIDs(ctx context.Context, baseID, tableID, linkFieldID, recordID string) ([]json.RawMessage, error)
 }
 
-// TableStats summarizes one captured table.
+// Files stores the attachment files of a snapshot being built.
+type Files interface {
+	// Store makes the file behind att available under its sha256 and
+	// returns it. An error wrapping ErrFileUnavailable is recorded on the
+	// file and the build goes on; any other error fails the build.
+	Store(ctx context.Context, att nocodb.Attachment) (sha256 string, err error)
+}
+
+// ErrFileUnavailable marks an attachment file that could not be read.
+var ErrFileUnavailable = errors.New("file unavailable")
+
+// TableStats summarizes one captured (or restored) table.
 type TableStats struct {
 	ID          string
 	Title       string
 	RecordCount int64
 	FieldCount  int
 	LinkCount   int64
+	// FileCount and FileBytes count the attachment files captured (or
+	// restored); FilesMissing those that could not be read.
+	FileCount    int64
+	FileBytes    int64
+	FilesMissing int64
 }
 
 // Stats summarizes a captured Base.
 type Stats struct {
-	Tables      []TableStats
-	RecordCount int64
-	LinkCount   int64
+	Tables       []TableStats
+	RecordCount  int64
+	LinkCount    int64
+	FileCount    int64
+	FileBytes    int64
+	FilesMissing int64
 }
 
 // Options tune a build.
@@ -45,6 +65,9 @@ type Options struct {
 	// LinkConcurrency bounds parallel linked-record lookups. The client's
 	// rate limiter still applies; concurrency only hides request latency.
 	LinkConcurrency int
+	// Files stores attachment files. Nil leaves them out: only their
+	// metadata is captured, as in format version 1.
+	Files Files
 	// Progress receives human-readable status updates. May be nil.
 	Progress func(msg string)
 	Now      func() time.Time
@@ -79,7 +102,8 @@ func Build(ctx context.Context, api API, src Source, w io.Writer, opts Options) 
 	}
 
 	sw := NewWriter(w)
-	if err := sw.WriteHeader(Header{CreatedAt: opts.Now().UTC(), Source: src, Base: baseRaw}); err != nil {
+	header := Header{CreatedAt: opts.Now().UTC(), Source: src, Attachments: opts.Files != nil, Base: baseRaw}
+	if err := sw.WriteHeader(header); err != nil {
 		return nil, err
 	}
 
@@ -100,9 +124,20 @@ func Build(ctx context.Context, api API, src Source, w io.Writer, opts Options) 
 			FieldCount:  len(t.Fields()),
 			LinkCount:   t.LinkCount(),
 		}
+		for _, f := range t.Files {
+			if f.SHA256 == "" {
+				ts.FilesMissing++
+				continue
+			}
+			ts.FileCount++
+			ts.FileBytes += f.Size
+		}
 		stats.Tables = append(stats.Tables, ts)
 		stats.RecordCount += ts.RecordCount
 		stats.LinkCount += ts.LinkCount
+		stats.FileCount += ts.FileCount
+		stats.FileBytes += ts.FileBytes
+		stats.FilesMissing += ts.FilesMissing
 	}
 	if err := sw.Close(); err != nil {
 		return nil, err
@@ -135,6 +170,18 @@ func captureTable(ctx context.Context, api API, baseID string, summary nocodb.Ta
 		}
 	}
 
+	if err := captureLinks(ctx, api, baseID, schema, t, opts, progress); err != nil {
+		return nil, err
+	}
+	if opts.Files != nil {
+		if err := captureFiles(ctx, schema, t, opts, progress); err != nil {
+			return nil, err
+		}
+	}
+	return t, nil
+}
+
+func captureLinks(ctx context.Context, api API, baseID string, schema *nocodb.Table, t *Table, opts Options, progress func(string)) error {
 	var linkFields []nocodb.Field
 	for _, f := range schema.Fields {
 		if f.IsLink() {
@@ -142,7 +189,7 @@ func captureTable(ctx context.Context, api API, baseID string, summary nocodb.Ta
 		}
 	}
 	if len(linkFields) == 0 {
-		return t, nil
+		return nil
 	}
 
 	type job struct {
@@ -158,7 +205,7 @@ func captureTable(ctx context.Context, api API, baseID string, summary nocodb.Ta
 		}
 	}
 	if len(jobs) == 0 {
-		return t, nil
+		return nil
 	}
 
 	results := make([]Link, len(jobs))
@@ -166,7 +213,7 @@ func captureTable(ctx context.Context, api API, baseID string, summary nocodb.Ta
 	g.SetLimit(opts.LinkConcurrency)
 	for i, j := range jobs {
 		g.Go(func() error {
-			ids, err := api.ListLinkedIDs(gctx, baseID, summary.ID, j.field.ID, j.record.IDString())
+			ids, err := api.ListLinkedIDs(gctx, baseID, t.ID, j.field.ID, j.record.IDString())
 			if err != nil {
 				return fmt.Errorf("links %q of record %s: %w", j.field.Title, j.record.IDString(), err)
 			}
@@ -178,14 +225,66 @@ func captureTable(ctx context.Context, api API, baseID string, summary nocodb.Ta
 		})
 	}
 	if err := g.Wait(); err != nil {
-		return nil, err
+		return err
 	}
 	for _, l := range results {
 		if len(l.LinkedIDs) > 0 {
 			t.Links = append(t.Links, l)
 		}
 	}
-	return t, nil
+	return nil
+}
+
+// captureFiles stores every distinct file the table's Attachment values
+// reference and lists them in t.Files. Tables without Attachment fields
+// get no list.
+func captureFiles(ctx context.Context, schema *nocodb.Table, t *Table, opts Options, progress func(string)) error {
+	var fields []string
+	for _, f := range schema.Fields {
+		if f.Type == "Attachment" {
+			fields = append(fields, f.Title)
+		}
+	}
+	if len(fields) == 0 {
+		return nil
+	}
+	var atts []nocodb.Attachment
+	seen := map[string]bool{}
+	for _, r := range t.Records {
+		for _, title := range fields {
+			for _, a := range nocodb.ParseAttachments(r.Fields[title]) {
+				key := FileKey(a.Source(), a.Size)
+				if a.Source() == "" || seen[key] {
+					continue
+				}
+				seen[key] = true
+				atts = append(atts, a)
+			}
+		}
+	}
+	t.Files = make([]File, len(atts))
+	g, gctx := errgroup.WithContext(ctx)
+	g.SetLimit(opts.LinkConcurrency)
+	for i, a := range atts {
+		g.Go(func() error {
+			f := File{Source: a.Source(), Size: a.Size}
+			sha, err := opts.Files.Store(gctx, a)
+			switch {
+			case err == nil:
+				f.SHA256 = sha
+			case errors.Is(err, ErrFileUnavailable):
+				f.Error = err.Error()
+			default:
+				return fmt.Errorf("file %q: %w", a.Title, err)
+			}
+			t.Files[i] = f
+			if (i+1)%20 == 0 {
+				progress(fmt.Sprintf("%d records, files %d/%d", len(t.Records), i+1, len(atts)))
+			}
+			return nil
+		})
+	}
+	return g.Wait()
 }
 
 // hasLinks reports whether a record's value for a link field indicates at

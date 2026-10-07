@@ -148,12 +148,30 @@ export function SnapshotDetailPage() {
         }
       />
       <PageScroll className='space-y-6'>
-        <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+        <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-5'>
           <Stat label='Status'>
             <SnapshotStatusBadge status={snap.status} />
           </Stat>
           <Stat label='Records'>{formatCount(snap.recordCount)}</Stat>
           <Stat label='Links'>{formatCount(snap.linkCount)}</Stat>
+          <Stat label='Attachment files'>
+            {!succeeded ? (
+              '-'
+            ) : snap.attachmentsIncluded ? (
+              <>
+                {`${formatCount(snap.fileCount)} · ${formatBytes(snap.fileBytes)}`}
+                {snap.filesMissing > 0 && (
+                  <div className='text-xs font-normal text-warning-foreground'>
+                    {formatCount(snap.filesMissing)} could not be downloaded
+                  </div>
+                )}
+              </>
+            ) : (
+              <span className='text-sm font-normal text-muted-foreground'>
+                Not included
+              </span>
+            )}
+          </Stat>
           <Stat label='Size · Duration'>
             {succeeded
               ? `${formatBytes(snap.sizeBytes)} · ${formatDuration(snap)}`

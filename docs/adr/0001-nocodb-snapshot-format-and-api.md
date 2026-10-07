@@ -1,6 +1,7 @@
 # ADR 0001: NocoDB snapshots as verbatim gzip JSON built from the REST API
 
-Status: accepted (2026-09-25)
+Status: accepted (2026-09-25); format version 2 (attachment files, views,
+webhooks) is in ADR 0005
 
 ## Context
 

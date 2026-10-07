@@ -252,6 +252,9 @@ function PolicyDialog({
   const [retention, setRetention] = useState(
     String(base.policy?.retention ?? 7)
   )
+  const [includeAttachments, setIncludeAttachments] = useState(
+    base.policy?.includeAttachments ?? true
+  )
 
   function handleSave() {
     const keep = Number.parseInt(retention || '0', 10)
@@ -266,6 +269,7 @@ function PolicyDialog({
         enabled,
         cron: cron.trim(),
         retention: keep,
+        includeAttachments,
       },
       {
         onSuccess: () => {
@@ -332,6 +336,23 @@ function PolicyDialog({
               onChange={(e) => setRetention(e.target.value)}
             />
             <p className='text-xs text-muted-foreground'>0 keeps all.</p>
+          </div>
+          <div className='space-y-2'>
+            <div className='flex items-center justify-between'>
+              <Label htmlFor='policy-attachments'>
+                Include attachment files
+              </Label>
+              <Switch
+                id='policy-attachments'
+                checked={includeAttachments}
+                onCheckedChange={setIncludeAttachments}
+              />
+            </div>
+            <p className='text-xs text-muted-foreground'>
+              Downloads each file once and shares it across snapshots. Off keeps
+              only file names and links, and restores leave attachments empty.
+              Applies to manual snapshots too.
+            </p>
           </div>
         </div>
         <DialogFooter>

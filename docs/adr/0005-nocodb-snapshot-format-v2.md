@@ -1,0 +1,140 @@
+# ADR 0005: Snapshot format v2: attachment files, views and webhooks
+
+Status: accepted (2026-10-07)
+
+## Context
+
+Format version 1 (ADR 0001) leaves out attachment files, views and
+webhooks, so a Restore (ADR 0004) can't bring them back. Attachment files
+matter most: a v1 snapshot keeps only their metadata, and once the files
+change or their signed links expire, the snapshot has nothing to restore
+them from.
+
+NocoDB's paid Base Snapshots (self-hosted Business and up) don't restore
+permissions or share settings either. Their restore also creates a new
+Base.
+
+Checked live on a local `nocodb/nocodb` 2026.09.1 (OSS, no licence):
+
+**Attachments**
+- A record's Attachment value lists `path`, `title`, `mimetype`, `size`
+  and `signedPath` when NocoDB stores files itself. With S3 storage it
+  lists `url` and `signedUrl`. A file added by URL has only `url`.
+- `GET {instance}/{signedPath}` returns the bytes.
+- Each upload gets a new random file name, and a stored file never changes.
+  So `path` (or `url`) plus `size` identifies the content.
+- **Writing attachments**
+  - A v3 record write rejects a new attachment without a `url`: "New
+    attachment must include a url". NocoDB then fetches that URL itself,
+    which its SSRF guard blocks for private addresses (ADR 0004).
+  - v3 `POST .../records/{id}/fields/{fieldId}/upload` takes one base64
+    file per request, appends it, and renames its title to the stored
+    file name.
+  - What works: `POST /api/v2/storage/upload` takes multipart `files`,
+    several per request. It returns one attachment object per file and
+    keeps the original title, quotes included. `PATCH
+    /api/v2/tables/{tableId}/records` with `[{"<ID field title>": id,
+    "<field>": [...]}]` then sets those objects on the record.
+
+**Views**
+- v3 views are licence-gated (`ERR_LICENSE_REQUIRED`,
+  `feature_api_view_v3`).
+- v2 meta views work for reading and creating views, their columns,
+  filters (including nested groups) and sorts.
+- v3 filters and sorts are in OSS, but drop v2 fields such as
+  `comparison_sub_op`.
+
+**Webhooks**
+- v2 `/api/v2/meta/tables/{tableId}/hooks` and `/api/v2/meta/hooks/{id}/filters`
+  list and create hooks and their conditions.
+- A hook can be created with `"active": false`.
+- A hook `PATCH` needs the full body; a partial one fails with "hook
+  version is deprecated".
+
+## Decision
+
+**Format version 2.** Readers and Restore accept versions 1 and 2. Records
+stay verbatim. The header gains `"attachments": true` when attachment
+files were captured. Each table gains a list per kind of addition:
+- `files` (#32): for a table with Attachment fields, every distinct file
+  its values reference, as `{source, size, sha256}`, or `{source, size,
+  error}` when the file couldn't be read. `source` is the attachment's
+  `path`, else its `url`.
+- `views` (#33): every view, with its columns, filters and sorts, read
+  through v2.
+- `hooks` (#34): every webhook, with its filters.
+
+A missing list means "not captured" and an empty one means "none".
+
+**Attachment files are stored once per user, by content.** The bytes go
+to the blob store under `nocodb/{user}/files/{sha256}`, outside the
+snapshot document. PostgreSQL keeps three tables:
+- `nocodb_files`: which files the user has stored.
+- `nocodb_snapshot_files`: which snapshots use each file.
+- `nocodb_file_sources`: a hint per connection, mapping `(source, size)`
+  to the `sha256` stored last time. A later snapshot of an unchanged file
+  then records a reference without downloading it. The hint is ignored
+  when its file is gone.
+
+**Capture**
+- A snapshot downloads from `signedUrl`, `signedPath`, `url` and `path`, in
+  that order. The API token and the connection's rate limit apply only to
+  the instance itself, never to another host such as S3.
+- A file that no reference can serve is recorded with its error. The
+  snapshot still succeeds, counts the file as missing, and a restore warns
+  about it.
+
+**Collecting unused files**
+- Deleting a snapshot deletes its references in the same transaction. Then
+  every file of the user that no snapshot uses is deleted. This covers
+  manual deletes, retention, and connection cleanup.
+- A failed snapshot drops its references the same way.
+- Registering a file holds an in-process `RWMutex` shared, and collection
+  holds it exclusively. So a file can't be collected between a running
+  snapshot finding it stored and recording that it uses it. Like the
+  scheduler, this assumes one neo-box process (ADR 0001).
+
+**Backup Policies** gain `include_attachments`, on by default. A manual
+snapshot follows its Base's policy, and a Base without a policy includes
+attachments. Off gives a v2 document without `files` (`attachments`
+false), which restores like v1.
+
+**Restore of attachments** comes after display fields. Records are
+inserted without attachments. Then, for each restored record:
+- Each Attachment field's files are uploaded through v2 storage, one
+  request per cell, keeping title and mimetype.
+- The objects are set with a v2 record update, 10 records per request,
+  keyed by the new table's ID field title.
+- A batch rejected with 400 is retried one record at a time.
+- An upload refused with 400, 413 or 422 is a warning and the restore goes
+  on.
+- A file never captured or missing from storage is an
+  `attachments_skipped` warning.
+
+**Views and webhooks** (#33, #34)
+- Views are restored after attachments, through v2:
+  - The new table's default view takes the default view's settings.
+  - Other views are created by type, with field IDs remapped and kanban
+    stacks matched by choice title.
+  - Share settings (public link, password), ownership and form images are
+    not restored.
+- Webhooks are restored last and always turned **off**, so the restore's
+  own writes can't fire them and the user decides when to turn them on.
+  Their headers can hold secrets, which are captured as they are, like
+  record data.
+
+## Consequences
+
+- A snapshot's `size_bytes` covers only its document. Its files are
+  counted separately (`file_count`, `file_bytes`, `files_missing`). Several
+  snapshots of an unchanged Base cost one copy of its files.
+- The first snapshot with attachments downloads every file once, at the
+  connection's rate for files NocoDB serves itself. Later snapshots
+  download only new files.
+- A restore holds one cell's files in memory while uploading them.
+- Restored attachments get new storage paths. Titles, types, sizes and
+  bytes are kept.
+- `TestLiveRestoreRoundTrip` uploads two files into the fixture and
+  compares each attachment's title, type, size and content hash after the
+  round trip. S3-backed NocoDB storage (`url`/`signedUrl`) has not been
+  exercised live.

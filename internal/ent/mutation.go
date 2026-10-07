@@ -14,8 +14,11 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent/alert"
 	"go.orx.me/apps/neo-box/internal/ent/connection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
+	"go.orx.me/apps/neo-box/internal/ent/nocodbfile"
+	"go.orx.me/apps/neo-box/internal/ent/nocodbfilesource"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbrestore"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbsnapshot"
+	"go.orx.me/apps/neo-box/internal/ent/nocodbsnapshotfile"
 	"go.orx.me/apps/neo-box/internal/ent/notificationchannel"
 	"go.orx.me/apps/neo-box/internal/ent/oauthstate"
 	"go.orx.me/apps/neo-box/internal/ent/predicate"
@@ -39,8 +42,11 @@ const (
 	TypeAlert               = "Alert"
 	TypeConnection          = "Connection"
 	TypeNocoDBBackupPolicy  = "NocoDBBackupPolicy"
+	TypeNocoDBFile          = "NocoDBFile"
+	TypeNocoDBFileSource    = "NocoDBFileSource"
 	TypeNocoDBRestore       = "NocoDBRestore"
 	TypeNocoDBSnapshot      = "NocoDBSnapshot"
+	TypeNocoDBSnapshotFile  = "NocoDBSnapshotFile"
 	TypeNotificationChannel = "NotificationChannel"
 	TypeOAuthState          = "OAuthState"
 	TypeSession             = "Session"
@@ -1841,21 +1847,22 @@ func (m *ConnectionMutation) ResetEdge(name string) error {
 // NocoDBBackupPolicyMutation represents an operation that mutates the NocoDBBackupPolicy nodes in the graph.
 type NocoDBBackupPolicyMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	connection_id *string
-	base_id       *string
-	user_id       *string
-	enabled       *bool
-	cron          *string
-	retention     *int
-	addretention  *int
-	updated_at    *time.Time
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*NocoDBBackupPolicy, error)
-	predicates    []predicate.NocoDBBackupPolicy
+	op                  Op
+	typ                 string
+	id                  *int
+	connection_id       *string
+	base_id             *string
+	user_id             *string
+	enabled             *bool
+	cron                *string
+	retention           *int
+	addretention        *int
+	include_attachments *bool
+	updated_at          *time.Time
+	clearedFields       map[string]struct{}
+	done                bool
+	oldValue            func(context.Context) (*NocoDBBackupPolicy, error)
+	predicates          []predicate.NocoDBBackupPolicy
 }
 
 var _ ent.Mutation = (*NocoDBBackupPolicyMutation)(nil)
@@ -2192,6 +2199,42 @@ func (m *NocoDBBackupPolicyMutation) ResetRetention() {
 	m.addretention = nil
 }
 
+// SetIncludeAttachments sets the "include_attachments" field.
+func (m *NocoDBBackupPolicyMutation) SetIncludeAttachments(b bool) {
+	m.include_attachments = &b
+}
+
+// IncludeAttachments returns the value of the "include_attachments" field in the mutation.
+func (m *NocoDBBackupPolicyMutation) IncludeAttachments() (r bool, exists bool) {
+	v := m.include_attachments
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIncludeAttachments returns the old "include_attachments" field's value of the NocoDBBackupPolicy entity.
+// If the NocoDBBackupPolicy object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBBackupPolicyMutation) OldIncludeAttachments(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIncludeAttachments is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIncludeAttachments requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIncludeAttachments: %w", err)
+	}
+	return oldValue.IncludeAttachments, nil
+}
+
+// ResetIncludeAttachments resets all changes to the "include_attachments" field.
+func (m *NocoDBBackupPolicyMutation) ResetIncludeAttachments() {
+	m.include_attachments = nil
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (m *NocoDBBackupPolicyMutation) SetUpdatedAt(t time.Time) {
 	m.updated_at = &t
@@ -2262,7 +2305,7 @@ func (m *NocoDBBackupPolicyMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NocoDBBackupPolicyMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.connection_id != nil {
 		fields = append(fields, nocodbbackuppolicy.FieldConnectionID)
 	}
@@ -2280,6 +2323,9 @@ func (m *NocoDBBackupPolicyMutation) Fields() []string {
 	}
 	if m.retention != nil {
 		fields = append(fields, nocodbbackuppolicy.FieldRetention)
+	}
+	if m.include_attachments != nil {
+		fields = append(fields, nocodbbackuppolicy.FieldIncludeAttachments)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, nocodbbackuppolicy.FieldUpdatedAt)
@@ -2304,6 +2350,8 @@ func (m *NocoDBBackupPolicyMutation) Field(name string) (ent.Value, bool) {
 		return m.Cron()
 	case nocodbbackuppolicy.FieldRetention:
 		return m.Retention()
+	case nocodbbackuppolicy.FieldIncludeAttachments:
+		return m.IncludeAttachments()
 	case nocodbbackuppolicy.FieldUpdatedAt:
 		return m.UpdatedAt()
 	}
@@ -2327,6 +2375,8 @@ func (m *NocoDBBackupPolicyMutation) OldField(ctx context.Context, name string) 
 		return m.OldCron(ctx)
 	case nocodbbackuppolicy.FieldRetention:
 		return m.OldRetention(ctx)
+	case nocodbbackuppolicy.FieldIncludeAttachments:
+		return m.OldIncludeAttachments(ctx)
 	case nocodbbackuppolicy.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
 	}
@@ -2379,6 +2429,13 @@ func (m *NocoDBBackupPolicyMutation) SetField(name string, value ent.Value) erro
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRetention(v)
+		return nil
+	case nocodbbackuppolicy.FieldIncludeAttachments:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIncludeAttachments(v)
 		return nil
 	case nocodbbackuppolicy.FieldUpdatedAt:
 		v, ok := value.(time.Time)
@@ -2469,6 +2526,9 @@ func (m *NocoDBBackupPolicyMutation) ResetField(name string) error {
 	case nocodbbackuppolicy.FieldRetention:
 		m.ResetRetention()
 		return nil
+	case nocodbbackuppolicy.FieldIncludeAttachments:
+		m.ResetIncludeAttachments()
+		return nil
 	case nocodbbackuppolicy.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
@@ -2524,6 +2584,1054 @@ func (m *NocoDBBackupPolicyMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown NocoDBBackupPolicy edge %s", name)
 }
 
+// NocoDBFileMutation represents an operation that mutates the NocoDBFile nodes in the graph.
+type NocoDBFileMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	user_id       *string
+	sha256        *string
+	size          *int64
+	addsize       *int64
+	created_at    *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*NocoDBFile, error)
+	predicates    []predicate.NocoDBFile
+}
+
+var _ ent.Mutation = (*NocoDBFileMutation)(nil)
+
+// nocodbfileOption allows management of the mutation configuration using functional options.
+type nocodbfileOption func(*NocoDBFileMutation)
+
+// newNocoDBFileMutation creates new mutation for the NocoDBFile entity.
+func newNocoDBFileMutation(c config, op Op, opts ...nocodbfileOption) *NocoDBFileMutation {
+	m := &NocoDBFileMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeNocoDBFile,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withNocoDBFileID sets the ID field of the mutation.
+func withNocoDBFileID(id int) nocodbfileOption {
+	return func(m *NocoDBFileMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *NocoDBFile
+		)
+		m.oldValue = func(ctx context.Context) (*NocoDBFile, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().NocoDBFile.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withNocoDBFile sets the old NocoDBFile of the mutation.
+func withNocoDBFile(node *NocoDBFile) nocodbfileOption {
+	return func(m *NocoDBFileMutation) {
+		m.oldValue = func(context.Context) (*NocoDBFile, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m NocoDBFileMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m NocoDBFileMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *NocoDBFileMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *NocoDBFileMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().NocoDBFile.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetUserID sets the "user_id" field.
+func (m *NocoDBFileMutation) SetUserID(s string) {
+	m.user_id = &s
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *NocoDBFileMutation) UserID() (r string, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the NocoDBFile entity.
+// If the NocoDBFile object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBFileMutation) OldUserID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *NocoDBFileMutation) ResetUserID() {
+	m.user_id = nil
+}
+
+// SetSha256 sets the "sha256" field.
+func (m *NocoDBFileMutation) SetSha256(s string) {
+	m.sha256 = &s
+}
+
+// Sha256 returns the value of the "sha256" field in the mutation.
+func (m *NocoDBFileMutation) Sha256() (r string, exists bool) {
+	v := m.sha256
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSha256 returns the old "sha256" field's value of the NocoDBFile entity.
+// If the NocoDBFile object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBFileMutation) OldSha256(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSha256 is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSha256 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSha256: %w", err)
+	}
+	return oldValue.Sha256, nil
+}
+
+// ResetSha256 resets all changes to the "sha256" field.
+func (m *NocoDBFileMutation) ResetSha256() {
+	m.sha256 = nil
+}
+
+// SetSize sets the "size" field.
+func (m *NocoDBFileMutation) SetSize(i int64) {
+	m.size = &i
+	m.addsize = nil
+}
+
+// Size returns the value of the "size" field in the mutation.
+func (m *NocoDBFileMutation) Size() (r int64, exists bool) {
+	v := m.size
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSize returns the old "size" field's value of the NocoDBFile entity.
+// If the NocoDBFile object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBFileMutation) OldSize(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSize is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSize requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSize: %w", err)
+	}
+	return oldValue.Size, nil
+}
+
+// AddSize adds i to the "size" field.
+func (m *NocoDBFileMutation) AddSize(i int64) {
+	if m.addsize != nil {
+		*m.addsize += i
+	} else {
+		m.addsize = &i
+	}
+}
+
+// AddedSize returns the value that was added to the "size" field in this mutation.
+func (m *NocoDBFileMutation) AddedSize() (r int64, exists bool) {
+	v := m.addsize
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetSize resets all changes to the "size" field.
+func (m *NocoDBFileMutation) ResetSize() {
+	m.size = nil
+	m.addsize = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *NocoDBFileMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *NocoDBFileMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the NocoDBFile entity.
+// If the NocoDBFile object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBFileMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *NocoDBFileMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// Where appends a list predicates to the NocoDBFileMutation builder.
+func (m *NocoDBFileMutation) Where(ps ...predicate.NocoDBFile) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the NocoDBFileMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *NocoDBFileMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.NocoDBFile, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *NocoDBFileMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *NocoDBFileMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (NocoDBFile).
+func (m *NocoDBFileMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *NocoDBFileMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.user_id != nil {
+		fields = append(fields, nocodbfile.FieldUserID)
+	}
+	if m.sha256 != nil {
+		fields = append(fields, nocodbfile.FieldSha256)
+	}
+	if m.size != nil {
+		fields = append(fields, nocodbfile.FieldSize)
+	}
+	if m.created_at != nil {
+		fields = append(fields, nocodbfile.FieldCreatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *NocoDBFileMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case nocodbfile.FieldUserID:
+		return m.UserID()
+	case nocodbfile.FieldSha256:
+		return m.Sha256()
+	case nocodbfile.FieldSize:
+		return m.Size()
+	case nocodbfile.FieldCreatedAt:
+		return m.CreatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *NocoDBFileMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case nocodbfile.FieldUserID:
+		return m.OldUserID(ctx)
+	case nocodbfile.FieldSha256:
+		return m.OldSha256(ctx)
+	case nocodbfile.FieldSize:
+		return m.OldSize(ctx)
+	case nocodbfile.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown NocoDBFile field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NocoDBFileMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case nocodbfile.FieldUserID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case nocodbfile.FieldSha256:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSha256(v)
+		return nil
+	case nocodbfile.FieldSize:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSize(v)
+		return nil
+	case nocodbfile.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown NocoDBFile field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *NocoDBFileMutation) AddedFields() []string {
+	var fields []string
+	if m.addsize != nil {
+		fields = append(fields, nocodbfile.FieldSize)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *NocoDBFileMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case nocodbfile.FieldSize:
+		return m.AddedSize()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NocoDBFileMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case nocodbfile.FieldSize:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSize(v)
+		return nil
+	}
+	return fmt.Errorf("unknown NocoDBFile numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *NocoDBFileMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *NocoDBFileMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *NocoDBFileMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown NocoDBFile nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *NocoDBFileMutation) ResetField(name string) error {
+	switch name {
+	case nocodbfile.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case nocodbfile.FieldSha256:
+		m.ResetSha256()
+		return nil
+	case nocodbfile.FieldSize:
+		m.ResetSize()
+		return nil
+	case nocodbfile.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown NocoDBFile field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *NocoDBFileMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *NocoDBFileMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *NocoDBFileMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *NocoDBFileMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *NocoDBFileMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *NocoDBFileMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *NocoDBFileMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown NocoDBFile unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *NocoDBFileMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown NocoDBFile edge %s", name)
+}
+
+// NocoDBFileSourceMutation represents an operation that mutates the NocoDBFileSource nodes in the graph.
+type NocoDBFileSourceMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	connection_id *string
+	source        *string
+	size          *int64
+	addsize       *int64
+	sha256        *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*NocoDBFileSource, error)
+	predicates    []predicate.NocoDBFileSource
+}
+
+var _ ent.Mutation = (*NocoDBFileSourceMutation)(nil)
+
+// nocodbfilesourceOption allows management of the mutation configuration using functional options.
+type nocodbfilesourceOption func(*NocoDBFileSourceMutation)
+
+// newNocoDBFileSourceMutation creates new mutation for the NocoDBFileSource entity.
+func newNocoDBFileSourceMutation(c config, op Op, opts ...nocodbfilesourceOption) *NocoDBFileSourceMutation {
+	m := &NocoDBFileSourceMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeNocoDBFileSource,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withNocoDBFileSourceID sets the ID field of the mutation.
+func withNocoDBFileSourceID(id int) nocodbfilesourceOption {
+	return func(m *NocoDBFileSourceMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *NocoDBFileSource
+		)
+		m.oldValue = func(ctx context.Context) (*NocoDBFileSource, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().NocoDBFileSource.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withNocoDBFileSource sets the old NocoDBFileSource of the mutation.
+func withNocoDBFileSource(node *NocoDBFileSource) nocodbfilesourceOption {
+	return func(m *NocoDBFileSourceMutation) {
+		m.oldValue = func(context.Context) (*NocoDBFileSource, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m NocoDBFileSourceMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m NocoDBFileSourceMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *NocoDBFileSourceMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *NocoDBFileSourceMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().NocoDBFileSource.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetConnectionID sets the "connection_id" field.
+func (m *NocoDBFileSourceMutation) SetConnectionID(s string) {
+	m.connection_id = &s
+}
+
+// ConnectionID returns the value of the "connection_id" field in the mutation.
+func (m *NocoDBFileSourceMutation) ConnectionID() (r string, exists bool) {
+	v := m.connection_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConnectionID returns the old "connection_id" field's value of the NocoDBFileSource entity.
+// If the NocoDBFileSource object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBFileSourceMutation) OldConnectionID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConnectionID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConnectionID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConnectionID: %w", err)
+	}
+	return oldValue.ConnectionID, nil
+}
+
+// ResetConnectionID resets all changes to the "connection_id" field.
+func (m *NocoDBFileSourceMutation) ResetConnectionID() {
+	m.connection_id = nil
+}
+
+// SetSource sets the "source" field.
+func (m *NocoDBFileSourceMutation) SetSource(s string) {
+	m.source = &s
+}
+
+// Source returns the value of the "source" field in the mutation.
+func (m *NocoDBFileSourceMutation) Source() (r string, exists bool) {
+	v := m.source
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSource returns the old "source" field's value of the NocoDBFileSource entity.
+// If the NocoDBFileSource object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBFileSourceMutation) OldSource(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSource is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSource requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSource: %w", err)
+	}
+	return oldValue.Source, nil
+}
+
+// ResetSource resets all changes to the "source" field.
+func (m *NocoDBFileSourceMutation) ResetSource() {
+	m.source = nil
+}
+
+// SetSize sets the "size" field.
+func (m *NocoDBFileSourceMutation) SetSize(i int64) {
+	m.size = &i
+	m.addsize = nil
+}
+
+// Size returns the value of the "size" field in the mutation.
+func (m *NocoDBFileSourceMutation) Size() (r int64, exists bool) {
+	v := m.size
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSize returns the old "size" field's value of the NocoDBFileSource entity.
+// If the NocoDBFileSource object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBFileSourceMutation) OldSize(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSize is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSize requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSize: %w", err)
+	}
+	return oldValue.Size, nil
+}
+
+// AddSize adds i to the "size" field.
+func (m *NocoDBFileSourceMutation) AddSize(i int64) {
+	if m.addsize != nil {
+		*m.addsize += i
+	} else {
+		m.addsize = &i
+	}
+}
+
+// AddedSize returns the value that was added to the "size" field in this mutation.
+func (m *NocoDBFileSourceMutation) AddedSize() (r int64, exists bool) {
+	v := m.addsize
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetSize resets all changes to the "size" field.
+func (m *NocoDBFileSourceMutation) ResetSize() {
+	m.size = nil
+	m.addsize = nil
+}
+
+// SetSha256 sets the "sha256" field.
+func (m *NocoDBFileSourceMutation) SetSha256(s string) {
+	m.sha256 = &s
+}
+
+// Sha256 returns the value of the "sha256" field in the mutation.
+func (m *NocoDBFileSourceMutation) Sha256() (r string, exists bool) {
+	v := m.sha256
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSha256 returns the old "sha256" field's value of the NocoDBFileSource entity.
+// If the NocoDBFileSource object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBFileSourceMutation) OldSha256(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSha256 is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSha256 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSha256: %w", err)
+	}
+	return oldValue.Sha256, nil
+}
+
+// ResetSha256 resets all changes to the "sha256" field.
+func (m *NocoDBFileSourceMutation) ResetSha256() {
+	m.sha256 = nil
+}
+
+// Where appends a list predicates to the NocoDBFileSourceMutation builder.
+func (m *NocoDBFileSourceMutation) Where(ps ...predicate.NocoDBFileSource) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the NocoDBFileSourceMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *NocoDBFileSourceMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.NocoDBFileSource, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *NocoDBFileSourceMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *NocoDBFileSourceMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (NocoDBFileSource).
+func (m *NocoDBFileSourceMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *NocoDBFileSourceMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.connection_id != nil {
+		fields = append(fields, nocodbfilesource.FieldConnectionID)
+	}
+	if m.source != nil {
+		fields = append(fields, nocodbfilesource.FieldSource)
+	}
+	if m.size != nil {
+		fields = append(fields, nocodbfilesource.FieldSize)
+	}
+	if m.sha256 != nil {
+		fields = append(fields, nocodbfilesource.FieldSha256)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *NocoDBFileSourceMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case nocodbfilesource.FieldConnectionID:
+		return m.ConnectionID()
+	case nocodbfilesource.FieldSource:
+		return m.Source()
+	case nocodbfilesource.FieldSize:
+		return m.Size()
+	case nocodbfilesource.FieldSha256:
+		return m.Sha256()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *NocoDBFileSourceMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case nocodbfilesource.FieldConnectionID:
+		return m.OldConnectionID(ctx)
+	case nocodbfilesource.FieldSource:
+		return m.OldSource(ctx)
+	case nocodbfilesource.FieldSize:
+		return m.OldSize(ctx)
+	case nocodbfilesource.FieldSha256:
+		return m.OldSha256(ctx)
+	}
+	return nil, fmt.Errorf("unknown NocoDBFileSource field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NocoDBFileSourceMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case nocodbfilesource.FieldConnectionID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConnectionID(v)
+		return nil
+	case nocodbfilesource.FieldSource:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSource(v)
+		return nil
+	case nocodbfilesource.FieldSize:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSize(v)
+		return nil
+	case nocodbfilesource.FieldSha256:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSha256(v)
+		return nil
+	}
+	return fmt.Errorf("unknown NocoDBFileSource field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *NocoDBFileSourceMutation) AddedFields() []string {
+	var fields []string
+	if m.addsize != nil {
+		fields = append(fields, nocodbfilesource.FieldSize)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *NocoDBFileSourceMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case nocodbfilesource.FieldSize:
+		return m.AddedSize()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NocoDBFileSourceMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case nocodbfilesource.FieldSize:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSize(v)
+		return nil
+	}
+	return fmt.Errorf("unknown NocoDBFileSource numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *NocoDBFileSourceMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *NocoDBFileSourceMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *NocoDBFileSourceMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown NocoDBFileSource nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *NocoDBFileSourceMutation) ResetField(name string) error {
+	switch name {
+	case nocodbfilesource.FieldConnectionID:
+		m.ResetConnectionID()
+		return nil
+	case nocodbfilesource.FieldSource:
+		m.ResetSource()
+		return nil
+	case nocodbfilesource.FieldSize:
+		m.ResetSize()
+		return nil
+	case nocodbfilesource.FieldSha256:
+		m.ResetSha256()
+		return nil
+	}
+	return fmt.Errorf("unknown NocoDBFileSource field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *NocoDBFileSourceMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *NocoDBFileSourceMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *NocoDBFileSourceMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *NocoDBFileSourceMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *NocoDBFileSourceMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *NocoDBFileSourceMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *NocoDBFileSourceMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown NocoDBFileSource unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *NocoDBFileSourceMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown NocoDBFileSource edge %s", name)
+}
+
 // NocoDBRestoreMutation represents an operation that mutates the NocoDBRestore nodes in the graph.
 type NocoDBRestoreMutation struct {
 	config
@@ -2547,6 +3655,8 @@ type NocoDBRestoreMutation struct {
 	addrecord_count      *int64
 	link_count           *int64
 	addlink_count        *int64
+	file_count           *int64
+	addfile_count        *int64
 	warnings             *[]nocodb.RestoreWarning
 	appendwarnings       []nocodb.RestoreWarning
 	created_at           *time.Time
@@ -3226,6 +4336,62 @@ func (m *NocoDBRestoreMutation) ResetLinkCount() {
 	m.addlink_count = nil
 }
 
+// SetFileCount sets the "file_count" field.
+func (m *NocoDBRestoreMutation) SetFileCount(i int64) {
+	m.file_count = &i
+	m.addfile_count = nil
+}
+
+// FileCount returns the value of the "file_count" field in the mutation.
+func (m *NocoDBRestoreMutation) FileCount() (r int64, exists bool) {
+	v := m.file_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFileCount returns the old "file_count" field's value of the NocoDBRestore entity.
+// If the NocoDBRestore object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBRestoreMutation) OldFileCount(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFileCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFileCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFileCount: %w", err)
+	}
+	return oldValue.FileCount, nil
+}
+
+// AddFileCount adds i to the "file_count" field.
+func (m *NocoDBRestoreMutation) AddFileCount(i int64) {
+	if m.addfile_count != nil {
+		*m.addfile_count += i
+	} else {
+		m.addfile_count = &i
+	}
+}
+
+// AddedFileCount returns the value that was added to the "file_count" field in this mutation.
+func (m *NocoDBRestoreMutation) AddedFileCount() (r int64, exists bool) {
+	v := m.addfile_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetFileCount resets all changes to the "file_count" field.
+func (m *NocoDBRestoreMutation) ResetFileCount() {
+	m.file_count = nil
+	m.addfile_count = nil
+}
+
 // SetWarnings sets the "warnings" field.
 func (m *NocoDBRestoreMutation) SetWarnings(nw []nocodb.RestoreWarning) {
 	m.warnings = &nw
@@ -3459,7 +4625,7 @@ func (m *NocoDBRestoreMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NocoDBRestoreMutation) Fields() []string {
-	fields := make([]string, 0, 18)
+	fields := make([]string, 0, 19)
 	if m.user_id != nil {
 		fields = append(fields, nocodbrestore.FieldUserID)
 	}
@@ -3501,6 +4667,9 @@ func (m *NocoDBRestoreMutation) Fields() []string {
 	}
 	if m.link_count != nil {
 		fields = append(fields, nocodbrestore.FieldLinkCount)
+	}
+	if m.file_count != nil {
+		fields = append(fields, nocodbrestore.FieldFileCount)
 	}
 	if m.warnings != nil {
 		fields = append(fields, nocodbrestore.FieldWarnings)
@@ -3550,6 +4719,8 @@ func (m *NocoDBRestoreMutation) Field(name string) (ent.Value, bool) {
 		return m.RecordCount()
 	case nocodbrestore.FieldLinkCount:
 		return m.LinkCount()
+	case nocodbrestore.FieldFileCount:
+		return m.FileCount()
 	case nocodbrestore.FieldWarnings:
 		return m.Warnings()
 	case nocodbrestore.FieldCreatedAt:
@@ -3595,6 +4766,8 @@ func (m *NocoDBRestoreMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldRecordCount(ctx)
 	case nocodbrestore.FieldLinkCount:
 		return m.OldLinkCount(ctx)
+	case nocodbrestore.FieldFileCount:
+		return m.OldFileCount(ctx)
 	case nocodbrestore.FieldWarnings:
 		return m.OldWarnings(ctx)
 	case nocodbrestore.FieldCreatedAt:
@@ -3710,6 +4883,13 @@ func (m *NocoDBRestoreMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetLinkCount(v)
 		return nil
+	case nocodbrestore.FieldFileCount:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFileCount(v)
+		return nil
 	case nocodbrestore.FieldWarnings:
 		v, ok := value.([]nocodb.RestoreWarning)
 		if !ok {
@@ -3755,6 +4935,9 @@ func (m *NocoDBRestoreMutation) AddedFields() []string {
 	if m.addlink_count != nil {
 		fields = append(fields, nocodbrestore.FieldLinkCount)
 	}
+	if m.addfile_count != nil {
+		fields = append(fields, nocodbrestore.FieldFileCount)
+	}
 	return fields
 }
 
@@ -3769,6 +4952,8 @@ func (m *NocoDBRestoreMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedRecordCount()
 	case nocodbrestore.FieldLinkCount:
 		return m.AddedLinkCount()
+	case nocodbrestore.FieldFileCount:
+		return m.AddedFileCount()
 	}
 	return nil, false
 }
@@ -3798,6 +4983,13 @@ func (m *NocoDBRestoreMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddLinkCount(v)
+		return nil
+	case nocodbrestore.FieldFileCount:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddFileCount(v)
 		return nil
 	}
 	return fmt.Errorf("unknown NocoDBRestore numeric field %s", name)
@@ -3889,6 +5081,9 @@ func (m *NocoDBRestoreMutation) ResetField(name string) error {
 	case nocodbrestore.FieldLinkCount:
 		m.ResetLinkCount()
 		return nil
+	case nocodbrestore.FieldFileCount:
+		m.ResetFileCount()
+		return nil
 	case nocodbrestore.FieldWarnings:
 		m.ResetWarnings()
 		return nil
@@ -3956,33 +5151,40 @@ func (m *NocoDBRestoreMutation) ResetEdge(name string) error {
 // NocoDBSnapshotMutation represents an operation that mutates the NocoDBSnapshot nodes in the graph.
 type NocoDBSnapshotMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *string
-	user_id         *string
-	connection_id   *string
-	base_id         *string
-	base_title      *string
-	status          *string
-	trigger         *string
-	error           *string
-	progress        *string
-	object_key      *string
-	size_bytes      *int64
-	addsize_bytes   *int64
-	record_count    *int64
-	addrecord_count *int64
-	link_count      *int64
-	addlink_count   *int64
-	tables          *[]nocodb.SnapshotTable
-	appendtables    []nocodb.SnapshotTable
-	created_at      *time.Time
-	started_at      *time.Time
-	finished_at     *time.Time
-	clearedFields   map[string]struct{}
-	done            bool
-	oldValue        func(context.Context) (*NocoDBSnapshot, error)
-	predicates      []predicate.NocoDBSnapshot
+	op                   Op
+	typ                  string
+	id                   *string
+	user_id              *string
+	connection_id        *string
+	base_id              *string
+	base_title           *string
+	status               *string
+	trigger              *string
+	error                *string
+	progress             *string
+	object_key           *string
+	size_bytes           *int64
+	addsize_bytes        *int64
+	record_count         *int64
+	addrecord_count      *int64
+	link_count           *int64
+	addlink_count        *int64
+	attachments_included *bool
+	file_count           *int64
+	addfile_count        *int64
+	file_bytes           *int64
+	addfile_bytes        *int64
+	files_missing        *int64
+	addfiles_missing     *int64
+	tables               *[]nocodb.SnapshotTable
+	appendtables         []nocodb.SnapshotTable
+	created_at           *time.Time
+	started_at           *time.Time
+	finished_at          *time.Time
+	clearedFields        map[string]struct{}
+	done                 bool
+	oldValue             func(context.Context) (*NocoDBSnapshot, error)
+	predicates           []predicate.NocoDBSnapshot
 }
 
 var _ ent.Mutation = (*NocoDBSnapshotMutation)(nil)
@@ -4581,6 +5783,210 @@ func (m *NocoDBSnapshotMutation) ResetLinkCount() {
 	m.addlink_count = nil
 }
 
+// SetAttachmentsIncluded sets the "attachments_included" field.
+func (m *NocoDBSnapshotMutation) SetAttachmentsIncluded(b bool) {
+	m.attachments_included = &b
+}
+
+// AttachmentsIncluded returns the value of the "attachments_included" field in the mutation.
+func (m *NocoDBSnapshotMutation) AttachmentsIncluded() (r bool, exists bool) {
+	v := m.attachments_included
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAttachmentsIncluded returns the old "attachments_included" field's value of the NocoDBSnapshot entity.
+// If the NocoDBSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBSnapshotMutation) OldAttachmentsIncluded(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAttachmentsIncluded is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAttachmentsIncluded requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAttachmentsIncluded: %w", err)
+	}
+	return oldValue.AttachmentsIncluded, nil
+}
+
+// ResetAttachmentsIncluded resets all changes to the "attachments_included" field.
+func (m *NocoDBSnapshotMutation) ResetAttachmentsIncluded() {
+	m.attachments_included = nil
+}
+
+// SetFileCount sets the "file_count" field.
+func (m *NocoDBSnapshotMutation) SetFileCount(i int64) {
+	m.file_count = &i
+	m.addfile_count = nil
+}
+
+// FileCount returns the value of the "file_count" field in the mutation.
+func (m *NocoDBSnapshotMutation) FileCount() (r int64, exists bool) {
+	v := m.file_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFileCount returns the old "file_count" field's value of the NocoDBSnapshot entity.
+// If the NocoDBSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBSnapshotMutation) OldFileCount(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFileCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFileCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFileCount: %w", err)
+	}
+	return oldValue.FileCount, nil
+}
+
+// AddFileCount adds i to the "file_count" field.
+func (m *NocoDBSnapshotMutation) AddFileCount(i int64) {
+	if m.addfile_count != nil {
+		*m.addfile_count += i
+	} else {
+		m.addfile_count = &i
+	}
+}
+
+// AddedFileCount returns the value that was added to the "file_count" field in this mutation.
+func (m *NocoDBSnapshotMutation) AddedFileCount() (r int64, exists bool) {
+	v := m.addfile_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetFileCount resets all changes to the "file_count" field.
+func (m *NocoDBSnapshotMutation) ResetFileCount() {
+	m.file_count = nil
+	m.addfile_count = nil
+}
+
+// SetFileBytes sets the "file_bytes" field.
+func (m *NocoDBSnapshotMutation) SetFileBytes(i int64) {
+	m.file_bytes = &i
+	m.addfile_bytes = nil
+}
+
+// FileBytes returns the value of the "file_bytes" field in the mutation.
+func (m *NocoDBSnapshotMutation) FileBytes() (r int64, exists bool) {
+	v := m.file_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFileBytes returns the old "file_bytes" field's value of the NocoDBSnapshot entity.
+// If the NocoDBSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBSnapshotMutation) OldFileBytes(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFileBytes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFileBytes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFileBytes: %w", err)
+	}
+	return oldValue.FileBytes, nil
+}
+
+// AddFileBytes adds i to the "file_bytes" field.
+func (m *NocoDBSnapshotMutation) AddFileBytes(i int64) {
+	if m.addfile_bytes != nil {
+		*m.addfile_bytes += i
+	} else {
+		m.addfile_bytes = &i
+	}
+}
+
+// AddedFileBytes returns the value that was added to the "file_bytes" field in this mutation.
+func (m *NocoDBSnapshotMutation) AddedFileBytes() (r int64, exists bool) {
+	v := m.addfile_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetFileBytes resets all changes to the "file_bytes" field.
+func (m *NocoDBSnapshotMutation) ResetFileBytes() {
+	m.file_bytes = nil
+	m.addfile_bytes = nil
+}
+
+// SetFilesMissing sets the "files_missing" field.
+func (m *NocoDBSnapshotMutation) SetFilesMissing(i int64) {
+	m.files_missing = &i
+	m.addfiles_missing = nil
+}
+
+// FilesMissing returns the value of the "files_missing" field in the mutation.
+func (m *NocoDBSnapshotMutation) FilesMissing() (r int64, exists bool) {
+	v := m.files_missing
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFilesMissing returns the old "files_missing" field's value of the NocoDBSnapshot entity.
+// If the NocoDBSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBSnapshotMutation) OldFilesMissing(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFilesMissing is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFilesMissing requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFilesMissing: %w", err)
+	}
+	return oldValue.FilesMissing, nil
+}
+
+// AddFilesMissing adds i to the "files_missing" field.
+func (m *NocoDBSnapshotMutation) AddFilesMissing(i int64) {
+	if m.addfiles_missing != nil {
+		*m.addfiles_missing += i
+	} else {
+		m.addfiles_missing = &i
+	}
+}
+
+// AddedFilesMissing returns the value that was added to the "files_missing" field in this mutation.
+func (m *NocoDBSnapshotMutation) AddedFilesMissing() (r int64, exists bool) {
+	v := m.addfiles_missing
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetFilesMissing resets all changes to the "files_missing" field.
+func (m *NocoDBSnapshotMutation) ResetFilesMissing() {
+	m.files_missing = nil
+	m.addfiles_missing = nil
+}
+
 // SetTables sets the "tables" field.
 func (m *NocoDBSnapshotMutation) SetTables(nt []nocodb.SnapshotTable) {
 	m.tables = &nt
@@ -4814,7 +6220,7 @@ func (m *NocoDBSnapshotMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NocoDBSnapshotMutation) Fields() []string {
-	fields := make([]string, 0, 16)
+	fields := make([]string, 0, 20)
 	if m.user_id != nil {
 		fields = append(fields, nocodbsnapshot.FieldUserID)
 	}
@@ -4850,6 +6256,18 @@ func (m *NocoDBSnapshotMutation) Fields() []string {
 	}
 	if m.link_count != nil {
 		fields = append(fields, nocodbsnapshot.FieldLinkCount)
+	}
+	if m.attachments_included != nil {
+		fields = append(fields, nocodbsnapshot.FieldAttachmentsIncluded)
+	}
+	if m.file_count != nil {
+		fields = append(fields, nocodbsnapshot.FieldFileCount)
+	}
+	if m.file_bytes != nil {
+		fields = append(fields, nocodbsnapshot.FieldFileBytes)
+	}
+	if m.files_missing != nil {
+		fields = append(fields, nocodbsnapshot.FieldFilesMissing)
 	}
 	if m.tables != nil {
 		fields = append(fields, nocodbsnapshot.FieldTables)
@@ -4895,6 +6313,14 @@ func (m *NocoDBSnapshotMutation) Field(name string) (ent.Value, bool) {
 		return m.RecordCount()
 	case nocodbsnapshot.FieldLinkCount:
 		return m.LinkCount()
+	case nocodbsnapshot.FieldAttachmentsIncluded:
+		return m.AttachmentsIncluded()
+	case nocodbsnapshot.FieldFileCount:
+		return m.FileCount()
+	case nocodbsnapshot.FieldFileBytes:
+		return m.FileBytes()
+	case nocodbsnapshot.FieldFilesMissing:
+		return m.FilesMissing()
 	case nocodbsnapshot.FieldTables:
 		return m.Tables()
 	case nocodbsnapshot.FieldCreatedAt:
@@ -4936,6 +6362,14 @@ func (m *NocoDBSnapshotMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldRecordCount(ctx)
 	case nocodbsnapshot.FieldLinkCount:
 		return m.OldLinkCount(ctx)
+	case nocodbsnapshot.FieldAttachmentsIncluded:
+		return m.OldAttachmentsIncluded(ctx)
+	case nocodbsnapshot.FieldFileCount:
+		return m.OldFileCount(ctx)
+	case nocodbsnapshot.FieldFileBytes:
+		return m.OldFileBytes(ctx)
+	case nocodbsnapshot.FieldFilesMissing:
+		return m.OldFilesMissing(ctx)
 	case nocodbsnapshot.FieldTables:
 		return m.OldTables(ctx)
 	case nocodbsnapshot.FieldCreatedAt:
@@ -5037,6 +6471,34 @@ func (m *NocoDBSnapshotMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetLinkCount(v)
 		return nil
+	case nocodbsnapshot.FieldAttachmentsIncluded:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAttachmentsIncluded(v)
+		return nil
+	case nocodbsnapshot.FieldFileCount:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFileCount(v)
+		return nil
+	case nocodbsnapshot.FieldFileBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFileBytes(v)
+		return nil
+	case nocodbsnapshot.FieldFilesMissing:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFilesMissing(v)
+		return nil
 	case nocodbsnapshot.FieldTables:
 		v, ok := value.([]nocodb.SnapshotTable)
 		if !ok {
@@ -5082,6 +6544,15 @@ func (m *NocoDBSnapshotMutation) AddedFields() []string {
 	if m.addlink_count != nil {
 		fields = append(fields, nocodbsnapshot.FieldLinkCount)
 	}
+	if m.addfile_count != nil {
+		fields = append(fields, nocodbsnapshot.FieldFileCount)
+	}
+	if m.addfile_bytes != nil {
+		fields = append(fields, nocodbsnapshot.FieldFileBytes)
+	}
+	if m.addfiles_missing != nil {
+		fields = append(fields, nocodbsnapshot.FieldFilesMissing)
+	}
 	return fields
 }
 
@@ -5096,6 +6567,12 @@ func (m *NocoDBSnapshotMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedRecordCount()
 	case nocodbsnapshot.FieldLinkCount:
 		return m.AddedLinkCount()
+	case nocodbsnapshot.FieldFileCount:
+		return m.AddedFileCount()
+	case nocodbsnapshot.FieldFileBytes:
+		return m.AddedFileBytes()
+	case nocodbsnapshot.FieldFilesMissing:
+		return m.AddedFilesMissing()
 	}
 	return nil, false
 }
@@ -5125,6 +6602,27 @@ func (m *NocoDBSnapshotMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddLinkCount(v)
+		return nil
+	case nocodbsnapshot.FieldFileCount:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddFileCount(v)
+		return nil
+	case nocodbsnapshot.FieldFileBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddFileBytes(v)
+		return nil
+	case nocodbsnapshot.FieldFilesMissing:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddFilesMissing(v)
 		return nil
 	}
 	return fmt.Errorf("unknown NocoDBSnapshot numeric field %s", name)
@@ -5210,6 +6708,18 @@ func (m *NocoDBSnapshotMutation) ResetField(name string) error {
 	case nocodbsnapshot.FieldLinkCount:
 		m.ResetLinkCount()
 		return nil
+	case nocodbsnapshot.FieldAttachmentsIncluded:
+		m.ResetAttachmentsIncluded()
+		return nil
+	case nocodbsnapshot.FieldFileCount:
+		m.ResetFileCount()
+		return nil
+	case nocodbsnapshot.FieldFileBytes:
+		m.ResetFileBytes()
+		return nil
+	case nocodbsnapshot.FieldFilesMissing:
+		m.ResetFilesMissing()
+		return nil
 	case nocodbsnapshot.FieldTables:
 		m.ResetTables()
 		return nil
@@ -5272,6 +6782,440 @@ func (m *NocoDBSnapshotMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *NocoDBSnapshotMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown NocoDBSnapshot edge %s", name)
+}
+
+// NocoDBSnapshotFileMutation represents an operation that mutates the NocoDBSnapshotFile nodes in the graph.
+type NocoDBSnapshotFileMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	snapshot_id   *string
+	user_id       *string
+	sha256        *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*NocoDBSnapshotFile, error)
+	predicates    []predicate.NocoDBSnapshotFile
+}
+
+var _ ent.Mutation = (*NocoDBSnapshotFileMutation)(nil)
+
+// nocodbsnapshotfileOption allows management of the mutation configuration using functional options.
+type nocodbsnapshotfileOption func(*NocoDBSnapshotFileMutation)
+
+// newNocoDBSnapshotFileMutation creates new mutation for the NocoDBSnapshotFile entity.
+func newNocoDBSnapshotFileMutation(c config, op Op, opts ...nocodbsnapshotfileOption) *NocoDBSnapshotFileMutation {
+	m := &NocoDBSnapshotFileMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeNocoDBSnapshotFile,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withNocoDBSnapshotFileID sets the ID field of the mutation.
+func withNocoDBSnapshotFileID(id int) nocodbsnapshotfileOption {
+	return func(m *NocoDBSnapshotFileMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *NocoDBSnapshotFile
+		)
+		m.oldValue = func(ctx context.Context) (*NocoDBSnapshotFile, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().NocoDBSnapshotFile.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withNocoDBSnapshotFile sets the old NocoDBSnapshotFile of the mutation.
+func withNocoDBSnapshotFile(node *NocoDBSnapshotFile) nocodbsnapshotfileOption {
+	return func(m *NocoDBSnapshotFileMutation) {
+		m.oldValue = func(context.Context) (*NocoDBSnapshotFile, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m NocoDBSnapshotFileMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m NocoDBSnapshotFileMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *NocoDBSnapshotFileMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *NocoDBSnapshotFileMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().NocoDBSnapshotFile.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetSnapshotID sets the "snapshot_id" field.
+func (m *NocoDBSnapshotFileMutation) SetSnapshotID(s string) {
+	m.snapshot_id = &s
+}
+
+// SnapshotID returns the value of the "snapshot_id" field in the mutation.
+func (m *NocoDBSnapshotFileMutation) SnapshotID() (r string, exists bool) {
+	v := m.snapshot_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSnapshotID returns the old "snapshot_id" field's value of the NocoDBSnapshotFile entity.
+// If the NocoDBSnapshotFile object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBSnapshotFileMutation) OldSnapshotID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSnapshotID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSnapshotID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSnapshotID: %w", err)
+	}
+	return oldValue.SnapshotID, nil
+}
+
+// ResetSnapshotID resets all changes to the "snapshot_id" field.
+func (m *NocoDBSnapshotFileMutation) ResetSnapshotID() {
+	m.snapshot_id = nil
+}
+
+// SetUserID sets the "user_id" field.
+func (m *NocoDBSnapshotFileMutation) SetUserID(s string) {
+	m.user_id = &s
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *NocoDBSnapshotFileMutation) UserID() (r string, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the NocoDBSnapshotFile entity.
+// If the NocoDBSnapshotFile object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBSnapshotFileMutation) OldUserID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *NocoDBSnapshotFileMutation) ResetUserID() {
+	m.user_id = nil
+}
+
+// SetSha256 sets the "sha256" field.
+func (m *NocoDBSnapshotFileMutation) SetSha256(s string) {
+	m.sha256 = &s
+}
+
+// Sha256 returns the value of the "sha256" field in the mutation.
+func (m *NocoDBSnapshotFileMutation) Sha256() (r string, exists bool) {
+	v := m.sha256
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSha256 returns the old "sha256" field's value of the NocoDBSnapshotFile entity.
+// If the NocoDBSnapshotFile object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBSnapshotFileMutation) OldSha256(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSha256 is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSha256 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSha256: %w", err)
+	}
+	return oldValue.Sha256, nil
+}
+
+// ResetSha256 resets all changes to the "sha256" field.
+func (m *NocoDBSnapshotFileMutation) ResetSha256() {
+	m.sha256 = nil
+}
+
+// Where appends a list predicates to the NocoDBSnapshotFileMutation builder.
+func (m *NocoDBSnapshotFileMutation) Where(ps ...predicate.NocoDBSnapshotFile) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the NocoDBSnapshotFileMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *NocoDBSnapshotFileMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.NocoDBSnapshotFile, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *NocoDBSnapshotFileMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *NocoDBSnapshotFileMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (NocoDBSnapshotFile).
+func (m *NocoDBSnapshotFileMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *NocoDBSnapshotFileMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.snapshot_id != nil {
+		fields = append(fields, nocodbsnapshotfile.FieldSnapshotID)
+	}
+	if m.user_id != nil {
+		fields = append(fields, nocodbsnapshotfile.FieldUserID)
+	}
+	if m.sha256 != nil {
+		fields = append(fields, nocodbsnapshotfile.FieldSha256)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *NocoDBSnapshotFileMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case nocodbsnapshotfile.FieldSnapshotID:
+		return m.SnapshotID()
+	case nocodbsnapshotfile.FieldUserID:
+		return m.UserID()
+	case nocodbsnapshotfile.FieldSha256:
+		return m.Sha256()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *NocoDBSnapshotFileMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case nocodbsnapshotfile.FieldSnapshotID:
+		return m.OldSnapshotID(ctx)
+	case nocodbsnapshotfile.FieldUserID:
+		return m.OldUserID(ctx)
+	case nocodbsnapshotfile.FieldSha256:
+		return m.OldSha256(ctx)
+	}
+	return nil, fmt.Errorf("unknown NocoDBSnapshotFile field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NocoDBSnapshotFileMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case nocodbsnapshotfile.FieldSnapshotID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSnapshotID(v)
+		return nil
+	case nocodbsnapshotfile.FieldUserID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case nocodbsnapshotfile.FieldSha256:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSha256(v)
+		return nil
+	}
+	return fmt.Errorf("unknown NocoDBSnapshotFile field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *NocoDBSnapshotFileMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *NocoDBSnapshotFileMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NocoDBSnapshotFileMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown NocoDBSnapshotFile numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *NocoDBSnapshotFileMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *NocoDBSnapshotFileMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *NocoDBSnapshotFileMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown NocoDBSnapshotFile nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *NocoDBSnapshotFileMutation) ResetField(name string) error {
+	switch name {
+	case nocodbsnapshotfile.FieldSnapshotID:
+		m.ResetSnapshotID()
+		return nil
+	case nocodbsnapshotfile.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case nocodbsnapshotfile.FieldSha256:
+		m.ResetSha256()
+		return nil
+	}
+	return fmt.Errorf("unknown NocoDBSnapshotFile field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *NocoDBSnapshotFileMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *NocoDBSnapshotFileMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *NocoDBSnapshotFileMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *NocoDBSnapshotFileMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *NocoDBSnapshotFileMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *NocoDBSnapshotFileMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *NocoDBSnapshotFileMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown NocoDBSnapshotFile unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *NocoDBSnapshotFileMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown NocoDBSnapshotFile edge %s", name)
 }
 
 // NotificationChannelMutation represents an operation that mutates the NotificationChannel nodes in the graph.

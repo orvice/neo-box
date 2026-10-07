@@ -5,6 +5,7 @@ package ent
 import (
 	"go.orx.me/apps/neo-box/internal/ent/alert"
 	"go.orx.me/apps/neo-box/internal/ent/connection"
+	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbrestore"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbsnapshot"
 	"go.orx.me/apps/neo-box/internal/ent/notificationchannel"
@@ -48,6 +49,12 @@ func init() {
 	connectionDescStatusMessage := connectionFields[7].Descriptor()
 	// connection.DefaultStatusMessage holds the default value on creation for the status_message field.
 	connection.DefaultStatusMessage = connectionDescStatusMessage.Default.(string)
+	nocodbbackuppolicyFields := schema.NocoDBBackupPolicy{}.Fields()
+	_ = nocodbbackuppolicyFields
+	// nocodbbackuppolicyDescIncludeAttachments is the schema descriptor for include_attachments field.
+	nocodbbackuppolicyDescIncludeAttachments := nocodbbackuppolicyFields[6].Descriptor()
+	// nocodbbackuppolicy.DefaultIncludeAttachments holds the default value on creation for the include_attachments field.
+	nocodbbackuppolicy.DefaultIncludeAttachments = nocodbbackuppolicyDescIncludeAttachments.Default.(bool)
 	nocodbrestoreFields := schema.NocoDBRestore{}.Fields()
 	_ = nocodbrestoreFields
 	// nocodbrestoreDescSourceBaseTitle is the schema descriptor for source_base_title field.
@@ -78,6 +85,10 @@ func init() {
 	nocodbrestoreDescLinkCount := nocodbrestoreFields[14].Descriptor()
 	// nocodbrestore.DefaultLinkCount holds the default value on creation for the link_count field.
 	nocodbrestore.DefaultLinkCount = nocodbrestoreDescLinkCount.Default.(int64)
+	// nocodbrestoreDescFileCount is the schema descriptor for file_count field.
+	nocodbrestoreDescFileCount := nocodbrestoreFields[15].Descriptor()
+	// nocodbrestore.DefaultFileCount holds the default value on creation for the file_count field.
+	nocodbrestore.DefaultFileCount = nocodbrestoreDescFileCount.Default.(int64)
 	nocodbsnapshotFields := schema.NocoDBSnapshot{}.Fields()
 	_ = nocodbsnapshotFields
 	// nocodbsnapshotDescBaseTitle is the schema descriptor for base_title field.
@@ -108,6 +119,22 @@ func init() {
 	nocodbsnapshotDescLinkCount := nocodbsnapshotFields[12].Descriptor()
 	// nocodbsnapshot.DefaultLinkCount holds the default value on creation for the link_count field.
 	nocodbsnapshot.DefaultLinkCount = nocodbsnapshotDescLinkCount.Default.(int64)
+	// nocodbsnapshotDescAttachmentsIncluded is the schema descriptor for attachments_included field.
+	nocodbsnapshotDescAttachmentsIncluded := nocodbsnapshotFields[13].Descriptor()
+	// nocodbsnapshot.DefaultAttachmentsIncluded holds the default value on creation for the attachments_included field.
+	nocodbsnapshot.DefaultAttachmentsIncluded = nocodbsnapshotDescAttachmentsIncluded.Default.(bool)
+	// nocodbsnapshotDescFileCount is the schema descriptor for file_count field.
+	nocodbsnapshotDescFileCount := nocodbsnapshotFields[14].Descriptor()
+	// nocodbsnapshot.DefaultFileCount holds the default value on creation for the file_count field.
+	nocodbsnapshot.DefaultFileCount = nocodbsnapshotDescFileCount.Default.(int64)
+	// nocodbsnapshotDescFileBytes is the schema descriptor for file_bytes field.
+	nocodbsnapshotDescFileBytes := nocodbsnapshotFields[15].Descriptor()
+	// nocodbsnapshot.DefaultFileBytes holds the default value on creation for the file_bytes field.
+	nocodbsnapshot.DefaultFileBytes = nocodbsnapshotDescFileBytes.Default.(int64)
+	// nocodbsnapshotDescFilesMissing is the schema descriptor for files_missing field.
+	nocodbsnapshotDescFilesMissing := nocodbsnapshotFields[16].Descriptor()
+	// nocodbsnapshot.DefaultFilesMissing holds the default value on creation for the files_missing field.
+	nocodbsnapshot.DefaultFilesMissing = nocodbsnapshotDescFilesMissing.Default.(int64)
 	notificationchannelFields := schema.NotificationChannel{}.Fields()
 	_ = notificationchannelFields
 	// notificationchannelDescEnabled is the schema descriptor for enabled field.

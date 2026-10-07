@@ -124,6 +124,26 @@ func LinkCount(v int64) predicate.NocoDBSnapshot {
 	return predicate.NocoDBSnapshot(sql.FieldEQ(FieldLinkCount, v))
 }
 
+// AttachmentsIncluded applies equality check predicate on the "attachments_included" field. It's identical to AttachmentsIncludedEQ.
+func AttachmentsIncluded(v bool) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldEQ(FieldAttachmentsIncluded, v))
+}
+
+// FileCount applies equality check predicate on the "file_count" field. It's identical to FileCountEQ.
+func FileCount(v int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldEQ(FieldFileCount, v))
+}
+
+// FileBytes applies equality check predicate on the "file_bytes" field. It's identical to FileBytesEQ.
+func FileBytes(v int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldEQ(FieldFileBytes, v))
+}
+
+// FilesMissing applies equality check predicate on the "files_missing" field. It's identical to FilesMissingEQ.
+func FilesMissing(v int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldEQ(FieldFilesMissing, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.NocoDBSnapshot {
 	return predicate.NocoDBSnapshot(sql.FieldEQ(FieldCreatedAt, v))
@@ -842,6 +862,136 @@ func LinkCountLT(v int64) predicate.NocoDBSnapshot {
 // LinkCountLTE applies the LTE predicate on the "link_count" field.
 func LinkCountLTE(v int64) predicate.NocoDBSnapshot {
 	return predicate.NocoDBSnapshot(sql.FieldLTE(FieldLinkCount, v))
+}
+
+// AttachmentsIncludedEQ applies the EQ predicate on the "attachments_included" field.
+func AttachmentsIncludedEQ(v bool) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldEQ(FieldAttachmentsIncluded, v))
+}
+
+// AttachmentsIncludedNEQ applies the NEQ predicate on the "attachments_included" field.
+func AttachmentsIncludedNEQ(v bool) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldNEQ(FieldAttachmentsIncluded, v))
+}
+
+// FileCountEQ applies the EQ predicate on the "file_count" field.
+func FileCountEQ(v int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldEQ(FieldFileCount, v))
+}
+
+// FileCountNEQ applies the NEQ predicate on the "file_count" field.
+func FileCountNEQ(v int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldNEQ(FieldFileCount, v))
+}
+
+// FileCountIn applies the In predicate on the "file_count" field.
+func FileCountIn(vs ...int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldIn(FieldFileCount, vs...))
+}
+
+// FileCountNotIn applies the NotIn predicate on the "file_count" field.
+func FileCountNotIn(vs ...int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldNotIn(FieldFileCount, vs...))
+}
+
+// FileCountGT applies the GT predicate on the "file_count" field.
+func FileCountGT(v int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldGT(FieldFileCount, v))
+}
+
+// FileCountGTE applies the GTE predicate on the "file_count" field.
+func FileCountGTE(v int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldGTE(FieldFileCount, v))
+}
+
+// FileCountLT applies the LT predicate on the "file_count" field.
+func FileCountLT(v int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldLT(FieldFileCount, v))
+}
+
+// FileCountLTE applies the LTE predicate on the "file_count" field.
+func FileCountLTE(v int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldLTE(FieldFileCount, v))
+}
+
+// FileBytesEQ applies the EQ predicate on the "file_bytes" field.
+func FileBytesEQ(v int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldEQ(FieldFileBytes, v))
+}
+
+// FileBytesNEQ applies the NEQ predicate on the "file_bytes" field.
+func FileBytesNEQ(v int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldNEQ(FieldFileBytes, v))
+}
+
+// FileBytesIn applies the In predicate on the "file_bytes" field.
+func FileBytesIn(vs ...int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldIn(FieldFileBytes, vs...))
+}
+
+// FileBytesNotIn applies the NotIn predicate on the "file_bytes" field.
+func FileBytesNotIn(vs ...int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldNotIn(FieldFileBytes, vs...))
+}
+
+// FileBytesGT applies the GT predicate on the "file_bytes" field.
+func FileBytesGT(v int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldGT(FieldFileBytes, v))
+}
+
+// FileBytesGTE applies the GTE predicate on the "file_bytes" field.
+func FileBytesGTE(v int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldGTE(FieldFileBytes, v))
+}
+
+// FileBytesLT applies the LT predicate on the "file_bytes" field.
+func FileBytesLT(v int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldLT(FieldFileBytes, v))
+}
+
+// FileBytesLTE applies the LTE predicate on the "file_bytes" field.
+func FileBytesLTE(v int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldLTE(FieldFileBytes, v))
+}
+
+// FilesMissingEQ applies the EQ predicate on the "files_missing" field.
+func FilesMissingEQ(v int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldEQ(FieldFilesMissing, v))
+}
+
+// FilesMissingNEQ applies the NEQ predicate on the "files_missing" field.
+func FilesMissingNEQ(v int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldNEQ(FieldFilesMissing, v))
+}
+
+// FilesMissingIn applies the In predicate on the "files_missing" field.
+func FilesMissingIn(vs ...int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldIn(FieldFilesMissing, vs...))
+}
+
+// FilesMissingNotIn applies the NotIn predicate on the "files_missing" field.
+func FilesMissingNotIn(vs ...int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldNotIn(FieldFilesMissing, vs...))
+}
+
+// FilesMissingGT applies the GT predicate on the "files_missing" field.
+func FilesMissingGT(v int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldGT(FieldFilesMissing, v))
+}
+
+// FilesMissingGTE applies the GTE predicate on the "files_missing" field.
+func FilesMissingGTE(v int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldGTE(FieldFilesMissing, v))
+}
+
+// FilesMissingLT applies the LT predicate on the "files_missing" field.
+func FilesMissingLT(v int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldLT(FieldFilesMissing, v))
+}
+
+// FilesMissingLTE applies the LTE predicate on the "files_missing" field.
+func FilesMissingLTE(v int64) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldLTE(FieldFilesMissing, v))
 }
 
 // TablesIsNil applies the IsNil predicate on the "tables" field.

@@ -31,22 +31,30 @@ one place.
 - **Base** — NocoDB's top-level container of tables (a "project"; IDs start
   with `p`). Neo Box does not store Bases; it lists them live from NocoDB.
 - **Snapshot** — a point-in-time, read-only capture of one Base: the base
-  meta, every table's schema (fields), every record, and every link between
-  records. Content is a gzip JSON document in blob storage; metadata
-  (status, counts, size) is in PostgreSQL. Attachments are captured as their
-  metadata/URLs only, not file bytes. Views are not captured (OSS NocoDB has
-  no v3 views API).
+  meta, every table's schema (fields), every record, every link between
+  records, and the attachment files the records hold (unless the Base's
+  Backup Policy leaves them out). Content is a gzip JSON document in blob
+  storage; metadata (status, counts, size) is in PostgreSQL. Views and
+  webhooks are not captured yet.
+- **Attachment file** — the bytes behind an Attachment value. Stored once
+  per User by content and shared by every Snapshot that holds it; deleted
+  when no Snapshot holds it any more. A file NocoDB can't serve when the
+  Snapshot is taken is recorded as missing rather than failing the
+  Snapshot.
 - **Snapshot trigger** — `manual` (user clicked "Snapshot now") or
   `scheduled` (fired by a Backup Policy).
 - **Backup Policy** — per (Connection, Base): enabled flag, cron expression,
-  and retention N. After a scheduled Snapshot succeeds, scheduled Snapshots
-  beyond the newest N are deleted. Manual Snapshots are never pruned.
+  retention N, and whether to include attachment files (on by default; also
+  followed by manual Snapshots). After a scheduled Snapshot succeeds,
+  scheduled Snapshots beyond the newest N are deleted. Manual Snapshots are
+  never pruned.
 
 - **Restore** — a succeeded Snapshot rebuilt into a **new** Base on one of
   the user's NocoDB Connections (by default the Snapshot's own). A Restore
   never changes an existing Base. It brings back tables, fields (links,
-  lookups, rollups and formulas included), records and links, but not
-  attachments, views, original record IDs, created/modified time and by,
+  lookups, rollups and formulas included), records, links, and attachments
+  (re-uploaded, so with new storage paths) when the Snapshot holds their
+  files, but not views, original record IDs, created/modified time and by,
   AutoNumber values, or User values for people who aren't members of the
   new Base. A Restore that fails partway leaves its partial Base in NocoDB
   and records its ID; trying again builds another new Base.

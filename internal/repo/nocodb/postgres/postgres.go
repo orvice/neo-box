@@ -2,13 +2,20 @@ package postgres
 
 import (
 	"context"
+	stdsql "database/sql"
+	"errors"
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
+
 	"go.orx.me/apps/neo-box/internal/ent"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
+	"go.orx.me/apps/neo-box/internal/ent/nocodbfile"
+	"go.orx.me/apps/neo-box/internal/ent/nocodbfilesource"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbrestore"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbsnapshot"
+	"go.orx.me/apps/neo-box/internal/ent/nocodbsnapshotfile"
 	"go.orx.me/apps/neo-box/internal/ent/predicate"
 	repo "go.orx.me/apps/neo-box/internal/repo/nocodb"
 )
@@ -33,6 +40,7 @@ func (s *Store) UpsertPolicy(ctx context.Context, p *repo.Policy) error {
 		SetEnabled(p.Enabled).
 		SetCron(p.Cron).
 		SetRetention(p.Retention).
+		SetIncludeAttachments(p.IncludeAttachments).
 		SetUpdatedAt(p.UpdatedAt).
 		OnConflictColumns(nocodbbackuppolicy.FieldConnectionID, nocodbbackuppolicy.FieldBaseID).
 		UpdateNewValues().
@@ -90,6 +98,10 @@ func (s *Store) CreateSnapshot(ctx context.Context, snap *repo.Snapshot) error {
 		SetSizeBytes(snap.SizeBytes).
 		SetRecordCount(snap.RecordCount).
 		SetLinkCount(snap.LinkCount).
+		SetAttachmentsIncluded(snap.AttachmentsIncluded).
+		SetFileCount(snap.FileCount).
+		SetFileBytes(snap.FileBytes).
+		SetFilesMissing(snap.FilesMissing).
 		SetCreatedAt(snap.CreatedAt).
 		SetNillableStartedAt(nilIfZero(snap.StartedAt)).
 		SetNillableFinishedAt(nilIfZero(snap.FinishedAt))
@@ -128,7 +140,11 @@ func (s *Store) UpdateSnapshot(ctx context.Context, snap *repo.Snapshot) error {
 		SetObjectKey(snap.ObjectKey).
 		SetSizeBytes(snap.SizeBytes).
 		SetRecordCount(snap.RecordCount).
-		SetLinkCount(snap.LinkCount)
+		SetLinkCount(snap.LinkCount).
+		SetAttachmentsIncluded(snap.AttachmentsIncluded).
+		SetFileCount(snap.FileCount).
+		SetFileBytes(snap.FileBytes).
+		SetFilesMissing(snap.FilesMissing)
 	if snap.Tables == nil {
 		u.ClearTables()
 	} else {
@@ -193,7 +209,19 @@ func (s *Store) ListSnapshots(ctx context.Context, f repo.SnapshotFilter) ([]*re
 }
 
 func (s *Store) DeleteSnapshot(ctx context.Context, id string) error {
-	if _, err := s.client.NocoDBSnapshot.Delete().Where(nocodbsnapshot.ID(id)).Exec(ctx); err != nil {
+	tx, err := s.client.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("delete snapshot: %w", err)
+	}
+	if _, err := tx.NocoDBSnapshotFile.Delete().Where(nocodbsnapshotfile.SnapshotID(id)).Exec(ctx); err != nil {
+		_ = tx.Rollback()
+		return fmt.Errorf("delete snapshot files: %w", err)
+	}
+	if _, err := tx.NocoDBSnapshot.Delete().Where(nocodbsnapshot.ID(id)).Exec(ctx); err != nil {
+		_ = tx.Rollback()
+		return fmt.Errorf("delete snapshot: %w", err)
+	}
+	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("delete snapshot: %w", err)
 	}
 	return nil
@@ -232,6 +260,7 @@ func (s *Store) CreateRestore(ctx context.Context, r *repo.Restore) error {
 		SetTableCount(r.TableCount).
 		SetRecordCount(r.RecordCount).
 		SetLinkCount(r.LinkCount).
+		SetFileCount(r.FileCount).
 		SetCreatedAt(r.CreatedAt).
 		SetNillableStartedAt(nilIfZero(r.StartedAt)).
 		SetNillableFinishedAt(nilIfZero(r.FinishedAt))
@@ -267,7 +296,8 @@ func (s *Store) UpdateRestore(ctx context.Context, r *repo.Restore) error {
 		SetProgress(r.Progress).
 		SetTableCount(r.TableCount).
 		SetRecordCount(r.RecordCount).
-		SetLinkCount(r.LinkCount)
+		SetLinkCount(r.LinkCount).
+		SetFileCount(r.FileCount)
 	if r.Warnings == nil {
 		u.ClearWarnings()
 	} else {
@@ -367,10 +397,121 @@ func (s *Store) FailUnfinishedRestores(ctx context.Context, reason string, at ti
 
 // --- conversions ---
 
+// --- files ---
+
+func (s *Store) FileExists(ctx context.Context, userID, sha256 string) (bool, error) {
+	ok, err := s.client.NocoDBFile.Query().
+		Where(nocodbfile.UserID(userID), nocodbfile.Sha256(sha256)).
+		Exist(ctx)
+	if err != nil {
+		return false, fmt.Errorf("find file: %w", err)
+	}
+	return ok, nil
+}
+
+func (s *Store) CreateFile(ctx context.Context, f *repo.File) error {
+	err := s.client.NocoDBFile.Create().
+		SetUserID(f.UserID).
+		SetSha256(f.SHA256).
+		SetSize(f.Size).
+		SetCreatedAt(f.CreatedAt).
+		OnConflictColumns(nocodbfile.FieldUserID, nocodbfile.FieldSha256).
+		DoNothing().
+		Exec(ctx)
+	// DoNothing on a conflict leaves no row to return.
+	if err != nil && !errors.Is(err, stdsql.ErrNoRows) {
+		return fmt.Errorf("insert file: %w", err)
+	}
+	return nil
+}
+
+func (s *Store) AddSnapshotFile(ctx context.Context, snapshotID, userID, sha256 string) error {
+	err := s.client.NocoDBSnapshotFile.Create().
+		SetSnapshotID(snapshotID).
+		SetUserID(userID).
+		SetSha256(sha256).
+		OnConflictColumns(nocodbsnapshotfile.FieldSnapshotID, nocodbsnapshotfile.FieldSha256).
+		DoNothing().
+		Exec(ctx)
+	if err != nil && !errors.Is(err, stdsql.ErrNoRows) {
+		return fmt.Errorf("insert snapshot file: %w", err)
+	}
+	return nil
+}
+
+func (s *Store) DeleteSnapshotFiles(ctx context.Context, snapshotID string) error {
+	if _, err := s.client.NocoDBSnapshotFile.Delete().Where(nocodbsnapshotfile.SnapshotID(snapshotID)).Exec(ctx); err != nil {
+		return fmt.Errorf("delete snapshot files: %w", err)
+	}
+	return nil
+}
+
+func (s *Store) ListUnusedFiles(ctx context.Context, userID string) ([]string, error) {
+	unused := func(sel *sql.Selector) {
+		refs := sql.Table(nocodbsnapshotfile.Table)
+		sel.Where(sql.Not(sql.Exists(
+			sql.Select(refs.C(nocodbsnapshotfile.FieldID)).From(refs).Where(sql.And(
+				sql.ColumnsEQ(refs.C(nocodbsnapshotfile.FieldUserID), sel.C(nocodbfile.FieldUserID)),
+				sql.ColumnsEQ(refs.C(nocodbsnapshotfile.FieldSha256), sel.C(nocodbfile.FieldSha256)),
+			)),
+		)))
+	}
+	shas, err := s.client.NocoDBFile.Query().
+		Where(nocodbfile.UserID(userID), unused).
+		Select(nocodbfile.FieldSha256).
+		Strings(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("list unused files: %w", err)
+	}
+	return shas, nil
+}
+
+func (s *Store) DeleteFile(ctx context.Context, userID, sha256 string) error {
+	if _, err := s.client.NocoDBFile.Delete().Where(nocodbfile.UserID(userID), nocodbfile.Sha256(sha256)).Exec(ctx); err != nil {
+		return fmt.Errorf("delete file: %w", err)
+	}
+	return nil
+}
+
+func (s *Store) FileSource(ctx context.Context, connectionID, source string, size int64) (string, bool, error) {
+	row, err := s.client.NocoDBFileSource.Query().
+		Where(nocodbfilesource.ConnectionID(connectionID), nocodbfilesource.Source(source), nocodbfilesource.Size(size)).
+		Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return "", false, nil
+		}
+		return "", false, fmt.Errorf("find file source: %w", err)
+	}
+	return row.Sha256, true, nil
+}
+
+func (s *Store) PutFileSource(ctx context.Context, connectionID, source string, size int64, sha256 string) error {
+	err := s.client.NocoDBFileSource.Create().
+		SetConnectionID(connectionID).
+		SetSource(source).
+		SetSize(size).
+		SetSha256(sha256).
+		OnConflictColumns(nocodbfilesource.FieldConnectionID, nocodbfilesource.FieldSource, nocodbfilesource.FieldSize).
+		UpdateSha256().
+		Exec(ctx)
+	if err != nil {
+		return fmt.Errorf("upsert file source: %w", err)
+	}
+	return nil
+}
+
+func (s *Store) DeleteFileSourcesForConnection(ctx context.Context, connectionID string) error {
+	if _, err := s.client.NocoDBFileSource.Delete().Where(nocodbfilesource.ConnectionID(connectionID)).Exec(ctx); err != nil {
+		return fmt.Errorf("delete file sources: %w", err)
+	}
+	return nil
+}
+
 func policyFromRow(r *ent.NocoDBBackupPolicy) *repo.Policy {
 	return &repo.Policy{
 		ConnectionID: r.ConnectionID, BaseID: r.BaseID, UserID: r.UserID, Enabled: r.Enabled,
-		Cron: r.Cron, Retention: r.Retention, UpdatedAt: r.UpdatedAt,
+		Cron: r.Cron, Retention: r.Retention, IncludeAttachments: r.IncludeAttachments, UpdatedAt: r.UpdatedAt,
 	}
 }
 
@@ -379,7 +520,8 @@ func snapshotFromRow(r *ent.NocoDBSnapshot) *repo.Snapshot {
 		ID: r.ID, UserID: r.UserID, ConnectionID: r.ConnectionID, BaseID: r.BaseID, BaseTitle: r.BaseTitle,
 		Status: repo.SnapshotStatus(r.Status), Trigger: repo.SnapshotTrigger(r.Trigger), Error: r.Error,
 		Progress: r.Progress, ObjectKey: r.ObjectKey, SizeBytes: r.SizeBytes, RecordCount: r.RecordCount,
-		LinkCount: r.LinkCount, Tables: r.Tables, CreatedAt: r.CreatedAt,
+		LinkCount: r.LinkCount, AttachmentsIncluded: r.AttachmentsIncluded, FileCount: r.FileCount,
+		FileBytes: r.FileBytes, FilesMissing: r.FilesMissing, Tables: r.Tables, CreatedAt: r.CreatedAt,
 		StartedAt: zeroIfNil(r.StartedAt), FinishedAt: zeroIfNil(r.FinishedAt),
 	}
 }
@@ -390,7 +532,8 @@ func restoreFromRow(r *ent.NocoDBRestore) *repo.Restore {
 		SourceConnectionID: r.SourceConnectionID, SourceBaseID: r.SourceBaseID, SourceBaseTitle: r.SourceBaseTitle,
 		TargetConnectionID: r.TargetConnectionID, TargetBaseID: r.TargetBaseID, TargetBaseTitle: r.TargetBaseTitle,
 		Status: repo.RestoreStatus(r.Status), Error: r.Error, Progress: r.Progress,
-		TableCount: r.TableCount, RecordCount: r.RecordCount, LinkCount: r.LinkCount, Warnings: r.Warnings,
+		TableCount: r.TableCount, RecordCount: r.RecordCount, LinkCount: r.LinkCount, FileCount: r.FileCount,
+		Warnings:  r.Warnings,
 		CreatedAt: r.CreatedAt, StartedAt: zeroIfNil(r.StartedAt), FinishedAt: zeroIfNil(r.FinishedAt),
 	}
 }

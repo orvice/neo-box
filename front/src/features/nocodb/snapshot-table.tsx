@@ -72,7 +72,9 @@ export function SnapshotTable({
         s.status === SnapshotStatus.SUCCEEDED ? (
           <div className='text-xs text-muted-foreground'>
             {s.tables.length} tables · {formatCount(s.recordCount)} records ·{' '}
-            {formatCount(s.linkCount)} links · {formatBytes(s.sizeBytes)}
+            {formatCount(s.linkCount)} links
+            {s.fileCount > 0 && ` · ${formatCount(s.fileCount)} files`} ·{' '}
+            {formatBytes(s.sizeBytes)}
           </div>
         ) : (
           <span className='text-xs text-muted-foreground'>-</span>

@@ -159,6 +159,7 @@ export function RestoreTable({
             <div className='text-xs text-muted-foreground'>
               {r.tableCount} tables · {formatCount(r.recordCount)} records ·{' '}
               {formatCount(r.linkCount)} links
+              {r.fileCount > 0 && ` · ${formatCount(r.fileCount)} files`}
             </div>
             {r.warnings.length > 0 && (
               <Button

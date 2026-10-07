@@ -152,6 +152,62 @@ func (_c *NocoDBSnapshotCreate) SetNillableLinkCount(v *int64) *NocoDBSnapshotCr
 	return _c
 }
 
+// SetAttachmentsIncluded sets the "attachments_included" field.
+func (_c *NocoDBSnapshotCreate) SetAttachmentsIncluded(v bool) *NocoDBSnapshotCreate {
+	_c.mutation.SetAttachmentsIncluded(v)
+	return _c
+}
+
+// SetNillableAttachmentsIncluded sets the "attachments_included" field if the given value is not nil.
+func (_c *NocoDBSnapshotCreate) SetNillableAttachmentsIncluded(v *bool) *NocoDBSnapshotCreate {
+	if v != nil {
+		_c.SetAttachmentsIncluded(*v)
+	}
+	return _c
+}
+
+// SetFileCount sets the "file_count" field.
+func (_c *NocoDBSnapshotCreate) SetFileCount(v int64) *NocoDBSnapshotCreate {
+	_c.mutation.SetFileCount(v)
+	return _c
+}
+
+// SetNillableFileCount sets the "file_count" field if the given value is not nil.
+func (_c *NocoDBSnapshotCreate) SetNillableFileCount(v *int64) *NocoDBSnapshotCreate {
+	if v != nil {
+		_c.SetFileCount(*v)
+	}
+	return _c
+}
+
+// SetFileBytes sets the "file_bytes" field.
+func (_c *NocoDBSnapshotCreate) SetFileBytes(v int64) *NocoDBSnapshotCreate {
+	_c.mutation.SetFileBytes(v)
+	return _c
+}
+
+// SetNillableFileBytes sets the "file_bytes" field if the given value is not nil.
+func (_c *NocoDBSnapshotCreate) SetNillableFileBytes(v *int64) *NocoDBSnapshotCreate {
+	if v != nil {
+		_c.SetFileBytes(*v)
+	}
+	return _c
+}
+
+// SetFilesMissing sets the "files_missing" field.
+func (_c *NocoDBSnapshotCreate) SetFilesMissing(v int64) *NocoDBSnapshotCreate {
+	_c.mutation.SetFilesMissing(v)
+	return _c
+}
+
+// SetNillableFilesMissing sets the "files_missing" field if the given value is not nil.
+func (_c *NocoDBSnapshotCreate) SetNillableFilesMissing(v *int64) *NocoDBSnapshotCreate {
+	if v != nil {
+		_c.SetFilesMissing(*v)
+	}
+	return _c
+}
+
 // SetTables sets the "tables" field.
 func (_c *NocoDBSnapshotCreate) SetTables(v []nocodb.SnapshotTable) *NocoDBSnapshotCreate {
 	_c.mutation.SetTables(v)
@@ -261,6 +317,22 @@ func (_c *NocoDBSnapshotCreate) defaults() {
 		v := nocodbsnapshot.DefaultLinkCount
 		_c.mutation.SetLinkCount(v)
 	}
+	if _, ok := _c.mutation.AttachmentsIncluded(); !ok {
+		v := nocodbsnapshot.DefaultAttachmentsIncluded
+		_c.mutation.SetAttachmentsIncluded(v)
+	}
+	if _, ok := _c.mutation.FileCount(); !ok {
+		v := nocodbsnapshot.DefaultFileCount
+		_c.mutation.SetFileCount(v)
+	}
+	if _, ok := _c.mutation.FileBytes(); !ok {
+		v := nocodbsnapshot.DefaultFileBytes
+		_c.mutation.SetFileBytes(v)
+	}
+	if _, ok := _c.mutation.FilesMissing(); !ok {
+		v := nocodbsnapshot.DefaultFilesMissing
+		_c.mutation.SetFilesMissing(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -300,6 +372,18 @@ func (_c *NocoDBSnapshotCreate) check() error {
 	}
 	if _, ok := _c.mutation.LinkCount(); !ok {
 		return &ValidationError{Name: "link_count", err: errors.New(`ent: missing required field "NocoDBSnapshot.link_count"`)}
+	}
+	if _, ok := _c.mutation.AttachmentsIncluded(); !ok {
+		return &ValidationError{Name: "attachments_included", err: errors.New(`ent: missing required field "NocoDBSnapshot.attachments_included"`)}
+	}
+	if _, ok := _c.mutation.FileCount(); !ok {
+		return &ValidationError{Name: "file_count", err: errors.New(`ent: missing required field "NocoDBSnapshot.file_count"`)}
+	}
+	if _, ok := _c.mutation.FileBytes(); !ok {
+		return &ValidationError{Name: "file_bytes", err: errors.New(`ent: missing required field "NocoDBSnapshot.file_bytes"`)}
+	}
+	if _, ok := _c.mutation.FilesMissing(); !ok {
+		return &ValidationError{Name: "files_missing", err: errors.New(`ent: missing required field "NocoDBSnapshot.files_missing"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "NocoDBSnapshot.created_at"`)}
@@ -387,6 +471,22 @@ func (_c *NocoDBSnapshotCreate) createSpec() (*NocoDBSnapshot, *sqlgraph.CreateS
 	if value, ok := _c.mutation.LinkCount(); ok {
 		_spec.SetField(nocodbsnapshot.FieldLinkCount, field.TypeInt64, value)
 		_node.LinkCount = value
+	}
+	if value, ok := _c.mutation.AttachmentsIncluded(); ok {
+		_spec.SetField(nocodbsnapshot.FieldAttachmentsIncluded, field.TypeBool, value)
+		_node.AttachmentsIncluded = value
+	}
+	if value, ok := _c.mutation.FileCount(); ok {
+		_spec.SetField(nocodbsnapshot.FieldFileCount, field.TypeInt64, value)
+		_node.FileCount = value
+	}
+	if value, ok := _c.mutation.FileBytes(); ok {
+		_spec.SetField(nocodbsnapshot.FieldFileBytes, field.TypeInt64, value)
+		_node.FileBytes = value
+	}
+	if value, ok := _c.mutation.FilesMissing(); ok {
+		_spec.SetField(nocodbsnapshot.FieldFilesMissing, field.TypeInt64, value)
+		_node.FilesMissing = value
 	}
 	if value, ok := _c.mutation.Tables(); ok {
 		_spec.SetField(nocodbsnapshot.FieldTables, field.TypeJSON, value)
@@ -567,6 +667,72 @@ func (u *NocoDBSnapshotUpsert) UpdateLinkCount() *NocoDBSnapshotUpsert {
 // AddLinkCount adds v to the "link_count" field.
 func (u *NocoDBSnapshotUpsert) AddLinkCount(v int64) *NocoDBSnapshotUpsert {
 	u.Add(nocodbsnapshot.FieldLinkCount, v)
+	return u
+}
+
+// SetAttachmentsIncluded sets the "attachments_included" field.
+func (u *NocoDBSnapshotUpsert) SetAttachmentsIncluded(v bool) *NocoDBSnapshotUpsert {
+	u.Set(nocodbsnapshot.FieldAttachmentsIncluded, v)
+	return u
+}
+
+// UpdateAttachmentsIncluded sets the "attachments_included" field to the value that was provided on create.
+func (u *NocoDBSnapshotUpsert) UpdateAttachmentsIncluded() *NocoDBSnapshotUpsert {
+	u.SetExcluded(nocodbsnapshot.FieldAttachmentsIncluded)
+	return u
+}
+
+// SetFileCount sets the "file_count" field.
+func (u *NocoDBSnapshotUpsert) SetFileCount(v int64) *NocoDBSnapshotUpsert {
+	u.Set(nocodbsnapshot.FieldFileCount, v)
+	return u
+}
+
+// UpdateFileCount sets the "file_count" field to the value that was provided on create.
+func (u *NocoDBSnapshotUpsert) UpdateFileCount() *NocoDBSnapshotUpsert {
+	u.SetExcluded(nocodbsnapshot.FieldFileCount)
+	return u
+}
+
+// AddFileCount adds v to the "file_count" field.
+func (u *NocoDBSnapshotUpsert) AddFileCount(v int64) *NocoDBSnapshotUpsert {
+	u.Add(nocodbsnapshot.FieldFileCount, v)
+	return u
+}
+
+// SetFileBytes sets the "file_bytes" field.
+func (u *NocoDBSnapshotUpsert) SetFileBytes(v int64) *NocoDBSnapshotUpsert {
+	u.Set(nocodbsnapshot.FieldFileBytes, v)
+	return u
+}
+
+// UpdateFileBytes sets the "file_bytes" field to the value that was provided on create.
+func (u *NocoDBSnapshotUpsert) UpdateFileBytes() *NocoDBSnapshotUpsert {
+	u.SetExcluded(nocodbsnapshot.FieldFileBytes)
+	return u
+}
+
+// AddFileBytes adds v to the "file_bytes" field.
+func (u *NocoDBSnapshotUpsert) AddFileBytes(v int64) *NocoDBSnapshotUpsert {
+	u.Add(nocodbsnapshot.FieldFileBytes, v)
+	return u
+}
+
+// SetFilesMissing sets the "files_missing" field.
+func (u *NocoDBSnapshotUpsert) SetFilesMissing(v int64) *NocoDBSnapshotUpsert {
+	u.Set(nocodbsnapshot.FieldFilesMissing, v)
+	return u
+}
+
+// UpdateFilesMissing sets the "files_missing" field to the value that was provided on create.
+func (u *NocoDBSnapshotUpsert) UpdateFilesMissing() *NocoDBSnapshotUpsert {
+	u.SetExcluded(nocodbsnapshot.FieldFilesMissing)
+	return u
+}
+
+// AddFilesMissing adds v to the "files_missing" field.
+func (u *NocoDBSnapshotUpsert) AddFilesMissing(v int64) *NocoDBSnapshotUpsert {
+	u.Add(nocodbsnapshot.FieldFilesMissing, v)
 	return u
 }
 
@@ -817,6 +983,83 @@ func (u *NocoDBSnapshotUpsertOne) AddLinkCount(v int64) *NocoDBSnapshotUpsertOne
 func (u *NocoDBSnapshotUpsertOne) UpdateLinkCount() *NocoDBSnapshotUpsertOne {
 	return u.Update(func(s *NocoDBSnapshotUpsert) {
 		s.UpdateLinkCount()
+	})
+}
+
+// SetAttachmentsIncluded sets the "attachments_included" field.
+func (u *NocoDBSnapshotUpsertOne) SetAttachmentsIncluded(v bool) *NocoDBSnapshotUpsertOne {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.SetAttachmentsIncluded(v)
+	})
+}
+
+// UpdateAttachmentsIncluded sets the "attachments_included" field to the value that was provided on create.
+func (u *NocoDBSnapshotUpsertOne) UpdateAttachmentsIncluded() *NocoDBSnapshotUpsertOne {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.UpdateAttachmentsIncluded()
+	})
+}
+
+// SetFileCount sets the "file_count" field.
+func (u *NocoDBSnapshotUpsertOne) SetFileCount(v int64) *NocoDBSnapshotUpsertOne {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.SetFileCount(v)
+	})
+}
+
+// AddFileCount adds v to the "file_count" field.
+func (u *NocoDBSnapshotUpsertOne) AddFileCount(v int64) *NocoDBSnapshotUpsertOne {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.AddFileCount(v)
+	})
+}
+
+// UpdateFileCount sets the "file_count" field to the value that was provided on create.
+func (u *NocoDBSnapshotUpsertOne) UpdateFileCount() *NocoDBSnapshotUpsertOne {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.UpdateFileCount()
+	})
+}
+
+// SetFileBytes sets the "file_bytes" field.
+func (u *NocoDBSnapshotUpsertOne) SetFileBytes(v int64) *NocoDBSnapshotUpsertOne {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.SetFileBytes(v)
+	})
+}
+
+// AddFileBytes adds v to the "file_bytes" field.
+func (u *NocoDBSnapshotUpsertOne) AddFileBytes(v int64) *NocoDBSnapshotUpsertOne {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.AddFileBytes(v)
+	})
+}
+
+// UpdateFileBytes sets the "file_bytes" field to the value that was provided on create.
+func (u *NocoDBSnapshotUpsertOne) UpdateFileBytes() *NocoDBSnapshotUpsertOne {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.UpdateFileBytes()
+	})
+}
+
+// SetFilesMissing sets the "files_missing" field.
+func (u *NocoDBSnapshotUpsertOne) SetFilesMissing(v int64) *NocoDBSnapshotUpsertOne {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.SetFilesMissing(v)
+	})
+}
+
+// AddFilesMissing adds v to the "files_missing" field.
+func (u *NocoDBSnapshotUpsertOne) AddFilesMissing(v int64) *NocoDBSnapshotUpsertOne {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.AddFilesMissing(v)
+	})
+}
+
+// UpdateFilesMissing sets the "files_missing" field to the value that was provided on create.
+func (u *NocoDBSnapshotUpsertOne) UpdateFilesMissing() *NocoDBSnapshotUpsertOne {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.UpdateFilesMissing()
 	})
 }
 
@@ -1243,6 +1486,83 @@ func (u *NocoDBSnapshotUpsertBulk) AddLinkCount(v int64) *NocoDBSnapshotUpsertBu
 func (u *NocoDBSnapshotUpsertBulk) UpdateLinkCount() *NocoDBSnapshotUpsertBulk {
 	return u.Update(func(s *NocoDBSnapshotUpsert) {
 		s.UpdateLinkCount()
+	})
+}
+
+// SetAttachmentsIncluded sets the "attachments_included" field.
+func (u *NocoDBSnapshotUpsertBulk) SetAttachmentsIncluded(v bool) *NocoDBSnapshotUpsertBulk {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.SetAttachmentsIncluded(v)
+	})
+}
+
+// UpdateAttachmentsIncluded sets the "attachments_included" field to the value that was provided on create.
+func (u *NocoDBSnapshotUpsertBulk) UpdateAttachmentsIncluded() *NocoDBSnapshotUpsertBulk {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.UpdateAttachmentsIncluded()
+	})
+}
+
+// SetFileCount sets the "file_count" field.
+func (u *NocoDBSnapshotUpsertBulk) SetFileCount(v int64) *NocoDBSnapshotUpsertBulk {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.SetFileCount(v)
+	})
+}
+
+// AddFileCount adds v to the "file_count" field.
+func (u *NocoDBSnapshotUpsertBulk) AddFileCount(v int64) *NocoDBSnapshotUpsertBulk {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.AddFileCount(v)
+	})
+}
+
+// UpdateFileCount sets the "file_count" field to the value that was provided on create.
+func (u *NocoDBSnapshotUpsertBulk) UpdateFileCount() *NocoDBSnapshotUpsertBulk {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.UpdateFileCount()
+	})
+}
+
+// SetFileBytes sets the "file_bytes" field.
+func (u *NocoDBSnapshotUpsertBulk) SetFileBytes(v int64) *NocoDBSnapshotUpsertBulk {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.SetFileBytes(v)
+	})
+}
+
+// AddFileBytes adds v to the "file_bytes" field.
+func (u *NocoDBSnapshotUpsertBulk) AddFileBytes(v int64) *NocoDBSnapshotUpsertBulk {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.AddFileBytes(v)
+	})
+}
+
+// UpdateFileBytes sets the "file_bytes" field to the value that was provided on create.
+func (u *NocoDBSnapshotUpsertBulk) UpdateFileBytes() *NocoDBSnapshotUpsertBulk {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.UpdateFileBytes()
+	})
+}
+
+// SetFilesMissing sets the "files_missing" field.
+func (u *NocoDBSnapshotUpsertBulk) SetFilesMissing(v int64) *NocoDBSnapshotUpsertBulk {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.SetFilesMissing(v)
+	})
+}
+
+// AddFilesMissing adds v to the "files_missing" field.
+func (u *NocoDBSnapshotUpsertBulk) AddFilesMissing(v int64) *NocoDBSnapshotUpsertBulk {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.AddFilesMissing(v)
+	})
+}
+
+// UpdateFilesMissing sets the "files_missing" field to the value that was provided on create.
+func (u *NocoDBSnapshotUpsertBulk) UpdateFilesMissing() *NocoDBSnapshotUpsertBulk {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.UpdateFilesMissing()
 	})
 }
 

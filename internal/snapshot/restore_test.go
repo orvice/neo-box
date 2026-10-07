@@ -36,6 +36,9 @@ type fakeNoco struct {
 	failInsert func(fields map[string]json.RawMessage) bool
 	failAfter  int // fail with a 500 after this many inserts (0: never)
 	inserts    int
+	uploads    [][]string // titles per upload request
+	updates    []map[string]json.RawMessage
+	failUpload func(files []nocodb.UploadFile) bool
 }
 
 type fakeTable struct {
@@ -214,6 +217,26 @@ func (f *fakeNoco) ListBaseUserEmails(context.Context, string) ([]string, error)
 	return f.members, nil
 }
 
+func (f *fakeNoco) UploadFiles(_ context.Context, files []nocodb.UploadFile) ([]json.RawMessage, error) {
+	if f.failUpload != nil && f.failUpload(files) {
+		return nil, &nocodb.APIError{StatusCode: 413, Message: "too large"}
+	}
+	var titles []string
+	var out []json.RawMessage
+	for _, file := range files {
+		titles = append(titles, file.Title+"="+string(file.Content))
+		raw, _ := json.Marshal(map[string]any{"path": "download/new/" + file.Title, "title": file.Title, "mimetype": file.Mimetype, "size": len(file.Content)})
+		out = append(out, raw)
+	}
+	f.uploads = append(f.uploads, titles)
+	return out, nil
+}
+
+func (f *fakeNoco) UpdateRecordsV2(_ context.Context, _ string, rows []map[string]json.RawMessage) error {
+	f.updates = append(f.updates, rows...)
+	return nil
+}
+
 func (f *fakeNoco) tableByTitle(title string) *fakeTable {
 	for _, id := range f.order {
 		if f.tables[id].title == title {
@@ -297,13 +320,13 @@ func restoreFixture(t *testing.T, version int) []byte {
 	if version == FormatVersion {
 		return buf.Bytes()
 	}
-	// Rewrite the version for the unsupported-version test.
+	// Rewrite the version for the older and unsupported version tests.
 	zr, err := gzip.NewReader(&buf)
 	if err != nil {
 		t.Fatal(err)
 	}
 	doc, _ := io.ReadAll(zr)
-	doc = bytes.Replace(doc, []byte(`"version":1`), []byte(fmt.Sprintf(`"version":%d`, version)), 1)
+	doc = bytes.Replace(doc, []byte(fmt.Sprintf(`"version":%d`, FormatVersion)), []byte(fmt.Sprintf(`"version":%d`, version)), 1)
 	var out bytes.Buffer
 	zw := gzip.NewWriter(&out)
 	_, _ = zw.Write(doc)
@@ -448,10 +471,26 @@ func TestRestoreFailureKeepsReport(t *testing.T) {
 	}
 }
 
+func TestRestoreReadsVersion1(t *testing.T) {
+	api := newFakeNoco()
+	report, err := Restore(context.Background(), api, opener(restoreFixture(t, 1)), RestoreOptions{Title: "x"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if report.RecordCount != 6 || len(api.uploads) != 0 {
+		t.Fatalf("records = %d, uploads = %v", report.RecordCount, api.uploads)
+	}
+	for _, w := range report.Warnings {
+		if w.Code == WarnAttachmentsSkipped && (w.Count != 2 || w.Message != "the snapshot holds no attachment files") {
+			t.Fatalf("attachments warning = %+v", w)
+		}
+	}
+}
+
 func TestRestoreRejectsUnknownVersion(t *testing.T) {
 	api := newFakeNoco()
-	_, err := Restore(context.Background(), api, opener(restoreFixture(t, 2)), RestoreOptions{Title: "x"})
-	if err == nil || !strings.Contains(err.Error(), "version 2") {
+	_, err := Restore(context.Background(), api, opener(restoreFixture(t, FormatVersion+1)), RestoreOptions{Title: "x"})
+	if err == nil || !strings.Contains(err.Error(), fmt.Sprintf("version %d", FormatVersion+1)) {
 		t.Fatalf("err = %v", err)
 	}
 	if len(api.tables) != 0 {
