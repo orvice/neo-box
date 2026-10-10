@@ -1,0 +1,363 @@
+syntax = "proto3";
+
+package neobox.v1;
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+import "validate/validate.proto";
+
+option go_package = "go.orx.me/apps/neo-box/pkg/proto/neobox/v1;neoboxv1";
+
+// CloudflareService reads the resources the API token of a Cloudflare
+// connection can see in the connection's Account (Zones, DNS records,
+// Workers, Pages projects) and changes DNS records. Everything is read live
+// from Cloudflare; only DNS operations started here are stored.
+//
+// connection_id must be the caller's Cloudflare connection; anything else
+// is NotFound. A module the token has no permission for fails with
+// PermissionDenied; a token Cloudflare no longer accepts fails with
+// FailedPrecondition and marks the connection's status as error.
+service CloudflareService {
+  // ListCloudflareZones pages through the Account's Zones, optionally those
+  // whose name contains query.
+  rpc ListCloudflareZones(ListCloudflareZonesRequest) returns (ListCloudflareZonesResponse);
+  rpc GetCloudflareZone(GetCloudflareZoneRequest) returns (GetCloudflareZoneResponse);
+  // ListCloudflareDNSRecords pages through a Zone's DNS records, optionally
+  // those matching query.
+  rpc ListCloudflareDNSRecords(ListCloudflareDNSRecordsRequest) returns (ListCloudflareDNSRecordsResponse);
+  rpc CreateCloudflareDNSRecord(CreateCloudflareDNSRecordRequest) returns (CreateCloudflareDNSRecordResponse);
+  // UpdateCloudflareDNSRecord changes the fields the form shows and keeps
+  // every other attribute of the record (comment, tags, settings, ...).
+  rpc UpdateCloudflareDNSRecord(UpdateCloudflareDNSRecordRequest) returns (UpdateCloudflareDNSRecordResponse);
+  // SetCloudflareDNSRecordProxied changes only the proxy status.
+  rpc SetCloudflareDNSRecordProxied(SetCloudflareDNSRecordProxiedRequest) returns (SetCloudflareDNSRecordProxiedResponse);
+  rpc DeleteCloudflareDNSRecord(DeleteCloudflareDNSRecordRequest) returns (DeleteCloudflareDNSRecordResponse);
+  // ListCloudflareDNSOperations lists the DNS changes started from Neo Box
+  // for a connection (and Zone), newest first.
+  rpc ListCloudflareDNSOperations(ListCloudflareDNSOperationsRequest) returns (ListCloudflareDNSOperationsResponse);
+  rpc ListCloudflareWorkers(ListCloudflareWorkersRequest) returns (ListCloudflareWorkersResponse);
+  rpc ListCloudflarePagesProjects(ListCloudflarePagesProjectsRequest) returns (ListCloudflarePagesProjectsResponse);
+}
+
+// CloudflarePageInfo describes one page of a list.
+message CloudflarePageInfo {
+  // 1-based.
+  int32 page = 1;
+  int32 page_size = 2;
+  int64 total_count = 3;
+  int32 total_pages = 4;
+}
+
+// CloudflareRecordAccess is what the token may do with a Zone's DNS records,
+// as far as Cloudflare says. Cloudflare does not tell an API token's own
+// permissions, only the token owner's legacy Zone permissions, which can
+// rule edits out but never confirm them.
+enum CloudflareRecordAccess {
+  CLOUDFLARE_RECORD_ACCESS_UNSPECIFIED = 0;
+  // Not known whether the token may change records; Cloudflare refuses
+  // changes it does not allow.
+  CLOUDFLARE_RECORD_ACCESS_UNKNOWN = 1;
+  // Records can be read but not changed; changes are refused.
+  CLOUDFLARE_RECORD_ACCESS_READ = 2;
+}
+
+message CloudflareZone {
+  string id = 1;
+  string name = 2;
+  // active, pending, initializing, moved, deleted, deactivated.
+  string status = 3;
+  bool paused = 4;
+  // full, partial, secondary, internal.
+  string type = 5;
+  repeated string name_servers = 6;
+  CloudflareRecordAccess dns_access = 7;
+}
+
+message CloudflareSRVData {
+  int32 priority = 1;
+  int32 weight = 2;
+  int32 port = 3;
+  string target = 4;
+}
+
+message CloudflareCAAData {
+  int32 flags = 1;
+  // issue, issuewild or iodef.
+  string tag = 2;
+  string value = 3;
+}
+
+message CloudflareDNSRecord {
+  string id = 1;
+  string type = 2;
+  string name = 3;
+  // For SRV and CAA, Cloudflare's rendering of the structured data.
+  string content = 4;
+  // Seconds; 1 means automatic.
+  int32 ttl = 5;
+  bool proxied = 6;
+  // Whether Cloudflare can proxy this record.
+  bool proxiable = 7;
+  // MX priority.
+  int32 priority = 8;
+  CloudflareSRVData srv = 9;
+  CloudflareCAAData caa = 10;
+  string comment = 11;
+  repeated string tags = 12;
+  // Whether Neo Box edits this type (A, AAAA, CNAME, TXT, MX, NS, SRV,
+  // CAA); other types are read-only here.
+  bool editable = 13;
+  google.protobuf.Timestamp created_on = 14;
+  google.protobuf.Timestamp modified_on = 15;
+}
+
+// CloudflareDNSRecordInput is a record as entered in the form. Fields the
+// type does not use are ignored.
+message CloudflareDNSRecordInput {
+  // Fixed on update.
+  string type = 1;
+  string name = 2;
+  // A, AAAA, CNAME, TXT, MX, NS.
+  string content = 3;
+  // 1 (automatic) or 30..86400 seconds.
+  int32 ttl = 4;
+  // A, AAAA and CNAME only.
+  bool proxied = 5;
+  // MX.
+  int32 priority = 6;
+  CloudflareSRVData srv = 7;
+  CloudflareCAAData caa = 8;
+}
+
+enum CloudflareRecordAction {
+  CLOUDFLARE_RECORD_ACTION_UNSPECIFIED = 0;
+  CLOUDFLARE_RECORD_ACTION_CREATE = 1;
+  CLOUDFLARE_RECORD_ACTION_UPDATE = 2;
+  CLOUDFLARE_RECORD_ACTION_DELETE = 3;
+  CLOUDFLARE_RECORD_ACTION_SET_PROXIED = 4;
+}
+
+enum CloudflareOperationStatus {
+  CLOUDFLARE_OPERATION_STATUS_UNSPECIFIED = 0;
+  // Recorded before the change was sent; no outcome was recorded after it.
+  CLOUDFLARE_OPERATION_STATUS_PENDING = 1;
+  CLOUDFLARE_OPERATION_STATUS_SUCCEEDED = 2;
+  CLOUDFLARE_OPERATION_STATUS_FAILED = 3;
+  // Sent, but Cloudflare's answer never arrived (e.g. a timeout); the
+  // change may or may not have been made.
+  CLOUDFLARE_OPERATION_STATUS_UNKNOWN = 4;
+}
+
+// CloudflareDNSOperation is one DNS change started from Neo Box.
+message CloudflareDNSOperation {
+  string id = 1;
+  string connection_id = 2;
+  string account_id = 3;
+  string zone_id = 4;
+  string zone_name = 5;
+  CloudflareRecordAction action = 6;
+  // Empty for a create that did not succeed.
+  string record_id = 7;
+  string record_type = 8;
+  string record_name = 9;
+  // The record before the change; unset for a create.
+  CloudflareDNSRecord before = 10;
+  // The record Cloudflare returned after the change; unset for a delete
+  // and for anything that did not succeed.
+  CloudflareDNSRecord after = 11;
+  CloudflareOperationStatus status = 12;
+  // Why it failed or is unknown.
+  string error = 13;
+  // Who started it.
+  string actor_id = 14;
+  string actor_name = 15;
+  google.protobuf.Timestamp created_at = 16;
+  google.protobuf.Timestamp finished_at = 17;
+  // The change as sent to Cloudflare (record fields only); unset for a
+  // delete. For a failed or unknown change it is what may have been asked
+  // for, never what Cloudflare confirmed.
+  google.protobuf.Struct requested = 18;
+}
+
+enum CloudflareAddressKind {
+  CLOUDFLARE_ADDRESS_KIND_UNSPECIFIED = 0;
+  // <script>.<subdomain>.workers.dev
+  CLOUDFLARE_ADDRESS_KIND_WORKERS_DEV = 1;
+  CLOUDFLARE_ADDRESS_KIND_CUSTOM_DOMAIN = 2;
+  // A Worker route pattern; may contain wildcards.
+  CLOUDFLARE_ADDRESS_KIND_ROUTE = 3;
+  // <project>.pages.dev
+  CLOUDFLARE_ADDRESS_KIND_PAGES_DEV = 4;
+  // The URL of a Pages project's production deployment.
+  CLOUDFLARE_ADDRESS_KIND_PRODUCTION = 5;
+}
+
+// CloudflareAddress is one way to reach a Worker or Pages project.
+message CloudflareAddress {
+  // An https URL, or for a route its pattern as configured.
+  string url = 1;
+  CloudflareAddressKind kind = 2;
+  // A Pages custom domain's status (active, pending, ...), or "unknown"
+  // when it could not be read; such a domain may not answer yet.
+  string status = 3;
+}
+
+// CloudflareAddressIssue says an address source could not be read, so the
+// addresses shown may be incomplete.
+message CloudflareAddressIssue {
+  // e.g. "workers.dev subdomain", "Worker custom domains", "Worker routes".
+  string source = 1;
+  string message = 2;
+  // The token lacks the permission to read the source.
+  bool permission_denied = 3;
+}
+
+message CloudflareWorker {
+  // The script name.
+  string name = 1;
+  repeated CloudflareAddress addresses = 2;
+  // A source of this Worker's addresses could not be read.
+  bool addresses_incomplete = 3;
+}
+
+message CloudflarePagesProject {
+  string name = 1;
+  repeated CloudflareAddress addresses = 2;
+  bool addresses_incomplete = 3;
+}
+
+message ListCloudflareZonesRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  // Part of the Zone name; empty lists every Zone.
+  string query = 2;
+  // 1-based; 0 means 1.
+  int32 page = 3;
+  // 0 means 20; at most 50.
+  int32 page_size = 4;
+}
+
+message ListCloudflareZonesResponse {
+  repeated CloudflareZone zones = 1;
+  CloudflarePageInfo page_info = 2;
+}
+
+message GetCloudflareZoneRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string zone_id = 2 [(validate.rules).string.min_len = 1];
+}
+
+message GetCloudflareZoneResponse {
+  CloudflareZone zone = 1;
+}
+
+message ListCloudflareDNSRecordsRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string zone_id = 2 [(validate.rules).string.min_len = 1];
+  // Matched by Cloudflare against name, content, comment and tags.
+  string query = 3;
+  // Only records of this type; empty lists every type.
+  string type = 4;
+  int32 page = 5;
+  // 0 means 50; at most 500.
+  int32 page_size = 6;
+}
+
+message ListCloudflareDNSRecordsResponse {
+  repeated CloudflareDNSRecord records = 1;
+  CloudflarePageInfo page_info = 2;
+}
+
+message CreateCloudflareDNSRecordRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string zone_id = 2 [(validate.rules).string.min_len = 1];
+  CloudflareDNSRecordInput record = 3 [(validate.rules).message.required = true];
+}
+
+message CreateCloudflareDNSRecordResponse {
+  CloudflareDNSRecord record = 1;
+  CloudflareDNSOperation operation = 2;
+  // Set when the change was made but its outcome could not be added to the
+  // operation log, which then shows it as pending.
+  string operation_log_error = 3;
+}
+
+message UpdateCloudflareDNSRecordRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string zone_id = 2 [(validate.rules).string.min_len = 1];
+  string record_id = 3 [(validate.rules).string.min_len = 1];
+  CloudflareDNSRecordInput record = 4 [(validate.rules).message.required = true];
+}
+
+message UpdateCloudflareDNSRecordResponse {
+  CloudflareDNSRecord record = 1;
+  CloudflareDNSOperation operation = 2;
+  string operation_log_error = 3;
+}
+
+message SetCloudflareDNSRecordProxiedRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string zone_id = 2 [(validate.rules).string.min_len = 1];
+  string record_id = 3 [(validate.rules).string.min_len = 1];
+  bool proxied = 4;
+}
+
+message SetCloudflareDNSRecordProxiedResponse {
+  CloudflareDNSRecord record = 1;
+  CloudflareDNSOperation operation = 2;
+  string operation_log_error = 3;
+}
+
+message DeleteCloudflareDNSRecordRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string zone_id = 2 [(validate.rules).string.min_len = 1];
+  string record_id = 3 [(validate.rules).string.min_len = 1];
+}
+
+message DeleteCloudflareDNSRecordResponse {
+  CloudflareDNSOperation operation = 1;
+  string operation_log_error = 2;
+}
+
+message ListCloudflareDNSOperationsRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  // Only this Zone's operations; empty lists the connection's.
+  string zone_id = 2;
+  int32 page = 3;
+  // 0 means 20; at most 100.
+  int32 page_size = 4;
+}
+
+message ListCloudflareDNSOperationsResponse {
+  repeated CloudflareDNSOperation operations = 1;
+  CloudflarePageInfo page_info = 2;
+}
+
+message ListCloudflareWorkersRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  // Part of the script name.
+  string query = 2;
+  int32 page = 3;
+  // 0 means 20; at most 50.
+  int32 page_size = 4;
+}
+
+message ListCloudflareWorkersResponse {
+  repeated CloudflareWorker workers = 1;
+  CloudflarePageInfo page_info = 2;
+  repeated CloudflareAddressIssue address_issues = 3;
+}
+
+message ListCloudflarePagesProjectsRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  // Part of the project name.
+  string query = 2;
+  int32 page = 3;
+  // 0 means 20; at most 50.
+  int32 page_size = 4;
+}
+
+message ListCloudflarePagesProjectsResponse {
+  repeated CloudflarePagesProject projects = 1;
+  CloudflarePageInfo page_info = 2;
+  repeated CloudflareAddressIssue address_issues = 3;
+}

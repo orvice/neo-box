@@ -4,6 +4,7 @@ package ent
 
 import (
 	"go.orx.me/apps/neo-box/internal/ent/alert"
+	"go.orx.me/apps/neo-box/internal/ent/cloudflarednsoperation"
 	"go.orx.me/apps/neo-box/internal/ent/connection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbrestore"
@@ -39,6 +40,32 @@ func init() {
 	alertDescDeliveryError := alertFields[12].Descriptor()
 	// alert.DefaultDeliveryError holds the default value on creation for the delivery_error field.
 	alert.DefaultDeliveryError = alertDescDeliveryError.Default.(string)
+	cloudflarednsoperationFields := schema.CloudflareDNSOperation{}.Fields()
+	_ = cloudflarednsoperationFields
+	// cloudflarednsoperationDescZoneName is the schema descriptor for zone_name field.
+	cloudflarednsoperationDescZoneName := cloudflarednsoperationFields[5].Descriptor()
+	// cloudflarednsoperation.DefaultZoneName holds the default value on creation for the zone_name field.
+	cloudflarednsoperation.DefaultZoneName = cloudflarednsoperationDescZoneName.Default.(string)
+	// cloudflarednsoperationDescRecordID is the schema descriptor for record_id field.
+	cloudflarednsoperationDescRecordID := cloudflarednsoperationFields[7].Descriptor()
+	// cloudflarednsoperation.DefaultRecordID holds the default value on creation for the record_id field.
+	cloudflarednsoperation.DefaultRecordID = cloudflarednsoperationDescRecordID.Default.(string)
+	// cloudflarednsoperationDescRecordType is the schema descriptor for record_type field.
+	cloudflarednsoperationDescRecordType := cloudflarednsoperationFields[8].Descriptor()
+	// cloudflarednsoperation.DefaultRecordType holds the default value on creation for the record_type field.
+	cloudflarednsoperation.DefaultRecordType = cloudflarednsoperationDescRecordType.Default.(string)
+	// cloudflarednsoperationDescRecordName is the schema descriptor for record_name field.
+	cloudflarednsoperationDescRecordName := cloudflarednsoperationFields[9].Descriptor()
+	// cloudflarednsoperation.DefaultRecordName holds the default value on creation for the record_name field.
+	cloudflarednsoperation.DefaultRecordName = cloudflarednsoperationDescRecordName.Default.(string)
+	// cloudflarednsoperationDescError is the schema descriptor for error field.
+	cloudflarednsoperationDescError := cloudflarednsoperationFields[14].Descriptor()
+	// cloudflarednsoperation.DefaultError holds the default value on creation for the error field.
+	cloudflarednsoperation.DefaultError = cloudflarednsoperationDescError.Default.(string)
+	// cloudflarednsoperationDescActorName is the schema descriptor for actor_name field.
+	cloudflarednsoperationDescActorName := cloudflarednsoperationFields[16].Descriptor()
+	// cloudflarednsoperation.DefaultActorName holds the default value on creation for the actor_name field.
+	cloudflarednsoperation.DefaultActorName = cloudflarednsoperationDescActorName.Default.(string)
 	connectionFields := schema.Connection{}.Fields()
 	_ = connectionFields
 	// connectionDescStatus is the schema descriptor for status field.

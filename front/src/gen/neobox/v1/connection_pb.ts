@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file neobox/v1/connection.proto.
  */
 export const file_neobox_v1_connection: GenFile = /*@__PURE__*/
-  fileDesc("ChpuZW9ib3gvdjEvY29ubmVjdGlvbi5wcm90bxIJbmVvYm94LnYxIp0DCgpDb25uZWN0aW9uEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSJQoIcHJvdmlkZXIYAyABKA4yEy5uZW9ib3gudjEuUHJvdmlkZXISKwoGc3RhdHVzGAQgASgOMhsubmVvYm94LnYxLkNvbm5lY3Rpb25TdGF0dXMSFgoOc3RhdHVzX21lc3NhZ2UYBSABKAkSNQoRc3RhdHVzX2NoZWNrZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCmNyZWF0ZWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjMKBm5vY29kYhgUIAEoCzIhLm5lb2JveC52MS5Ob2NvREJDb25uZWN0aW9uQ29uZmlnSAASMwoGd2FzYWJpGBUgASgLMiEubmVvYm94LnYxLldhc2FiaUNvbm5lY3Rpb25Db25maWdIAEIICgZjb25maWciRwoWTm9jb0RCQ29ubmVjdGlvbkNvbmZpZxIQCghiYXNlX3VybBgBIAEoCRIbChNyZXF1ZXN0c19wZXJfc2Vjb25kGAIgASgBIn4KGE5vY29EQkNvbm5lY3Rpb25TZXR0aW5ncxIZCghiYXNlX3VybBgBIAEoCUIH+kIEcgIQARIRCglhcGlfdG9rZW4YAiABKAkSNAoTcmVxdWVzdHNfcGVyX3NlY29uZBgDIAEoAUIX+kIUEhIZAAAAAABAj0ApAAAAAAAAAAAinAEKFldhc2FiaUNvbm5lY3Rpb25Db25maWcSFQoNYWNjZXNzX2tleV9pZBgBIAEoCRIaChJwcmljZV9wZXJfdGJfbW9udGgYAiABKAESHAoUYmlsbGluZ19jeWNsZV9hbmNob3IYAyABKAkSHQoVY29zdF9lc3RpbWF0ZV9lbmFibGVkGAQgASgIEhIKCmJ1ZGdldF91c2QYBSABKAEi2wEKGFdhc2FiaUNvbm5lY3Rpb25TZXR0aW5ncxIeCg1hY2Nlc3Nfa2V5X2lkGAEgASgJQgf6QgRyAhABEhIKCnNlY3JldF9rZXkYAiABKAkSKgoScHJpY2VfcGVyX3RiX21vbnRoGAMgASgBQg76QgsSCSkAAAAAAAAAABIcChRiaWxsaW5nX2N5Y2xlX2FuY2hvchgEIAEoCRIdChVjb3N0X2VzdGltYXRlX2VuYWJsZWQYBSABKAgSIgoKYnVkZ2V0X3VzZBgGIAEoAUIO+kILEgkpAAAAAAAAAAAiPwoWTGlzdENvbm5lY3Rpb25zUmVxdWVzdBIlCghwcm92aWRlchgBIAEoDjITLm5lb2JveC52MS5Qcm92aWRlciJFChdMaXN0Q29ubmVjdGlvbnNSZXNwb25zZRIqCgtjb25uZWN0aW9ucxgBIAMoCzIVLm5lb2JveC52MS5Db25uZWN0aW9uIisKFEdldENvbm5lY3Rpb25SZXF1ZXN0EhMKAmlkGAEgASgJQgf6QgRyAhABIkIKFUdldENvbm5lY3Rpb25SZXNwb25zZRIpCgpjb25uZWN0aW9uGAEgASgLMhUubmVvYm94LnYxLkNvbm5lY3Rpb24irwEKF0NyZWF0ZUNvbm5lY3Rpb25SZXF1ZXN0EhUKBG5hbWUYASABKAlCB/pCBHICEAESNQoGbm9jb2RiGBQgASgLMiMubmVvYm94LnYxLk5vY29EQkNvbm5lY3Rpb25TZXR0aW5nc0gAEjUKBndhc2FiaRgVIAEoCzIjLm5lb2JveC52MS5XYXNhYmlDb25uZWN0aW9uU2V0dGluZ3NIAEIPCghzZXR0aW5ncxID+EIBIkUKGENyZWF0ZUNvbm5lY3Rpb25SZXNwb25zZRIpCgpjb25uZWN0aW9uGAEgASgLMhUubmVvYm94LnYxLkNvbm5lY3Rpb24ixAEKF1VwZGF0ZUNvbm5lY3Rpb25SZXF1ZXN0EhMKAmlkGAEgASgJQgf6QgRyAhABEhUKBG5hbWUYAiABKAlCB/pCBHICEAESNQoGbm9jb2RiGBQgASgLMiMubmVvYm94LnYxLk5vY29EQkNvbm5lY3Rpb25TZXR0aW5nc0gAEjUKBndhc2FiaRgVIAEoCzIjLm5lb2JveC52MS5XYXNhYmlDb25uZWN0aW9uU2V0dGluZ3NIAEIPCghzZXR0aW5ncxID+EIBIkUKGFVwZGF0ZUNvbm5lY3Rpb25SZXNwb25zZRIpCgpjb25uZWN0aW9uGAEgASgLMhUubmVvYm94LnYxLkNvbm5lY3Rpb24iLgoXRGVsZXRlQ29ubmVjdGlvblJlcXVlc3QSEwoCaWQYASABKAlCB/pCBHICEAEiGgoYRGVsZXRlQ29ubmVjdGlvblJlc3BvbnNlIiwKFVRlc3RDb25uZWN0aW9uUmVxdWVzdBITCgJpZBgBIAEoCUIH+kIEcgIQASJDChZUZXN0Q29ubmVjdGlvblJlc3BvbnNlEikKCmNvbm5lY3Rpb24YASABKAsyFS5uZW9ib3gudjEuQ29ubmVjdGlvbipOCghQcm92aWRlchIYChRQUk9WSURFUl9VTlNQRUNJRklFRBAAEhMKD1BST1ZJREVSX05PQ09EQhABEhMKD1BST1ZJREVSX1dBU0FCSRACKmwKEENvbm5lY3Rpb25TdGF0dXMSIQodQ09OTkVDVElPTl9TVEFUVVNfVU5TUEVDSUZJRUQQABIYChRDT05ORUNUSU9OX1NUQVRVU19PSxABEhsKF0NPTk5FQ1RJT05fU1RBVFVTX0VSUk9SEAIyrwQKEUNvbm5lY3Rpb25TZXJ2aWNlElgKD0xpc3RDb25uZWN0aW9ucxIhLm5lb2JveC52MS5MaXN0Q29ubmVjdGlvbnNSZXF1ZXN0GiIubmVvYm94LnYxLkxpc3RDb25uZWN0aW9uc1Jlc3BvbnNlElIKDUdldENvbm5lY3Rpb24SHy5uZW9ib3gudjEuR2V0Q29ubmVjdGlvblJlcXVlc3QaIC5uZW9ib3gudjEuR2V0Q29ubmVjdGlvblJlc3BvbnNlElsKEENyZWF0ZUNvbm5lY3Rpb24SIi5uZW9ib3gudjEuQ3JlYXRlQ29ubmVjdGlvblJlcXVlc3QaIy5uZW9ib3gudjEuQ3JlYXRlQ29ubmVjdGlvblJlc3BvbnNlElsKEFVwZGF0ZUNvbm5lY3Rpb24SIi5uZW9ib3gudjEuVXBkYXRlQ29ubmVjdGlvblJlcXVlc3QaIy5uZW9ib3gudjEuVXBkYXRlQ29ubmVjdGlvblJlc3BvbnNlElsKEERlbGV0ZUNvbm5lY3Rpb24SIi5uZW9ib3gudjEuRGVsZXRlQ29ubmVjdGlvblJlcXVlc3QaIy5uZW9ib3gudjEuRGVsZXRlQ29ubmVjdGlvblJlc3BvbnNlElUKDlRlc3RDb25uZWN0aW9uEiAubmVvYm94LnYxLlRlc3RDb25uZWN0aW9uUmVxdWVzdBohLm5lb2JveC52MS5UZXN0Q29ubmVjdGlvblJlc3BvbnNlQjVaM2dvLm9yeC5tZS9hcHBzL25lby1ib3gvcGtnL3Byb3RvL25lb2JveC92MTtuZW9ib3h2MWIGcHJvdG8z", [file_google_protobuf_timestamp, file_validate_validate]);
+  fileDesc("ChpuZW9ib3gvdjEvY29ubmVjdGlvbi5wcm90bxIJbmVvYm94LnYxItoDCgpDb25uZWN0aW9uEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSJQoIcHJvdmlkZXIYAyABKA4yEy5uZW9ib3gudjEuUHJvdmlkZXISKwoGc3RhdHVzGAQgASgOMhsubmVvYm94LnYxLkNvbm5lY3Rpb25TdGF0dXMSFgoOc3RhdHVzX21lc3NhZ2UYBSABKAkSNQoRc3RhdHVzX2NoZWNrZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCmNyZWF0ZWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjMKBm5vY29kYhgUIAEoCzIhLm5lb2JveC52MS5Ob2NvREJDb25uZWN0aW9uQ29uZmlnSAASMwoGd2FzYWJpGBUgASgLMiEubmVvYm94LnYxLldhc2FiaUNvbm5lY3Rpb25Db25maWdIABI7CgpjbG91ZGZsYXJlGBYgASgLMiUubmVvYm94LnYxLkNsb3VkZmxhcmVDb25uZWN0aW9uQ29uZmlnSABCCAoGY29uZmlnIkcKFk5vY29EQkNvbm5lY3Rpb25Db25maWcSEAoIYmFzZV91cmwYASABKAkSGwoTcmVxdWVzdHNfcGVyX3NlY29uZBgCIAEoASJ+ChhOb2NvREJDb25uZWN0aW9uU2V0dGluZ3MSGQoIYmFzZV91cmwYASABKAlCB/pCBHICEAESEQoJYXBpX3Rva2VuGAIgASgJEjQKE3JlcXVlc3RzX3Blcl9zZWNvbmQYAyABKAFCF/pCFBISGQAAAAAAQI9AKQAAAAAAAAAAIpwBChZXYXNhYmlDb25uZWN0aW9uQ29uZmlnEhUKDWFjY2Vzc19rZXlfaWQYASABKAkSGgoScHJpY2VfcGVyX3RiX21vbnRoGAIgASgBEhwKFGJpbGxpbmdfY3ljbGVfYW5jaG9yGAMgASgJEh0KFWNvc3RfZXN0aW1hdGVfZW5hYmxlZBgEIAEoCBISCgpidWRnZXRfdXNkGAUgASgBItsBChhXYXNhYmlDb25uZWN0aW9uU2V0dGluZ3MSHgoNYWNjZXNzX2tleV9pZBgBIAEoCUIH+kIEcgIQARISCgpzZWNyZXRfa2V5GAIgASgJEioKEnByaWNlX3Blcl90Yl9tb250aBgDIAEoAUIO+kILEgkpAAAAAAAAAAASHAoUYmlsbGluZ19jeWNsZV9hbmNob3IYBCABKAkSHQoVY29zdF9lc3RpbWF0ZV9lbmFibGVkGAUgASgIEiIKCmJ1ZGdldF91c2QYBiABKAFCDvpCCxIJKQAAAAAAAAAAIjAKGkNsb3VkZmxhcmVDb25uZWN0aW9uQ29uZmlnEhIKCmFjY291bnRfaWQYASABKAkiTgocQ2xvdWRmbGFyZUNvbm5lY3Rpb25TZXR0aW5ncxIbCgphY2NvdW50X2lkGAEgASgJQgf6QgRyAhABEhEKCWFwaV90b2tlbhgCIAEoCSI/ChZMaXN0Q29ubmVjdGlvbnNSZXF1ZXN0EiUKCHByb3ZpZGVyGAEgASgOMhMubmVvYm94LnYxLlByb3ZpZGVyIkUKF0xpc3RDb25uZWN0aW9uc1Jlc3BvbnNlEioKC2Nvbm5lY3Rpb25zGAEgAygLMhUubmVvYm94LnYxLkNvbm5lY3Rpb24iKwoUR2V0Q29ubmVjdGlvblJlcXVlc3QSEwoCaWQYASABKAlCB/pCBHICEAEiQgoVR2V0Q29ubmVjdGlvblJlc3BvbnNlEikKCmNvbm5lY3Rpb24YASABKAsyFS5uZW9ib3gudjEuQ29ubmVjdGlvbiLuAQoXQ3JlYXRlQ29ubmVjdGlvblJlcXVlc3QSFQoEbmFtZRgBIAEoCUIH+kIEcgIQARI1CgZub2NvZGIYFCABKAsyIy5uZW9ib3gudjEuTm9jb0RCQ29ubmVjdGlvblNldHRpbmdzSAASNQoGd2FzYWJpGBUgASgLMiMubmVvYm94LnYxLldhc2FiaUNvbm5lY3Rpb25TZXR0aW5nc0gAEj0KCmNsb3VkZmxhcmUYFiABKAsyJy5uZW9ib3gudjEuQ2xvdWRmbGFyZUNvbm5lY3Rpb25TZXR0aW5nc0gAQg8KCHNldHRpbmdzEgP4QgEiRQoYQ3JlYXRlQ29ubmVjdGlvblJlc3BvbnNlEikKCmNvbm5lY3Rpb24YASABKAsyFS5uZW9ib3gudjEuQ29ubmVjdGlvbiKDAgoXVXBkYXRlQ29ubmVjdGlvblJlcXVlc3QSEwoCaWQYASABKAlCB/pCBHICEAESFQoEbmFtZRgCIAEoCUIH+kIEcgIQARI1CgZub2NvZGIYFCABKAsyIy5uZW9ib3gudjEuTm9jb0RCQ29ubmVjdGlvblNldHRpbmdzSAASNQoGd2FzYWJpGBUgASgLMiMubmVvYm94LnYxLldhc2FiaUNvbm5lY3Rpb25TZXR0aW5nc0gAEj0KCmNsb3VkZmxhcmUYFiABKAsyJy5uZW9ib3gudjEuQ2xvdWRmbGFyZUNvbm5lY3Rpb25TZXR0aW5nc0gAQg8KCHNldHRpbmdzEgP4QgEiRQoYVXBkYXRlQ29ubmVjdGlvblJlc3BvbnNlEikKCmNvbm5lY3Rpb24YASABKAsyFS5uZW9ib3gudjEuQ29ubmVjdGlvbiIuChdEZWxldGVDb25uZWN0aW9uUmVxdWVzdBITCgJpZBgBIAEoCUIH+kIEcgIQASIaChhEZWxldGVDb25uZWN0aW9uUmVzcG9uc2UiLAoVVGVzdENvbm5lY3Rpb25SZXF1ZXN0EhMKAmlkGAEgASgJQgf6QgRyAhABIkMKFlRlc3RDb25uZWN0aW9uUmVzcG9uc2USKQoKY29ubmVjdGlvbhgBIAEoCzIVLm5lb2JveC52MS5Db25uZWN0aW9uKmcKCFByb3ZpZGVyEhgKFFBST1ZJREVSX1VOU1BFQ0lGSUVEEAASEwoPUFJPVklERVJfTk9DT0RCEAESEwoPUFJPVklERVJfV0FTQUJJEAISFwoTUFJPVklERVJfQ0xPVURGTEFSRRADKmwKEENvbm5lY3Rpb25TdGF0dXMSIQodQ09OTkVDVElPTl9TVEFUVVNfVU5TUEVDSUZJRUQQABIYChRDT05ORUNUSU9OX1NUQVRVU19PSxABEhsKF0NPTk5FQ1RJT05fU1RBVFVTX0VSUk9SEAIyrwQKEUNvbm5lY3Rpb25TZXJ2aWNlElgKD0xpc3RDb25uZWN0aW9ucxIhLm5lb2JveC52MS5MaXN0Q29ubmVjdGlvbnNSZXF1ZXN0GiIubmVvYm94LnYxLkxpc3RDb25uZWN0aW9uc1Jlc3BvbnNlElIKDUdldENvbm5lY3Rpb24SHy5uZW9ib3gudjEuR2V0Q29ubmVjdGlvblJlcXVlc3QaIC5uZW9ib3gudjEuR2V0Q29ubmVjdGlvblJlc3BvbnNlElsKEENyZWF0ZUNvbm5lY3Rpb24SIi5uZW9ib3gudjEuQ3JlYXRlQ29ubmVjdGlvblJlcXVlc3QaIy5uZW9ib3gudjEuQ3JlYXRlQ29ubmVjdGlvblJlc3BvbnNlElsKEFVwZGF0ZUNvbm5lY3Rpb24SIi5uZW9ib3gudjEuVXBkYXRlQ29ubmVjdGlvblJlcXVlc3QaIy5uZW9ib3gudjEuVXBkYXRlQ29ubmVjdGlvblJlc3BvbnNlElsKEERlbGV0ZUNvbm5lY3Rpb24SIi5uZW9ib3gudjEuRGVsZXRlQ29ubmVjdGlvblJlcXVlc3QaIy5uZW9ib3gudjEuRGVsZXRlQ29ubmVjdGlvblJlc3BvbnNlElUKDlRlc3RDb25uZWN0aW9uEiAubmVvYm94LnYxLlRlc3RDb25uZWN0aW9uUmVxdWVzdBohLm5lb2JveC52MS5UZXN0Q29ubmVjdGlvblJlc3BvbnNlQjVaM2dvLm9yeC5tZS9hcHBzL25lby1ib3gvcGtnL3Byb3RvL25lb2JveC92MTtuZW9ib3h2MWIGcHJvdG8z", [file_google_protobuf_timestamp, file_validate_validate]);
 
 /**
  * @generated from message neobox.v1.Connection
@@ -78,6 +78,12 @@ export type Connection = Message<"neobox.v1.Connection"> & {
      */
     value: WasabiConnectionConfig;
     case: "wasabi";
+  } | {
+    /**
+     * @generated from field: neobox.v1.CloudflareConnectionConfig cloudflare = 22;
+     */
+    value: CloudflareConnectionConfig;
+    case: "cloudflare";
   } | { case: undefined; value?: undefined };
 };
 
@@ -251,6 +257,53 @@ export const WasabiConnectionSettingsSchema: GenMessage<WasabiConnectionSettings
   messageDesc(file_neobox_v1_connection, 4);
 
 /**
+ * CloudflareConnectionConfig is the non-secret part of a Cloudflare
+ * connection.
+ *
+ * @generated from message neobox.v1.CloudflareConnectionConfig
+ */
+export type CloudflareConnectionConfig = Message<"neobox.v1.CloudflareConnectionConfig"> & {
+  /**
+   * @generated from field: string account_id = 1;
+   */
+  accountId: string;
+};
+
+/**
+ * Describes the message neobox.v1.CloudflareConnectionConfig.
+ * Use `create(CloudflareConnectionConfigSchema)` to create a new message.
+ */
+export const CloudflareConnectionConfigSchema: GenMessage<CloudflareConnectionConfig> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_connection, 5);
+
+/**
+ * CloudflareConnectionSettings is what a user enters for a Cloudflare
+ * connection: one Account and an API token with access to it.
+ *
+ * @generated from message neobox.v1.CloudflareConnectionSettings
+ */
+export type CloudflareConnectionSettings = Message<"neobox.v1.CloudflareConnectionSettings"> & {
+  /**
+   * @generated from field: string account_id = 1;
+   */
+  accountId: string;
+
+  /**
+   * Required on create; on update, empty keeps the stored token.
+   *
+   * @generated from field: string api_token = 2;
+   */
+  apiToken: string;
+};
+
+/**
+ * Describes the message neobox.v1.CloudflareConnectionSettings.
+ * Use `create(CloudflareConnectionSettingsSchema)` to create a new message.
+ */
+export const CloudflareConnectionSettingsSchema: GenMessage<CloudflareConnectionSettings> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_connection, 6);
+
+/**
  * @generated from message neobox.v1.ListConnectionsRequest
  */
 export type ListConnectionsRequest = Message<"neobox.v1.ListConnectionsRequest"> & {
@@ -267,7 +320,7 @@ export type ListConnectionsRequest = Message<"neobox.v1.ListConnectionsRequest">
  * Use `create(ListConnectionsRequestSchema)` to create a new message.
  */
 export const ListConnectionsRequestSchema: GenMessage<ListConnectionsRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 5);
+  messageDesc(file_neobox_v1_connection, 7);
 
 /**
  * @generated from message neobox.v1.ListConnectionsResponse
@@ -284,7 +337,7 @@ export type ListConnectionsResponse = Message<"neobox.v1.ListConnectionsResponse
  * Use `create(ListConnectionsResponseSchema)` to create a new message.
  */
 export const ListConnectionsResponseSchema: GenMessage<ListConnectionsResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 6);
+  messageDesc(file_neobox_v1_connection, 8);
 
 /**
  * @generated from message neobox.v1.GetConnectionRequest
@@ -301,7 +354,7 @@ export type GetConnectionRequest = Message<"neobox.v1.GetConnectionRequest"> & {
  * Use `create(GetConnectionRequestSchema)` to create a new message.
  */
 export const GetConnectionRequestSchema: GenMessage<GetConnectionRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 7);
+  messageDesc(file_neobox_v1_connection, 9);
 
 /**
  * @generated from message neobox.v1.GetConnectionResponse
@@ -318,7 +371,7 @@ export type GetConnectionResponse = Message<"neobox.v1.GetConnectionResponse"> &
  * Use `create(GetConnectionResponseSchema)` to create a new message.
  */
 export const GetConnectionResponseSchema: GenMessage<GetConnectionResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 8);
+  messageDesc(file_neobox_v1_connection, 10);
 
 /**
  * @generated from message neobox.v1.CreateConnectionRequest
@@ -344,6 +397,12 @@ export type CreateConnectionRequest = Message<"neobox.v1.CreateConnectionRequest
      */
     value: WasabiConnectionSettings;
     case: "wasabi";
+  } | {
+    /**
+     * @generated from field: neobox.v1.CloudflareConnectionSettings cloudflare = 22;
+     */
+    value: CloudflareConnectionSettings;
+    case: "cloudflare";
   } | { case: undefined; value?: undefined };
 };
 
@@ -352,7 +411,7 @@ export type CreateConnectionRequest = Message<"neobox.v1.CreateConnectionRequest
  * Use `create(CreateConnectionRequestSchema)` to create a new message.
  */
 export const CreateConnectionRequestSchema: GenMessage<CreateConnectionRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 9);
+  messageDesc(file_neobox_v1_connection, 11);
 
 /**
  * @generated from message neobox.v1.CreateConnectionResponse
@@ -369,7 +428,7 @@ export type CreateConnectionResponse = Message<"neobox.v1.CreateConnectionRespon
  * Use `create(CreateConnectionResponseSchema)` to create a new message.
  */
 export const CreateConnectionResponseSchema: GenMessage<CreateConnectionResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 10);
+  messageDesc(file_neobox_v1_connection, 12);
 
 /**
  * @generated from message neobox.v1.UpdateConnectionRequest
@@ -400,6 +459,12 @@ export type UpdateConnectionRequest = Message<"neobox.v1.UpdateConnectionRequest
      */
     value: WasabiConnectionSettings;
     case: "wasabi";
+  } | {
+    /**
+     * @generated from field: neobox.v1.CloudflareConnectionSettings cloudflare = 22;
+     */
+    value: CloudflareConnectionSettings;
+    case: "cloudflare";
   } | { case: undefined; value?: undefined };
 };
 
@@ -408,7 +473,7 @@ export type UpdateConnectionRequest = Message<"neobox.v1.UpdateConnectionRequest
  * Use `create(UpdateConnectionRequestSchema)` to create a new message.
  */
 export const UpdateConnectionRequestSchema: GenMessage<UpdateConnectionRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 11);
+  messageDesc(file_neobox_v1_connection, 13);
 
 /**
  * @generated from message neobox.v1.UpdateConnectionResponse
@@ -425,7 +490,7 @@ export type UpdateConnectionResponse = Message<"neobox.v1.UpdateConnectionRespon
  * Use `create(UpdateConnectionResponseSchema)` to create a new message.
  */
 export const UpdateConnectionResponseSchema: GenMessage<UpdateConnectionResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 12);
+  messageDesc(file_neobox_v1_connection, 14);
 
 /**
  * @generated from message neobox.v1.DeleteConnectionRequest
@@ -442,7 +507,7 @@ export type DeleteConnectionRequest = Message<"neobox.v1.DeleteConnectionRequest
  * Use `create(DeleteConnectionRequestSchema)` to create a new message.
  */
 export const DeleteConnectionRequestSchema: GenMessage<DeleteConnectionRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 13);
+  messageDesc(file_neobox_v1_connection, 15);
 
 /**
  * @generated from message neobox.v1.DeleteConnectionResponse
@@ -455,7 +520,7 @@ export type DeleteConnectionResponse = Message<"neobox.v1.DeleteConnectionRespon
  * Use `create(DeleteConnectionResponseSchema)` to create a new message.
  */
 export const DeleteConnectionResponseSchema: GenMessage<DeleteConnectionResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 14);
+  messageDesc(file_neobox_v1_connection, 16);
 
 /**
  * @generated from message neobox.v1.TestConnectionRequest
@@ -472,7 +537,7 @@ export type TestConnectionRequest = Message<"neobox.v1.TestConnectionRequest"> &
  * Use `create(TestConnectionRequestSchema)` to create a new message.
  */
 export const TestConnectionRequestSchema: GenMessage<TestConnectionRequest> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 15);
+  messageDesc(file_neobox_v1_connection, 17);
 
 /**
  * @generated from message neobox.v1.TestConnectionResponse
@@ -491,7 +556,7 @@ export type TestConnectionResponse = Message<"neobox.v1.TestConnectionResponse">
  * Use `create(TestConnectionResponseSchema)` to create a new message.
  */
 export const TestConnectionResponseSchema: GenMessage<TestConnectionResponse> = /*@__PURE__*/
-  messageDesc(file_neobox_v1_connection, 16);
+  messageDesc(file_neobox_v1_connection, 18);
 
 /**
  * @generated from enum neobox.v1.Provider
@@ -511,6 +576,11 @@ export enum Provider {
    * @generated from enum value: PROVIDER_WASABI = 2;
    */
   WASABI = 2,
+
+  /**
+   * @generated from enum value: PROVIDER_CLOUDFLARE = 3;
+   */
+  CLOUDFLARE = 3,
 }
 
 /**
@@ -596,7 +666,8 @@ export const ConnectionService: GenService<{
   /**
    * DeleteConnection removes the connection and everything the provider
    * stored for it (for NocoDB: snapshots with their content, and Backup
-   * Policies).
+   * Policies; for Cloudflare: the DNS operation log). Nothing is deleted at
+   * the provider.
    *
    * @generated from rpc neobox.v1.ConnectionService.DeleteConnection
    */

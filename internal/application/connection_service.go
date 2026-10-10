@@ -12,6 +12,7 @@ import (
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"go.orx.me/apps/neo-box/internal/cloudflare"
 	"go.orx.me/apps/neo-box/internal/connection"
 	"go.orx.me/apps/neo-box/internal/nocodb"
 	"go.orx.me/apps/neo-box/internal/repo/auth"
@@ -188,6 +189,8 @@ func createSettings(m *neoboxv1.CreateConnectionRequest) (*providerSettings, err
 		return nocodbSettings(v.Nocodb)
 	case *neoboxv1.CreateConnectionRequest_Wasabi:
 		return wasabiSettings(v.Wasabi)
+	case *neoboxv1.CreateConnectionRequest_Cloudflare:
+		return cloudflareSettings(v.Cloudflare)
 	}
 	return nil, connectx.RequiredArgument("settings")
 }
@@ -198,6 +201,8 @@ func updateSettings(m *neoboxv1.UpdateConnectionRequest) (*providerSettings, err
 		return nocodbSettings(v.Nocodb)
 	case *neoboxv1.UpdateConnectionRequest_Wasabi:
 		return wasabiSettings(v.Wasabi)
+	case *neoboxv1.UpdateConnectionRequest_Cloudflare:
+		return cloudflareSettings(v.Cloudflare)
 	}
 	return nil, connectx.RequiredArgument("settings")
 }
@@ -256,6 +261,25 @@ func wasabiSettings(in *neoboxv1.WasabiConnectionSettings) (*providerSettings, e
 	return out, nil
 }
 
+func cloudflareSettings(in *neoboxv1.CloudflareConnectionSettings) (*providerSettings, error) {
+	if strings.TrimSpace(in.GetAccountId()) == "" {
+		return nil, connectx.RequiredArgument("account_id")
+	}
+	accountID, err := cloudflare.NormalizeAccountID(in.GetAccountId())
+	if err != nil {
+		return nil, connectx.InvalidArgument("account_id", "must be 32 hexadecimal characters (Account ID in the Cloudflare dashboard)")
+	}
+	out := &providerSettings{
+		provider:    cloudflare.ProviderType,
+		config:      cloudflare.ConnectionConfig{AccountID: accountID},
+		secretField: "api_token",
+	}
+	if token := strings.TrimSpace(in.GetApiToken()); token != "" {
+		out.secret = cloudflare.ConnectionSecret{APIToken: token}
+	}
+	return out, nil
+}
+
 func configToProto(c *connrepo.Connection, out *neoboxv1.Connection) {
 	switch c.Provider {
 	case nocodb.ProviderType:
@@ -274,6 +298,11 @@ func configToProto(c *connrepo.Connection, out *neoboxv1.Connection) {
 				BudgetUsd: cfg.BudgetUSD,
 			}}
 		}
+	case cloudflare.ProviderType:
+		var cfg cloudflare.ConnectionConfig
+		if json.Unmarshal(c.Config, &cfg) == nil {
+			out.Config = &neoboxv1.Connection_Cloudflare{Cloudflare: &neoboxv1.CloudflareConnectionConfig{AccountId: cfg.AccountID}}
+		}
 	}
 }
 
@@ -283,6 +312,8 @@ func providerKey(p neoboxv1.Provider) (string, bool) {
 		return nocodb.ProviderType, true
 	case neoboxv1.Provider_PROVIDER_WASABI:
 		return wasabi.ProviderType, true
+	case neoboxv1.Provider_PROVIDER_CLOUDFLARE:
+		return cloudflare.ProviderType, true
 	}
 	return "", false
 }
@@ -293,6 +324,8 @@ func providerToProto(key string) neoboxv1.Provider {
 		return neoboxv1.Provider_PROVIDER_NOCODB
 	case wasabi.ProviderType:
 		return neoboxv1.Provider_PROVIDER_WASABI
+	case cloudflare.ProviderType:
+		return neoboxv1.Provider_PROVIDER_CLOUDFLARE
 	}
 	return neoboxv1.Provider_PROVIDER_UNSPECIFIED
 }

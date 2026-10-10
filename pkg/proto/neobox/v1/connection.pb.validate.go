@@ -237,6 +237,47 @@ func (m *Connection) validate(all bool) error {
 			}
 		}
 
+	case *Connection_Cloudflare:
+		if v == nil {
+			err := ConnectionValidationError{
+				field:  "Config",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetCloudflare()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ConnectionValidationError{
+						field:  "Cloudflare",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ConnectionValidationError{
+						field:  "Cloudflare",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCloudflare()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ConnectionValidationError{
+					field:  "Cloudflare",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	default:
 		_ = v // ensures v is used
 	}
@@ -802,6 +843,226 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = WasabiConnectionSettingsValidationError{}
+
+// Validate checks the field values on CloudflareConnectionConfig with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CloudflareConnectionConfig) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CloudflareConnectionConfig with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CloudflareConnectionConfigMultiError, or nil if none found.
+func (m *CloudflareConnectionConfig) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CloudflareConnectionConfig) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for AccountId
+
+	if len(errors) > 0 {
+		return CloudflareConnectionConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// CloudflareConnectionConfigMultiError is an error wrapping multiple
+// validation errors returned by CloudflareConnectionConfig.ValidateAll() if
+// the designated constraints aren't met.
+type CloudflareConnectionConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CloudflareConnectionConfigMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CloudflareConnectionConfigMultiError) AllErrors() []error { return m }
+
+// CloudflareConnectionConfigValidationError is the validation error returned
+// by CloudflareConnectionConfig.Validate if the designated constraints aren't met.
+type CloudflareConnectionConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CloudflareConnectionConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CloudflareConnectionConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CloudflareConnectionConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CloudflareConnectionConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CloudflareConnectionConfigValidationError) ErrorName() string {
+	return "CloudflareConnectionConfigValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CloudflareConnectionConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCloudflareConnectionConfig.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CloudflareConnectionConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CloudflareConnectionConfigValidationError{}
+
+// Validate checks the field values on CloudflareConnectionSettings with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CloudflareConnectionSettings) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CloudflareConnectionSettings with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CloudflareConnectionSettingsMultiError, or nil if none found.
+func (m *CloudflareConnectionSettings) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CloudflareConnectionSettings) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetAccountId()) < 1 {
+		err := CloudflareConnectionSettingsValidationError{
+			field:  "AccountId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for ApiToken
+
+	if len(errors) > 0 {
+		return CloudflareConnectionSettingsMultiError(errors)
+	}
+
+	return nil
+}
+
+// CloudflareConnectionSettingsMultiError is an error wrapping multiple
+// validation errors returned by CloudflareConnectionSettings.ValidateAll() if
+// the designated constraints aren't met.
+type CloudflareConnectionSettingsMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CloudflareConnectionSettingsMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CloudflareConnectionSettingsMultiError) AllErrors() []error { return m }
+
+// CloudflareConnectionSettingsValidationError is the validation error returned
+// by CloudflareConnectionSettings.Validate if the designated constraints
+// aren't met.
+type CloudflareConnectionSettingsValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CloudflareConnectionSettingsValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CloudflareConnectionSettingsValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CloudflareConnectionSettingsValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CloudflareConnectionSettingsValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CloudflareConnectionSettingsValidationError) ErrorName() string {
+	return "CloudflareConnectionSettingsValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CloudflareConnectionSettingsValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCloudflareConnectionSettings.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CloudflareConnectionSettingsValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CloudflareConnectionSettingsValidationError{}
 
 // Validate checks the field values on ListConnectionsRequest with the rules
 // defined in the proto definition for this message. If any rules are
@@ -1406,6 +1667,48 @@ func (m *CreateConnectionRequest) validate(all bool) error {
 			}
 		}
 
+	case *CreateConnectionRequest_Cloudflare:
+		if v == nil {
+			err := CreateConnectionRequestValidationError{
+				field:  "Settings",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+		oneofSettingsPresent = true
+
+		if all {
+			switch v := interface{}(m.GetCloudflare()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, CreateConnectionRequestValidationError{
+						field:  "Cloudflare",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, CreateConnectionRequestValidationError{
+						field:  "Cloudflare",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCloudflare()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return CreateConnectionRequestValidationError{
+					field:  "Cloudflare",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	default:
 		_ = v // ensures v is used
 	}
@@ -1755,6 +2058,48 @@ func (m *UpdateConnectionRequest) validate(all bool) error {
 			if err := v.Validate(); err != nil {
 				return UpdateConnectionRequestValidationError{
 					field:  "Wasabi",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *UpdateConnectionRequest_Cloudflare:
+		if v == nil {
+			err := UpdateConnectionRequestValidationError{
+				field:  "Settings",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+		oneofSettingsPresent = true
+
+		if all {
+			switch v := interface{}(m.GetCloudflare()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, UpdateConnectionRequestValidationError{
+						field:  "Cloudflare",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, UpdateConnectionRequestValidationError{
+						field:  "Cloudflare",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCloudflare()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return UpdateConnectionRequestValidationError{
+					field:  "Cloudflare",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}

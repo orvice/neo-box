@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"go.orx.me/apps/neo-box/internal/ent/alert"
+	"go.orx.me/apps/neo-box/internal/ent/cloudflarednsoperation"
 	"go.orx.me/apps/neo-box/internal/ent/connection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbfile"
@@ -87,21 +88,22 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			alert.Table:               alert.ValidColumn,
-			connection.Table:          connection.ValidColumn,
-			nocodbbackuppolicy.Table:  nocodbbackuppolicy.ValidColumn,
-			nocodbfile.Table:          nocodbfile.ValidColumn,
-			nocodbfilesource.Table:    nocodbfilesource.ValidColumn,
-			nocodbrestore.Table:       nocodbrestore.ValidColumn,
-			nocodbsnapshot.Table:      nocodbsnapshot.ValidColumn,
-			nocodbsnapshotfile.Table:  nocodbsnapshotfile.ValidColumn,
-			notificationchannel.Table: notificationchannel.ValidColumn,
-			oauthstate.Table:          oauthstate.ValidColumn,
-			session.Table:             session.ValidColumn,
-			user.Table:                user.ValidColumn,
-			wasabibucketconfig.Table:  wasabibucketconfig.ValidColumn,
-			wasabidailyusage.Table:    wasabidailyusage.ValidColumn,
-			wasabisyncstate.Table:     wasabisyncstate.ValidColumn,
+			alert.Table:                  alert.ValidColumn,
+			cloudflarednsoperation.Table: cloudflarednsoperation.ValidColumn,
+			connection.Table:             connection.ValidColumn,
+			nocodbbackuppolicy.Table:     nocodbbackuppolicy.ValidColumn,
+			nocodbfile.Table:             nocodbfile.ValidColumn,
+			nocodbfilesource.Table:       nocodbfilesource.ValidColumn,
+			nocodbrestore.Table:          nocodbrestore.ValidColumn,
+			nocodbsnapshot.Table:         nocodbsnapshot.ValidColumn,
+			nocodbsnapshotfile.Table:     nocodbsnapshotfile.ValidColumn,
+			notificationchannel.Table:    notificationchannel.ValidColumn,
+			oauthstate.Table:             oauthstate.ValidColumn,
+			session.Table:                session.ValidColumn,
+			user.Table:                   user.ValidColumn,
+			wasabibucketconfig.Table:     wasabibucketconfig.ValidColumn,
+			wasabidailyusage.Table:       wasabidailyusage.ValidColumn,
+			wasabisyncstate.Table:        wasabisyncstate.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

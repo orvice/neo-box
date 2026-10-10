@@ -11,11 +11,19 @@ type AppConfig struct {
 	// driver postgres.
 	DBStore string `yaml:"db_store"`
 
-	Crypto  CryptoConfig  `yaml:"crypto"`
-	Storage StorageConfig `yaml:"storage"`
-	NocoDB  NocoDBConfig  `yaml:"nocodb"`
-	Wasabi  WasabiConfig  `yaml:"wasabi"`
-	Notify  NotifyConfig  `yaml:"notify"`
+	Crypto     CryptoConfig     `yaml:"crypto"`
+	Storage    StorageConfig    `yaml:"storage"`
+	NocoDB     NocoDBConfig     `yaml:"nocodb"`
+	Wasabi     WasabiConfig     `yaml:"wasabi"`
+	Cloudflare CloudflareConfig `yaml:"cloudflare"`
+	Notify     NotifyConfig     `yaml:"notify"`
+}
+
+// CloudflareConfig tunes Cloudflare API access.
+type CloudflareConfig struct {
+	// APIEndpoint overrides the API base URL
+	// (https://api.cloudflare.com/client/v4).
+	APIEndpoint string `yaml:"api_endpoint"`
 }
 
 // NotifyConfig tunes alert delivery.

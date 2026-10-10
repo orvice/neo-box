@@ -12,9 +12,9 @@ one place.
 - **Session** — a bearer token issued at sign-in. Only its sha256 is stored;
   it expires after `auth.session_ttl`.
 - **Provider** — a kind of third-party service Neo Box integrates with
-  (today: NocoDB). Each Provider decides what it shows and does for a
-  Connection; Neo Box has no provider-independent model of resources. Not
-  to be confused with the OAuth sign-in providers above.
+  (today: NocoDB, Wasabi and Cloudflare). Each Provider decides what it
+  shows and does for a Connection; Neo Box has no provider-independent model
+  of resources. Not to be confused with the OAuth sign-in providers above.
 - **Connection** — one account at a Provider, owned by one User: a name,
   the Provider's settings, and its credentials. Credentials are encrypted
   with `crypto.encryption_key` and never returned by the API. A Connection
@@ -108,6 +108,44 @@ can't be deleted while a Restore of it is pending or running.
   expires old versions) but raise no Alert. "Public" covers the policy and
   ACL; Wasabi's console Public Access Override can't be read.
 
+### Cloudflare
+
+- **Cloudflare Connection** — a Connection whose Provider is Cloudflare: one
+  Cloudflare account (its Account ID) and an API token that reaches it. The
+  token may hold only some permissions; whatever it lacks shows as missing
+  where it is needed, never as an empty account. A token Cloudflare no longer
+  accepts marks the Connection error.
+- **Visible resources** — the Zones, Workers and Pages projects the token can
+  see in the account: not necessarily all the account holds. They are read
+  from Cloudflare when a page opens or is refreshed, never stored or synced.
+- **Zone** — a domain on Cloudflare, the way into its DNS records. Only Zones
+  of the Connection's account are reachable, even when the token sees more.
+- **DNS record** — Neo Box adds, changes and deletes A, AAAA, CNAME, TXT,
+  MX, NS, SRV and CAA records, and switches the proxy of records Cloudflare
+  can proxy; other types are shown but not changed. A change keeps whatever
+  the form does not show (comment, tags, settings). A change saved at
+  Cloudflare may take a while to reach resolvers.
+- **DNS access** — whether the token may change a Zone's records:
+  read-only when Cloudflare says so or has refused a change for lack of
+  permission, otherwise unknown, since Cloudflare does not tell a token's
+  own permissions. Unknown is shown as unknown: changes are offered and
+  Cloudflare refuses what the token may not do.
+- **DNS operation** — one DNS change started from Neo Box (add, change,
+  delete, proxy switch): who started it, when (UTC), the Zone and record, what
+  was asked for, the record before and after, and its status. Recorded
+  before the change is sent, so a change that can't be recorded isn't made.
+  Its status is succeeded, failed, unknown (Cloudflare never answered; it is
+  never sent again) or pending (sent, but its outcome could not be
+  recorded). Only a succeeded operation has an "after". Changes made
+  anywhere else are not DNS operations.
+- **Address** — a way to reach a Worker (its workers.dev URL when enabled,
+  custom domains, routes) or a Pages project (its pages.dev subdomain, custom
+  domains with their status, production deployment URL), as Cloudflare
+  reports it; never made up from a name. A route with wildcards is a
+  pattern, and a custom domain that isn't active may not answer: neither is
+  opened as a URL. Addresses whose source can't be read are reported as
+  incomplete.
+
 ### Notifications
 
 - **Notification channel** — one place a User's alerts are delivered; today a
@@ -125,4 +163,4 @@ can't be deleted while a Restore of it is pending or running.
 
 ## Planned (not yet modeled)
 
-- More **Providers** beyond NocoDB and Wasabi.
+- More **Providers** beyond NocoDB, Wasabi and Cloudflare.
