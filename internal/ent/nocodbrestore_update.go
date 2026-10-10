@@ -170,6 +170,27 @@ func (_u *NocoDBRestoreUpdate) AddFileCount(v int64) *NocoDBRestoreUpdate {
 	return _u
 }
 
+// SetViewCount sets the "view_count" field.
+func (_u *NocoDBRestoreUpdate) SetViewCount(v int) *NocoDBRestoreUpdate {
+	_u.mutation.ResetViewCount()
+	_u.mutation.SetViewCount(v)
+	return _u
+}
+
+// SetNillableViewCount sets the "view_count" field if the given value is not nil.
+func (_u *NocoDBRestoreUpdate) SetNillableViewCount(v *int) *NocoDBRestoreUpdate {
+	if v != nil {
+		_u.SetViewCount(*v)
+	}
+	return _u
+}
+
+// AddViewCount adds value to the "view_count" field.
+func (_u *NocoDBRestoreUpdate) AddViewCount(v int) *NocoDBRestoreUpdate {
+	_u.mutation.AddViewCount(v)
+	return _u
+}
+
 // SetWarnings sets the "warnings" field.
 func (_u *NocoDBRestoreUpdate) SetWarnings(v []nocodb.RestoreWarning) *NocoDBRestoreUpdate {
 	_u.mutation.SetWarnings(v)
@@ -304,6 +325,12 @@ func (_u *NocoDBRestoreUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	}
 	if value, ok := _u.mutation.AddedFileCount(); ok {
 		_spec.AddField(nocodbrestore.FieldFileCount, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.ViewCount(); ok {
+		_spec.SetField(nocodbrestore.FieldViewCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedViewCount(); ok {
+		_spec.AddField(nocodbrestore.FieldViewCount, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.Warnings(); ok {
 		_spec.SetField(nocodbrestore.FieldWarnings, field.TypeJSON, value)
@@ -488,6 +515,27 @@ func (_u *NocoDBRestoreUpdateOne) AddFileCount(v int64) *NocoDBRestoreUpdateOne 
 	return _u
 }
 
+// SetViewCount sets the "view_count" field.
+func (_u *NocoDBRestoreUpdateOne) SetViewCount(v int) *NocoDBRestoreUpdateOne {
+	_u.mutation.ResetViewCount()
+	_u.mutation.SetViewCount(v)
+	return _u
+}
+
+// SetNillableViewCount sets the "view_count" field if the given value is not nil.
+func (_u *NocoDBRestoreUpdateOne) SetNillableViewCount(v *int) *NocoDBRestoreUpdateOne {
+	if v != nil {
+		_u.SetViewCount(*v)
+	}
+	return _u
+}
+
+// AddViewCount adds value to the "view_count" field.
+func (_u *NocoDBRestoreUpdateOne) AddViewCount(v int) *NocoDBRestoreUpdateOne {
+	_u.mutation.AddViewCount(v)
+	return _u
+}
+
 // SetWarnings sets the "warnings" field.
 func (_u *NocoDBRestoreUpdateOne) SetWarnings(v []nocodb.RestoreWarning) *NocoDBRestoreUpdateOne {
 	_u.mutation.SetWarnings(v)
@@ -652,6 +700,12 @@ func (_u *NocoDBRestoreUpdateOne) sqlSave(ctx context.Context) (_node *NocoDBRes
 	}
 	if value, ok := _u.mutation.AddedFileCount(); ok {
 		_spec.AddField(nocodbrestore.FieldFileCount, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.ViewCount(); ok {
+		_spec.SetField(nocodbrestore.FieldViewCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedViewCount(); ok {
+		_spec.AddField(nocodbrestore.FieldViewCount, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.Warnings(); ok {
 		_spec.SetField(nocodbrestore.FieldWarnings, field.TypeJSON, value)

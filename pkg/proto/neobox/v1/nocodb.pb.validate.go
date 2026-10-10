@@ -926,6 +926,8 @@ func (m *SnapshotTable) validate(all bool) error {
 
 	// no validation rules for FilesMissing
 
+	// no validation rules for ViewCount
+
 	if len(errors) > 0 {
 		return SnapshotTableMultiError(errors)
 	}
@@ -1176,6 +1178,8 @@ func (m *Snapshot) validate(all bool) error {
 	// no validation rules for FileBytes
 
 	// no validation rules for FilesMissing
+
+	// no validation rules for ViewCount
 
 	if len(errors) > 0 {
 		return SnapshotMultiError(errors)
@@ -2651,6 +2655,8 @@ func (m *RestoreWarning) validate(all bool) error {
 
 	// no validation rules for Message
 
+	// no validation rules for View
+
 	if len(errors) > 0 {
 		return RestoreWarningMultiError(errors)
 	}
@@ -2900,6 +2906,8 @@ func (m *Restore) validate(all bool) error {
 	}
 
 	// no validation rules for FileCount
+
+	// no validation rules for ViewCount
 
 	if len(errors) > 0 {
 		return RestoreMultiError(errors)

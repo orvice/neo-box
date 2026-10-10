@@ -52,6 +52,7 @@ type SnapshotTable struct {
 	RecordCount  int64  `json:"record_count"`
 	FieldCount   int    `json:"field_count"`
 	LinkCount    int64  `json:"link_count"`
+	ViewCount    int    `json:"view_count,omitempty"`
 	FileCount    int64  `json:"file_count,omitempty"`
 	FileBytes    int64  `json:"file_bytes,omitempty"`
 	FilesMissing int64  `json:"files_missing,omitempty"`
@@ -72,6 +73,7 @@ type Snapshot struct {
 	SizeBytes    int64
 	RecordCount  int64
 	LinkCount    int64
+	ViewCount    int
 	// AttachmentsIncluded is set when the snapshot stored attachment
 	// files; FileCount and FileBytes count them (each distinct file of a
 	// table once), FilesMissing those that could not be downloaded.
@@ -113,13 +115,15 @@ const (
 	RestoreFailed    RestoreStatus = "failed"
 )
 
-// RestoreWarning groups one kind of loss in one table (and field).
+// RestoreWarning groups one kind of loss in one table (and view and
+// field).
 type RestoreWarning struct {
 	Code    string `json:"code"`
 	Table   string `json:"table,omitempty"`
 	Field   string `json:"field,omitempty"`
 	Count   int64  `json:"count"`
 	Message string `json:"message"`
+	View    string `json:"view,omitempty"`
 }
 
 // Restore is one rebuild of a Snapshot into a new Base on a target
@@ -142,6 +146,7 @@ type Restore struct {
 	RecordCount     int64
 	LinkCount       int64
 	FileCount       int64
+	ViewCount       int
 	Warnings        []RestoreWarning
 	CreatedAt       time.Time
 	StartedAt       time.Time

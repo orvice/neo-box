@@ -139,6 +139,11 @@ func FileCount(v int64) predicate.NocoDBRestore {
 	return predicate.NocoDBRestore(sql.FieldEQ(FieldFileCount, v))
 }
 
+// ViewCount applies equality check predicate on the "view_count" field. It's identical to ViewCountEQ.
+func ViewCount(v int) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldEQ(FieldViewCount, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.NocoDBRestore {
 	return predicate.NocoDBRestore(sql.FieldEQ(FieldCreatedAt, v))
@@ -1027,6 +1032,46 @@ func FileCountLT(v int64) predicate.NocoDBRestore {
 // FileCountLTE applies the LTE predicate on the "file_count" field.
 func FileCountLTE(v int64) predicate.NocoDBRestore {
 	return predicate.NocoDBRestore(sql.FieldLTE(FieldFileCount, v))
+}
+
+// ViewCountEQ applies the EQ predicate on the "view_count" field.
+func ViewCountEQ(v int) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldEQ(FieldViewCount, v))
+}
+
+// ViewCountNEQ applies the NEQ predicate on the "view_count" field.
+func ViewCountNEQ(v int) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldNEQ(FieldViewCount, v))
+}
+
+// ViewCountIn applies the In predicate on the "view_count" field.
+func ViewCountIn(vs ...int) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldIn(FieldViewCount, vs...))
+}
+
+// ViewCountNotIn applies the NotIn predicate on the "view_count" field.
+func ViewCountNotIn(vs ...int) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldNotIn(FieldViewCount, vs...))
+}
+
+// ViewCountGT applies the GT predicate on the "view_count" field.
+func ViewCountGT(v int) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldGT(FieldViewCount, v))
+}
+
+// ViewCountGTE applies the GTE predicate on the "view_count" field.
+func ViewCountGTE(v int) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldGTE(FieldViewCount, v))
+}
+
+// ViewCountLT applies the LT predicate on the "view_count" field.
+func ViewCountLT(v int) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldLT(FieldViewCount, v))
+}
+
+// ViewCountLTE applies the LTE predicate on the "view_count" field.
+func ViewCountLTE(v int) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldLTE(FieldViewCount, v))
 }
 
 // WarningsIsNil applies the IsNil predicate on the "warnings" field.

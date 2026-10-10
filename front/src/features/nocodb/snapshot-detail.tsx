@@ -148,12 +148,15 @@ export function SnapshotDetailPage() {
         }
       />
       <PageScroll className='space-y-6'>
-        <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-5'>
+        <div className='grid gap-4 sm:grid-cols-3 xl:grid-cols-6'>
           <Stat label='Status'>
             <SnapshotStatusBadge status={snap.status} />
           </Stat>
           <Stat label='Records'>{formatCount(snap.recordCount)}</Stat>
           <Stat label='Links'>{formatCount(snap.linkCount)}</Stat>
+          <Stat label='Views'>
+            {succeeded ? formatCount(snap.viewCount) : '-'}
+          </Stat>
           <Stat label='Attachment files'>
             {!succeeded ? (
               '-'

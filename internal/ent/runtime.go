@@ -89,6 +89,10 @@ func init() {
 	nocodbrestoreDescFileCount := nocodbrestoreFields[15].Descriptor()
 	// nocodbrestore.DefaultFileCount holds the default value on creation for the file_count field.
 	nocodbrestore.DefaultFileCount = nocodbrestoreDescFileCount.Default.(int64)
+	// nocodbrestoreDescViewCount is the schema descriptor for view_count field.
+	nocodbrestoreDescViewCount := nocodbrestoreFields[16].Descriptor()
+	// nocodbrestore.DefaultViewCount holds the default value on creation for the view_count field.
+	nocodbrestore.DefaultViewCount = nocodbrestoreDescViewCount.Default.(int)
 	nocodbsnapshotFields := schema.NocoDBSnapshot{}.Fields()
 	_ = nocodbsnapshotFields
 	// nocodbsnapshotDescBaseTitle is the schema descriptor for base_title field.
@@ -119,20 +123,24 @@ func init() {
 	nocodbsnapshotDescLinkCount := nocodbsnapshotFields[12].Descriptor()
 	// nocodbsnapshot.DefaultLinkCount holds the default value on creation for the link_count field.
 	nocodbsnapshot.DefaultLinkCount = nocodbsnapshotDescLinkCount.Default.(int64)
+	// nocodbsnapshotDescViewCount is the schema descriptor for view_count field.
+	nocodbsnapshotDescViewCount := nocodbsnapshotFields[13].Descriptor()
+	// nocodbsnapshot.DefaultViewCount holds the default value on creation for the view_count field.
+	nocodbsnapshot.DefaultViewCount = nocodbsnapshotDescViewCount.Default.(int)
 	// nocodbsnapshotDescAttachmentsIncluded is the schema descriptor for attachments_included field.
-	nocodbsnapshotDescAttachmentsIncluded := nocodbsnapshotFields[13].Descriptor()
+	nocodbsnapshotDescAttachmentsIncluded := nocodbsnapshotFields[14].Descriptor()
 	// nocodbsnapshot.DefaultAttachmentsIncluded holds the default value on creation for the attachments_included field.
 	nocodbsnapshot.DefaultAttachmentsIncluded = nocodbsnapshotDescAttachmentsIncluded.Default.(bool)
 	// nocodbsnapshotDescFileCount is the schema descriptor for file_count field.
-	nocodbsnapshotDescFileCount := nocodbsnapshotFields[14].Descriptor()
+	nocodbsnapshotDescFileCount := nocodbsnapshotFields[15].Descriptor()
 	// nocodbsnapshot.DefaultFileCount holds the default value on creation for the file_count field.
 	nocodbsnapshot.DefaultFileCount = nocodbsnapshotDescFileCount.Default.(int64)
 	// nocodbsnapshotDescFileBytes is the schema descriptor for file_bytes field.
-	nocodbsnapshotDescFileBytes := nocodbsnapshotFields[15].Descriptor()
+	nocodbsnapshotDescFileBytes := nocodbsnapshotFields[16].Descriptor()
 	// nocodbsnapshot.DefaultFileBytes holds the default value on creation for the file_bytes field.
 	nocodbsnapshot.DefaultFileBytes = nocodbsnapshotDescFileBytes.Default.(int64)
 	// nocodbsnapshotDescFilesMissing is the schema descriptor for files_missing field.
-	nocodbsnapshotDescFilesMissing := nocodbsnapshotFields[16].Descriptor()
+	nocodbsnapshotDescFilesMissing := nocodbsnapshotFields[17].Descriptor()
 	// nocodbsnapshot.DefaultFilesMissing holds the default value on creation for the files_missing field.
 	nocodbsnapshot.DefaultFilesMissing = nocodbsnapshotDescFilesMissing.Default.(int64)
 	notificationchannelFields := schema.NotificationChannel{}.Fields()

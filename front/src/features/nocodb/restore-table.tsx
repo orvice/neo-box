@@ -38,6 +38,8 @@ const warningLabels: Record<string, string> = {
   links_failed: 'Links not restored',
   display_field_not_set: 'Display field not set',
   relation_guessed: 'Relation paired by order',
+  view_skipped: 'View not restored',
+  view_setting_skipped: 'View setting not restored',
 }
 
 /**
@@ -159,6 +161,7 @@ export function RestoreTable({
             <div className='text-xs text-muted-foreground'>
               {r.tableCount} tables · {formatCount(r.recordCount)} records ·{' '}
               {formatCount(r.linkCount)} links
+              {r.viewCount > 0 && ` · ${formatCount(r.viewCount)} views`}
               {r.fileCount > 0 && ` · ${formatCount(r.fileCount)} files`}
             </div>
             {r.warnings.length > 0 && (
@@ -211,7 +214,7 @@ function WarningsDialog({
         <DialogHeader>
           <DialogTitle>What wasn't restored</DialogTitle>
           <DialogDescription>
-            {restore.targetBaseTitle} · grouped by table and field
+            {restore.targetBaseTitle} · grouped by table, view and field
           </DialogDescription>
         </DialogHeader>
         <div className='max-h-[60vh] overflow-auto rounded-md border'>
@@ -248,6 +251,6 @@ function WarningsDialog({
 }
 
 function where(w: RestoreWarning) {
-  if (w.table && w.field) return `${w.table} / ${w.field}`
-  return w.table || w.field || '-'
+  const parts = [w.table, w.view && `“${w.view}”`, w.field].filter(Boolean)
+  return parts.length ? parts.join(' / ') : '-'
 }

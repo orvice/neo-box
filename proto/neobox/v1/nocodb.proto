@@ -117,6 +117,7 @@ message SnapshotTable {
   int64 file_count = 6;
   int64 file_bytes = 7;
   int64 files_missing = 8;
+  int32 view_count = 9;
 }
 
 message Snapshot {
@@ -146,6 +147,8 @@ message Snapshot {
   int64 file_count = 17;
   int64 file_bytes = 18;
   int64 files_missing = 19;
+  // Views captured with their columns, filters and sorts.
+  int32 view_count = 20;
 }
 
 message CreateSnapshotRequest {
@@ -211,16 +214,20 @@ enum RestoreStatus {
   RESTORE_STATUS_FAILED = 4;
 }
 
-// RestoreWarning groups one kind of loss in one table (and field), e.g.
-// code "attachments_skipped" with the number of attachments not restored.
+// RestoreWarning groups one kind of loss in one table (and view and
+// field), e.g. code "attachments_skipped" with the number of attachments
+// not restored.
 message RestoreWarning {
   // One of field_skipped, attachments_skipped, user_values_dropped,
-  // records_failed, links_failed, display_field_not_set, relation_guessed.
+  // records_failed, links_failed, display_field_not_set, relation_guessed,
+  // view_skipped, view_setting_skipped.
   string code = 1;
   string table = 2;
   string field = 3;
   int64 count = 4;
   string message = 5;
+  // The view, for view_skipped and view_setting_skipped.
+  string view = 6;
 }
 
 // Restore is one rebuild of a Snapshot into a new Base. The source fields
@@ -249,6 +256,8 @@ message Restore {
   repeated RestoreWarning warnings = 18;
   // Attachment files uploaded into the new Base.
   int64 file_count = 19;
+  // Views created or set up in the new Base.
+  int32 view_count = 20;
 }
 
 message RestoreSnapshotRequest {

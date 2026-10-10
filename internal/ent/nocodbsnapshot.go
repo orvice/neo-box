@@ -43,6 +43,8 @@ type NocoDBSnapshot struct {
 	RecordCount int64 `json:"record_count,omitempty"`
 	// LinkCount holds the value of the "link_count" field.
 	LinkCount int64 `json:"link_count,omitempty"`
+	// ViewCount holds the value of the "view_count" field.
+	ViewCount int `json:"view_count,omitempty"`
 	// AttachmentsIncluded holds the value of the "attachments_included" field.
 	AttachmentsIncluded bool `json:"attachments_included,omitempty"`
 	// FileCount holds the value of the "file_count" field.
@@ -71,7 +73,7 @@ func (*NocoDBSnapshot) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case nocodbsnapshot.FieldAttachmentsIncluded:
 			values[i] = new(sql.NullBool)
-		case nocodbsnapshot.FieldSizeBytes, nocodbsnapshot.FieldRecordCount, nocodbsnapshot.FieldLinkCount, nocodbsnapshot.FieldFileCount, nocodbsnapshot.FieldFileBytes, nocodbsnapshot.FieldFilesMissing:
+		case nocodbsnapshot.FieldSizeBytes, nocodbsnapshot.FieldRecordCount, nocodbsnapshot.FieldLinkCount, nocodbsnapshot.FieldViewCount, nocodbsnapshot.FieldFileCount, nocodbsnapshot.FieldFileBytes, nocodbsnapshot.FieldFilesMissing:
 			values[i] = new(sql.NullInt64)
 		case nocodbsnapshot.FieldID, nocodbsnapshot.FieldUserID, nocodbsnapshot.FieldConnectionID, nocodbsnapshot.FieldBaseID, nocodbsnapshot.FieldBaseTitle, nocodbsnapshot.FieldStatus, nocodbsnapshot.FieldTrigger, nocodbsnapshot.FieldError, nocodbsnapshot.FieldProgress, nocodbsnapshot.FieldObjectKey:
 			values[i] = new(sql.NullString)
@@ -169,6 +171,12 @@ func (_m *NocoDBSnapshot) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field link_count", values[i])
 			} else if value.Valid {
 				_m.LinkCount = value.Int64
+			}
+		case nocodbsnapshot.FieldViewCount:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field view_count", values[i])
+			} else if value.Valid {
+				_m.ViewCount = int(value.Int64)
 			}
 		case nocodbsnapshot.FieldAttachmentsIncluded:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -293,6 +301,9 @@ func (_m *NocoDBSnapshot) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("link_count=")
 	builder.WriteString(fmt.Sprintf("%v", _m.LinkCount))
+	builder.WriteString(", ")
+	builder.WriteString("view_count=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ViewCount))
 	builder.WriteString(", ")
 	builder.WriteString("attachments_included=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AttachmentsIncluded))

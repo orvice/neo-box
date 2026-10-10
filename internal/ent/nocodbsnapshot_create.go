@@ -152,6 +152,20 @@ func (_c *NocoDBSnapshotCreate) SetNillableLinkCount(v *int64) *NocoDBSnapshotCr
 	return _c
 }
 
+// SetViewCount sets the "view_count" field.
+func (_c *NocoDBSnapshotCreate) SetViewCount(v int) *NocoDBSnapshotCreate {
+	_c.mutation.SetViewCount(v)
+	return _c
+}
+
+// SetNillableViewCount sets the "view_count" field if the given value is not nil.
+func (_c *NocoDBSnapshotCreate) SetNillableViewCount(v *int) *NocoDBSnapshotCreate {
+	if v != nil {
+		_c.SetViewCount(*v)
+	}
+	return _c
+}
+
 // SetAttachmentsIncluded sets the "attachments_included" field.
 func (_c *NocoDBSnapshotCreate) SetAttachmentsIncluded(v bool) *NocoDBSnapshotCreate {
 	_c.mutation.SetAttachmentsIncluded(v)
@@ -317,6 +331,10 @@ func (_c *NocoDBSnapshotCreate) defaults() {
 		v := nocodbsnapshot.DefaultLinkCount
 		_c.mutation.SetLinkCount(v)
 	}
+	if _, ok := _c.mutation.ViewCount(); !ok {
+		v := nocodbsnapshot.DefaultViewCount
+		_c.mutation.SetViewCount(v)
+	}
 	if _, ok := _c.mutation.AttachmentsIncluded(); !ok {
 		v := nocodbsnapshot.DefaultAttachmentsIncluded
 		_c.mutation.SetAttachmentsIncluded(v)
@@ -372,6 +390,9 @@ func (_c *NocoDBSnapshotCreate) check() error {
 	}
 	if _, ok := _c.mutation.LinkCount(); !ok {
 		return &ValidationError{Name: "link_count", err: errors.New(`ent: missing required field "NocoDBSnapshot.link_count"`)}
+	}
+	if _, ok := _c.mutation.ViewCount(); !ok {
+		return &ValidationError{Name: "view_count", err: errors.New(`ent: missing required field "NocoDBSnapshot.view_count"`)}
 	}
 	if _, ok := _c.mutation.AttachmentsIncluded(); !ok {
 		return &ValidationError{Name: "attachments_included", err: errors.New(`ent: missing required field "NocoDBSnapshot.attachments_included"`)}
@@ -471,6 +492,10 @@ func (_c *NocoDBSnapshotCreate) createSpec() (*NocoDBSnapshot, *sqlgraph.CreateS
 	if value, ok := _c.mutation.LinkCount(); ok {
 		_spec.SetField(nocodbsnapshot.FieldLinkCount, field.TypeInt64, value)
 		_node.LinkCount = value
+	}
+	if value, ok := _c.mutation.ViewCount(); ok {
+		_spec.SetField(nocodbsnapshot.FieldViewCount, field.TypeInt, value)
+		_node.ViewCount = value
 	}
 	if value, ok := _c.mutation.AttachmentsIncluded(); ok {
 		_spec.SetField(nocodbsnapshot.FieldAttachmentsIncluded, field.TypeBool, value)
@@ -667,6 +692,24 @@ func (u *NocoDBSnapshotUpsert) UpdateLinkCount() *NocoDBSnapshotUpsert {
 // AddLinkCount adds v to the "link_count" field.
 func (u *NocoDBSnapshotUpsert) AddLinkCount(v int64) *NocoDBSnapshotUpsert {
 	u.Add(nocodbsnapshot.FieldLinkCount, v)
+	return u
+}
+
+// SetViewCount sets the "view_count" field.
+func (u *NocoDBSnapshotUpsert) SetViewCount(v int) *NocoDBSnapshotUpsert {
+	u.Set(nocodbsnapshot.FieldViewCount, v)
+	return u
+}
+
+// UpdateViewCount sets the "view_count" field to the value that was provided on create.
+func (u *NocoDBSnapshotUpsert) UpdateViewCount() *NocoDBSnapshotUpsert {
+	u.SetExcluded(nocodbsnapshot.FieldViewCount)
+	return u
+}
+
+// AddViewCount adds v to the "view_count" field.
+func (u *NocoDBSnapshotUpsert) AddViewCount(v int) *NocoDBSnapshotUpsert {
+	u.Add(nocodbsnapshot.FieldViewCount, v)
 	return u
 }
 
@@ -983,6 +1026,27 @@ func (u *NocoDBSnapshotUpsertOne) AddLinkCount(v int64) *NocoDBSnapshotUpsertOne
 func (u *NocoDBSnapshotUpsertOne) UpdateLinkCount() *NocoDBSnapshotUpsertOne {
 	return u.Update(func(s *NocoDBSnapshotUpsert) {
 		s.UpdateLinkCount()
+	})
+}
+
+// SetViewCount sets the "view_count" field.
+func (u *NocoDBSnapshotUpsertOne) SetViewCount(v int) *NocoDBSnapshotUpsertOne {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.SetViewCount(v)
+	})
+}
+
+// AddViewCount adds v to the "view_count" field.
+func (u *NocoDBSnapshotUpsertOne) AddViewCount(v int) *NocoDBSnapshotUpsertOne {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.AddViewCount(v)
+	})
+}
+
+// UpdateViewCount sets the "view_count" field to the value that was provided on create.
+func (u *NocoDBSnapshotUpsertOne) UpdateViewCount() *NocoDBSnapshotUpsertOne {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.UpdateViewCount()
 	})
 }
 
@@ -1486,6 +1550,27 @@ func (u *NocoDBSnapshotUpsertBulk) AddLinkCount(v int64) *NocoDBSnapshotUpsertBu
 func (u *NocoDBSnapshotUpsertBulk) UpdateLinkCount() *NocoDBSnapshotUpsertBulk {
 	return u.Update(func(s *NocoDBSnapshotUpsert) {
 		s.UpdateLinkCount()
+	})
+}
+
+// SetViewCount sets the "view_count" field.
+func (u *NocoDBSnapshotUpsertBulk) SetViewCount(v int) *NocoDBSnapshotUpsertBulk {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.SetViewCount(v)
+	})
+}
+
+// AddViewCount adds v to the "view_count" field.
+func (u *NocoDBSnapshotUpsertBulk) AddViewCount(v int) *NocoDBSnapshotUpsertBulk {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.AddViewCount(v)
+	})
+}
+
+// UpdateViewCount sets the "view_count" field to the value that was provided on create.
+func (u *NocoDBSnapshotUpsertBulk) UpdateViewCount() *NocoDBSnapshotUpsertBulk {
+	return u.Update(func(s *NocoDBSnapshotUpsert) {
+		s.UpdateViewCount()
 	})
 }
 

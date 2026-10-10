@@ -22,6 +22,11 @@ type API interface {
 	GetTable(ctx context.Context, baseID, tableID string) (*nocodb.Table, error)
 	ListRecords(ctx context.Context, baseID, tableID string, page, pageSize int) (*nocodb.RecordPage, error)
 	ListLinkedIDs(ctx context.Context, baseID, tableID, linkFieldID, recordID string) ([]json.RawMessage, error)
+	ListViews(ctx context.Context, tableID string) ([]json.RawMessage, error)
+	ListViewColumns(ctx context.Context, viewID string) ([]json.RawMessage, error)
+	ListViewSorts(ctx context.Context, viewID string) ([]json.RawMessage, error)
+	ListViewFilters(ctx context.Context, viewID string) ([]json.RawMessage, error)
+	ListFilterChildren(ctx context.Context, filterID string) ([]json.RawMessage, error)
 }
 
 // Files stores the attachment files of a snapshot being built.
@@ -42,6 +47,7 @@ type TableStats struct {
 	RecordCount int64
 	FieldCount  int
 	LinkCount   int64
+	ViewCount   int
 	// FileCount and FileBytes count the attachment files captured (or
 	// restored); FilesMissing those that could not be read.
 	FileCount    int64
@@ -54,6 +60,7 @@ type Stats struct {
 	Tables       []TableStats
 	RecordCount  int64
 	LinkCount    int64
+	ViewCount    int
 	FileCount    int64
 	FileBytes    int64
 	FilesMissing int64
@@ -123,6 +130,7 @@ func Build(ctx context.Context, api API, src Source, w io.Writer, opts Options) 
 			RecordCount: int64(len(t.Records)),
 			FieldCount:  len(t.Fields()),
 			LinkCount:   t.LinkCount(),
+			ViewCount:   len(t.Views),
 		}
 		for _, f := range t.Files {
 			if f.SHA256 == "" {
@@ -135,6 +143,7 @@ func Build(ctx context.Context, api API, src Source, w io.Writer, opts Options) 
 		stats.Tables = append(stats.Tables, ts)
 		stats.RecordCount += ts.RecordCount
 		stats.LinkCount += ts.LinkCount
+		stats.ViewCount += ts.ViewCount
 		stats.FileCount += ts.FileCount
 		stats.FileBytes += ts.FileBytes
 		stats.FilesMissing += ts.FilesMissing
@@ -178,7 +187,70 @@ func captureTable(ctx context.Context, api API, baseID string, summary nocodb.Ta
 			return nil, err
 		}
 	}
+	progress("reading views")
+	views, err := captureViews(ctx, api, t.ID)
+	if err != nil {
+		return nil, fmt.Errorf("views: %w", err)
+	}
+	t.Views = views
 	return t, nil
+}
+
+// maxFilterDepth bounds recursion into filter groups; NocoDB's UI nests
+// a few levels at most.
+const maxFilterDepth = 16
+
+// captureViews reads every view of a table with its columns, sorts and
+// filters.
+func captureViews(ctx context.Context, api API, tableID string) ([]View, error) {
+	list, err := api.ListViews(ctx, tableID)
+	if err != nil {
+		return nil, err
+	}
+	views := make([]View, 0, len(list))
+	for _, raw := range list {
+		id := jsonString(raw, "id")
+		v := View{View: raw}
+		if v.Columns, err = api.ListViewColumns(ctx, id); err != nil {
+			return nil, fmt.Errorf("view %q columns: %w", jsonString(raw, "title"), err)
+		}
+		if v.Sorts, err = api.ListViewSorts(ctx, id); err != nil {
+			return nil, fmt.Errorf("view %q sorts: %w", jsonString(raw, "title"), err)
+		}
+		top, err := api.ListViewFilters(ctx, id)
+		if err != nil {
+			return nil, fmt.Errorf("view %q filters: %w", jsonString(raw, "title"), err)
+		}
+		if v.Filters, err = flattenFilters(ctx, api, top, 0); err != nil {
+			return nil, fmt.Errorf("view %q filters: %w", jsonString(raw, "title"), err)
+		}
+		views = append(views, v)
+	}
+	return views, nil
+}
+
+// flattenFilters lists filters with each group followed by its members.
+func flattenFilters(ctx context.Context, api API, filters []json.RawMessage, depth int) ([]json.RawMessage, error) {
+	out := []json.RawMessage{}
+	for _, f := range filters {
+		out = append(out, f)
+		if !jsonBool(f, "is_group") {
+			continue
+		}
+		if depth >= maxFilterDepth {
+			return nil, errors.New("filter groups nested too deeply")
+		}
+		children, err := api.ListFilterChildren(ctx, jsonString(f, "id"))
+		if err != nil {
+			return nil, err
+		}
+		nested, err := flattenFilters(ctx, api, children, depth+1)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, nested...)
+	}
+	return out, nil
 }
 
 func captureLinks(ctx context.Context, api API, baseID string, schema *nocodb.Table, t *Table, opts Options, progress func(string)) error {

@@ -39,6 +39,19 @@ type fakeNoco struct {
 	uploads    [][]string // titles per upload request
 	updates    []map[string]json.RawMessage
 	failUpload func(files []nocodb.UploadFile) bool
+
+	views      map[string][]*fakeView    // table id -> views
+	colPatches map[string]map[string]any // column id -> patched settings
+}
+
+// fakeView is a view on the fake: its create body, patches, sorts and
+// filters as sent.
+type fakeView struct {
+	id, title, table string
+	viewType         int
+	body             map[string]any
+	settings         []map[string]any // UpdateView, then UpdateViewSettings
+	sorts, filters   []map[string]any
 }
 
 type fakeTable struct {
@@ -49,7 +62,10 @@ type fakeTable struct {
 }
 
 func newFakeNoco() *fakeNoco {
-	return &fakeNoco{tables: map[string]*fakeTable{}, renamed: map[string]string{}, display: map[string]string{}, members: []string{"admin@x.test"}}
+	return &fakeNoco{
+		tables: map[string]*fakeTable{}, renamed: map[string]string{}, display: map[string]string{}, members: []string{"admin@x.test"},
+		views: map[string][]*fakeView{}, colPatches: map[string]map[string]any{},
+	}
 }
 
 func (f *fakeNoco) id(prefix string) string {
@@ -83,11 +99,138 @@ func (f *fakeNoco) CreateTable(_ context.Context, _ string, def any) (*nocodb.Ta
 		if bytes.Contains(fd.Options, []byte(`"id"`)) {
 			return nil, &nocodb.APIError{StatusCode: 500, Message: "A UNIQUE constraint was violated"}
 		}
-		t.fields = append(t.fields, nocodb.Field{ID: f.id("nf"), Title: fd.Title, Type: fd.Type, Options: fd.Options})
+		t.fields = append(t.fields, nocodb.Field{ID: f.id("nf"), Title: fd.Title, Type: fd.Type, Options: withChoiceIDs(fd.Options)})
 	}
 	f.tables[t.id] = t
 	f.order = append(f.order, t.id)
+	// NocoDB creates a default grid view named after the table.
+	f.views[t.id] = []*fakeView{{id: f.id("vw"), title: t.title, table: t.id, viewType: nocodb.ViewTypeGrid}}
 	return f.table(t), nil
+}
+
+// withChoiceIDs gives select choices IDs, as NocoDB does.
+func withChoiceIDs(opts json.RawMessage) json.RawMessage {
+	var m map[string]any
+	if json.Unmarshal(opts, &m) != nil {
+		return opts
+	}
+	choices, ok := m["choices"].([]any)
+	if !ok {
+		return opts
+	}
+	for _, c := range choices {
+		if cm, ok := c.(map[string]any); ok {
+			cm["id"] = "ch-" + fmt.Sprint(cm["title"])
+		}
+	}
+	out, _ := json.Marshal(m)
+	return out
+}
+
+func (f *fakeNoco) view(id string) *fakeView {
+	for _, vs := range f.views {
+		for _, v := range vs {
+			if v.id == id {
+				return v
+			}
+		}
+	}
+	return nil
+}
+
+func (f *fakeNoco) ListViews(_ context.Context, tableID string) ([]json.RawMessage, error) {
+	var out []json.RawMessage
+	for i, v := range f.views[tableID] {
+		raw, _ := json.Marshal(map[string]any{"id": v.id, "title": v.title, "type": v.viewType, "order": i + 1})
+		out = append(out, raw)
+	}
+	return out, nil
+}
+
+// ListViewColumns has one column per field of the view's table, with the
+// defaults NocoDB gives a new view and any patches applied.
+func (f *fakeNoco) ListViewColumns(_ context.Context, viewID string) ([]json.RawMessage, error) {
+	v := f.view(viewID)
+	var out []json.RawMessage
+	for i, fld := range f.tables[v.table].fields {
+		id := viewID + "/" + fld.ID
+		col := map[string]any{"id": id, "fk_column_id": fld.ID, "show": 1, "order": i + 1, "width": "200px"}
+		for k, val := range f.colPatches[id] {
+			col[k] = val
+		}
+		raw, _ := json.Marshal(col)
+		out = append(out, raw)
+	}
+	return out, nil
+}
+
+func asMap(v any) map[string]any {
+	raw, _ := json.Marshal(v)
+	var m map[string]any
+	_ = json.Unmarshal(raw, &m)
+	return m
+}
+
+func (f *fakeNoco) CreateView(_ context.Context, tableID string, viewType int, body any) (string, error) {
+	b := asMap(body)
+	if viewType == nocodb.ViewTypeKanban && b["fk_grp_col_id"] == nil {
+		return "", badRequest("fk_grp_col_id is required")
+	}
+	v := &fakeView{id: f.id("vw"), title: fmt.Sprint(b["title"]), table: tableID, viewType: viewType, body: b}
+	f.views[tableID] = append(f.views[tableID], v)
+	return v.id, nil
+}
+
+func (f *fakeNoco) UpdateView(_ context.Context, viewID string, patch any) error {
+	v := f.view(viewID)
+	p := asMap(patch)
+	if title, ok := p["title"].(string); ok {
+		v.title = title
+	}
+	v.settings = append(v.settings, p)
+	return nil
+}
+
+func (f *fakeNoco) UpdateViewSettings(_ context.Context, _ int, viewID string, patch any) error {
+	v := f.view(viewID)
+	v.settings = append(v.settings, asMap(patch))
+	return nil
+}
+
+func (f *fakeNoco) patchColumn(columnID string, patch any) error {
+	if f.colPatches[columnID] == nil {
+		f.colPatches[columnID] = map[string]any{}
+	}
+	for k, val := range asMap(patch) {
+		f.colPatches[columnID][k] = val
+	}
+	return nil
+}
+
+func (f *fakeNoco) UpdateViewColumn(_ context.Context, _, columnID string, patch any) error {
+	return f.patchColumn(columnID, patch)
+}
+
+func (f *fakeNoco) UpdateGridColumn(_ context.Context, columnID string, patch any) error {
+	return f.patchColumn(columnID, patch)
+}
+
+func (f *fakeNoco) UpdateFormColumn(_ context.Context, columnID string, patch any) error {
+	return f.patchColumn(columnID, patch)
+}
+
+func (f *fakeNoco) CreateSort(_ context.Context, viewID string, body any) error {
+	v := f.view(viewID)
+	v.sorts = append(v.sorts, asMap(body))
+	return nil
+}
+
+func (f *fakeNoco) CreateFilter(_ context.Context, viewID string, body any) (string, error) {
+	v := f.view(viewID)
+	b := asMap(body)
+	b["id"] = f.id("fi")
+	v.filters = append(v.filters, b)
+	return b["id"].(string), nil
 }
 
 func (f *fakeNoco) table(t *fakeTable) *nocodb.Table {

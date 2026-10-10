@@ -178,6 +178,20 @@ func (_c *NocoDBRestoreCreate) SetNillableFileCount(v *int64) *NocoDBRestoreCrea
 	return _c
 }
 
+// SetViewCount sets the "view_count" field.
+func (_c *NocoDBRestoreCreate) SetViewCount(v int) *NocoDBRestoreCreate {
+	_c.mutation.SetViewCount(v)
+	return _c
+}
+
+// SetNillableViewCount sets the "view_count" field if the given value is not nil.
+func (_c *NocoDBRestoreCreate) SetNillableViewCount(v *int) *NocoDBRestoreCreate {
+	if v != nil {
+		_c.SetViewCount(*v)
+	}
+	return _c
+}
+
 // SetWarnings sets the "warnings" field.
 func (_c *NocoDBRestoreCreate) SetWarnings(v []nocodb.RestoreWarning) *NocoDBRestoreCreate {
 	_c.mutation.SetWarnings(v)
@@ -291,6 +305,10 @@ func (_c *NocoDBRestoreCreate) defaults() {
 		v := nocodbrestore.DefaultFileCount
 		_c.mutation.SetFileCount(v)
 	}
+	if _, ok := _c.mutation.ViewCount(); !ok {
+		v := nocodbrestore.DefaultViewCount
+		_c.mutation.SetViewCount(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -339,6 +357,9 @@ func (_c *NocoDBRestoreCreate) check() error {
 	}
 	if _, ok := _c.mutation.FileCount(); !ok {
 		return &ValidationError{Name: "file_count", err: errors.New(`ent: missing required field "NocoDBRestore.file_count"`)}
+	}
+	if _, ok := _c.mutation.ViewCount(); !ok {
+		return &ValidationError{Name: "view_count", err: errors.New(`ent: missing required field "NocoDBRestore.view_count"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "NocoDBRestore.created_at"`)}
@@ -438,6 +459,10 @@ func (_c *NocoDBRestoreCreate) createSpec() (*NocoDBRestore, *sqlgraph.CreateSpe
 	if value, ok := _c.mutation.FileCount(); ok {
 		_spec.SetField(nocodbrestore.FieldFileCount, field.TypeInt64, value)
 		_node.FileCount = value
+	}
+	if value, ok := _c.mutation.ViewCount(); ok {
+		_spec.SetField(nocodbrestore.FieldViewCount, field.TypeInt, value)
+		_node.ViewCount = value
 	}
 	if value, ok := _c.mutation.Warnings(); ok {
 		_spec.SetField(nocodbrestore.FieldWarnings, field.TypeJSON, value)
@@ -624,6 +649,24 @@ func (u *NocoDBRestoreUpsert) UpdateFileCount() *NocoDBRestoreUpsert {
 // AddFileCount adds v to the "file_count" field.
 func (u *NocoDBRestoreUpsert) AddFileCount(v int64) *NocoDBRestoreUpsert {
 	u.Add(nocodbrestore.FieldFileCount, v)
+	return u
+}
+
+// SetViewCount sets the "view_count" field.
+func (u *NocoDBRestoreUpsert) SetViewCount(v int) *NocoDBRestoreUpsert {
+	u.Set(nocodbrestore.FieldViewCount, v)
+	return u
+}
+
+// UpdateViewCount sets the "view_count" field to the value that was provided on create.
+func (u *NocoDBRestoreUpsert) UpdateViewCount() *NocoDBRestoreUpsert {
+	u.SetExcluded(nocodbrestore.FieldViewCount)
+	return u
+}
+
+// AddViewCount adds v to the "view_count" field.
+func (u *NocoDBRestoreUpsert) AddViewCount(v int) *NocoDBRestoreUpsert {
+	u.Add(nocodbrestore.FieldViewCount, v)
 	return u
 }
 
@@ -890,6 +933,27 @@ func (u *NocoDBRestoreUpsertOne) AddFileCount(v int64) *NocoDBRestoreUpsertOne {
 func (u *NocoDBRestoreUpsertOne) UpdateFileCount() *NocoDBRestoreUpsertOne {
 	return u.Update(func(s *NocoDBRestoreUpsert) {
 		s.UpdateFileCount()
+	})
+}
+
+// SetViewCount sets the "view_count" field.
+func (u *NocoDBRestoreUpsertOne) SetViewCount(v int) *NocoDBRestoreUpsertOne {
+	return u.Update(func(s *NocoDBRestoreUpsert) {
+		s.SetViewCount(v)
+	})
+}
+
+// AddViewCount adds v to the "view_count" field.
+func (u *NocoDBRestoreUpsertOne) AddViewCount(v int) *NocoDBRestoreUpsertOne {
+	return u.Update(func(s *NocoDBRestoreUpsert) {
+		s.AddViewCount(v)
+	})
+}
+
+// UpdateViewCount sets the "view_count" field to the value that was provided on create.
+func (u *NocoDBRestoreUpsertOne) UpdateViewCount() *NocoDBRestoreUpsertOne {
+	return u.Update(func(s *NocoDBRestoreUpsert) {
+		s.UpdateViewCount()
 	})
 }
 
@@ -1332,6 +1396,27 @@ func (u *NocoDBRestoreUpsertBulk) AddFileCount(v int64) *NocoDBRestoreUpsertBulk
 func (u *NocoDBRestoreUpsertBulk) UpdateFileCount() *NocoDBRestoreUpsertBulk {
 	return u.Update(func(s *NocoDBRestoreUpsert) {
 		s.UpdateFileCount()
+	})
+}
+
+// SetViewCount sets the "view_count" field.
+func (u *NocoDBRestoreUpsertBulk) SetViewCount(v int) *NocoDBRestoreUpsertBulk {
+	return u.Update(func(s *NocoDBRestoreUpsert) {
+		s.SetViewCount(v)
+	})
+}
+
+// AddViewCount adds v to the "view_count" field.
+func (u *NocoDBRestoreUpsertBulk) AddViewCount(v int) *NocoDBRestoreUpsertBulk {
+	return u.Update(func(s *NocoDBRestoreUpsert) {
+		s.AddViewCount(v)
+	})
+}
+
+// UpdateViewCount sets the "view_count" field to the value that was provided on create.
+func (u *NocoDBRestoreUpsertBulk) UpdateViewCount() *NocoDBRestoreUpsertBulk {
+	return u.Update(func(s *NocoDBRestoreUpsert) {
+		s.UpdateViewCount()
 	})
 }
 

@@ -417,7 +417,7 @@ func (m *Manager) execute(parent context.Context, snapshotID string) {
 		snap.Status = repo.StatusSucceeded
 		logger.Info("snapshot succeeded", "snapshot_id", snap.ID, "base_id", snap.BaseID,
 			"records", snap.RecordCount, "links", snap.LinkCount, "bytes", snap.SizeBytes,
-			"files", snap.FileCount, "file_bytes", snap.FileBytes, "files_missing", snap.FilesMissing)
+			"views", snap.ViewCount, "files", snap.FileCount, "file_bytes", snap.FileBytes, "files_missing", snap.FilesMissing)
 	}
 	if err := m.repo.UpdateSnapshot(finishCtx, snap); err != nil {
 		logger.Error("snapshot finish update failed", "snapshot_id", snap.ID, "err", err)
@@ -522,6 +522,7 @@ func (m *Manager) capture(ctx context.Context, snap *repo.Snapshot) error {
 	snap.SizeBytes = size
 	snap.RecordCount = stats.RecordCount
 	snap.LinkCount = stats.LinkCount
+	snap.ViewCount = stats.ViewCount
 	snap.FileCount = stats.FileCount
 	snap.FileBytes = stats.FileBytes
 	snap.FilesMissing = stats.FilesMissing
@@ -529,7 +530,7 @@ func (m *Manager) capture(ctx context.Context, snap *repo.Snapshot) error {
 	for _, t := range stats.Tables {
 		snap.Tables = append(snap.Tables, repo.SnapshotTable{
 			ID: t.ID, Title: t.Title, RecordCount: t.RecordCount, FieldCount: t.FieldCount, LinkCount: t.LinkCount,
-			FileCount: t.FileCount, FileBytes: t.FileBytes, FilesMissing: t.FilesMissing,
+			ViewCount: t.ViewCount, FileCount: t.FileCount, FileBytes: t.FileBytes, FilesMissing: t.FilesMissing,
 		})
 	}
 	return nil

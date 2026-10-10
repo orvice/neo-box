@@ -160,6 +160,7 @@ var (
 		{Name: "record_count", Type: field.TypeInt64, Default: 0},
 		{Name: "link_count", Type: field.TypeInt64, Default: 0},
 		{Name: "file_count", Type: field.TypeInt64, Default: 0},
+		{Name: "view_count", Type: field.TypeInt, Default: 0},
 		{Name: "warnings", Type: field.TypeJSON, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "started_at", Type: field.TypeTime, Nullable: true},
@@ -174,12 +175,12 @@ var (
 			{
 				Name:    "nocodbrestore_user_id_snapshot_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{NocodbRestoresColumns[1], NocodbRestoresColumns[2], NocodbRestoresColumns[17]},
+				Columns: []*schema.Column{NocodbRestoresColumns[1], NocodbRestoresColumns[2], NocodbRestoresColumns[18]},
 			},
 			{
 				Name:    "nocodbrestore_user_id_target_connection_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{NocodbRestoresColumns[1], NocodbRestoresColumns[6], NocodbRestoresColumns[17]},
+				Columns: []*schema.Column{NocodbRestoresColumns[1], NocodbRestoresColumns[6], NocodbRestoresColumns[18]},
 			},
 			{
 				Name:    "nocodbrestore_source_connection_id",
@@ -208,6 +209,7 @@ var (
 		{Name: "size_bytes", Type: field.TypeInt64, Default: 0},
 		{Name: "record_count", Type: field.TypeInt64, Default: 0},
 		{Name: "link_count", Type: field.TypeInt64, Default: 0},
+		{Name: "view_count", Type: field.TypeInt, Default: 0},
 		{Name: "attachments_included", Type: field.TypeBool, Default: false},
 		{Name: "file_count", Type: field.TypeInt64, Default: 0},
 		{Name: "file_bytes", Type: field.TypeInt64, Default: 0},
@@ -226,12 +228,12 @@ var (
 			{
 				Name:    "nocodbsnapshot_user_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{NocodbSnapshotsColumns[1], NocodbSnapshotsColumns[18]},
+				Columns: []*schema.Column{NocodbSnapshotsColumns[1], NocodbSnapshotsColumns[19]},
 			},
 			{
 				Name:    "nocodbsnapshot_connection_id_base_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{NocodbSnapshotsColumns[2], NocodbSnapshotsColumns[3], NocodbSnapshotsColumns[18]},
+				Columns: []*schema.Column{NocodbSnapshotsColumns[2], NocodbSnapshotsColumns[3], NocodbSnapshotsColumns[19]},
 			},
 			{
 				Name:    "nocodbsnapshot_status",

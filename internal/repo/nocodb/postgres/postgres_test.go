@@ -87,15 +87,15 @@ func TestSnapshotRoundTrip(t *testing.T) {
 	snap.Status = repo.StatusSucceeded
 	snap.StartedAt, snap.FinishedAt = t0.Add(time.Second), t0.Add(time.Minute)
 	snap.ObjectKey, snap.SizeBytes, snap.RecordCount, snap.LinkCount = "k/s1.json.gz", 1024, 10, 2
-	snap.AttachmentsIncluded, snap.FileCount, snap.FileBytes, snap.FilesMissing = true, 3, 4096, 1
-	snap.Tables = []repo.SnapshotTable{{ID: "m1", Title: "Tasks", RecordCount: 10, FieldCount: 4, LinkCount: 2, FileCount: 3, FileBytes: 4096, FilesMissing: 1}}
+	snap.AttachmentsIncluded, snap.FileCount, snap.FileBytes, snap.FilesMissing, snap.ViewCount = true, 3, 4096, 1, 2
+	snap.Tables = []repo.SnapshotTable{{ID: "m1", Title: "Tasks", RecordCount: 10, FieldCount: 4, LinkCount: 2, ViewCount: 2, FileCount: 3, FileBytes: 4096, FilesMissing: 1}}
 	if err := s.UpdateSnapshot(ctx, snap); err != nil {
 		t.Fatalf("UpdateSnapshot: %v", err)
 	}
 	got, _ = s.GetSnapshot(ctx, "", "s1")
 	if got.Status != repo.StatusSucceeded || got.Trigger != repo.TriggerManual || got.ObjectKey != "k/s1.json.gz" ||
 		got.SizeBytes != 1024 || !got.StartedAt.Equal(snap.StartedAt) || !got.FinishedAt.Equal(snap.FinishedAt) ||
-		!got.AttachmentsIncluded || got.FileCount != 3 || got.FileBytes != 4096 || got.FilesMissing != 1 ||
+		!got.AttachmentsIncluded || got.FileCount != 3 || got.FileBytes != 4096 || got.FilesMissing != 1 || got.ViewCount != 2 ||
 		len(got.Tables) != 1 || got.Tables[0] != snap.Tables[0] {
 		t.Fatalf("UpdateSnapshot did not persist: %+v", got)
 	}
@@ -215,8 +215,11 @@ func TestRestoreRoundTrip(t *testing.T) {
 	}
 
 	r.Status, r.Progress, r.FinishedAt = repo.RestoreSucceeded, "", t0.Add(time.Minute)
-	r.TableCount, r.RecordCount, r.LinkCount = 2, 30, 12
-	r.Warnings = []repo.RestoreWarning{{Code: "attachments_skipped", Table: "Orders", Field: "Files", Count: 3, Message: "attachments are not restored"}}
+	r.TableCount, r.RecordCount, r.LinkCount, r.FileCount, r.ViewCount = 2, 30, 12, 4, 3
+	r.Warnings = []repo.RestoreWarning{
+		{Code: "attachments_skipped", Table: "Orders", Field: "Files", Count: 3, Message: "attachments are not restored"},
+		{Code: "view_skipped", Table: "Orders", View: "Map", Field: "Where", Count: 1, Message: "its location field was not restored"},
+	}
 	if err := s.UpdateRestore(ctx, r); err != nil {
 		t.Fatalf("UpdateRestore done: %v", err)
 	}
@@ -225,7 +228,8 @@ func TestRestoreRoundTrip(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got.Status != repo.RestoreSucceeded || got.Active() || got.TableCount != 2 || got.RecordCount != 30 || got.LinkCount != 12 ||
-		len(got.Warnings) != 1 || got.Warnings[0] != r.Warnings[0] ||
+		got.FileCount != 4 || got.ViewCount != 3 ||
+		len(got.Warnings) != 2 || got.Warnings[0] != r.Warnings[0] || got.Warnings[1] != r.Warnings[1] ||
 		got.SourceBaseTitle != "CRM" || got.TargetBaseTitle != "CRM (restored)" ||
 		!got.StartedAt.Equal(r.StartedAt) || !got.FinishedAt.Equal(r.FinishedAt) {
 		t.Fatalf("restore after update = %+v", got)
