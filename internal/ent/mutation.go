@@ -11,7 +11,9 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"go.orx.me/apps/neo-box/internal/cloudflare"
 	"go.orx.me/apps/neo-box/internal/ent/alert"
+	"go.orx.me/apps/neo-box/internal/ent/cloudflarednsoperation"
 	"go.orx.me/apps/neo-box/internal/ent/connection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbfile"
@@ -39,21 +41,22 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeAlert               = "Alert"
-	TypeConnection          = "Connection"
-	TypeNocoDBBackupPolicy  = "NocoDBBackupPolicy"
-	TypeNocoDBFile          = "NocoDBFile"
-	TypeNocoDBFileSource    = "NocoDBFileSource"
-	TypeNocoDBRestore       = "NocoDBRestore"
-	TypeNocoDBSnapshot      = "NocoDBSnapshot"
-	TypeNocoDBSnapshotFile  = "NocoDBSnapshotFile"
-	TypeNotificationChannel = "NotificationChannel"
-	TypeOAuthState          = "OAuthState"
-	TypeSession             = "Session"
-	TypeUser                = "User"
-	TypeWasabiBucketConfig  = "WasabiBucketConfig"
-	TypeWasabiDailyUsage    = "WasabiDailyUsage"
-	TypeWasabiSyncState     = "WasabiSyncState"
+	TypeAlert                  = "Alert"
+	TypeCloudflareDNSOperation = "CloudflareDNSOperation"
+	TypeConnection             = "Connection"
+	TypeNocoDBBackupPolicy     = "NocoDBBackupPolicy"
+	TypeNocoDBFile             = "NocoDBFile"
+	TypeNocoDBFileSource       = "NocoDBFileSource"
+	TypeNocoDBRestore          = "NocoDBRestore"
+	TypeNocoDBSnapshot         = "NocoDBSnapshot"
+	TypeNocoDBSnapshotFile     = "NocoDBSnapshotFile"
+	TypeNotificationChannel    = "NotificationChannel"
+	TypeOAuthState             = "OAuthState"
+	TypeSession                = "Session"
+	TypeUser                   = "User"
+	TypeWasabiBucketConfig     = "WasabiBucketConfig"
+	TypeWasabiDailyUsage       = "WasabiDailyUsage"
+	TypeWasabiSyncState        = "WasabiSyncState"
 )
 
 // AlertMutation represents an operation that mutates the Alert nodes in the graph.
@@ -1002,6 +1005,1335 @@ func (m *AlertMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *AlertMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Alert edge %s", name)
+}
+
+// CloudflareDNSOperationMutation represents an operation that mutates the CloudflareDNSOperation nodes in the graph.
+type CloudflareDNSOperationMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *string
+	user_id       *string
+	connection_id *string
+	account_id    *string
+	zone_id       *string
+	zone_name     *string
+	action        *string
+	record_id     *string
+	record_type   *string
+	record_name   *string
+	before        **cloudflare.DNSRecord
+	after         **cloudflare.DNSRecord
+	requested     *map[string]interface{}
+	status        *string
+	error         *string
+	actor_id      *string
+	actor_name    *string
+	created_at    *time.Time
+	finished_at   *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*CloudflareDNSOperation, error)
+	predicates    []predicate.CloudflareDNSOperation
+}
+
+var _ ent.Mutation = (*CloudflareDNSOperationMutation)(nil)
+
+// cloudflarednsoperationOption allows management of the mutation configuration using functional options.
+type cloudflarednsoperationOption func(*CloudflareDNSOperationMutation)
+
+// newCloudflareDNSOperationMutation creates new mutation for the CloudflareDNSOperation entity.
+func newCloudflareDNSOperationMutation(c config, op Op, opts ...cloudflarednsoperationOption) *CloudflareDNSOperationMutation {
+	m := &CloudflareDNSOperationMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeCloudflareDNSOperation,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withCloudflareDNSOperationID sets the ID field of the mutation.
+func withCloudflareDNSOperationID(id string) cloudflarednsoperationOption {
+	return func(m *CloudflareDNSOperationMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *CloudflareDNSOperation
+		)
+		m.oldValue = func(ctx context.Context) (*CloudflareDNSOperation, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().CloudflareDNSOperation.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withCloudflareDNSOperation sets the old CloudflareDNSOperation of the mutation.
+func withCloudflareDNSOperation(node *CloudflareDNSOperation) cloudflarednsoperationOption {
+	return func(m *CloudflareDNSOperationMutation) {
+		m.oldValue = func(context.Context) (*CloudflareDNSOperation, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m CloudflareDNSOperationMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m CloudflareDNSOperationMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of CloudflareDNSOperation entities.
+func (m *CloudflareDNSOperationMutation) SetID(id string) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *CloudflareDNSOperationMutation) ID() (id string, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *CloudflareDNSOperationMutation) IDs(ctx context.Context) ([]string, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []string{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().CloudflareDNSOperation.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetUserID sets the "user_id" field.
+func (m *CloudflareDNSOperationMutation) SetUserID(s string) {
+	m.user_id = &s
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *CloudflareDNSOperationMutation) UserID() (r string, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the CloudflareDNSOperation entity.
+// If the CloudflareDNSOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareDNSOperationMutation) OldUserID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *CloudflareDNSOperationMutation) ResetUserID() {
+	m.user_id = nil
+}
+
+// SetConnectionID sets the "connection_id" field.
+func (m *CloudflareDNSOperationMutation) SetConnectionID(s string) {
+	m.connection_id = &s
+}
+
+// ConnectionID returns the value of the "connection_id" field in the mutation.
+func (m *CloudflareDNSOperationMutation) ConnectionID() (r string, exists bool) {
+	v := m.connection_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConnectionID returns the old "connection_id" field's value of the CloudflareDNSOperation entity.
+// If the CloudflareDNSOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareDNSOperationMutation) OldConnectionID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConnectionID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConnectionID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConnectionID: %w", err)
+	}
+	return oldValue.ConnectionID, nil
+}
+
+// ResetConnectionID resets all changes to the "connection_id" field.
+func (m *CloudflareDNSOperationMutation) ResetConnectionID() {
+	m.connection_id = nil
+}
+
+// SetAccountID sets the "account_id" field.
+func (m *CloudflareDNSOperationMutation) SetAccountID(s string) {
+	m.account_id = &s
+}
+
+// AccountID returns the value of the "account_id" field in the mutation.
+func (m *CloudflareDNSOperationMutation) AccountID() (r string, exists bool) {
+	v := m.account_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccountID returns the old "account_id" field's value of the CloudflareDNSOperation entity.
+// If the CloudflareDNSOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareDNSOperationMutation) OldAccountID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAccountID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAccountID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccountID: %w", err)
+	}
+	return oldValue.AccountID, nil
+}
+
+// ResetAccountID resets all changes to the "account_id" field.
+func (m *CloudflareDNSOperationMutation) ResetAccountID() {
+	m.account_id = nil
+}
+
+// SetZoneID sets the "zone_id" field.
+func (m *CloudflareDNSOperationMutation) SetZoneID(s string) {
+	m.zone_id = &s
+}
+
+// ZoneID returns the value of the "zone_id" field in the mutation.
+func (m *CloudflareDNSOperationMutation) ZoneID() (r string, exists bool) {
+	v := m.zone_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldZoneID returns the old "zone_id" field's value of the CloudflareDNSOperation entity.
+// If the CloudflareDNSOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareDNSOperationMutation) OldZoneID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldZoneID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldZoneID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldZoneID: %w", err)
+	}
+	return oldValue.ZoneID, nil
+}
+
+// ResetZoneID resets all changes to the "zone_id" field.
+func (m *CloudflareDNSOperationMutation) ResetZoneID() {
+	m.zone_id = nil
+}
+
+// SetZoneName sets the "zone_name" field.
+func (m *CloudflareDNSOperationMutation) SetZoneName(s string) {
+	m.zone_name = &s
+}
+
+// ZoneName returns the value of the "zone_name" field in the mutation.
+func (m *CloudflareDNSOperationMutation) ZoneName() (r string, exists bool) {
+	v := m.zone_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldZoneName returns the old "zone_name" field's value of the CloudflareDNSOperation entity.
+// If the CloudflareDNSOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareDNSOperationMutation) OldZoneName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldZoneName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldZoneName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldZoneName: %w", err)
+	}
+	return oldValue.ZoneName, nil
+}
+
+// ResetZoneName resets all changes to the "zone_name" field.
+func (m *CloudflareDNSOperationMutation) ResetZoneName() {
+	m.zone_name = nil
+}
+
+// SetAction sets the "action" field.
+func (m *CloudflareDNSOperationMutation) SetAction(s string) {
+	m.action = &s
+}
+
+// Action returns the value of the "action" field in the mutation.
+func (m *CloudflareDNSOperationMutation) Action() (r string, exists bool) {
+	v := m.action
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAction returns the old "action" field's value of the CloudflareDNSOperation entity.
+// If the CloudflareDNSOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareDNSOperationMutation) OldAction(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAction is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAction requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAction: %w", err)
+	}
+	return oldValue.Action, nil
+}
+
+// ResetAction resets all changes to the "action" field.
+func (m *CloudflareDNSOperationMutation) ResetAction() {
+	m.action = nil
+}
+
+// SetRecordID sets the "record_id" field.
+func (m *CloudflareDNSOperationMutation) SetRecordID(s string) {
+	m.record_id = &s
+}
+
+// RecordID returns the value of the "record_id" field in the mutation.
+func (m *CloudflareDNSOperationMutation) RecordID() (r string, exists bool) {
+	v := m.record_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRecordID returns the old "record_id" field's value of the CloudflareDNSOperation entity.
+// If the CloudflareDNSOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareDNSOperationMutation) OldRecordID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRecordID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRecordID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRecordID: %w", err)
+	}
+	return oldValue.RecordID, nil
+}
+
+// ResetRecordID resets all changes to the "record_id" field.
+func (m *CloudflareDNSOperationMutation) ResetRecordID() {
+	m.record_id = nil
+}
+
+// SetRecordType sets the "record_type" field.
+func (m *CloudflareDNSOperationMutation) SetRecordType(s string) {
+	m.record_type = &s
+}
+
+// RecordType returns the value of the "record_type" field in the mutation.
+func (m *CloudflareDNSOperationMutation) RecordType() (r string, exists bool) {
+	v := m.record_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRecordType returns the old "record_type" field's value of the CloudflareDNSOperation entity.
+// If the CloudflareDNSOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareDNSOperationMutation) OldRecordType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRecordType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRecordType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRecordType: %w", err)
+	}
+	return oldValue.RecordType, nil
+}
+
+// ResetRecordType resets all changes to the "record_type" field.
+func (m *CloudflareDNSOperationMutation) ResetRecordType() {
+	m.record_type = nil
+}
+
+// SetRecordName sets the "record_name" field.
+func (m *CloudflareDNSOperationMutation) SetRecordName(s string) {
+	m.record_name = &s
+}
+
+// RecordName returns the value of the "record_name" field in the mutation.
+func (m *CloudflareDNSOperationMutation) RecordName() (r string, exists bool) {
+	v := m.record_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRecordName returns the old "record_name" field's value of the CloudflareDNSOperation entity.
+// If the CloudflareDNSOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareDNSOperationMutation) OldRecordName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRecordName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRecordName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRecordName: %w", err)
+	}
+	return oldValue.RecordName, nil
+}
+
+// ResetRecordName resets all changes to the "record_name" field.
+func (m *CloudflareDNSOperationMutation) ResetRecordName() {
+	m.record_name = nil
+}
+
+// SetBefore sets the "before" field.
+func (m *CloudflareDNSOperationMutation) SetBefore(cr *cloudflare.DNSRecord) {
+	m.before = &cr
+}
+
+// Before returns the value of the "before" field in the mutation.
+func (m *CloudflareDNSOperationMutation) Before() (r *cloudflare.DNSRecord, exists bool) {
+	v := m.before
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBefore returns the old "before" field's value of the CloudflareDNSOperation entity.
+// If the CloudflareDNSOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareDNSOperationMutation) OldBefore(ctx context.Context) (v *cloudflare.DNSRecord, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBefore is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBefore requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBefore: %w", err)
+	}
+	return oldValue.Before, nil
+}
+
+// ClearBefore clears the value of the "before" field.
+func (m *CloudflareDNSOperationMutation) ClearBefore() {
+	m.before = nil
+	m.clearedFields[cloudflarednsoperation.FieldBefore] = struct{}{}
+}
+
+// BeforeCleared returns if the "before" field was cleared in this mutation.
+func (m *CloudflareDNSOperationMutation) BeforeCleared() bool {
+	_, ok := m.clearedFields[cloudflarednsoperation.FieldBefore]
+	return ok
+}
+
+// ResetBefore resets all changes to the "before" field.
+func (m *CloudflareDNSOperationMutation) ResetBefore() {
+	m.before = nil
+	delete(m.clearedFields, cloudflarednsoperation.FieldBefore)
+}
+
+// SetAfter sets the "after" field.
+func (m *CloudflareDNSOperationMutation) SetAfter(cr *cloudflare.DNSRecord) {
+	m.after = &cr
+}
+
+// After returns the value of the "after" field in the mutation.
+func (m *CloudflareDNSOperationMutation) After() (r *cloudflare.DNSRecord, exists bool) {
+	v := m.after
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAfter returns the old "after" field's value of the CloudflareDNSOperation entity.
+// If the CloudflareDNSOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareDNSOperationMutation) OldAfter(ctx context.Context) (v *cloudflare.DNSRecord, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAfter is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAfter requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAfter: %w", err)
+	}
+	return oldValue.After, nil
+}
+
+// ClearAfter clears the value of the "after" field.
+func (m *CloudflareDNSOperationMutation) ClearAfter() {
+	m.after = nil
+	m.clearedFields[cloudflarednsoperation.FieldAfter] = struct{}{}
+}
+
+// AfterCleared returns if the "after" field was cleared in this mutation.
+func (m *CloudflareDNSOperationMutation) AfterCleared() bool {
+	_, ok := m.clearedFields[cloudflarednsoperation.FieldAfter]
+	return ok
+}
+
+// ResetAfter resets all changes to the "after" field.
+func (m *CloudflareDNSOperationMutation) ResetAfter() {
+	m.after = nil
+	delete(m.clearedFields, cloudflarednsoperation.FieldAfter)
+}
+
+// SetRequested sets the "requested" field.
+func (m *CloudflareDNSOperationMutation) SetRequested(value map[string]interface{}) {
+	m.requested = &value
+}
+
+// Requested returns the value of the "requested" field in the mutation.
+func (m *CloudflareDNSOperationMutation) Requested() (r map[string]interface{}, exists bool) {
+	v := m.requested
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequested returns the old "requested" field's value of the CloudflareDNSOperation entity.
+// If the CloudflareDNSOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareDNSOperationMutation) OldRequested(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequested is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequested requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequested: %w", err)
+	}
+	return oldValue.Requested, nil
+}
+
+// ClearRequested clears the value of the "requested" field.
+func (m *CloudflareDNSOperationMutation) ClearRequested() {
+	m.requested = nil
+	m.clearedFields[cloudflarednsoperation.FieldRequested] = struct{}{}
+}
+
+// RequestedCleared returns if the "requested" field was cleared in this mutation.
+func (m *CloudflareDNSOperationMutation) RequestedCleared() bool {
+	_, ok := m.clearedFields[cloudflarednsoperation.FieldRequested]
+	return ok
+}
+
+// ResetRequested resets all changes to the "requested" field.
+func (m *CloudflareDNSOperationMutation) ResetRequested() {
+	m.requested = nil
+	delete(m.clearedFields, cloudflarednsoperation.FieldRequested)
+}
+
+// SetStatus sets the "status" field.
+func (m *CloudflareDNSOperationMutation) SetStatus(s string) {
+	m.status = &s
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *CloudflareDNSOperationMutation) Status() (r string, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the CloudflareDNSOperation entity.
+// If the CloudflareDNSOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareDNSOperationMutation) OldStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *CloudflareDNSOperationMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetError sets the "error" field.
+func (m *CloudflareDNSOperationMutation) SetError(s string) {
+	m.error = &s
+}
+
+// Error returns the value of the "error" field in the mutation.
+func (m *CloudflareDNSOperationMutation) Error() (r string, exists bool) {
+	v := m.error
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldError returns the old "error" field's value of the CloudflareDNSOperation entity.
+// If the CloudflareDNSOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareDNSOperationMutation) OldError(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldError is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldError requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldError: %w", err)
+	}
+	return oldValue.Error, nil
+}
+
+// ResetError resets all changes to the "error" field.
+func (m *CloudflareDNSOperationMutation) ResetError() {
+	m.error = nil
+}
+
+// SetActorID sets the "actor_id" field.
+func (m *CloudflareDNSOperationMutation) SetActorID(s string) {
+	m.actor_id = &s
+}
+
+// ActorID returns the value of the "actor_id" field in the mutation.
+func (m *CloudflareDNSOperationMutation) ActorID() (r string, exists bool) {
+	v := m.actor_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldActorID returns the old "actor_id" field's value of the CloudflareDNSOperation entity.
+// If the CloudflareDNSOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareDNSOperationMutation) OldActorID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldActorID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldActorID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldActorID: %w", err)
+	}
+	return oldValue.ActorID, nil
+}
+
+// ResetActorID resets all changes to the "actor_id" field.
+func (m *CloudflareDNSOperationMutation) ResetActorID() {
+	m.actor_id = nil
+}
+
+// SetActorName sets the "actor_name" field.
+func (m *CloudflareDNSOperationMutation) SetActorName(s string) {
+	m.actor_name = &s
+}
+
+// ActorName returns the value of the "actor_name" field in the mutation.
+func (m *CloudflareDNSOperationMutation) ActorName() (r string, exists bool) {
+	v := m.actor_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldActorName returns the old "actor_name" field's value of the CloudflareDNSOperation entity.
+// If the CloudflareDNSOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareDNSOperationMutation) OldActorName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldActorName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldActorName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldActorName: %w", err)
+	}
+	return oldValue.ActorName, nil
+}
+
+// ResetActorName resets all changes to the "actor_name" field.
+func (m *CloudflareDNSOperationMutation) ResetActorName() {
+	m.actor_name = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *CloudflareDNSOperationMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *CloudflareDNSOperationMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the CloudflareDNSOperation entity.
+// If the CloudflareDNSOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareDNSOperationMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *CloudflareDNSOperationMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetFinishedAt sets the "finished_at" field.
+func (m *CloudflareDNSOperationMutation) SetFinishedAt(t time.Time) {
+	m.finished_at = &t
+}
+
+// FinishedAt returns the value of the "finished_at" field in the mutation.
+func (m *CloudflareDNSOperationMutation) FinishedAt() (r time.Time, exists bool) {
+	v := m.finished_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFinishedAt returns the old "finished_at" field's value of the CloudflareDNSOperation entity.
+// If the CloudflareDNSOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareDNSOperationMutation) OldFinishedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFinishedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFinishedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFinishedAt: %w", err)
+	}
+	return oldValue.FinishedAt, nil
+}
+
+// ClearFinishedAt clears the value of the "finished_at" field.
+func (m *CloudflareDNSOperationMutation) ClearFinishedAt() {
+	m.finished_at = nil
+	m.clearedFields[cloudflarednsoperation.FieldFinishedAt] = struct{}{}
+}
+
+// FinishedAtCleared returns if the "finished_at" field was cleared in this mutation.
+func (m *CloudflareDNSOperationMutation) FinishedAtCleared() bool {
+	_, ok := m.clearedFields[cloudflarednsoperation.FieldFinishedAt]
+	return ok
+}
+
+// ResetFinishedAt resets all changes to the "finished_at" field.
+func (m *CloudflareDNSOperationMutation) ResetFinishedAt() {
+	m.finished_at = nil
+	delete(m.clearedFields, cloudflarednsoperation.FieldFinishedAt)
+}
+
+// Where appends a list predicates to the CloudflareDNSOperationMutation builder.
+func (m *CloudflareDNSOperationMutation) Where(ps ...predicate.CloudflareDNSOperation) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the CloudflareDNSOperationMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *CloudflareDNSOperationMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.CloudflareDNSOperation, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *CloudflareDNSOperationMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *CloudflareDNSOperationMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (CloudflareDNSOperation).
+func (m *CloudflareDNSOperationMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *CloudflareDNSOperationMutation) Fields() []string {
+	fields := make([]string, 0, 18)
+	if m.user_id != nil {
+		fields = append(fields, cloudflarednsoperation.FieldUserID)
+	}
+	if m.connection_id != nil {
+		fields = append(fields, cloudflarednsoperation.FieldConnectionID)
+	}
+	if m.account_id != nil {
+		fields = append(fields, cloudflarednsoperation.FieldAccountID)
+	}
+	if m.zone_id != nil {
+		fields = append(fields, cloudflarednsoperation.FieldZoneID)
+	}
+	if m.zone_name != nil {
+		fields = append(fields, cloudflarednsoperation.FieldZoneName)
+	}
+	if m.action != nil {
+		fields = append(fields, cloudflarednsoperation.FieldAction)
+	}
+	if m.record_id != nil {
+		fields = append(fields, cloudflarednsoperation.FieldRecordID)
+	}
+	if m.record_type != nil {
+		fields = append(fields, cloudflarednsoperation.FieldRecordType)
+	}
+	if m.record_name != nil {
+		fields = append(fields, cloudflarednsoperation.FieldRecordName)
+	}
+	if m.before != nil {
+		fields = append(fields, cloudflarednsoperation.FieldBefore)
+	}
+	if m.after != nil {
+		fields = append(fields, cloudflarednsoperation.FieldAfter)
+	}
+	if m.requested != nil {
+		fields = append(fields, cloudflarednsoperation.FieldRequested)
+	}
+	if m.status != nil {
+		fields = append(fields, cloudflarednsoperation.FieldStatus)
+	}
+	if m.error != nil {
+		fields = append(fields, cloudflarednsoperation.FieldError)
+	}
+	if m.actor_id != nil {
+		fields = append(fields, cloudflarednsoperation.FieldActorID)
+	}
+	if m.actor_name != nil {
+		fields = append(fields, cloudflarednsoperation.FieldActorName)
+	}
+	if m.created_at != nil {
+		fields = append(fields, cloudflarednsoperation.FieldCreatedAt)
+	}
+	if m.finished_at != nil {
+		fields = append(fields, cloudflarednsoperation.FieldFinishedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *CloudflareDNSOperationMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case cloudflarednsoperation.FieldUserID:
+		return m.UserID()
+	case cloudflarednsoperation.FieldConnectionID:
+		return m.ConnectionID()
+	case cloudflarednsoperation.FieldAccountID:
+		return m.AccountID()
+	case cloudflarednsoperation.FieldZoneID:
+		return m.ZoneID()
+	case cloudflarednsoperation.FieldZoneName:
+		return m.ZoneName()
+	case cloudflarednsoperation.FieldAction:
+		return m.Action()
+	case cloudflarednsoperation.FieldRecordID:
+		return m.RecordID()
+	case cloudflarednsoperation.FieldRecordType:
+		return m.RecordType()
+	case cloudflarednsoperation.FieldRecordName:
+		return m.RecordName()
+	case cloudflarednsoperation.FieldBefore:
+		return m.Before()
+	case cloudflarednsoperation.FieldAfter:
+		return m.After()
+	case cloudflarednsoperation.FieldRequested:
+		return m.Requested()
+	case cloudflarednsoperation.FieldStatus:
+		return m.Status()
+	case cloudflarednsoperation.FieldError:
+		return m.Error()
+	case cloudflarednsoperation.FieldActorID:
+		return m.ActorID()
+	case cloudflarednsoperation.FieldActorName:
+		return m.ActorName()
+	case cloudflarednsoperation.FieldCreatedAt:
+		return m.CreatedAt()
+	case cloudflarednsoperation.FieldFinishedAt:
+		return m.FinishedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *CloudflareDNSOperationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case cloudflarednsoperation.FieldUserID:
+		return m.OldUserID(ctx)
+	case cloudflarednsoperation.FieldConnectionID:
+		return m.OldConnectionID(ctx)
+	case cloudflarednsoperation.FieldAccountID:
+		return m.OldAccountID(ctx)
+	case cloudflarednsoperation.FieldZoneID:
+		return m.OldZoneID(ctx)
+	case cloudflarednsoperation.FieldZoneName:
+		return m.OldZoneName(ctx)
+	case cloudflarednsoperation.FieldAction:
+		return m.OldAction(ctx)
+	case cloudflarednsoperation.FieldRecordID:
+		return m.OldRecordID(ctx)
+	case cloudflarednsoperation.FieldRecordType:
+		return m.OldRecordType(ctx)
+	case cloudflarednsoperation.FieldRecordName:
+		return m.OldRecordName(ctx)
+	case cloudflarednsoperation.FieldBefore:
+		return m.OldBefore(ctx)
+	case cloudflarednsoperation.FieldAfter:
+		return m.OldAfter(ctx)
+	case cloudflarednsoperation.FieldRequested:
+		return m.OldRequested(ctx)
+	case cloudflarednsoperation.FieldStatus:
+		return m.OldStatus(ctx)
+	case cloudflarednsoperation.FieldError:
+		return m.OldError(ctx)
+	case cloudflarednsoperation.FieldActorID:
+		return m.OldActorID(ctx)
+	case cloudflarednsoperation.FieldActorName:
+		return m.OldActorName(ctx)
+	case cloudflarednsoperation.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case cloudflarednsoperation.FieldFinishedAt:
+		return m.OldFinishedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown CloudflareDNSOperation field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CloudflareDNSOperationMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case cloudflarednsoperation.FieldUserID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case cloudflarednsoperation.FieldConnectionID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConnectionID(v)
+		return nil
+	case cloudflarednsoperation.FieldAccountID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccountID(v)
+		return nil
+	case cloudflarednsoperation.FieldZoneID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetZoneID(v)
+		return nil
+	case cloudflarednsoperation.FieldZoneName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetZoneName(v)
+		return nil
+	case cloudflarednsoperation.FieldAction:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAction(v)
+		return nil
+	case cloudflarednsoperation.FieldRecordID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRecordID(v)
+		return nil
+	case cloudflarednsoperation.FieldRecordType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRecordType(v)
+		return nil
+	case cloudflarednsoperation.FieldRecordName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRecordName(v)
+		return nil
+	case cloudflarednsoperation.FieldBefore:
+		v, ok := value.(*cloudflare.DNSRecord)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBefore(v)
+		return nil
+	case cloudflarednsoperation.FieldAfter:
+		v, ok := value.(*cloudflare.DNSRecord)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAfter(v)
+		return nil
+	case cloudflarednsoperation.FieldRequested:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequested(v)
+		return nil
+	case cloudflarednsoperation.FieldStatus:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case cloudflarednsoperation.FieldError:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetError(v)
+		return nil
+	case cloudflarednsoperation.FieldActorID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetActorID(v)
+		return nil
+	case cloudflarednsoperation.FieldActorName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetActorName(v)
+		return nil
+	case cloudflarednsoperation.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case cloudflarednsoperation.FieldFinishedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFinishedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown CloudflareDNSOperation field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *CloudflareDNSOperationMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *CloudflareDNSOperationMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CloudflareDNSOperationMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown CloudflareDNSOperation numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *CloudflareDNSOperationMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(cloudflarednsoperation.FieldBefore) {
+		fields = append(fields, cloudflarednsoperation.FieldBefore)
+	}
+	if m.FieldCleared(cloudflarednsoperation.FieldAfter) {
+		fields = append(fields, cloudflarednsoperation.FieldAfter)
+	}
+	if m.FieldCleared(cloudflarednsoperation.FieldRequested) {
+		fields = append(fields, cloudflarednsoperation.FieldRequested)
+	}
+	if m.FieldCleared(cloudflarednsoperation.FieldFinishedAt) {
+		fields = append(fields, cloudflarednsoperation.FieldFinishedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *CloudflareDNSOperationMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *CloudflareDNSOperationMutation) ClearField(name string) error {
+	switch name {
+	case cloudflarednsoperation.FieldBefore:
+		m.ClearBefore()
+		return nil
+	case cloudflarednsoperation.FieldAfter:
+		m.ClearAfter()
+		return nil
+	case cloudflarednsoperation.FieldRequested:
+		m.ClearRequested()
+		return nil
+	case cloudflarednsoperation.FieldFinishedAt:
+		m.ClearFinishedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown CloudflareDNSOperation nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *CloudflareDNSOperationMutation) ResetField(name string) error {
+	switch name {
+	case cloudflarednsoperation.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case cloudflarednsoperation.FieldConnectionID:
+		m.ResetConnectionID()
+		return nil
+	case cloudflarednsoperation.FieldAccountID:
+		m.ResetAccountID()
+		return nil
+	case cloudflarednsoperation.FieldZoneID:
+		m.ResetZoneID()
+		return nil
+	case cloudflarednsoperation.FieldZoneName:
+		m.ResetZoneName()
+		return nil
+	case cloudflarednsoperation.FieldAction:
+		m.ResetAction()
+		return nil
+	case cloudflarednsoperation.FieldRecordID:
+		m.ResetRecordID()
+		return nil
+	case cloudflarednsoperation.FieldRecordType:
+		m.ResetRecordType()
+		return nil
+	case cloudflarednsoperation.FieldRecordName:
+		m.ResetRecordName()
+		return nil
+	case cloudflarednsoperation.FieldBefore:
+		m.ResetBefore()
+		return nil
+	case cloudflarednsoperation.FieldAfter:
+		m.ResetAfter()
+		return nil
+	case cloudflarednsoperation.FieldRequested:
+		m.ResetRequested()
+		return nil
+	case cloudflarednsoperation.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case cloudflarednsoperation.FieldError:
+		m.ResetError()
+		return nil
+	case cloudflarednsoperation.FieldActorID:
+		m.ResetActorID()
+		return nil
+	case cloudflarednsoperation.FieldActorName:
+		m.ResetActorName()
+		return nil
+	case cloudflarednsoperation.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case cloudflarednsoperation.FieldFinishedAt:
+		m.ResetFinishedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown CloudflareDNSOperation field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *CloudflareDNSOperationMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *CloudflareDNSOperationMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *CloudflareDNSOperationMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *CloudflareDNSOperationMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *CloudflareDNSOperationMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *CloudflareDNSOperationMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *CloudflareDNSOperationMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown CloudflareDNSOperation unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *CloudflareDNSOperationMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown CloudflareDNSOperation edge %s", name)
 }
 
 // ConnectionMutation represents an operation that mutates the Connection nodes in the graph.

@@ -1,4 +1,4 @@
-import { Cloud, DatabaseBackup, type LucideIcon } from 'lucide-react'
+import { Cloud, DatabaseBackup, Globe, type LucideIcon } from 'lucide-react'
 import { Provider } from '@/api/connections'
 
 /**
@@ -30,6 +30,14 @@ export const providerInfos: ProviderInfo[] = [
     description:
       'Daily storage, egress, and an estimated cost for a Wasabi account.',
     icon: Cloud,
+  },
+  {
+    provider: Provider.CLOUDFLARE,
+    key: 'cloudflare',
+    label: 'Cloudflare',
+    description:
+      'Zones and DNS records to edit, plus Workers and Pages with their addresses, for one Cloudflare account.',
+    icon: Globe,
   },
 ]
 

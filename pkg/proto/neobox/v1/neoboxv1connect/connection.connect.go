@@ -64,7 +64,8 @@ type ConnectionServiceClient interface {
 	UpdateConnection(context.Context, *connect.Request[v1.UpdateConnectionRequest]) (*connect.Response[v1.UpdateConnectionResponse], error)
 	// DeleteConnection removes the connection and everything the provider
 	// stored for it (for NocoDB: snapshots with their content, and Backup
-	// Policies).
+	// Policies; for Cloudflare: the DNS operation log). Nothing is deleted at
+	// the provider.
 	DeleteConnection(context.Context, *connect.Request[v1.DeleteConnectionRequest]) (*connect.Response[v1.DeleteConnectionResponse], error)
 	// TestConnection verifies the stored settings and records the result as
 	// the connection's status.
@@ -172,7 +173,8 @@ type ConnectionServiceHandler interface {
 	UpdateConnection(context.Context, *connect.Request[v1.UpdateConnectionRequest]) (*connect.Response[v1.UpdateConnectionResponse], error)
 	// DeleteConnection removes the connection and everything the provider
 	// stored for it (for NocoDB: snapshots with their content, and Backup
-	// Policies).
+	// Policies; for Cloudflare: the DNS operation log). Nothing is deleted at
+	// the provider.
 	DeleteConnection(context.Context, *connect.Request[v1.DeleteConnectionRequest]) (*connect.Response[v1.DeleteConnectionResponse], error)
 	// TestConnection verifies the stored settings and records the result as
 	// the connection's status.

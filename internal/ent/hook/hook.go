@@ -21,6 +21,18 @@ func (f AlertFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertMutation", m)
 }
 
+// The CloudflareDNSOperationFunc type is an adapter to allow the use of ordinary
+// function as CloudflareDNSOperation mutator.
+type CloudflareDNSOperationFunc func(context.Context, *ent.CloudflareDNSOperationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CloudflareDNSOperationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.CloudflareDNSOperationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CloudflareDNSOperationMutation", m)
+}
+
 // The ConnectionFunc type is an adapter to allow the use of ordinary
 // function as Connection mutator.
 type ConnectionFunc func(context.Context, *ent.ConnectionMutation) (ent.Value, error)

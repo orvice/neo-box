@@ -20,7 +20,8 @@ service ConnectionService {
   rpc UpdateConnection(UpdateConnectionRequest) returns (UpdateConnectionResponse);
   // DeleteConnection removes the connection and everything the provider
   // stored for it (for NocoDB: snapshots with their content, and Backup
-  // Policies).
+  // Policies; for Cloudflare: the DNS operation log). Nothing is deleted at
+  // the provider.
   rpc DeleteConnection(DeleteConnectionRequest) returns (DeleteConnectionResponse);
   // TestConnection verifies the stored settings and records the result as
   // the connection's status.
@@ -31,6 +32,7 @@ enum Provider {
   PROVIDER_UNSPECIFIED = 0;
   PROVIDER_NOCODB = 1;
   PROVIDER_WASABI = 2;
+  PROVIDER_CLOUDFLARE = 3;
 }
 
 // ConnectionStatus is the outcome of the last credential check or
@@ -55,6 +57,7 @@ message Connection {
   oneof config {
     NocoDBConnectionConfig nocodb = 20;
     WasabiConnectionConfig wasabi = 21;
+    CloudflareConnectionConfig cloudflare = 22;
   }
 }
 
@@ -108,6 +111,20 @@ message WasabiConnectionSettings {
   double budget_usd = 6 [(validate.rules).double.gte = 0];
 }
 
+// CloudflareConnectionConfig is the non-secret part of a Cloudflare
+// connection.
+message CloudflareConnectionConfig {
+  string account_id = 1;
+}
+
+// CloudflareConnectionSettings is what a user enters for a Cloudflare
+// connection: one Account and an API token with access to it.
+message CloudflareConnectionSettings {
+  string account_id = 1 [(validate.rules).string.min_len = 1];
+  // Required on create; on update, empty keeps the stored token.
+  string api_token = 2;
+}
+
 message ListConnectionsRequest {
   // Only connections of this provider; UNSPECIFIED lists all of them.
   Provider provider = 1;
@@ -131,6 +148,7 @@ message CreateConnectionRequest {
     option (validate.required) = true;
     NocoDBConnectionSettings nocodb = 20;
     WasabiConnectionSettings wasabi = 21;
+    CloudflareConnectionSettings cloudflare = 22;
   }
 }
 
@@ -145,6 +163,7 @@ message UpdateConnectionRequest {
     option (validate.required) = true;
     NocoDBConnectionSettings nocodb = 20;
     WasabiConnectionSettings wasabi = 21;
+    CloudflareConnectionSettings cloudflare = 22;
   }
 }
 
