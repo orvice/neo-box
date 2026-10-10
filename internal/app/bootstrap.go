@@ -15,11 +15,13 @@ import (
 	"go.orx.me/apps/neo-box/internal/auth/provider"
 	"go.orx.me/apps/neo-box/internal/backup"
 	"go.orx.me/apps/neo-box/internal/blobstore"
+	"go.orx.me/apps/neo-box/internal/cloudflareacct"
 	"go.orx.me/apps/neo-box/internal/config"
 	"go.orx.me/apps/neo-box/internal/connection"
 	"go.orx.me/apps/neo-box/internal/ent"
 	"go.orx.me/apps/neo-box/internal/notify"
 	authpg "go.orx.me/apps/neo-box/internal/repo/auth/postgres"
+	cloudflarepg "go.orx.me/apps/neo-box/internal/repo/cloudflare/postgres"
 	connectionpg "go.orx.me/apps/neo-box/internal/repo/connection/postgres"
 	nocodbpg "go.orx.me/apps/neo-box/internal/repo/nocodb/postgres"
 	notifypg "go.orx.me/apps/neo-box/internal/repo/notify/postgres"
@@ -76,6 +78,7 @@ func (h *Handlers) Bootstrap(ctx context.Context) error {
 		stop()
 		return err
 	}
+	h.bootstrapCloudflare(client, conns)
 	h.stop = stop
 	go purgeExpired(runCtx, authRepo, stateRepo)
 	return nil
@@ -159,6 +162,16 @@ func (h *Handlers) bootstrapWasabi(runCtx context.Context, client *ent.Client, c
 	h.wasabi = manager
 	h.wasabiSvcServer.SetDeps(repo, manager, conns)
 	return nil
+}
+
+// bootstrapCloudflare registers the Cloudflare provider. It has no
+// background work: resources are read live and only DNS operations are
+// stored.
+func (h *Handlers) bootstrapCloudflare(client *ent.Client, conns *connection.Service) {
+	repo := cloudflarepg.New(client)
+	manager := cloudflareacct.New(cloudflareacct.Config{Endpoint: h.cfg.Cloudflare.APIEndpoint}, repo, conns)
+	conns.Register(manager.ConnectionProvider())
+	h.cloudflareSvcServer.SetDeps(manager, repo, conns)
 }
 
 // Shutdown stops the backup and Wasabi schedulers and workers. In-flight

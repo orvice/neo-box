@@ -107,6 +107,19 @@ shadcn/ui + Connect-Web on the frontend.
   the S3 API (aws-sdk-go-v2 per region, plus a SigV4-signed raw request for
   Wasabi's `?compliance`), per-setting errors (`access_denied`,
   `not_supported`); `BucketFindings` flags risky settings.
+- `internal/cloudflare/` — Cloudflare API client (bearer token, one rate
+  limiter per connection), connection settings, DNS record input and
+  validation. Reads retry 429/5xx/network errors; writes retry only 429 and
+  otherwise return `UncertainError`, never resent. `cftest/` is a stateful
+  fake Cloudflare API (tokens with per-account permissions) for client and
+  service tests.
+- `internal/cloudflareacct/` — `Manager`: the "cloudflare" Provider
+  (`Verify` accepts a token that reaches the Account through any one of
+  account / zones / Workers / Pages reads; it never writes), live reads
+  always checked against the connection's Account, DNS changes logged
+  before they are sent (`dns.go`), and Worker / Pages addresses with
+  per-source issues (`resources.go`). A Zone's `permissions` describe the
+  token owner, not the token, so they can only rule DNS edits out.
 - `internal/wasabisync/` — `Manager`: one sync at a time; 12-month backfill in
   30-day chunks that resumes after failures, daily run at 02:30 UTC from the
   last synced day, `Refresh` for the last 7 days, catch-up at startup. Also
@@ -144,6 +157,15 @@ estimate's period by active / deleted / 1 TB minimum and by bucket), and
 `connection_id` must be the caller's Wasabi connection. The live Stats API
 test needs `NEOBOX_TEST_WASABI_ACCESS_KEY` / `NEOBOX_TEST_WASABI_SECRET_KEY`.
 
+**Cloudflare** (`proto/neobox/v1/cloudflare.proto`, `CloudflareService`):
+Zones, DNS records, Workers and Pages projects read live (search and paging
+cover the whole list), DNS create / update (partial, keeps unshown fields) /
+proxy switch / delete for A, AAAA, CNAME, TXT, MX, NS, SRV, CAA, and
+`ListCloudflareDNSOperations` (rows in `cloudflare_dns_operations`).
+`connection_id` must be the caller's Cloudflare connection. A missing
+permission is PermissionDenied, a rejected token FailedPrecondition (never
+Unauthenticated, which signs the user out), an unconfirmed write Unknown.
+
 **Notifications** (`proto/neobox/v1/notification.proto`,
 `NotificationService`): channel list / create / update / delete / test
 (settings are a typed oneof, secrets write-only) and `ListAlerts`. Scoped
@@ -157,12 +179,16 @@ hooks. `src/stores/auth-store.ts` (Zustand) holds token + user. Routes under
 `/connections` (`?provider=` filters); `src/features/connections/` holds the
 Provider registry: `provider-info.ts` (key, label, icon; used by the sidebar)
 and `providers.ts` (each Provider's form, card summary, and detail page from
-its feature folder).
+its feature folder). Cloudflare's logic lives in `src/features/cloudflare/`
+`addresses.ts`, `dns.ts` and `access.ts`, each with a Vitest test.
 
 ## Conventions
 
 - Proto package `neobox.v1`, Go package alias `neoboxv1`. `buf lint`
   STANDARD rules apply: each RPC gets its own request/response message.
+- Name enums without an acronym run (`CloudflareRecordAccess`, not
+  `CloudflareDNSAccess`): protobuf-es strips value prefixes only when the
+  name converts back to the prefix buf requires.
 - Storage has its own ent schema; don't persist proto messages directly or
   add storage tags to `.proto` files.
 - Every new Connect service: implement in `internal/application`, register in

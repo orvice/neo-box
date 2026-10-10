@@ -43,6 +43,46 @@ var (
 			},
 		},
 	}
+	// CloudflareDNSOperationsColumns holds the columns for the "cloudflare_dns_operations" table.
+	CloudflareDNSOperationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "connection_id", Type: field.TypeString},
+		{Name: "account_id", Type: field.TypeString},
+		{Name: "zone_id", Type: field.TypeString},
+		{Name: "zone_name", Type: field.TypeString, Default: ""},
+		{Name: "action", Type: field.TypeString},
+		{Name: "record_id", Type: field.TypeString, Default: ""},
+		{Name: "record_type", Type: field.TypeString, Default: ""},
+		{Name: "record_name", Type: field.TypeString, Default: ""},
+		{Name: "before", Type: field.TypeJSON, Nullable: true},
+		{Name: "after", Type: field.TypeJSON, Nullable: true},
+		{Name: "requested", Type: field.TypeJSON, Nullable: true},
+		{Name: "status", Type: field.TypeString},
+		{Name: "error", Type: field.TypeString, Default: ""},
+		{Name: "actor_id", Type: field.TypeString},
+		{Name: "actor_name", Type: field.TypeString, Default: ""},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "finished_at", Type: field.TypeTime, Nullable: true},
+	}
+	// CloudflareDNSOperationsTable holds the schema information for the "cloudflare_dns_operations" table.
+	CloudflareDNSOperationsTable = &schema.Table{
+		Name:       "cloudflare_dns_operations",
+		Columns:    CloudflareDNSOperationsColumns,
+		PrimaryKey: []*schema.Column{CloudflareDNSOperationsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "cloudflarednsoperation_user_id_connection_id_zone_id_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{CloudflareDNSOperationsColumns[1], CloudflareDNSOperationsColumns[2], CloudflareDNSOperationsColumns[4], CloudflareDNSOperationsColumns[17]},
+			},
+			{
+				Name:    "cloudflarednsoperation_connection_id",
+				Unique:  false,
+				Columns: []*schema.Column{CloudflareDNSOperationsColumns[2]},
+			},
+		},
+	}
 	// ConnectionsColumns holds the columns for the "connections" table.
 	ConnectionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -453,6 +493,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AlertsTable,
+		CloudflareDNSOperationsTable,
 		ConnectionsTable,
 		NocodbBackupPoliciesTable,
 		NocodbFilesTable,
@@ -473,6 +514,9 @@ var (
 func init() {
 	AlertsTable.Annotation = &entsql.Annotation{
 		Table: "alerts",
+	}
+	CloudflareDNSOperationsTable.Annotation = &entsql.Annotation{
+		Table: "cloudflare_dns_operations",
 	}
 	ConnectionsTable.Annotation = &entsql.Annotation{
 		Table: "connections",

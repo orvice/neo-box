@@ -79,3 +79,12 @@ genuinely shared.
   NotFound.
 - A cross-Provider overview (for example on the dashboard) will have to be
   built from each Provider's own data. There is no shared table to query.
+
+## Revisited with the third Provider (2026-10-11)
+
+Cloudflare (#36) is the third Provider. It shares nothing new: it has no
+background work and stores only its own DNS operation log, so the decision
+stands. One addition to **Health**: a Provider may also set a connection to
+error when the provider rejects the credentials during a user's request
+(Cloudflare does so when a live read finds the API token invalid, expired
+or revoked), not only from background work.

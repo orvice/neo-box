@@ -29,6 +29,7 @@ type Handlers struct {
 	connectionSvcServer *application.ConnectionServiceServer
 	nocodbSvcServer     *application.NocoDBServiceServer
 	wasabiSvcServer     *application.WasabiServiceServer
+	cloudflareSvcServer *application.CloudflareServiceServer
 	notifySvcServer     *application.NotificationServiceServer
 	authRepo            atomic.Value // auth.Repository
 	snapshots           atomic.Value // *snapshotContent
@@ -80,6 +81,8 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 	nocodbConnectPath, nocodbConnectHandler := neoboxv1connect.NewNocoDBServiceHandler(nocodbSvcServer, connectOpts...)
 	wasabiSvcServer := application.NewWasabiServiceServer()
 	wasabiConnectPath, wasabiConnectHandler := neoboxv1connect.NewWasabiServiceHandler(wasabiSvcServer, connectOpts...)
+	cloudflareSvcServer := application.NewCloudflareServiceServer()
+	cloudflareConnectPath, cloudflareConnectHandler := neoboxv1connect.NewCloudflareServiceHandler(cloudflareSvcServer, connectOpts...)
 	notifySvcServer := application.NewNotificationServiceServer()
 	notifyConnectPath, notifyConnectHandler := neoboxv1connect.NewNotificationServiceHandler(notifySvcServer, connectOpts...)
 
@@ -89,6 +92,7 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 		connectionSvcServer: connectionSvcServer,
 		nocodbSvcServer:     nocodbSvcServer,
 		wasabiSvcServer:     wasabiSvcServer,
+		cloudflareSvcServer: cloudflareSvcServer,
 		notifySvcServer:     notifySvcServer,
 	}
 
@@ -101,6 +105,7 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 		r.Any("/api"+connectionConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", connectionConnectHandler)))
 		r.Any("/api"+nocodbConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", nocodbConnectHandler)))
 		r.Any("/api"+wasabiConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", wasabiConnectHandler)))
+		r.Any("/api"+cloudflareConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", cloudflareConnectHandler)))
 		r.Any("/api"+notifyConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", notifyConnectHandler)))
 	}
 

@@ -26,6 +26,11 @@ protobuf contracts generated with buf, all in one monorepo.
   still billed under the 90-day minimum, egress, and API calls for a Wasabi
   account and each of its buckets, synced from the Wasabi Stats API, plus an
   estimated charge for the current billing cycle. See [Wasabi](#wasabi).
+- **Cloudflare Zones, DNS, Workers and Pages**: the Zones, Workers and Pages
+  projects an API token can see in one Cloudflare account, read live, with
+  every address of each Worker and project; DNS records can be added,
+  changed, deleted and proxied, and every change made from Neo Box is
+  logged. See [Cloudflare](#cloudflare).
 - Stores users, sessions, and metadata in PostgreSQL, and snapshot content in
   S3-compatible object storage.
 
@@ -200,6 +205,8 @@ store:
 # wasabi:
 #   stats_endpoint: "https://stats.wasabisys.com"
 #   s3_endpoint: ""            # development only: one host for all S3 calls
+# cloudflare:
+#   api_endpoint: "https://api.cloudflare.com/client/v4"
 # notify:
 #   dashboard_url: "https://neobox.example.com"  # alerts link here; empty = no links
 #   telegram_endpoint: "https://api.telegram.org"
@@ -310,6 +317,44 @@ deleted data still billed (objects deleted before they are 90 days old stay
 billed until they would have reached 90 days), and the 1 TB minimum, then by
 bucket. Each bucket and the account also show every figure the Stats API
 reported for the newest day.
+
+### Cloudflare
+
+A Cloudflare connection is one account (its Account ID) plus an API token.
+Find the Account ID in the dashboard's account home or its URL
+([how](https://developers.cloudflare.com/fundamentals/account/find-account-and-zone-ids/)).
+Create a custom token under **My Profile → API Tokens** (or an
+account-owned token under **Manage Account → API Tokens**)
+([how](https://developers.cloudflare.com/fundamentals/api/get-started/create-token/)),
+include the account in its resources, and grant only what you want to use:
+
+| Permission | Unlocks |
+|---|---|
+| Zone → Zone → Read | Zones tab |
+| Zone → DNS → Read | a Zone's DNS records |
+| Zone → DNS → Edit | adding, changing, deleting and proxying records |
+| Account → Workers Scripts → Read | Workers tab, workers.dev URLs, custom domains |
+| Zone → Workers Routes → Read | Worker routes |
+| Account → Cloudflare Pages → Read | Pages tab |
+
+Saving checks, without changing anything, that Cloudflare accepts the token
+and that the token reaches the account through at least one of these. A tab
+whose permission is missing says so; the others keep working. Neo Box does
+not need (and cannot read) the token's permission list, so it cannot tell
+in advance whether DNS edits are allowed unless Cloudflare reports the
+Zone as read-only; Cloudflare refuses changes the token may not make and
+Neo Box shows why.
+
+Everything is read from Cloudflare when a page opens and on **Refresh**;
+nothing is synced or stored except the log of DNS changes made from Neo Box
+(who, when in UTC, what was sent, the record before and after, and the
+result). A Zone becomes read-only on the page once Cloudflare refuses a
+change for lack of permission; **Refresh** after fixing the token. A change
+whose answer never arrives (a timeout) is logged as "result unknown" and is
+never sent again: check the record before retrying. Neo Box changes A, AAAA,
+CNAME, TXT, MX, NS, SRV and CAA records and keeps whatever the form doesn't
+show (comment, tags, settings); other types are listed read-only. Deleting
+the connection deletes its log in Neo Box and nothing in Cloudflare.
 
 ### Environment variables
 

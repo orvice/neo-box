@@ -9,6 +9,9 @@ import (
 // Alert is the predicate function for alert builders.
 type Alert func(*sql.Selector)
 
+// CloudflareDNSOperation is the predicate function for cloudflarednsoperation builders.
+type CloudflareDNSOperation func(*sql.Selector)
+
 // Connection is the predicate function for connection builders.
 type Connection func(*sql.Selector)
 
