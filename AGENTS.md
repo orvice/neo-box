@@ -80,7 +80,8 @@ shadcn/ui + Connect-Web on the frontend.
   gzip JSON; format in `format.go`, rationale in `docs/adr/0001` and
   `0005`), and `Restore` rebuilds one into a new Base (`restore*.go`,
   `docs/adr/0004`). Attachment files go through the `Files` interface
-  (capture) and `RestoreOptions.OpenFile` (restore).
+  (capture) and `RestoreOptions.OpenFile` (restore); views go through v2
+  meta (`restore_views.go`).
   The live round-trip test needs `NEOBOX_TEST_NOCODB_URL`,
   `NEOBOX_TEST_NOCODB_TOKEN` and `NEOBOX_TEST_NOCODB_EMAIL` (the token
   owner's email); an OSS `nocodb/nocodb` container is enough.

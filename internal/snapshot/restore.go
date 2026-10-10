@@ -25,6 +25,16 @@ type WriteAPI interface {
 	ListBaseUserEmails(ctx context.Context, baseID string) ([]string, error)
 	UploadFiles(ctx context.Context, files []nocodb.UploadFile) ([]json.RawMessage, error)
 	UpdateRecordsV2(ctx context.Context, tableID string, rows []map[string]json.RawMessage) error
+	ListViews(ctx context.Context, tableID string) ([]json.RawMessage, error)
+	ListViewColumns(ctx context.Context, viewID string) ([]json.RawMessage, error)
+	CreateView(ctx context.Context, tableID string, viewType int, body any) (string, error)
+	UpdateView(ctx context.Context, viewID string, patch any) error
+	UpdateViewSettings(ctx context.Context, viewType int, viewID string, patch any) error
+	UpdateViewColumn(ctx context.Context, viewID, columnID string, patch any) error
+	UpdateGridColumn(ctx context.Context, columnID string, patch any) error
+	UpdateFormColumn(ctx context.Context, columnID string, patch any) error
+	CreateSort(ctx context.Context, viewID string, body any) error
+	CreateFilter(ctx context.Context, viewID string, body any) (string, error)
 }
 
 // RestoreOptions tune a restore.
@@ -55,15 +65,22 @@ const (
 	WarnLinksFailed        = "links_failed"
 	WarnDisplayField       = "display_field_not_set"
 	WarnRelationGuessed    = "relation_guessed"
+	// WarnViewSkipped: a whole view was not created.
+	WarnViewSkipped = "view_skipped"
+	// WarnViewSettingSkipped: part of a view (a filter, a sort, a
+	// setting) was not restored.
+	WarnViewSettingSkipped = "view_setting_skipped"
 )
 
-// Warning groups one kind of loss in one table (and field, when it applies).
+// Warning groups one kind of loss in one table (and view and field, when
+// they apply).
 type Warning struct {
 	Code    string `json:"code"`
 	Table   string `json:"table,omitempty"`
 	Field   string `json:"field,omitempty"`
 	Count   int64  `json:"count"`
 	Message string `json:"message"`
+	View    string `json:"view,omitempty"`
 }
 
 // RestoreReport summarizes a restore. It is returned even when the restore
@@ -75,6 +92,7 @@ type RestoreReport struct {
 	RecordCount int64
 	LinkCount   int64
 	FileCount   int64
+	ViewCount   int
 	Warnings    []Warning
 }
 
@@ -86,7 +104,7 @@ type RestoreReport struct {
 // plain fields, then relations (from one side; NocoDB creates the inverse),
 // then records, then links between the new record IDs, then lookups,
 // rollups and formulas in dependency order, then display fields, then
-// attachment files.
+// attachment files, then views.
 func Restore(ctx context.Context, api WriteAPI, open func() (io.ReadCloser, error), opts RestoreOptions) (*RestoreReport, error) {
 	if opts.BatchSize <= 0 {
 		opts.BatchSize = 10
@@ -260,6 +278,9 @@ func (r *restorer) run(ctx context.Context) error {
 		return err
 	}
 	if err := r.restoreFiles(ctx); err != nil {
+		return err
+	}
+	if err := r.restoreViews(ctx); err != nil {
 		return err
 	}
 	r.opts.Progress("done")
@@ -538,6 +559,24 @@ func jsonString(raw json.RawMessage, key string) string {
 	return rawString(m[key])
 }
 
+// jsonBool reads a NocoDB flag, which v2 meta returns as true/false, 1/0
+// or null.
+func jsonBool(raw json.RawMessage, key string) bool {
+	var m map[string]any
+	if json.Unmarshal(raw, &m) != nil {
+		return false
+	}
+	switch v := m[key].(type) {
+	case bool:
+		return v
+	case float64:
+		return v != 0
+	case string:
+		return v == "1" || v == "true"
+	}
+	return false
+}
+
 func apiMessage(err error) string {
 	var apiErr *nocodb.APIError
 	if errors.As(err, &apiErr) && apiErr.Message != "" {
@@ -567,6 +606,18 @@ func (r *restorer) warn(code, table, field string, n int64, msg string) {
 	r.warningOrder = append(r.warningOrder, key)
 }
 
+// warnView counts one loss in a view. Unlike warn, the message is part of
+// the group: one view can lose several different things.
+func (r *restorer) warnView(code, table, view, field, msg string) {
+	key := strings.Join([]string{code, table, view, field, msg}, "\x00")
+	if w, ok := r.warnings[key]; ok {
+		w.Count++
+		return
+	}
+	r.warnings[key] = &Warning{Code: code, Table: table, View: view, Field: field, Count: 1, Message: msg}
+	r.warningOrder = append(r.warningOrder, key)
+}
+
 func (r *restorer) finishReport() {
 	for _, t := range r.tables {
 		for _, f := range t.fields {
@@ -576,7 +627,7 @@ func (r *restorer) finishReport() {
 		}
 	}
 	r.report.Tables = r.report.Tables[:0]
-	r.report.RecordCount, r.report.LinkCount, r.report.FileCount = 0, 0, 0
+	r.report.RecordCount, r.report.LinkCount, r.report.FileCount, r.report.ViewCount = 0, 0, 0, 0
 	for _, t := range r.tables {
 		if t.newID == "" {
 			continue
@@ -592,6 +643,7 @@ func (r *restorer) finishReport() {
 		r.report.RecordCount += t.stats.RecordCount
 		r.report.LinkCount += t.stats.LinkCount
 		r.report.FileCount += t.stats.FileCount
+		r.report.ViewCount += t.stats.ViewCount
 	}
 	r.report.Warnings = r.report.Warnings[:0]
 	for _, k := range r.warningOrder {

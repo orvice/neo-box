@@ -17,6 +17,33 @@ type fakeAPI struct {
 	records map[string][]nocodb.Record
 	links   map[string][]json.RawMessage // table/field/record -> ids
 	calls   map[string]int
+	// views by table; columns, sorts and filters by view; filter group
+	// members by group.
+	views    map[string][]json.RawMessage
+	columns  map[string][]json.RawMessage
+	sorts    map[string][]json.RawMessage
+	filters  map[string][]json.RawMessage
+	children map[string][]json.RawMessage
+}
+
+func (f *fakeAPI) ListViews(_ context.Context, tableID string) ([]json.RawMessage, error) {
+	return f.views[tableID], nil
+}
+
+func (f *fakeAPI) ListViewColumns(_ context.Context, viewID string) ([]json.RawMessage, error) {
+	return f.columns[viewID], nil
+}
+
+func (f *fakeAPI) ListViewSorts(_ context.Context, viewID string) ([]json.RawMessage, error) {
+	return f.sorts[viewID], nil
+}
+
+func (f *fakeAPI) ListViewFilters(_ context.Context, viewID string) ([]json.RawMessage, error) {
+	return f.filters[viewID], nil
+}
+
+func (f *fakeAPI) ListFilterChildren(_ context.Context, filterID string) ([]json.RawMessage, error) {
+	return f.children[filterID], nil
 }
 
 func (f *fakeAPI) GetBaseRaw(context.Context, string) (json.RawMessage, error) {

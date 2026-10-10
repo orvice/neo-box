@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"slices"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -83,6 +84,9 @@ func TestLiveRestoreRoundTrip(t *testing.T) {
 
 	if report.FileCount != 2 {
 		t.Errorf("restored %d files, want 2", report.FileCount)
+	}
+	if stats.ViewCount == 0 || report.ViewCount != stats.ViewCount {
+		t.Errorf("restored %d views, want %d", report.ViewCount, stats.ViewCount)
 	}
 	for _, w := range report.Warnings {
 		t.Errorf("unexpected warning %+v", w)
@@ -272,7 +276,91 @@ func buildFixture(ctx context.Context, t *testing.T, c *nocodb.Client, title str
 	})
 	must(err)
 
+	buildViews(ctx, t, c, baseID, customers.ID)
 	return baseID
+}
+
+// buildViews gives Customers a view of each type with settings, column
+// settings, sorts and a nested filter group.
+func buildViews(ctx context.Context, t *testing.T, c *nocodb.Client, baseID, tableID string) {
+	t.Helper()
+	must := func(err error) {
+		t.Helper()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	table, err := c.GetTable(ctx, baseID, tableID)
+	must(err)
+	field := func(title string) string { return fieldByTitle(t, table, title).ID }
+	column := func(viewID, title string) string {
+		cols, err := c.ListViewColumns(ctx, viewID)
+		must(err)
+		for _, col := range cols {
+			if jsonString(col, "fk_column_id") == field(title) {
+				return jsonString(col, "id")
+			}
+		}
+		t.Fatalf("view %s has no column %q", viewID, title)
+		return ""
+	}
+
+	// The default view: a sort and a hidden column.
+	views, err := c.ListViews(ctx, tableID)
+	must(err)
+	def := jsonString(views[0], "id")
+	must(c.CreateSort(ctx, def, map[string]any{"fk_column_id": field("Name"), "direction": "asc"}))
+	must(c.UpdateViewColumn(ctx, def, column(def, "Meta"), map[string]any{"show": false}))
+
+	vip, err := c.CreateView(ctx, tableID, nocodb.ViewTypeGrid, map[string]any{"title": "VIP"})
+	must(err)
+	must(c.UpdateView(ctx, vip, map[string]any{"lock_type": "locked", "description": "gold or high score"}))
+	must(c.UpdateViewSettings(ctx, nocodb.ViewTypeGrid, vip, map[string]any{"row_height": 1}))
+	must(c.UpdateViewColumn(ctx, vip, column(vip, "Email"), map[string]any{"show": false}))
+	must(c.UpdateViewColumn(ctx, vip, column(vip, "Score"), map[string]any{"order": 0.5}))
+	must(c.UpdateGridColumn(ctx, column(vip, "Name"), map[string]any{"width": "250px"}))
+	must(c.CreateSort(ctx, vip, map[string]any{"fk_column_id": field("Score"), "direction": "desc"}))
+	group, err := c.CreateFilter(ctx, vip, map[string]any{"is_group": true, "logical_op": "and"})
+	must(err)
+	_, err = c.CreateFilter(ctx, vip, map[string]any{"fk_parent_id": group, "fk_column_id": field("Tier"), "comparison_op": "eq", "value": "Gold", "logical_op": "or"})
+	must(err)
+	_, err = c.CreateFilter(ctx, vip, map[string]any{"fk_parent_id": group, "fk_column_id": field("Score"), "comparison_op": "gt", "value": "10", "logical_op": "or"})
+	must(err)
+	_, err = c.CreateFilter(ctx, vip, map[string]any{"fk_column_id": field("Joined"), "comparison_op": "isWithin", "comparison_sub_op": "pastNumberOfDays", "value": "30", "logical_op": "and"})
+	must(err)
+
+	form, err := c.CreateView(ctx, tableID, nocodb.ViewTypeForm, map[string]any{"title": "Signup"})
+	must(err)
+	must(c.UpdateViewSettings(ctx, nocodb.ViewTypeForm, form, map[string]any{"heading": "Join us", "subheading": "it's quick", "success_msg": "Welcome!", "submit_another_form": true}))
+	must(c.UpdateFormColumn(ctx, column(form, "Name"), map[string]any{"label": "Your name", "help": "as on your ID", "required": true}))
+
+	gallery, err := c.CreateView(ctx, tableID, nocodb.ViewTypeGallery, map[string]any{"title": "Cards"})
+	must(err)
+	must(c.UpdateViewSettings(ctx, nocodb.ViewTypeGallery, gallery, map[string]any{"fk_cover_image_col_id": field("Docs")}))
+
+	kanban, err := c.CreateView(ctx, tableID, nocodb.ViewTypeKanban, map[string]any{"title": "By tier", "fk_grp_col_id": field("Tier")})
+	must(err)
+	// Reverse the stacks and collapse one.
+	views, err = c.ListViews(ctx, tableID)
+	must(err)
+	for _, v := range views {
+		if jsonString(v, "id") != kanban {
+			continue
+		}
+		var settings struct {
+			Meta map[string][]map[string]any `json:"meta"`
+		}
+		_ = json.Unmarshal(jsonRaw(v, "view"), &settings)
+		stacks := settings.Meta[field("Tier")]
+		for i, st := range stacks {
+			st["order"] = len(stacks) - i
+			st["collapsed"] = st["title"] == "Silver"
+		}
+		must(c.UpdateViewSettings(ctx, nocodb.ViewTypeKanban, kanban, map[string]any{"meta": map[string]any{field("Tier"): stacks}}))
+	}
+
+	_, err = c.CreateView(ctx, tableID, nocodb.ViewTypeCalendar, map[string]any{"title": "Joined", "calendar_range": []map[string]string{{"fk_from_column_id": field("Joined")}}})
+	must(err)
 }
 
 func raw(s string) map[string]json.RawMessage {
@@ -400,7 +488,124 @@ func compareSnapshots(t *testing.T, src, dst []byte) {
 		if a, b := links(st, srcPos, srcTitles), links(dt, dstPos, dstTitles); !slices.Equal(a, b) {
 			t.Errorf("%s links:\n got %v\nwant %v", st.Title, b, a)
 		}
+		t.Logf("%s views:\n     %s", st.Title, strings.Join(describeViews(dt), "\n     "))
+		if a, b := describeViews(st), describeViews(dt); !slices.Equal(a, b) {
+			t.Errorf("%s views:\n got %s\nwant %s", st.Title, strings.Join(b, "\n     "), strings.Join(a, "\n     "))
+		}
 	}
+}
+
+// describeViews renders a table's views by what a restore keeps, with
+// fields named by title: settings, visible columns in order with their
+// settings, sorts, filters (nested by group) and kanban stacks.
+func describeViews(tb *Table) []string {
+	titles := map[string]string{}
+	for _, f := range tb.Fields() {
+		titles[f.ID] = f.Title
+	}
+	name := func(raw json.RawMessage, key string) string { return titles[jsonString(raw, key)] }
+	pick := func(raw json.RawMessage, keys ...string) string {
+		var parts []string
+		for _, k := range keys {
+			if v := jsonValue(raw, k); v != nil && v != false && v != float64(0) && v != "" {
+				parts = append(parts, fmt.Sprintf("%s=%v", k, v))
+			}
+		}
+		return strings.Join(parts, ",")
+	}
+	var out []string
+	for _, v := range tb.Views {
+		sv := parseView(v)
+		line := fmt.Sprintf("%s(%d) %s", sv.title, sv.viewType, pick(v.View, "lock_type", "description"))
+		line += " {" + pick(sv.settings, "row_height", "heading", "subheading", "success_msg", "submit_another_form") + "}"
+		if id := jsonString(sv.settings, "fk_grp_col_id"); id != "" {
+			line += " group=" + titles[id]
+		}
+		if id := jsonString(sv.settings, "fk_cover_image_col_id"); id != "" {
+			line += " cover=" + titles[id]
+		}
+		var ranges []string
+		for _, rg := range parseRanges(sv.settings) {
+			ranges = append(ranges, titles[rg])
+		}
+		if len(ranges) > 0 {
+			line += " range=" + strings.Join(ranges, "/")
+		}
+		if id := jsonString(sv.settings, "fk_grp_col_id"); id != "" {
+			var meta map[string][]map[string]any
+			_ = json.Unmarshal(jsonRaw(sv.settings, "meta"), &meta)
+			stacks := meta[id]
+			slices.SortFunc(stacks, func(a, b map[string]any) int { return int(a["order"].(float64) - b["order"].(float64)) })
+			var names []string
+			for _, st := range stacks {
+				names = append(names, fmt.Sprintf("%v:%v", st["title"], st["collapsed"]))
+			}
+			line += " stacks=" + strings.Join(names, ",")
+		}
+		cols := slices.Clone(v.Columns)
+		slices.SortStableFunc(cols, func(a, b json.RawMessage) int {
+			oa, ob := jsonValue(a, "order"), jsonValue(b, "order")
+			fa, _ := oa.(float64)
+			fb, _ := ob.(float64)
+			switch {
+			case fa < fb:
+				return -1
+			case fa > fb:
+				return 1
+			}
+			return 0
+		})
+		var shown []string
+		for _, col := range cols {
+			title := name(col, "fk_column_id")
+			if title == "" || !jsonBool(col, "show") {
+				continue
+			}
+			extra := pick(col, "label", "help", "required")
+			if w := jsonString(col, "width"); w != "" && w != "200px" {
+				extra += " width=" + w
+			}
+			shown = append(shown, strings.TrimSpace(title+" "+extra))
+		}
+		line += " cols=[" + strings.Join(shown, "; ") + "]"
+		var sorts []string
+		for _, so := range v.Sorts {
+			sorts = append(sorts, name(so, "fk_column_id")+" "+jsonString(so, "direction"))
+		}
+		line += " sorts=[" + strings.Join(sorts, ", ") + "]"
+		depth := map[string]int{}
+		var filters []string
+		for _, f := range v.Filters {
+			d := 0
+			if p := jsonString(f, "fk_parent_id"); p != "" {
+				d = depth[p] + 1
+			}
+			depth[jsonString(f, "id")] = d
+			if jsonBool(f, "is_group") {
+				filters = append(filters, fmt.Sprintf("%d:group %s", d, jsonString(f, "logical_op")))
+				continue
+			}
+			filters = append(filters, fmt.Sprintf("%d:%s %s %s %v %s", d, name(f, "fk_column_id"),
+				jsonString(f, "comparison_op"), jsonString(f, "comparison_sub_op"), jsonValue(f, "value"), jsonString(f, "logical_op")))
+		}
+		line += " filters=[" + strings.Join(filters, ", ") + "]"
+		out = append(out, line)
+	}
+	return out
+}
+
+func parseRanges(settings json.RawMessage) []string {
+	var parsed struct {
+		Ranges []struct {
+			From string `json:"fk_from_column_id"`
+		} `json:"calendar_range"`
+	}
+	_ = json.Unmarshal(settings, &parsed)
+	var out []string
+	for _, rg := range parsed.Ranges {
+		out = append(out, rg.From)
+	}
+	return out
 }
 
 // attachments describes an Attachment value by what a restore keeps: each

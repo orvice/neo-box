@@ -163,6 +163,27 @@ func (_u *NocoDBSnapshotUpdate) AddLinkCount(v int64) *NocoDBSnapshotUpdate {
 	return _u
 }
 
+// SetViewCount sets the "view_count" field.
+func (_u *NocoDBSnapshotUpdate) SetViewCount(v int) *NocoDBSnapshotUpdate {
+	_u.mutation.ResetViewCount()
+	_u.mutation.SetViewCount(v)
+	return _u
+}
+
+// SetNillableViewCount sets the "view_count" field if the given value is not nil.
+func (_u *NocoDBSnapshotUpdate) SetNillableViewCount(v *int) *NocoDBSnapshotUpdate {
+	if v != nil {
+		_u.SetViewCount(*v)
+	}
+	return _u
+}
+
+// AddViewCount adds value to the "view_count" field.
+func (_u *NocoDBSnapshotUpdate) AddViewCount(v int) *NocoDBSnapshotUpdate {
+	_u.mutation.AddViewCount(v)
+	return _u
+}
+
 // SetAttachmentsIncluded sets the "attachments_included" field.
 func (_u *NocoDBSnapshotUpdate) SetAttachmentsIncluded(v bool) *NocoDBSnapshotUpdate {
 	_u.mutation.SetAttachmentsIncluded(v)
@@ -372,6 +393,12 @@ func (_u *NocoDBSnapshotUpdate) sqlSave(ctx context.Context) (_node int, err err
 	if value, ok := _u.mutation.AddedLinkCount(); ok {
 		_spec.AddField(nocodbsnapshot.FieldLinkCount, field.TypeInt64, value)
 	}
+	if value, ok := _u.mutation.ViewCount(); ok {
+		_spec.SetField(nocodbsnapshot.FieldViewCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedViewCount(); ok {
+		_spec.AddField(nocodbsnapshot.FieldViewCount, field.TypeInt, value)
+	}
 	if value, ok := _u.mutation.AttachmentsIncluded(); ok {
 		_spec.SetField(nocodbsnapshot.FieldAttachmentsIncluded, field.TypeBool, value)
 	}
@@ -566,6 +593,27 @@ func (_u *NocoDBSnapshotUpdateOne) SetNillableLinkCount(v *int64) *NocoDBSnapsho
 // AddLinkCount adds value to the "link_count" field.
 func (_u *NocoDBSnapshotUpdateOne) AddLinkCount(v int64) *NocoDBSnapshotUpdateOne {
 	_u.mutation.AddLinkCount(v)
+	return _u
+}
+
+// SetViewCount sets the "view_count" field.
+func (_u *NocoDBSnapshotUpdateOne) SetViewCount(v int) *NocoDBSnapshotUpdateOne {
+	_u.mutation.ResetViewCount()
+	_u.mutation.SetViewCount(v)
+	return _u
+}
+
+// SetNillableViewCount sets the "view_count" field if the given value is not nil.
+func (_u *NocoDBSnapshotUpdateOne) SetNillableViewCount(v *int) *NocoDBSnapshotUpdateOne {
+	if v != nil {
+		_u.SetViewCount(*v)
+	}
+	return _u
+}
+
+// AddViewCount adds value to the "view_count" field.
+func (_u *NocoDBSnapshotUpdateOne) AddViewCount(v int) *NocoDBSnapshotUpdateOne {
+	_u.mutation.AddViewCount(v)
 	return _u
 }
 
@@ -807,6 +855,12 @@ func (_u *NocoDBSnapshotUpdateOne) sqlSave(ctx context.Context) (_node *NocoDBSn
 	}
 	if value, ok := _u.mutation.AddedLinkCount(); ok {
 		_spec.AddField(nocodbsnapshot.FieldLinkCount, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.ViewCount(); ok {
+		_spec.SetField(nocodbsnapshot.FieldViewCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedViewCount(); ok {
+		_spec.AddField(nocodbsnapshot.FieldViewCount, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.AttachmentsIncluded(); ok {
 		_spec.SetField(nocodbsnapshot.FieldAttachmentsIncluded, field.TypeBool, value)

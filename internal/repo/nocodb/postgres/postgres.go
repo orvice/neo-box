@@ -98,6 +98,7 @@ func (s *Store) CreateSnapshot(ctx context.Context, snap *repo.Snapshot) error {
 		SetSizeBytes(snap.SizeBytes).
 		SetRecordCount(snap.RecordCount).
 		SetLinkCount(snap.LinkCount).
+		SetViewCount(snap.ViewCount).
 		SetAttachmentsIncluded(snap.AttachmentsIncluded).
 		SetFileCount(snap.FileCount).
 		SetFileBytes(snap.FileBytes).
@@ -141,6 +142,7 @@ func (s *Store) UpdateSnapshot(ctx context.Context, snap *repo.Snapshot) error {
 		SetSizeBytes(snap.SizeBytes).
 		SetRecordCount(snap.RecordCount).
 		SetLinkCount(snap.LinkCount).
+		SetViewCount(snap.ViewCount).
 		SetAttachmentsIncluded(snap.AttachmentsIncluded).
 		SetFileCount(snap.FileCount).
 		SetFileBytes(snap.FileBytes).
@@ -261,6 +263,7 @@ func (s *Store) CreateRestore(ctx context.Context, r *repo.Restore) error {
 		SetRecordCount(r.RecordCount).
 		SetLinkCount(r.LinkCount).
 		SetFileCount(r.FileCount).
+		SetViewCount(r.ViewCount).
 		SetCreatedAt(r.CreatedAt).
 		SetNillableStartedAt(nilIfZero(r.StartedAt)).
 		SetNillableFinishedAt(nilIfZero(r.FinishedAt))
@@ -297,7 +300,8 @@ func (s *Store) UpdateRestore(ctx context.Context, r *repo.Restore) error {
 		SetTableCount(r.TableCount).
 		SetRecordCount(r.RecordCount).
 		SetLinkCount(r.LinkCount).
-		SetFileCount(r.FileCount)
+		SetFileCount(r.FileCount).
+		SetViewCount(r.ViewCount)
 	if r.Warnings == nil {
 		u.ClearWarnings()
 	} else {
@@ -520,7 +524,7 @@ func snapshotFromRow(r *ent.NocoDBSnapshot) *repo.Snapshot {
 		ID: r.ID, UserID: r.UserID, ConnectionID: r.ConnectionID, BaseID: r.BaseID, BaseTitle: r.BaseTitle,
 		Status: repo.SnapshotStatus(r.Status), Trigger: repo.SnapshotTrigger(r.Trigger), Error: r.Error,
 		Progress: r.Progress, ObjectKey: r.ObjectKey, SizeBytes: r.SizeBytes, RecordCount: r.RecordCount,
-		LinkCount: r.LinkCount, AttachmentsIncluded: r.AttachmentsIncluded, FileCount: r.FileCount,
+		LinkCount: r.LinkCount, ViewCount: r.ViewCount, AttachmentsIncluded: r.AttachmentsIncluded, FileCount: r.FileCount,
 		FileBytes: r.FileBytes, FilesMissing: r.FilesMissing, Tables: r.Tables, CreatedAt: r.CreatedAt,
 		StartedAt: zeroIfNil(r.StartedAt), FinishedAt: zeroIfNil(r.FinishedAt),
 	}
@@ -533,6 +537,7 @@ func restoreFromRow(r *ent.NocoDBRestore) *repo.Restore {
 		TargetConnectionID: r.TargetConnectionID, TargetBaseID: r.TargetBaseID, TargetBaseTitle: r.TargetBaseTitle,
 		Status: repo.RestoreStatus(r.Status), Error: r.Error, Progress: r.Progress,
 		TableCount: r.TableCount, RecordCount: r.RecordCount, LinkCount: r.LinkCount, FileCount: r.FileCount,
+		ViewCount: r.ViewCount,
 		Warnings:  r.Warnings,
 		CreatedAt: r.CreatedAt, StartedAt: zeroIfNil(r.StartedAt), FinishedAt: zeroIfNil(r.FinishedAt),
 	}

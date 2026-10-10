@@ -73,6 +73,7 @@ export function SnapshotTable({
           <div className='text-xs text-muted-foreground'>
             {s.tables.length} tables · {formatCount(s.recordCount)} records ·{' '}
             {formatCount(s.linkCount)} links
+            {s.viewCount > 0 && ` · ${formatCount(s.viewCount)} views`}
             {s.fileCount > 0 && ` · ${formatCount(s.fileCount)} files`} ·{' '}
             {formatBytes(s.sizeBytes)}
           </div>

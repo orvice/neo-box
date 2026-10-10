@@ -49,6 +49,8 @@ type NocoDBRestore struct {
 	LinkCount int64 `json:"link_count,omitempty"`
 	// FileCount holds the value of the "file_count" field.
 	FileCount int64 `json:"file_count,omitempty"`
+	// ViewCount holds the value of the "view_count" field.
+	ViewCount int `json:"view_count,omitempty"`
 	// Warnings holds the value of the "warnings" field.
 	Warnings []nocodb.RestoreWarning `json:"warnings,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -67,7 +69,7 @@ func (*NocoDBRestore) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case nocodbrestore.FieldWarnings:
 			values[i] = new([]byte)
-		case nocodbrestore.FieldTableCount, nocodbrestore.FieldRecordCount, nocodbrestore.FieldLinkCount, nocodbrestore.FieldFileCount:
+		case nocodbrestore.FieldTableCount, nocodbrestore.FieldRecordCount, nocodbrestore.FieldLinkCount, nocodbrestore.FieldFileCount, nocodbrestore.FieldViewCount:
 			values[i] = new(sql.NullInt64)
 		case nocodbrestore.FieldID, nocodbrestore.FieldUserID, nocodbrestore.FieldSnapshotID, nocodbrestore.FieldSourceConnectionID, nocodbrestore.FieldSourceBaseID, nocodbrestore.FieldSourceBaseTitle, nocodbrestore.FieldTargetConnectionID, nocodbrestore.FieldTargetBaseID, nocodbrestore.FieldTargetBaseTitle, nocodbrestore.FieldStatus, nocodbrestore.FieldError, nocodbrestore.FieldProgress:
 			values[i] = new(sql.NullString)
@@ -184,6 +186,12 @@ func (_m *NocoDBRestore) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.FileCount = value.Int64
 			}
+		case nocodbrestore.FieldViewCount:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field view_count", values[i])
+			} else if value.Valid {
+				_m.ViewCount = int(value.Int64)
+			}
 		case nocodbrestore.FieldWarnings:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field warnings", values[i])
@@ -292,6 +300,9 @@ func (_m *NocoDBRestore) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("file_count=")
 	builder.WriteString(fmt.Sprintf("%v", _m.FileCount))
+	builder.WriteString(", ")
+	builder.WriteString("view_count=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ViewCount))
 	builder.WriteString(", ")
 	builder.WriteString("warnings=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Warnings))

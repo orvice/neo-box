@@ -3657,6 +3657,8 @@ type NocoDBRestoreMutation struct {
 	addlink_count        *int64
 	file_count           *int64
 	addfile_count        *int64
+	view_count           *int
+	addview_count        *int
 	warnings             *[]nocodb.RestoreWarning
 	appendwarnings       []nocodb.RestoreWarning
 	created_at           *time.Time
@@ -4392,6 +4394,62 @@ func (m *NocoDBRestoreMutation) ResetFileCount() {
 	m.addfile_count = nil
 }
 
+// SetViewCount sets the "view_count" field.
+func (m *NocoDBRestoreMutation) SetViewCount(i int) {
+	m.view_count = &i
+	m.addview_count = nil
+}
+
+// ViewCount returns the value of the "view_count" field in the mutation.
+func (m *NocoDBRestoreMutation) ViewCount() (r int, exists bool) {
+	v := m.view_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldViewCount returns the old "view_count" field's value of the NocoDBRestore entity.
+// If the NocoDBRestore object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBRestoreMutation) OldViewCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldViewCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldViewCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldViewCount: %w", err)
+	}
+	return oldValue.ViewCount, nil
+}
+
+// AddViewCount adds i to the "view_count" field.
+func (m *NocoDBRestoreMutation) AddViewCount(i int) {
+	if m.addview_count != nil {
+		*m.addview_count += i
+	} else {
+		m.addview_count = &i
+	}
+}
+
+// AddedViewCount returns the value that was added to the "view_count" field in this mutation.
+func (m *NocoDBRestoreMutation) AddedViewCount() (r int, exists bool) {
+	v := m.addview_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetViewCount resets all changes to the "view_count" field.
+func (m *NocoDBRestoreMutation) ResetViewCount() {
+	m.view_count = nil
+	m.addview_count = nil
+}
+
 // SetWarnings sets the "warnings" field.
 func (m *NocoDBRestoreMutation) SetWarnings(nw []nocodb.RestoreWarning) {
 	m.warnings = &nw
@@ -4625,7 +4683,7 @@ func (m *NocoDBRestoreMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NocoDBRestoreMutation) Fields() []string {
-	fields := make([]string, 0, 19)
+	fields := make([]string, 0, 20)
 	if m.user_id != nil {
 		fields = append(fields, nocodbrestore.FieldUserID)
 	}
@@ -4670,6 +4728,9 @@ func (m *NocoDBRestoreMutation) Fields() []string {
 	}
 	if m.file_count != nil {
 		fields = append(fields, nocodbrestore.FieldFileCount)
+	}
+	if m.view_count != nil {
+		fields = append(fields, nocodbrestore.FieldViewCount)
 	}
 	if m.warnings != nil {
 		fields = append(fields, nocodbrestore.FieldWarnings)
@@ -4721,6 +4782,8 @@ func (m *NocoDBRestoreMutation) Field(name string) (ent.Value, bool) {
 		return m.LinkCount()
 	case nocodbrestore.FieldFileCount:
 		return m.FileCount()
+	case nocodbrestore.FieldViewCount:
+		return m.ViewCount()
 	case nocodbrestore.FieldWarnings:
 		return m.Warnings()
 	case nocodbrestore.FieldCreatedAt:
@@ -4768,6 +4831,8 @@ func (m *NocoDBRestoreMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldLinkCount(ctx)
 	case nocodbrestore.FieldFileCount:
 		return m.OldFileCount(ctx)
+	case nocodbrestore.FieldViewCount:
+		return m.OldViewCount(ctx)
 	case nocodbrestore.FieldWarnings:
 		return m.OldWarnings(ctx)
 	case nocodbrestore.FieldCreatedAt:
@@ -4890,6 +4955,13 @@ func (m *NocoDBRestoreMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetFileCount(v)
 		return nil
+	case nocodbrestore.FieldViewCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetViewCount(v)
+		return nil
 	case nocodbrestore.FieldWarnings:
 		v, ok := value.([]nocodb.RestoreWarning)
 		if !ok {
@@ -4938,6 +5010,9 @@ func (m *NocoDBRestoreMutation) AddedFields() []string {
 	if m.addfile_count != nil {
 		fields = append(fields, nocodbrestore.FieldFileCount)
 	}
+	if m.addview_count != nil {
+		fields = append(fields, nocodbrestore.FieldViewCount)
+	}
 	return fields
 }
 
@@ -4954,6 +5029,8 @@ func (m *NocoDBRestoreMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedLinkCount()
 	case nocodbrestore.FieldFileCount:
 		return m.AddedFileCount()
+	case nocodbrestore.FieldViewCount:
+		return m.AddedViewCount()
 	}
 	return nil, false
 }
@@ -4990,6 +5067,13 @@ func (m *NocoDBRestoreMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddFileCount(v)
+		return nil
+	case nocodbrestore.FieldViewCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddViewCount(v)
 		return nil
 	}
 	return fmt.Errorf("unknown NocoDBRestore numeric field %s", name)
@@ -5084,6 +5168,9 @@ func (m *NocoDBRestoreMutation) ResetField(name string) error {
 	case nocodbrestore.FieldFileCount:
 		m.ResetFileCount()
 		return nil
+	case nocodbrestore.FieldViewCount:
+		m.ResetViewCount()
+		return nil
 	case nocodbrestore.FieldWarnings:
 		m.ResetWarnings()
 		return nil
@@ -5169,6 +5256,8 @@ type NocoDBSnapshotMutation struct {
 	addrecord_count      *int64
 	link_count           *int64
 	addlink_count        *int64
+	view_count           *int
+	addview_count        *int
 	attachments_included *bool
 	file_count           *int64
 	addfile_count        *int64
@@ -5783,6 +5872,62 @@ func (m *NocoDBSnapshotMutation) ResetLinkCount() {
 	m.addlink_count = nil
 }
 
+// SetViewCount sets the "view_count" field.
+func (m *NocoDBSnapshotMutation) SetViewCount(i int) {
+	m.view_count = &i
+	m.addview_count = nil
+}
+
+// ViewCount returns the value of the "view_count" field in the mutation.
+func (m *NocoDBSnapshotMutation) ViewCount() (r int, exists bool) {
+	v := m.view_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldViewCount returns the old "view_count" field's value of the NocoDBSnapshot entity.
+// If the NocoDBSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NocoDBSnapshotMutation) OldViewCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldViewCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldViewCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldViewCount: %w", err)
+	}
+	return oldValue.ViewCount, nil
+}
+
+// AddViewCount adds i to the "view_count" field.
+func (m *NocoDBSnapshotMutation) AddViewCount(i int) {
+	if m.addview_count != nil {
+		*m.addview_count += i
+	} else {
+		m.addview_count = &i
+	}
+}
+
+// AddedViewCount returns the value that was added to the "view_count" field in this mutation.
+func (m *NocoDBSnapshotMutation) AddedViewCount() (r int, exists bool) {
+	v := m.addview_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetViewCount resets all changes to the "view_count" field.
+func (m *NocoDBSnapshotMutation) ResetViewCount() {
+	m.view_count = nil
+	m.addview_count = nil
+}
+
 // SetAttachmentsIncluded sets the "attachments_included" field.
 func (m *NocoDBSnapshotMutation) SetAttachmentsIncluded(b bool) {
 	m.attachments_included = &b
@@ -6220,7 +6365,7 @@ func (m *NocoDBSnapshotMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NocoDBSnapshotMutation) Fields() []string {
-	fields := make([]string, 0, 20)
+	fields := make([]string, 0, 21)
 	if m.user_id != nil {
 		fields = append(fields, nocodbsnapshot.FieldUserID)
 	}
@@ -6256,6 +6401,9 @@ func (m *NocoDBSnapshotMutation) Fields() []string {
 	}
 	if m.link_count != nil {
 		fields = append(fields, nocodbsnapshot.FieldLinkCount)
+	}
+	if m.view_count != nil {
+		fields = append(fields, nocodbsnapshot.FieldViewCount)
 	}
 	if m.attachments_included != nil {
 		fields = append(fields, nocodbsnapshot.FieldAttachmentsIncluded)
@@ -6313,6 +6461,8 @@ func (m *NocoDBSnapshotMutation) Field(name string) (ent.Value, bool) {
 		return m.RecordCount()
 	case nocodbsnapshot.FieldLinkCount:
 		return m.LinkCount()
+	case nocodbsnapshot.FieldViewCount:
+		return m.ViewCount()
 	case nocodbsnapshot.FieldAttachmentsIncluded:
 		return m.AttachmentsIncluded()
 	case nocodbsnapshot.FieldFileCount:
@@ -6362,6 +6512,8 @@ func (m *NocoDBSnapshotMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldRecordCount(ctx)
 	case nocodbsnapshot.FieldLinkCount:
 		return m.OldLinkCount(ctx)
+	case nocodbsnapshot.FieldViewCount:
+		return m.OldViewCount(ctx)
 	case nocodbsnapshot.FieldAttachmentsIncluded:
 		return m.OldAttachmentsIncluded(ctx)
 	case nocodbsnapshot.FieldFileCount:
@@ -6471,6 +6623,13 @@ func (m *NocoDBSnapshotMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetLinkCount(v)
 		return nil
+	case nocodbsnapshot.FieldViewCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetViewCount(v)
+		return nil
 	case nocodbsnapshot.FieldAttachmentsIncluded:
 		v, ok := value.(bool)
 		if !ok {
@@ -6544,6 +6703,9 @@ func (m *NocoDBSnapshotMutation) AddedFields() []string {
 	if m.addlink_count != nil {
 		fields = append(fields, nocodbsnapshot.FieldLinkCount)
 	}
+	if m.addview_count != nil {
+		fields = append(fields, nocodbsnapshot.FieldViewCount)
+	}
 	if m.addfile_count != nil {
 		fields = append(fields, nocodbsnapshot.FieldFileCount)
 	}
@@ -6567,6 +6729,8 @@ func (m *NocoDBSnapshotMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedRecordCount()
 	case nocodbsnapshot.FieldLinkCount:
 		return m.AddedLinkCount()
+	case nocodbsnapshot.FieldViewCount:
+		return m.AddedViewCount()
 	case nocodbsnapshot.FieldFileCount:
 		return m.AddedFileCount()
 	case nocodbsnapshot.FieldFileBytes:
@@ -6602,6 +6766,13 @@ func (m *NocoDBSnapshotMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddLinkCount(v)
+		return nil
+	case nocodbsnapshot.FieldViewCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddViewCount(v)
 		return nil
 	case nocodbsnapshot.FieldFileCount:
 		v, ok := value.(int64)
@@ -6707,6 +6878,9 @@ func (m *NocoDBSnapshotMutation) ResetField(name string) error {
 		return nil
 	case nocodbsnapshot.FieldLinkCount:
 		m.ResetLinkCount()
+		return nil
+	case nocodbsnapshot.FieldViewCount:
+		m.ResetViewCount()
 		return nil
 	case nocodbsnapshot.FieldAttachmentsIncluded:
 		m.ResetAttachmentsIncluded()

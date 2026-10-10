@@ -16,7 +16,8 @@
 //	      "schema": { ...v3 table schema incl. fields, verbatim... },
 //	      "records": [ {"id": 1, "fields": {...}}, ... ],
 //	      "links": [ {"field_id": "...", "record_id": 1, "linked_ids": [3, 4]}, ... ],
-//	      "files": [ {"source": "download/...", "size": 17, "sha256": "..."}, ... ]
+//	      "files": [ {"source": "download/...", "size": 17, "sha256": "..."}, ... ],
+//	      "views": [ {"view": {...}, "columns": [...], "sorts": [...], "filters": [...]}, ... ]
 //	    }
 //	  ]
 //	}
@@ -30,6 +31,13 @@
 // Attachment values reference, by source (the attachment's path, else its
 // url) and size, with the sha256 they are stored under, or the error that
 // kept one from being read. Version 1 documents have neither.
+//
+// "views" holds every view of the table as v2 meta returns it (v3 views
+// are licence-gated in OSS): the view with its type-specific settings, its
+// column settings, sorts, and filters, with nested groups flattened and
+// linked by fk_parent_id, each group before its members. A table without
+// "views" had them left out (version 1, or a version 2 document written
+// before views were captured).
 package snapshot
 
 import (
@@ -91,6 +99,14 @@ func FileKey(source string, size int64) string {
 	return fmt.Sprintf("%d:%s", size, source)
 }
 
+// View is one view of a table, verbatim from v2 meta.
+type View struct {
+	View    json.RawMessage   `json:"view"`
+	Columns []json.RawMessage `json:"columns"`
+	Sorts   []json.RawMessage `json:"sorts"`
+	Filters []json.RawMessage `json:"filters"`
+}
+
 // Table is one table's schema and content.
 type Table struct {
 	ID      string          `json:"id"`
@@ -99,6 +115,7 @@ type Table struct {
 	Records []nocodb.Record `json:"records"`
 	Links   []Link          `json:"links"`
 	Files   []File          `json:"files,omitempty"`
+	Views   []View          `json:"views,omitempty"`
 }
 
 // LinkCount is the number of (record, linked record) pairs in the table.

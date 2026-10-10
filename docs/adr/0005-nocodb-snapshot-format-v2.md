@@ -123,6 +123,48 @@ inserted without attachments. Then, for each restored record:
   Their headers can hold secrets, which are captured as they are, like
   record data.
 
+### Views, as built (#33)
+
+More checks on 2026.09.1 while building the views restore:
+- **Default view.** `is_default` comes back null, even for the default
+  view. The view NocoDB creates with a table is recognised as the earliest
+  created grid, falling back to the lowest order. Its settings go onto the
+  new table's own default view, which is renamed if needed. Views are put
+  back in their snapshot order with `PATCH /api/v2/meta/views/{id}`
+  (`order`), along with `lock_type`, `description`,
+  `show_system_fields` and `meta`. NocoDB rebuilds `groupingFieldColumn`
+  itself, so it is not copied from `meta`.
+- **Hidden system columns.** Column lists include NocoDB's hidden system
+  columns (created/updated time, …), which the v3 schema doesn't list.
+  Their settings are left alone, and so are the settings of fields the
+  restore skipped. A sort or filter on a skipped field is dropped with a
+  warning, because the view would otherwise show other records.
+- **Type-specific settings.**
+  - A grid's `row_height`.
+  - A form's heading, messages, redirect and flags.
+  - Gallery, kanban and calendar covers.
+  - Kanban stacks: the meta is keyed by the grouping field's ID and each
+    stack by its choice ID, so both are rewritten, with stacks matched by
+    choice title.
+  - These are set with `PATCH /api/v2/meta/{grids|forms|galleries|kanbans|calendars|maps}/{id}`.
+  - A kanban needs `fk_grp_col_id`, a calendar `calendar_range` and a map
+    `fk_geo_data_col_id` when created. Without that field the view is
+    skipped with a warning; maps usually are, since GeoData fields aren't
+    restored.
+- **Column settings.**
+  - `show` and `order` go through `PATCH /api/v2/meta/views/{id}/columns/{col}`.
+  - Grid width, grouping and aggregation go through
+    `PATCH /api/v2/meta/grid-columns/{col}`.
+  - Form label, help, description and required go through
+    `PATCH /api/v2/meta/form-columns/{col}`.
+  - Only values that differ from the new view's defaults are sent.
+  - Calendar column styling (bold, italic, underline) is not restored.
+- **Filters** keep `comparison_sub_op` (e.g. `isWithin` /
+  `pastNumberOfDays`). Groups are created before their members, and
+  `fk_parent_id` and every `fk_*_col_id` are remapped.
+- **Warnings.** View warnings (`view_skipped`, `view_setting_skipped`)
+  carry the view's title, and each different loss is reported separately.
+
 ## Consequences
 
 - A snapshot's `size_bytes` covers only its document. Its files are
@@ -138,3 +180,9 @@ inserted without attachments. Then, for each restored record:
   compares each attachment's title, type, size and content hash after the
   round trip. S3-backed NocoDB storage (`url`/`signedUrl`) has not been
   exercised live.
+- The fixture also gives a table one view of each type v2 creates, except
+  maps. The round trip compares each view's settings, visible columns in
+  order with their settings, sorts, the nested filter tree and kanban
+  stacks.
+- A restore costs a few requests per view plus one per changed column,
+  sort and filter.

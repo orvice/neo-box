@@ -143,6 +143,37 @@ func (f *fakeNocoDB) UploadFiles(_ context.Context, files []nocodb.UploadFile) (
 	}
 	return out, nil
 }
+
+// Views: the source table has one grid view; writes are accepted.
+func (f *fakeNocoDB) ListViews(context.Context, string) ([]json.RawMessage, error) {
+	return []json.RawMessage{json.RawMessage(`{"id":"v1","title":"T","type":3,"order":1}`)}, nil
+}
+func (f *fakeNocoDB) ListViewColumns(context.Context, string) ([]json.RawMessage, error) {
+	return nil, nil
+}
+func (f *fakeNocoDB) ListViewSorts(context.Context, string) ([]json.RawMessage, error) {
+	return nil, nil
+}
+func (f *fakeNocoDB) ListViewFilters(context.Context, string) ([]json.RawMessage, error) {
+	return nil, nil
+}
+func (f *fakeNocoDB) ListFilterChildren(context.Context, string) ([]json.RawMessage, error) {
+	return nil, nil
+}
+func (f *fakeNocoDB) CreateView(context.Context, string, int, any) (string, error) {
+	return "vR", nil
+}
+func (f *fakeNocoDB) UpdateView(context.Context, string, any) error              { return nil }
+func (f *fakeNocoDB) UpdateViewSettings(context.Context, int, string, any) error { return nil }
+func (f *fakeNocoDB) UpdateViewColumn(context.Context, string, string, any) error {
+	return nil
+}
+func (f *fakeNocoDB) UpdateGridColumn(context.Context, string, any) error { return nil }
+func (f *fakeNocoDB) UpdateFormColumn(context.Context, string, any) error { return nil }
+func (f *fakeNocoDB) CreateSort(context.Context, string, any) error       { return nil }
+func (f *fakeNocoDB) CreateFilter(context.Context, string, any) (string, error) {
+	return "fR", nil
+}
 func (f *fakeNocoDB) UpdateRecordsV2(_ context.Context, _ string, rows []map[string]json.RawMessage) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()

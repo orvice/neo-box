@@ -459,7 +459,7 @@ func snapshotToProto(s *repo.Snapshot) *neoboxv1.Snapshot {
 		Error: s.Error, Progress: s.Progress, CreatedAt: timestamppb.New(s.CreatedAt),
 		SizeBytes: s.SizeBytes, RecordCount: s.RecordCount, LinkCount: s.LinkCount,
 		AttachmentsIncluded: s.AttachmentsIncluded, FileCount: s.FileCount, FileBytes: s.FileBytes,
-		FilesMissing: s.FilesMissing,
+		FilesMissing: s.FilesMissing, ViewCount: int32(s.ViewCount),
 	}
 	if !s.StartedAt.IsZero() {
 		out.StartedAt = timestamppb.New(s.StartedAt)
@@ -470,7 +470,7 @@ func snapshotToProto(s *repo.Snapshot) *neoboxv1.Snapshot {
 	for _, t := range s.Tables {
 		out.Tables = append(out.Tables, &neoboxv1.SnapshotTable{
 			Id: t.ID, Title: t.Title, RecordCount: t.RecordCount, FieldCount: int32(t.FieldCount), LinkCount: t.LinkCount,
-			FileCount: t.FileCount, FileBytes: t.FileBytes, FilesMissing: t.FilesMissing,
+			FileCount: t.FileCount, FileBytes: t.FileBytes, FilesMissing: t.FilesMissing, ViewCount: int32(t.ViewCount),
 		})
 	}
 	return out
@@ -508,7 +508,7 @@ func restoreToProto(r *repo.Restore) *neoboxv1.Restore {
 		Status: restoreStatusToProto(r.Status), Error: r.Error, Progress: r.Progress,
 		CreatedAt:  timestamppb.New(r.CreatedAt),
 		TableCount: int32(r.TableCount), RecordCount: r.RecordCount, LinkCount: r.LinkCount,
-		FileCount: r.FileCount,
+		FileCount: r.FileCount, ViewCount: int32(r.ViewCount),
 	}
 	if !r.StartedAt.IsZero() {
 		out.StartedAt = timestamppb.New(r.StartedAt)
@@ -518,7 +518,7 @@ func restoreToProto(r *repo.Restore) *neoboxv1.Restore {
 	}
 	for _, w := range r.Warnings {
 		out.Warnings = append(out.Warnings, &neoboxv1.RestoreWarning{
-			Code: w.Code, Table: w.Table, Field: w.Field, Count: w.Count, Message: w.Message,
+			Code: w.Code, Table: w.Table, Field: w.Field, Count: w.Count, Message: w.Message, View: w.View,
 		})
 	}
 	return out

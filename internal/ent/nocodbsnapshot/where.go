@@ -124,6 +124,11 @@ func LinkCount(v int64) predicate.NocoDBSnapshot {
 	return predicate.NocoDBSnapshot(sql.FieldEQ(FieldLinkCount, v))
 }
 
+// ViewCount applies equality check predicate on the "view_count" field. It's identical to ViewCountEQ.
+func ViewCount(v int) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldEQ(FieldViewCount, v))
+}
+
 // AttachmentsIncluded applies equality check predicate on the "attachments_included" field. It's identical to AttachmentsIncludedEQ.
 func AttachmentsIncluded(v bool) predicate.NocoDBSnapshot {
 	return predicate.NocoDBSnapshot(sql.FieldEQ(FieldAttachmentsIncluded, v))
@@ -862,6 +867,46 @@ func LinkCountLT(v int64) predicate.NocoDBSnapshot {
 // LinkCountLTE applies the LTE predicate on the "link_count" field.
 func LinkCountLTE(v int64) predicate.NocoDBSnapshot {
 	return predicate.NocoDBSnapshot(sql.FieldLTE(FieldLinkCount, v))
+}
+
+// ViewCountEQ applies the EQ predicate on the "view_count" field.
+func ViewCountEQ(v int) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldEQ(FieldViewCount, v))
+}
+
+// ViewCountNEQ applies the NEQ predicate on the "view_count" field.
+func ViewCountNEQ(v int) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldNEQ(FieldViewCount, v))
+}
+
+// ViewCountIn applies the In predicate on the "view_count" field.
+func ViewCountIn(vs ...int) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldIn(FieldViewCount, vs...))
+}
+
+// ViewCountNotIn applies the NotIn predicate on the "view_count" field.
+func ViewCountNotIn(vs ...int) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldNotIn(FieldViewCount, vs...))
+}
+
+// ViewCountGT applies the GT predicate on the "view_count" field.
+func ViewCountGT(v int) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldGT(FieldViewCount, v))
+}
+
+// ViewCountGTE applies the GTE predicate on the "view_count" field.
+func ViewCountGTE(v int) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldGTE(FieldViewCount, v))
+}
+
+// ViewCountLT applies the LT predicate on the "view_count" field.
+func ViewCountLT(v int) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldLT(FieldViewCount, v))
+}
+
+// ViewCountLTE applies the LTE predicate on the "view_count" field.
+func ViewCountLTE(v int) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldLTE(FieldViewCount, v))
 }
 
 // AttachmentsIncludedEQ applies the EQ predicate on the "attachments_included" field.
