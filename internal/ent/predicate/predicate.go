@@ -15,11 +15,20 @@ type Connection func(*sql.Selector)
 // NocoDBBackupPolicy is the predicate function for nocodbbackuppolicy builders.
 type NocoDBBackupPolicy func(*sql.Selector)
 
+// NocoDBFile is the predicate function for nocodbfile builders.
+type NocoDBFile func(*sql.Selector)
+
+// NocoDBFileSource is the predicate function for nocodbfilesource builders.
+type NocoDBFileSource func(*sql.Selector)
+
 // NocoDBRestore is the predicate function for nocodbrestore builders.
 type NocoDBRestore func(*sql.Selector)
 
 // NocoDBSnapshot is the predicate function for nocodbsnapshot builders.
 type NocoDBSnapshot func(*sql.Selector)
+
+// NocoDBSnapshotFile is the predicate function for nocodbsnapshotfile builders.
+type NocoDBSnapshotFile func(*sql.Selector)
 
 // NotificationChannel is the predicate function for notificationchannel builders.
 type NotificationChannel func(*sql.Selector)

@@ -15,8 +15,11 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent/alert"
 	"go.orx.me/apps/neo-box/internal/ent/connection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
+	"go.orx.me/apps/neo-box/internal/ent/nocodbfile"
+	"go.orx.me/apps/neo-box/internal/ent/nocodbfilesource"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbrestore"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbsnapshot"
+	"go.orx.me/apps/neo-box/internal/ent/nocodbsnapshotfile"
 	"go.orx.me/apps/neo-box/internal/ent/notificationchannel"
 	"go.orx.me/apps/neo-box/internal/ent/oauthstate"
 	"go.orx.me/apps/neo-box/internal/ent/session"
@@ -87,8 +90,11 @@ func checkColumn(t, c string) error {
 			alert.Table:               alert.ValidColumn,
 			connection.Table:          connection.ValidColumn,
 			nocodbbackuppolicy.Table:  nocodbbackuppolicy.ValidColumn,
+			nocodbfile.Table:          nocodbfile.ValidColumn,
+			nocodbfilesource.Table:    nocodbfilesource.ValidColumn,
 			nocodbrestore.Table:       nocodbrestore.ValidColumn,
 			nocodbsnapshot.Table:      nocodbsnapshot.ValidColumn,
+			nocodbsnapshotfile.Table:  nocodbsnapshotfile.ValidColumn,
 			notificationchannel.Table: notificationchannel.ValidColumn,
 			oauthstate.Table:          oauthstate.ValidColumn,
 			session.Table:             session.ValidColumn,

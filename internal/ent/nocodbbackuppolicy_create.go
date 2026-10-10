@@ -58,6 +58,20 @@ func (_c *NocoDBBackupPolicyCreate) SetRetention(v int) *NocoDBBackupPolicyCreat
 	return _c
 }
 
+// SetIncludeAttachments sets the "include_attachments" field.
+func (_c *NocoDBBackupPolicyCreate) SetIncludeAttachments(v bool) *NocoDBBackupPolicyCreate {
+	_c.mutation.SetIncludeAttachments(v)
+	return _c
+}
+
+// SetNillableIncludeAttachments sets the "include_attachments" field if the given value is not nil.
+func (_c *NocoDBBackupPolicyCreate) SetNillableIncludeAttachments(v *bool) *NocoDBBackupPolicyCreate {
+	if v != nil {
+		_c.SetIncludeAttachments(*v)
+	}
+	return _c
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_c *NocoDBBackupPolicyCreate) SetUpdatedAt(v time.Time) *NocoDBBackupPolicyCreate {
 	_c.mutation.SetUpdatedAt(v)
@@ -71,6 +85,7 @@ func (_c *NocoDBBackupPolicyCreate) Mutation() *NocoDBBackupPolicyMutation {
 
 // Save creates the NocoDBBackupPolicy in the database.
 func (_c *NocoDBBackupPolicyCreate) Save(ctx context.Context) (*NocoDBBackupPolicy, error) {
+	_c.defaults()
 	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
@@ -96,6 +111,14 @@ func (_c *NocoDBBackupPolicyCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (_c *NocoDBBackupPolicyCreate) defaults() {
+	if _, ok := _c.mutation.IncludeAttachments(); !ok {
+		v := nocodbbackuppolicy.DefaultIncludeAttachments
+		_c.mutation.SetIncludeAttachments(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (_c *NocoDBBackupPolicyCreate) check() error {
 	if _, ok := _c.mutation.ConnectionID(); !ok {
@@ -115,6 +138,9 @@ func (_c *NocoDBBackupPolicyCreate) check() error {
 	}
 	if _, ok := _c.mutation.Retention(); !ok {
 		return &ValidationError{Name: "retention", err: errors.New(`ent: missing required field "NocoDBBackupPolicy.retention"`)}
+	}
+	if _, ok := _c.mutation.IncludeAttachments(); !ok {
+		return &ValidationError{Name: "include_attachments", err: errors.New(`ent: missing required field "NocoDBBackupPolicy.include_attachments"`)}
 	}
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "NocoDBBackupPolicy.updated_at"`)}
@@ -169,6 +195,10 @@ func (_c *NocoDBBackupPolicyCreate) createSpec() (*NocoDBBackupPolicy, *sqlgraph
 	if value, ok := _c.mutation.Retention(); ok {
 		_spec.SetField(nocodbbackuppolicy.FieldRetention, field.TypeInt, value)
 		_node.Retention = value
+	}
+	if value, ok := _c.mutation.IncludeAttachments(); ok {
+		_spec.SetField(nocodbbackuppolicy.FieldIncludeAttachments, field.TypeBool, value)
+		_node.IncludeAttachments = value
 	}
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(nocodbbackuppolicy.FieldUpdatedAt, field.TypeTime, value)
@@ -265,6 +295,18 @@ func (u *NocoDBBackupPolicyUpsert) UpdateRetention() *NocoDBBackupPolicyUpsert {
 // AddRetention adds v to the "retention" field.
 func (u *NocoDBBackupPolicyUpsert) AddRetention(v int) *NocoDBBackupPolicyUpsert {
 	u.Add(nocodbbackuppolicy.FieldRetention, v)
+	return u
+}
+
+// SetIncludeAttachments sets the "include_attachments" field.
+func (u *NocoDBBackupPolicyUpsert) SetIncludeAttachments(v bool) *NocoDBBackupPolicyUpsert {
+	u.Set(nocodbbackuppolicy.FieldIncludeAttachments, v)
+	return u
+}
+
+// UpdateIncludeAttachments sets the "include_attachments" field to the value that was provided on create.
+func (u *NocoDBBackupPolicyUpsert) UpdateIncludeAttachments() *NocoDBBackupPolicyUpsert {
+	u.SetExcluded(nocodbbackuppolicy.FieldIncludeAttachments)
 	return u
 }
 
@@ -380,6 +422,20 @@ func (u *NocoDBBackupPolicyUpsertOne) UpdateRetention() *NocoDBBackupPolicyUpser
 	})
 }
 
+// SetIncludeAttachments sets the "include_attachments" field.
+func (u *NocoDBBackupPolicyUpsertOne) SetIncludeAttachments(v bool) *NocoDBBackupPolicyUpsertOne {
+	return u.Update(func(s *NocoDBBackupPolicyUpsert) {
+		s.SetIncludeAttachments(v)
+	})
+}
+
+// UpdateIncludeAttachments sets the "include_attachments" field to the value that was provided on create.
+func (u *NocoDBBackupPolicyUpsertOne) UpdateIncludeAttachments() *NocoDBBackupPolicyUpsertOne {
+	return u.Update(func(s *NocoDBBackupPolicyUpsert) {
+		s.UpdateIncludeAttachments()
+	})
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (u *NocoDBBackupPolicyUpsertOne) SetUpdatedAt(v time.Time) *NocoDBBackupPolicyUpsertOne {
 	return u.Update(func(s *NocoDBBackupPolicyUpsert) {
@@ -446,6 +502,7 @@ func (_c *NocoDBBackupPolicyCreateBulk) Save(ctx context.Context) ([]*NocoDBBack
 	for i := range _c.builders {
 		func(i int, root context.Context) {
 			builder := _c.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*NocoDBBackupPolicyMutation)
 				if !ok {
@@ -656,6 +713,20 @@ func (u *NocoDBBackupPolicyUpsertBulk) AddRetention(v int) *NocoDBBackupPolicyUp
 func (u *NocoDBBackupPolicyUpsertBulk) UpdateRetention() *NocoDBBackupPolicyUpsertBulk {
 	return u.Update(func(s *NocoDBBackupPolicyUpsert) {
 		s.UpdateRetention()
+	})
+}
+
+// SetIncludeAttachments sets the "include_attachments" field.
+func (u *NocoDBBackupPolicyUpsertBulk) SetIncludeAttachments(v bool) *NocoDBBackupPolicyUpsertBulk {
+	return u.Update(func(s *NocoDBBackupPolicyUpsert) {
+		s.SetIncludeAttachments(v)
+	})
+}
+
+// UpdateIncludeAttachments sets the "include_attachments" field to the value that was provided on create.
+func (u *NocoDBBackupPolicyUpsertBulk) UpdateIncludeAttachments() *NocoDBBackupPolicyUpsertBulk {
+	return u.Update(func(s *NocoDBBackupPolicyUpsert) {
+		s.UpdateIncludeAttachments()
 	})
 }
 

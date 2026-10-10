@@ -1,27 +1,35 @@
 // Package snapshot captures a NocoDB Base (schema, records, links) into a
 // self-describing gzip-compressed JSON document, and reads it back.
 //
-// Document layout (format version 1):
+// Document layout (format version 2):
 //
 //	{
 //	  "format": "neobox.nocodb.snapshot",
-//	  "version": 1,
+//	  "version": 2,
 //	  "created_at": "...",
 //	  "source": {"base_url": "...", "base_id": "..."},
+//	  "attachments": true,
 //	  "base": { ...v3 base meta, verbatim... },
 //	  "tables": [
 //	    {
 //	      "id": "...", "title": "...",
 //	      "schema": { ...v3 table schema incl. fields, verbatim... },
 //	      "records": [ {"id": 1, "fields": {...}}, ... ],
-//	      "links": [ {"field_id": "...", "record_id": 1, "linked_ids": [3, 4]}, ... ]
+//	      "links": [ {"field_id": "...", "record_id": 1, "linked_ids": [3, 4]}, ... ],
+//	      "files": [ {"source": "download/...", "size": 17, "sha256": "..."}, ... ]
 //	    }
 //	  ]
 //	}
 //
-// NocoDB payloads are kept verbatim (json.RawMessage) so a future restore
-// sees exactly what the API returned. Tables are written one at a time so
-// peak memory is bounded by the largest table, not the whole Base.
+// NocoDB payloads are kept verbatim (json.RawMessage) so a restore sees
+// exactly what the API returned. Tables are written one at a time so peak
+// memory is bounded by the largest table, not the whole Base.
+//
+// "attachments" says attachment files were captured. The bytes are not in
+// the document: each table's "files" lists the distinct files its
+// Attachment values reference, by source (the attachment's path, else its
+// url) and size, with the sha256 they are stored under, or the error that
+// kept one from being read. Version 1 documents have neither.
 package snapshot
 
 import (
@@ -38,8 +46,10 @@ import (
 
 const (
 	FormatName    = "neobox.nocodb.snapshot"
-	FormatVersion = 1
-	ContentType   = "application/gzip"
+	FormatVersion = 2
+	// MinFormatVersion is the oldest version readers and Restore accept.
+	MinFormatVersion = 1
+	ContentType      = "application/gzip"
 )
 
 // Source identifies where a snapshot was taken from.
@@ -50,11 +60,13 @@ type Source struct {
 
 // Header is everything in the document except the tables.
 type Header struct {
-	Format    string          `json:"format"`
-	Version   int             `json:"version"`
-	CreatedAt time.Time       `json:"created_at"`
-	Source    Source          `json:"source"`
-	Base      json.RawMessage `json:"base"`
+	Format    string    `json:"format"`
+	Version   int       `json:"version"`
+	CreatedAt time.Time `json:"created_at"`
+	Source    Source    `json:"source"`
+	// Attachments is set when attachment files were captured.
+	Attachments bool            `json:"attachments,omitempty"`
+	Base        json.RawMessage `json:"base"`
 }
 
 // Link records that RecordID is linked to LinkedIDs through FieldID.
@@ -64,6 +76,21 @@ type Link struct {
 	LinkedIDs []json.RawMessage `json:"linked_ids"`
 }
 
+// File is one distinct attachment file referenced by a table's records.
+// SHA256 names the stored content; it is empty when the file could not be
+// read, and Error says why.
+type File struct {
+	Source string `json:"source"`
+	Size   int64  `json:"size"`
+	SHA256 string `json:"sha256,omitempty"`
+	Error  string `json:"error,omitempty"`
+}
+
+// FileKey identifies a file by its attachment's source and size.
+func FileKey(source string, size int64) string {
+	return fmt.Sprintf("%d:%s", size, source)
+}
+
 // Table is one table's schema and content.
 type Table struct {
 	ID      string          `json:"id"`
@@ -71,6 +98,7 @@ type Table struct {
 	Schema  json.RawMessage `json:"schema"`
 	Records []nocodb.Record `json:"records"`
 	Links   []Link          `json:"links"`
+	Files   []File          `json:"files,omitempty"`
 }
 
 // LinkCount is the number of (record, linked record) pairs in the table.
@@ -227,6 +255,8 @@ func ReadTables(r io.Reader, fn func(*Table) error) (*Header, error) {
 			err = dec.Decode(&header.CreatedAt)
 		case "source":
 			err = dec.Decode(&header.Source)
+		case "attachments":
+			err = dec.Decode(&header.Attachments)
 		case "base":
 			err = dec.Decode(&header.Base)
 		case "tables":

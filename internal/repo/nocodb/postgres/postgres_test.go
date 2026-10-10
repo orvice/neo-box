@@ -16,7 +16,7 @@ func TestUpsertPolicy(t *testing.T) {
 	s := New(pgtest.NewClient(t))
 	ctx := context.Background()
 
-	p := &repo.Policy{ConnectionID: "c1", BaseID: "p1", UserID: "u1", Enabled: true, Cron: "0 * * * *", Retention: 3, UpdatedAt: t0}
+	p := &repo.Policy{ConnectionID: "c1", BaseID: "p1", UserID: "u1", Enabled: true, Cron: "0 * * * *", Retention: 3, IncludeAttachments: true, UpdatedAt: t0}
 	if err := s.UpsertPolicy(ctx, p); err != nil {
 		t.Fatalf("UpsertPolicy insert: %v", err)
 	}
@@ -36,7 +36,7 @@ func TestUpsertPolicy(t *testing.T) {
 	if err != nil || len(enabled) != 1 {
 		t.Fatalf("ListEnabledPolicies = %+v, %v", enabled, err)
 	}
-	if got := enabled[0]; got.BaseID != "p1" || got.Retention != 7 || got.Cron != "0 0 * * *" || !got.UpdatedAt.Equal(p.UpdatedAt) {
+	if got := enabled[0]; got.BaseID != "p1" || got.Retention != 7 || got.Cron != "0 0 * * *" || !got.IncludeAttachments || !got.UpdatedAt.Equal(p.UpdatedAt) {
 		t.Fatalf("upsert did not update in place: %+v", got)
 	}
 
@@ -87,13 +87,15 @@ func TestSnapshotRoundTrip(t *testing.T) {
 	snap.Status = repo.StatusSucceeded
 	snap.StartedAt, snap.FinishedAt = t0.Add(time.Second), t0.Add(time.Minute)
 	snap.ObjectKey, snap.SizeBytes, snap.RecordCount, snap.LinkCount = "k/s1.json.gz", 1024, 10, 2
-	snap.Tables = []repo.SnapshotTable{{ID: "m1", Title: "Tasks", RecordCount: 10, FieldCount: 4, LinkCount: 2}}
+	snap.AttachmentsIncluded, snap.FileCount, snap.FileBytes, snap.FilesMissing = true, 3, 4096, 1
+	snap.Tables = []repo.SnapshotTable{{ID: "m1", Title: "Tasks", RecordCount: 10, FieldCount: 4, LinkCount: 2, FileCount: 3, FileBytes: 4096, FilesMissing: 1}}
 	if err := s.UpdateSnapshot(ctx, snap); err != nil {
 		t.Fatalf("UpdateSnapshot: %v", err)
 	}
 	got, _ = s.GetSnapshot(ctx, "", "s1")
 	if got.Status != repo.StatusSucceeded || got.Trigger != repo.TriggerManual || got.ObjectKey != "k/s1.json.gz" ||
 		got.SizeBytes != 1024 || !got.StartedAt.Equal(snap.StartedAt) || !got.FinishedAt.Equal(snap.FinishedAt) ||
+		!got.AttachmentsIncluded || got.FileCount != 3 || got.FileBytes != 4096 || got.FilesMissing != 1 ||
 		len(got.Tables) != 1 || got.Tables[0] != snap.Tables[0] {
 		t.Fatalf("UpdateSnapshot did not persist: %+v", got)
 	}
@@ -288,4 +290,91 @@ func TestListRestoresAndFailUnfinished(t *testing.T) {
 		t.Fatal(err)
 	}
 	check("after deleting c2", ids(repo.RestoreFilter{}), "r3", "r1")
+}
+
+func TestFiles(t *testing.T) {
+	s := New(pgtest.NewClient(t))
+	ctx := context.Background()
+
+	for _, id := range []string{"s1", "s2"} {
+		if err := s.CreateSnapshot(ctx, newSnapshot(id, "p1", repo.TriggerManual, repo.StatusSucceeded, t0)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, sha := range []string{"aa", "bb"} {
+		f := &repo.File{UserID: "u1", SHA256: sha, Size: 3, CreatedAt: t0}
+		if err := s.CreateFile(ctx, f); err != nil {
+			t.Fatalf("CreateFile: %v", err)
+		}
+		// Recording it again is a no-op.
+		if err := s.CreateFile(ctx, f); err != nil {
+			t.Fatalf("CreateFile again: %v", err)
+		}
+	}
+	if ok, err := s.FileExists(ctx, "u1", "aa"); err != nil || !ok {
+		t.Fatalf("FileExists = %v, %v", ok, err)
+	}
+	if ok, _ := s.FileExists(ctx, "u2", "aa"); ok {
+		t.Fatal("files are per user")
+	}
+
+	// s1 uses aa and bb, s2 uses aa.
+	for _, ref := range [][2]string{{"s1", "aa"}, {"s1", "bb"}, {"s1", "bb"}, {"s2", "aa"}} {
+		if err := s.AddSnapshotFile(ctx, ref[0], "u1", ref[1]); err != nil {
+			t.Fatalf("AddSnapshotFile %v: %v", ref, err)
+		}
+	}
+	if unused, err := s.ListUnusedFiles(ctx, "u1"); err != nil || len(unused) != 0 {
+		t.Fatalf("unused = %v, %v", unused, err)
+	}
+	// Deleting s1 drops its references with it: bb is unused, aa is not.
+	if err := s.DeleteSnapshot(ctx, "s1"); err != nil {
+		t.Fatal(err)
+	}
+	if unused, _ := s.ListUnusedFiles(ctx, "u1"); len(unused) != 1 || unused[0] != "bb" {
+		t.Fatalf("unused after deleting s1 = %v", unused)
+	}
+	if err := s.DeleteSnapshotFiles(ctx, "s2"); err != nil {
+		t.Fatal(err)
+	}
+	unused, _ := s.ListUnusedFiles(ctx, "u1")
+	if len(unused) != 2 {
+		t.Fatalf("unused after dropping s2's files = %v", unused)
+	}
+	for _, sha := range unused {
+		if err := s.DeleteFile(ctx, "u1", sha); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if ok, _ := s.FileExists(ctx, "u1", "aa"); ok {
+		t.Fatal("file left after DeleteFile")
+	}
+}
+
+func TestFileSources(t *testing.T) {
+	s := New(pgtest.NewClient(t))
+	ctx := context.Background()
+
+	if _, ok, err := s.FileSource(ctx, "c1", "download/a.txt", 3); err != nil || ok {
+		t.Fatalf("FileSource before put = %v, %v", ok, err)
+	}
+	if err := s.PutFileSource(ctx, "c1", "download/a.txt", 3, "aa"); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.PutFileSource(ctx, "c1", "download/a.txt", 3, "cc"); err != nil {
+		t.Fatalf("PutFileSource again: %v", err)
+	}
+	if sha, ok, err := s.FileSource(ctx, "c1", "download/a.txt", 3); err != nil || !ok || sha != "cc" {
+		t.Fatalf("FileSource = %q, %v, %v", sha, ok, err)
+	}
+	// Size is part of the key.
+	if _, ok, _ := s.FileSource(ctx, "c1", "download/a.txt", 4); ok {
+		t.Fatal("found a source with another size")
+	}
+	if err := s.DeleteFileSourcesForConnection(ctx, "c1"); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok, _ := s.FileSource(ctx, "c1", "download/a.txt", 3); ok {
+		t.Fatal("source left after DeleteFileSourcesForConnection")
+	}
 }

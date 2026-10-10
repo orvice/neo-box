@@ -149,6 +149,27 @@ func (_u *NocoDBRestoreUpdate) AddLinkCount(v int64) *NocoDBRestoreUpdate {
 	return _u
 }
 
+// SetFileCount sets the "file_count" field.
+func (_u *NocoDBRestoreUpdate) SetFileCount(v int64) *NocoDBRestoreUpdate {
+	_u.mutation.ResetFileCount()
+	_u.mutation.SetFileCount(v)
+	return _u
+}
+
+// SetNillableFileCount sets the "file_count" field if the given value is not nil.
+func (_u *NocoDBRestoreUpdate) SetNillableFileCount(v *int64) *NocoDBRestoreUpdate {
+	if v != nil {
+		_u.SetFileCount(*v)
+	}
+	return _u
+}
+
+// AddFileCount adds value to the "file_count" field.
+func (_u *NocoDBRestoreUpdate) AddFileCount(v int64) *NocoDBRestoreUpdate {
+	_u.mutation.AddFileCount(v)
+	return _u
+}
+
 // SetWarnings sets the "warnings" field.
 func (_u *NocoDBRestoreUpdate) SetWarnings(v []nocodb.RestoreWarning) *NocoDBRestoreUpdate {
 	_u.mutation.SetWarnings(v)
@@ -277,6 +298,12 @@ func (_u *NocoDBRestoreUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	}
 	if value, ok := _u.mutation.AddedLinkCount(); ok {
 		_spec.AddField(nocodbrestore.FieldLinkCount, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.FileCount(); ok {
+		_spec.SetField(nocodbrestore.FieldFileCount, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedFileCount(); ok {
+		_spec.AddField(nocodbrestore.FieldFileCount, field.TypeInt64, value)
 	}
 	if value, ok := _u.mutation.Warnings(); ok {
 		_spec.SetField(nocodbrestore.FieldWarnings, field.TypeJSON, value)
@@ -440,6 +467,27 @@ func (_u *NocoDBRestoreUpdateOne) AddLinkCount(v int64) *NocoDBRestoreUpdateOne 
 	return _u
 }
 
+// SetFileCount sets the "file_count" field.
+func (_u *NocoDBRestoreUpdateOne) SetFileCount(v int64) *NocoDBRestoreUpdateOne {
+	_u.mutation.ResetFileCount()
+	_u.mutation.SetFileCount(v)
+	return _u
+}
+
+// SetNillableFileCount sets the "file_count" field if the given value is not nil.
+func (_u *NocoDBRestoreUpdateOne) SetNillableFileCount(v *int64) *NocoDBRestoreUpdateOne {
+	if v != nil {
+		_u.SetFileCount(*v)
+	}
+	return _u
+}
+
+// AddFileCount adds value to the "file_count" field.
+func (_u *NocoDBRestoreUpdateOne) AddFileCount(v int64) *NocoDBRestoreUpdateOne {
+	_u.mutation.AddFileCount(v)
+	return _u
+}
+
 // SetWarnings sets the "warnings" field.
 func (_u *NocoDBRestoreUpdateOne) SetWarnings(v []nocodb.RestoreWarning) *NocoDBRestoreUpdateOne {
 	_u.mutation.SetWarnings(v)
@@ -598,6 +646,12 @@ func (_u *NocoDBRestoreUpdateOne) sqlSave(ctx context.Context) (_node *NocoDBRes
 	}
 	if value, ok := _u.mutation.AddedLinkCount(); ok {
 		_spec.AddField(nocodbrestore.FieldLinkCount, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.FileCount(); ok {
+		_spec.SetField(nocodbrestore.FieldFileCount, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedFileCount(); ok {
+		_spec.AddField(nocodbrestore.FieldFileCount, field.TypeInt64, value)
 	}
 	if value, ok := _u.mutation.Warnings(); ok {
 		_spec.SetField(nocodbrestore.FieldWarnings, field.TypeJSON, value)

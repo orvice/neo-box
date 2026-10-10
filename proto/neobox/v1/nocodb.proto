@@ -57,6 +57,10 @@ message BackupPolicy {
   google.protobuf.Timestamp updated_at = 6;
   // Next scheduled run, when enabled.
   google.protobuf.Timestamp next_run_at = 7;
+  // Whether snapshots of the Base store attachment files, not only their
+  // metadata. Applies to manual snapshots too; a Base without a policy
+  // includes them.
+  bool include_attachments = 8;
 }
 
 message NocoDBBase {
@@ -80,6 +84,8 @@ message UpsertBackupPolicyRequest {
   bool enabled = 3;
   string cron = 4;
   int32 retention = 5 [(validate.rules).int32.gte = 0];
+  // Unset keeps the current setting (on for a new policy).
+  optional bool include_attachments = 6;
 }
 
 message UpsertBackupPolicyResponse {
@@ -106,6 +112,11 @@ message SnapshotTable {
   int64 record_count = 3;
   int32 field_count = 4;
   int64 link_count = 5;
+  // Distinct attachment files stored for the table, their total size, and
+  // those that could not be downloaded.
+  int64 file_count = 6;
+  int64 file_bytes = 7;
+  int64 files_missing = 8;
 }
 
 message Snapshot {
@@ -126,6 +137,15 @@ message Snapshot {
   repeated SnapshotTable tables = 14;
   // Human-readable progress while RUNNING, e.g. "Orders: 1200 records".
   string progress = 15;
+  // Whether attachment files were stored. When false, a restore can't
+  // bring attachments back.
+  bool attachments_included = 16;
+  // Attachment files stored (each distinct file of a table once), their
+  // total size, and those that could not be downloaded. Files are shared
+  // with other snapshots, so size_bytes doesn't include them.
+  int64 file_count = 17;
+  int64 file_bytes = 18;
+  int64 files_missing = 19;
 }
 
 message CreateSnapshotRequest {
@@ -227,6 +247,8 @@ message Restore {
   int64 record_count = 16;
   int64 link_count = 17;
   repeated RestoreWarning warnings = 18;
+  // Attachment files uploaded into the new Base.
+  int64 file_count = 19;
 }
 
 message RestoreSnapshotRequest {

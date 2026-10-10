@@ -164,6 +164,20 @@ func (_c *NocoDBRestoreCreate) SetNillableLinkCount(v *int64) *NocoDBRestoreCrea
 	return _c
 }
 
+// SetFileCount sets the "file_count" field.
+func (_c *NocoDBRestoreCreate) SetFileCount(v int64) *NocoDBRestoreCreate {
+	_c.mutation.SetFileCount(v)
+	return _c
+}
+
+// SetNillableFileCount sets the "file_count" field if the given value is not nil.
+func (_c *NocoDBRestoreCreate) SetNillableFileCount(v *int64) *NocoDBRestoreCreate {
+	if v != nil {
+		_c.SetFileCount(*v)
+	}
+	return _c
+}
+
 // SetWarnings sets the "warnings" field.
 func (_c *NocoDBRestoreCreate) SetWarnings(v []nocodb.RestoreWarning) *NocoDBRestoreCreate {
 	_c.mutation.SetWarnings(v)
@@ -273,6 +287,10 @@ func (_c *NocoDBRestoreCreate) defaults() {
 		v := nocodbrestore.DefaultLinkCount
 		_c.mutation.SetLinkCount(v)
 	}
+	if _, ok := _c.mutation.FileCount(); !ok {
+		v := nocodbrestore.DefaultFileCount
+		_c.mutation.SetFileCount(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -318,6 +336,9 @@ func (_c *NocoDBRestoreCreate) check() error {
 	}
 	if _, ok := _c.mutation.LinkCount(); !ok {
 		return &ValidationError{Name: "link_count", err: errors.New(`ent: missing required field "NocoDBRestore.link_count"`)}
+	}
+	if _, ok := _c.mutation.FileCount(); !ok {
+		return &ValidationError{Name: "file_count", err: errors.New(`ent: missing required field "NocoDBRestore.file_count"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "NocoDBRestore.created_at"`)}
@@ -413,6 +434,10 @@ func (_c *NocoDBRestoreCreate) createSpec() (*NocoDBRestore, *sqlgraph.CreateSpe
 	if value, ok := _c.mutation.LinkCount(); ok {
 		_spec.SetField(nocodbrestore.FieldLinkCount, field.TypeInt64, value)
 		_node.LinkCount = value
+	}
+	if value, ok := _c.mutation.FileCount(); ok {
+		_spec.SetField(nocodbrestore.FieldFileCount, field.TypeInt64, value)
+		_node.FileCount = value
 	}
 	if value, ok := _c.mutation.Warnings(); ok {
 		_spec.SetField(nocodbrestore.FieldWarnings, field.TypeJSON, value)
@@ -581,6 +606,24 @@ func (u *NocoDBRestoreUpsert) UpdateLinkCount() *NocoDBRestoreUpsert {
 // AddLinkCount adds v to the "link_count" field.
 func (u *NocoDBRestoreUpsert) AddLinkCount(v int64) *NocoDBRestoreUpsert {
 	u.Add(nocodbrestore.FieldLinkCount, v)
+	return u
+}
+
+// SetFileCount sets the "file_count" field.
+func (u *NocoDBRestoreUpsert) SetFileCount(v int64) *NocoDBRestoreUpsert {
+	u.Set(nocodbrestore.FieldFileCount, v)
+	return u
+}
+
+// UpdateFileCount sets the "file_count" field to the value that was provided on create.
+func (u *NocoDBRestoreUpsert) UpdateFileCount() *NocoDBRestoreUpsert {
+	u.SetExcluded(nocodbrestore.FieldFileCount)
+	return u
+}
+
+// AddFileCount adds v to the "file_count" field.
+func (u *NocoDBRestoreUpsert) AddFileCount(v int64) *NocoDBRestoreUpsert {
+	u.Add(nocodbrestore.FieldFileCount, v)
 	return u
 }
 
@@ -826,6 +869,27 @@ func (u *NocoDBRestoreUpsertOne) AddLinkCount(v int64) *NocoDBRestoreUpsertOne {
 func (u *NocoDBRestoreUpsertOne) UpdateLinkCount() *NocoDBRestoreUpsertOne {
 	return u.Update(func(s *NocoDBRestoreUpsert) {
 		s.UpdateLinkCount()
+	})
+}
+
+// SetFileCount sets the "file_count" field.
+func (u *NocoDBRestoreUpsertOne) SetFileCount(v int64) *NocoDBRestoreUpsertOne {
+	return u.Update(func(s *NocoDBRestoreUpsert) {
+		s.SetFileCount(v)
+	})
+}
+
+// AddFileCount adds v to the "file_count" field.
+func (u *NocoDBRestoreUpsertOne) AddFileCount(v int64) *NocoDBRestoreUpsertOne {
+	return u.Update(func(s *NocoDBRestoreUpsert) {
+		s.AddFileCount(v)
+	})
+}
+
+// UpdateFileCount sets the "file_count" field to the value that was provided on create.
+func (u *NocoDBRestoreUpsertOne) UpdateFileCount() *NocoDBRestoreUpsertOne {
+	return u.Update(func(s *NocoDBRestoreUpsert) {
+		s.UpdateFileCount()
 	})
 }
 
@@ -1247,6 +1311,27 @@ func (u *NocoDBRestoreUpsertBulk) AddLinkCount(v int64) *NocoDBRestoreUpsertBulk
 func (u *NocoDBRestoreUpsertBulk) UpdateLinkCount() *NocoDBRestoreUpsertBulk {
 	return u.Update(func(s *NocoDBRestoreUpsert) {
 		s.UpdateLinkCount()
+	})
+}
+
+// SetFileCount sets the "file_count" field.
+func (u *NocoDBRestoreUpsertBulk) SetFileCount(v int64) *NocoDBRestoreUpsertBulk {
+	return u.Update(func(s *NocoDBRestoreUpsert) {
+		s.SetFileCount(v)
+	})
+}
+
+// AddFileCount adds v to the "file_count" field.
+func (u *NocoDBRestoreUpsertBulk) AddFileCount(v int64) *NocoDBRestoreUpsertBulk {
+	return u.Update(func(s *NocoDBRestoreUpsert) {
+		s.AddFileCount(v)
+	})
+}
+
+// UpdateFileCount sets the "file_count" field to the value that was provided on create.
+func (u *NocoDBRestoreUpsertBulk) UpdateFileCount() *NocoDBRestoreUpsertBulk {
+	return u.Update(func(s *NocoDBRestoreUpsert) {
+		s.UpdateFileCount()
 	})
 }
 

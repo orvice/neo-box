@@ -84,6 +84,11 @@ func Retention(v int) predicate.NocoDBBackupPolicy {
 	return predicate.NocoDBBackupPolicy(sql.FieldEQ(FieldRetention, v))
 }
 
+// IncludeAttachments applies equality check predicate on the "include_attachments" field. It's identical to IncludeAttachmentsEQ.
+func IncludeAttachments(v bool) predicate.NocoDBBackupPolicy {
+	return predicate.NocoDBBackupPolicy(sql.FieldEQ(FieldIncludeAttachments, v))
+}
+
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.NocoDBBackupPolicy {
 	return predicate.NocoDBBackupPolicy(sql.FieldEQ(FieldUpdatedAt, v))
@@ -397,6 +402,16 @@ func RetentionLT(v int) predicate.NocoDBBackupPolicy {
 // RetentionLTE applies the LTE predicate on the "retention" field.
 func RetentionLTE(v int) predicate.NocoDBBackupPolicy {
 	return predicate.NocoDBBackupPolicy(sql.FieldLTE(FieldRetention, v))
+}
+
+// IncludeAttachmentsEQ applies the EQ predicate on the "include_attachments" field.
+func IncludeAttachmentsEQ(v bool) predicate.NocoDBBackupPolicy {
+	return predicate.NocoDBBackupPolicy(sql.FieldEQ(FieldIncludeAttachments, v))
+}
+
+// IncludeAttachmentsNEQ applies the NEQ predicate on the "include_attachments" field.
+func IncludeAttachmentsNEQ(v bool) predicate.NocoDBBackupPolicy {
+	return predicate.NocoDBBackupPolicy(sql.FieldNEQ(FieldIncludeAttachments, v))
 }
 
 // UpdatedAtEQ applies the EQ predicate on the "updated_at" field.

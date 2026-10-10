@@ -86,6 +86,7 @@ func (m *Manager) executeRestore(parent context.Context, restoreID string) {
 		r.TableCount = len(report.Tables)
 		r.RecordCount = report.RecordCount
 		r.LinkCount = report.LinkCount
+		r.FileCount = report.FileCount
 		r.Warnings = make([]repo.RestoreWarning, len(report.Warnings))
 		for i, w := range report.Warnings {
 			r.Warnings[i] = repo.RestoreWarning(w)
@@ -100,7 +101,7 @@ func (m *Manager) executeRestore(parent context.Context, restoreID string) {
 	} else {
 		r.Status = repo.RestoreSucceeded
 		logger.Info("restore succeeded", "restore_id", r.ID, "snapshot_id", r.SnapshotID, "base_id", r.TargetBaseID,
-			"records", r.RecordCount, "links", r.LinkCount, "warnings", len(r.Warnings))
+			"records", r.RecordCount, "links", r.LinkCount, "files", r.FileCount, "warnings", len(r.Warnings))
 	}
 	if err := m.repo.UpdateRestore(finishCtx, r); err != nil {
 		logger.Error("restore finish update failed", "restore_id", r.ID, "err", err)
@@ -160,6 +161,9 @@ func (m *Manager) restore(ctx context.Context, r *repo.Restore) (*snapshot.Resto
 			lastProgress = time.Now()
 			progressMu.Unlock()
 			_ = m.repo.UpdateRestoreProgress(ctx, r.ID, msg)
+		},
+		OpenFile: func(ctx context.Context, sha string) (io.ReadCloser, error) {
+			return m.openFile(ctx, snap.UserID, sha)
 		},
 		// Recorded at once, so a restore that fails later still names the
 		// partial Base it left behind.

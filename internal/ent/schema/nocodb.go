@@ -27,6 +27,9 @@ func (NocoDBBackupPolicy) Fields() []ent.Field {
 		field.Bool("enabled"),
 		field.String("cron"),
 		field.Int("retention"),
+		// include_attachments makes snapshots of the Base store attachment
+		// files, not only their metadata.
+		field.Bool("include_attachments").Default(true),
 		field.Time("updated_at"),
 	}
 }
@@ -64,6 +67,10 @@ func (NocoDBSnapshot) Fields() []ent.Field {
 		field.Int64("size_bytes").Default(0),
 		field.Int64("record_count").Default(0),
 		field.Int64("link_count").Default(0),
+		field.Bool("attachments_included").Default(false),
+		field.Int64("file_count").Default(0),
+		field.Int64("file_bytes").Default(0),
+		field.Int64("files_missing").Default(0),
 		field.JSON("tables", []nocodb.SnapshotTable{}).Optional(),
 		field.Time("created_at").Immutable(),
 		field.Time("started_at").Optional().Nillable(),
@@ -108,6 +115,7 @@ func (NocoDBRestore) Fields() []ent.Field {
 		field.Int("table_count").Default(0),
 		field.Int64("record_count").Default(0),
 		field.Int64("link_count").Default(0),
+		field.Int64("file_count").Default(0),
 		field.JSON("warnings", []nocodb.RestoreWarning{}).Optional(),
 		field.Time("created_at").Immutable(),
 		field.Time("started_at").Optional().Nillable(),
@@ -121,5 +129,82 @@ func (NocoDBRestore) Indexes() []ent.Index {
 		index.Fields("user_id", "target_connection_id", "created_at"),
 		index.Fields("source_connection_id"),
 		index.Fields("status"),
+	}
+}
+
+// NocoDBFile is one attachment file stored for a user, once per content.
+// The bytes live in the blob store under nocodb/{user_id}/files/{sha256}.
+type NocoDBFile struct {
+	ent.Schema
+}
+
+func (NocoDBFile) Annotations() []schema.Annotation {
+	return []schema.Annotation{entsql.Annotation{Table: "nocodb_files"}}
+}
+
+func (NocoDBFile) Fields() []ent.Field {
+	return []ent.Field{
+		field.String("user_id").Immutable(),
+		field.String("sha256").Immutable(),
+		field.Int64("size").Immutable(),
+		field.Time("created_at").Immutable(),
+	}
+}
+
+func (NocoDBFile) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("user_id", "sha256").Unique(),
+	}
+}
+
+// NocoDBSnapshotFile records that a snapshot uses a file. A file no
+// snapshot uses is deleted.
+type NocoDBSnapshotFile struct {
+	ent.Schema
+}
+
+func (NocoDBSnapshotFile) Annotations() []schema.Annotation {
+	return []schema.Annotation{entsql.Annotation{Table: "nocodb_snapshot_files"}}
+}
+
+func (NocoDBSnapshotFile) Fields() []ent.Field {
+	return []ent.Field{
+		field.String("snapshot_id").Immutable(),
+		field.String("user_id").Immutable(),
+		field.String("sha256").Immutable(),
+	}
+}
+
+func (NocoDBSnapshotFile) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("snapshot_id", "sha256").Unique(),
+		index.Fields("user_id", "sha256"),
+	}
+}
+
+// NocoDBFileSource remembers which file an attachment of a connection
+// held, so a later snapshot need not download it again. NocoDB never
+// changes a stored file, so the source (path or url) and size identify it.
+// Only a hint: the file itself may have been deleted since.
+type NocoDBFileSource struct {
+	ent.Schema
+}
+
+func (NocoDBFileSource) Annotations() []schema.Annotation {
+	return []schema.Annotation{entsql.Annotation{Table: "nocodb_file_sources"}}
+}
+
+func (NocoDBFileSource) Fields() []ent.Field {
+	return []ent.Field{
+		field.String("connection_id").Immutable(),
+		field.Text("source").Immutable(),
+		field.Int64("size").Immutable(),
+		field.String("sha256"),
+	}
+}
+
+func (NocoDBFileSource) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("connection_id", "source", "size").Unique(),
 	}
 }

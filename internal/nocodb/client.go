@@ -295,7 +295,7 @@ func (c *Client) ListLinkedIDs(ctx context.Context, baseID, tableID, linkFieldID
 }
 
 func (c *Client) getJSON(ctx context.Context, path string, query url.Values, out any) error {
-	body, err := c.do(ctx, http.MethodGet, path, query, nil)
+	body, err := c.do(ctx, http.MethodGet, path, query, nil, "")
 	if err != nil {
 		return err
 	}
@@ -312,7 +312,13 @@ func (c *Client) sendJSON(ctx context.Context, method, path string, in, out any)
 	if err != nil {
 		return fmt.Errorf("nocodb: encode %s: %w", path, err)
 	}
-	body, err := c.do(ctx, method, path, nil, payload)
+	return c.send(ctx, method, path, payload, "application/json", out)
+}
+
+// send sends payload with contentType and decodes the JSON response into
+// out, which may be nil.
+func (c *Client) send(ctx context.Context, method, path string, payload []byte, contentType string, out any) error {
+	body, err := c.do(ctx, method, path, nil, payload, contentType)
 	if err != nil {
 		return err
 	}
@@ -328,7 +334,7 @@ func (c *Client) sendJSON(ctx context.Context, method, path string, in, out any)
 // do sends one request, retrying per retryable. A write (anything but GET)
 // is retried only on 429: after a 5xx or a transport error it may already
 // have been applied, and repeating an insert would duplicate records.
-func (c *Client) do(ctx context.Context, method, path string, query url.Values, payload []byte) ([]byte, error) {
+func (c *Client) do(ctx context.Context, method, path string, query url.Values, payload []byte, contentType string) ([]byte, error) {
 	target := c.baseURL + path
 	if len(query) > 0 {
 		target += "?" + query.Encode()
@@ -353,7 +359,7 @@ func (c *Client) do(ctx context.Context, method, path string, query url.Values, 
 		req.Header.Set("Accept", "application/json")
 		req.Header.Set("User-Agent", userAgent)
 		if payload != nil {
-			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Content-Type", contentType)
 		}
 
 		resp, err := c.http.Do(req)

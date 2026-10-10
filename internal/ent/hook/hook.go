@@ -45,6 +45,30 @@ func (f NocoDBBackupPolicyFunc) Mutate(ctx context.Context, m ent.Mutation) (ent
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NocoDBBackupPolicyMutation", m)
 }
 
+// The NocoDBFileFunc type is an adapter to allow the use of ordinary
+// function as NocoDBFile mutator.
+type NocoDBFileFunc func(context.Context, *ent.NocoDBFileMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f NocoDBFileFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.NocoDBFileMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NocoDBFileMutation", m)
+}
+
+// The NocoDBFileSourceFunc type is an adapter to allow the use of ordinary
+// function as NocoDBFileSource mutator.
+type NocoDBFileSourceFunc func(context.Context, *ent.NocoDBFileSourceMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f NocoDBFileSourceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.NocoDBFileSourceMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NocoDBFileSourceMutation", m)
+}
+
 // The NocoDBRestoreFunc type is an adapter to allow the use of ordinary
 // function as NocoDBRestore mutator.
 type NocoDBRestoreFunc func(context.Context, *ent.NocoDBRestoreMutation) (ent.Value, error)
@@ -67,6 +91,18 @@ func (f NocoDBSnapshotFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Val
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NocoDBSnapshotMutation", m)
+}
+
+// The NocoDBSnapshotFileFunc type is an adapter to allow the use of ordinary
+// function as NocoDBSnapshotFile mutator.
+type NocoDBSnapshotFileFunc func(context.Context, *ent.NocoDBSnapshotFileMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f NocoDBSnapshotFileFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.NocoDBSnapshotFileMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NocoDBSnapshotFileMutation", m)
 }
 
 // The NotificationChannelFunc type is an adapter to allow the use of ordinary

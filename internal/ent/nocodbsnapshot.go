@@ -43,6 +43,14 @@ type NocoDBSnapshot struct {
 	RecordCount int64 `json:"record_count,omitempty"`
 	// LinkCount holds the value of the "link_count" field.
 	LinkCount int64 `json:"link_count,omitempty"`
+	// AttachmentsIncluded holds the value of the "attachments_included" field.
+	AttachmentsIncluded bool `json:"attachments_included,omitempty"`
+	// FileCount holds the value of the "file_count" field.
+	FileCount int64 `json:"file_count,omitempty"`
+	// FileBytes holds the value of the "file_bytes" field.
+	FileBytes int64 `json:"file_bytes,omitempty"`
+	// FilesMissing holds the value of the "files_missing" field.
+	FilesMissing int64 `json:"files_missing,omitempty"`
 	// Tables holds the value of the "tables" field.
 	Tables []nocodb.SnapshotTable `json:"tables,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -61,7 +69,9 @@ func (*NocoDBSnapshot) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case nocodbsnapshot.FieldTables:
 			values[i] = new([]byte)
-		case nocodbsnapshot.FieldSizeBytes, nocodbsnapshot.FieldRecordCount, nocodbsnapshot.FieldLinkCount:
+		case nocodbsnapshot.FieldAttachmentsIncluded:
+			values[i] = new(sql.NullBool)
+		case nocodbsnapshot.FieldSizeBytes, nocodbsnapshot.FieldRecordCount, nocodbsnapshot.FieldLinkCount, nocodbsnapshot.FieldFileCount, nocodbsnapshot.FieldFileBytes, nocodbsnapshot.FieldFilesMissing:
 			values[i] = new(sql.NullInt64)
 		case nocodbsnapshot.FieldID, nocodbsnapshot.FieldUserID, nocodbsnapshot.FieldConnectionID, nocodbsnapshot.FieldBaseID, nocodbsnapshot.FieldBaseTitle, nocodbsnapshot.FieldStatus, nocodbsnapshot.FieldTrigger, nocodbsnapshot.FieldError, nocodbsnapshot.FieldProgress, nocodbsnapshot.FieldObjectKey:
 			values[i] = new(sql.NullString)
@@ -159,6 +169,30 @@ func (_m *NocoDBSnapshot) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field link_count", values[i])
 			} else if value.Valid {
 				_m.LinkCount = value.Int64
+			}
+		case nocodbsnapshot.FieldAttachmentsIncluded:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field attachments_included", values[i])
+			} else if value.Valid {
+				_m.AttachmentsIncluded = value.Bool
+			}
+		case nocodbsnapshot.FieldFileCount:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field file_count", values[i])
+			} else if value.Valid {
+				_m.FileCount = value.Int64
+			}
+		case nocodbsnapshot.FieldFileBytes:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field file_bytes", values[i])
+			} else if value.Valid {
+				_m.FileBytes = value.Int64
+			}
+		case nocodbsnapshot.FieldFilesMissing:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field files_missing", values[i])
+			} else if value.Valid {
+				_m.FilesMissing = value.Int64
 			}
 		case nocodbsnapshot.FieldTables:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -259,6 +293,18 @@ func (_m *NocoDBSnapshot) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("link_count=")
 	builder.WriteString(fmt.Sprintf("%v", _m.LinkCount))
+	builder.WriteString(", ")
+	builder.WriteString("attachments_included=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AttachmentsIncluded))
+	builder.WriteString(", ")
+	builder.WriteString("file_count=")
+	builder.WriteString(fmt.Sprintf("%v", _m.FileCount))
+	builder.WriteString(", ")
+	builder.WriteString("file_bytes=")
+	builder.WriteString(fmt.Sprintf("%v", _m.FileBytes))
+	builder.WriteString(", ")
+	builder.WriteString("files_missing=")
+	builder.WriteString(fmt.Sprintf("%v", _m.FilesMissing))
 	builder.WriteString(", ")
 	builder.WriteString("tables=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Tables))

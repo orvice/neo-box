@@ -79,6 +79,7 @@ var (
 		{Name: "enabled", Type: field.TypeBool},
 		{Name: "cron", Type: field.TypeString},
 		{Name: "retention", Type: field.TypeInt},
+		{Name: "include_attachments", Type: field.TypeBool, Default: true},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// NocodbBackupPoliciesTable holds the schema information for the "nocodb_backup_policies" table.
@@ -99,6 +100,48 @@ var (
 			},
 		},
 	}
+	// NocodbFilesColumns holds the columns for the "nocodb_files" table.
+	NocodbFilesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "sha256", Type: field.TypeString},
+		{Name: "size", Type: field.TypeInt64},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// NocodbFilesTable holds the schema information for the "nocodb_files" table.
+	NocodbFilesTable = &schema.Table{
+		Name:       "nocodb_files",
+		Columns:    NocodbFilesColumns,
+		PrimaryKey: []*schema.Column{NocodbFilesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "nocodbfile_user_id_sha256",
+				Unique:  true,
+				Columns: []*schema.Column{NocodbFilesColumns[1], NocodbFilesColumns[2]},
+			},
+		},
+	}
+	// NocodbFileSourcesColumns holds the columns for the "nocodb_file_sources" table.
+	NocodbFileSourcesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "connection_id", Type: field.TypeString},
+		{Name: "source", Type: field.TypeString, Size: 2147483647},
+		{Name: "size", Type: field.TypeInt64},
+		{Name: "sha256", Type: field.TypeString},
+	}
+	// NocodbFileSourcesTable holds the schema information for the "nocodb_file_sources" table.
+	NocodbFileSourcesTable = &schema.Table{
+		Name:       "nocodb_file_sources",
+		Columns:    NocodbFileSourcesColumns,
+		PrimaryKey: []*schema.Column{NocodbFileSourcesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "nocodbfilesource_connection_id_source_size",
+				Unique:  true,
+				Columns: []*schema.Column{NocodbFileSourcesColumns[1], NocodbFileSourcesColumns[2], NocodbFileSourcesColumns[3]},
+			},
+		},
+	}
 	// NocodbRestoresColumns holds the columns for the "nocodb_restores" table.
 	NocodbRestoresColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -116,6 +159,7 @@ var (
 		{Name: "table_count", Type: field.TypeInt, Default: 0},
 		{Name: "record_count", Type: field.TypeInt64, Default: 0},
 		{Name: "link_count", Type: field.TypeInt64, Default: 0},
+		{Name: "file_count", Type: field.TypeInt64, Default: 0},
 		{Name: "warnings", Type: field.TypeJSON, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "started_at", Type: field.TypeTime, Nullable: true},
@@ -130,12 +174,12 @@ var (
 			{
 				Name:    "nocodbrestore_user_id_snapshot_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{NocodbRestoresColumns[1], NocodbRestoresColumns[2], NocodbRestoresColumns[16]},
+				Columns: []*schema.Column{NocodbRestoresColumns[1], NocodbRestoresColumns[2], NocodbRestoresColumns[17]},
 			},
 			{
 				Name:    "nocodbrestore_user_id_target_connection_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{NocodbRestoresColumns[1], NocodbRestoresColumns[6], NocodbRestoresColumns[16]},
+				Columns: []*schema.Column{NocodbRestoresColumns[1], NocodbRestoresColumns[6], NocodbRestoresColumns[17]},
 			},
 			{
 				Name:    "nocodbrestore_source_connection_id",
@@ -164,6 +208,10 @@ var (
 		{Name: "size_bytes", Type: field.TypeInt64, Default: 0},
 		{Name: "record_count", Type: field.TypeInt64, Default: 0},
 		{Name: "link_count", Type: field.TypeInt64, Default: 0},
+		{Name: "attachments_included", Type: field.TypeBool, Default: false},
+		{Name: "file_count", Type: field.TypeInt64, Default: 0},
+		{Name: "file_bytes", Type: field.TypeInt64, Default: 0},
+		{Name: "files_missing", Type: field.TypeInt64, Default: 0},
 		{Name: "tables", Type: field.TypeJSON, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "started_at", Type: field.TypeTime, Nullable: true},
@@ -178,17 +226,42 @@ var (
 			{
 				Name:    "nocodbsnapshot_user_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{NocodbSnapshotsColumns[1], NocodbSnapshotsColumns[14]},
+				Columns: []*schema.Column{NocodbSnapshotsColumns[1], NocodbSnapshotsColumns[18]},
 			},
 			{
 				Name:    "nocodbsnapshot_connection_id_base_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{NocodbSnapshotsColumns[2], NocodbSnapshotsColumns[3], NocodbSnapshotsColumns[14]},
+				Columns: []*schema.Column{NocodbSnapshotsColumns[2], NocodbSnapshotsColumns[3], NocodbSnapshotsColumns[18]},
 			},
 			{
 				Name:    "nocodbsnapshot_status",
 				Unique:  false,
 				Columns: []*schema.Column{NocodbSnapshotsColumns[5]},
+			},
+		},
+	}
+	// NocodbSnapshotFilesColumns holds the columns for the "nocodb_snapshot_files" table.
+	NocodbSnapshotFilesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "snapshot_id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "sha256", Type: field.TypeString},
+	}
+	// NocodbSnapshotFilesTable holds the schema information for the "nocodb_snapshot_files" table.
+	NocodbSnapshotFilesTable = &schema.Table{
+		Name:       "nocodb_snapshot_files",
+		Columns:    NocodbSnapshotFilesColumns,
+		PrimaryKey: []*schema.Column{NocodbSnapshotFilesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "nocodbsnapshotfile_snapshot_id_sha256",
+				Unique:  true,
+				Columns: []*schema.Column{NocodbSnapshotFilesColumns[1], NocodbSnapshotFilesColumns[3]},
+			},
+			{
+				Name:    "nocodbsnapshotfile_user_id_sha256",
+				Unique:  false,
+				Columns: []*schema.Column{NocodbSnapshotFilesColumns[2], NocodbSnapshotFilesColumns[3]},
 			},
 		},
 	}
@@ -378,8 +451,11 @@ var (
 		AlertsTable,
 		ConnectionsTable,
 		NocodbBackupPoliciesTable,
+		NocodbFilesTable,
+		NocodbFileSourcesTable,
 		NocodbRestoresTable,
 		NocodbSnapshotsTable,
+		NocodbSnapshotFilesTable,
 		NotificationChannelsTable,
 		OauthStatesTable,
 		AuthSessionsTable,
@@ -400,11 +476,20 @@ func init() {
 	NocodbBackupPoliciesTable.Annotation = &entsql.Annotation{
 		Table: "nocodb_backup_policies",
 	}
+	NocodbFilesTable.Annotation = &entsql.Annotation{
+		Table: "nocodb_files",
+	}
+	NocodbFileSourcesTable.Annotation = &entsql.Annotation{
+		Table: "nocodb_file_sources",
+	}
 	NocodbRestoresTable.Annotation = &entsql.Annotation{
 		Table: "nocodb_restores",
 	}
 	NocodbSnapshotsTable.Annotation = &entsql.Annotation{
 		Table: "nocodb_snapshots",
+	}
+	NocodbSnapshotFilesTable.Annotation = &entsql.Annotation{
+		Table: "nocodb_snapshot_files",
 	}
 	NotificationChannelsTable.Annotation = &entsql.Annotation{
 		Table: "notification_channels",

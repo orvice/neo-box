@@ -1,6 +1,6 @@
 # ADR 0004: Restore a Snapshot into a new Base through the OSS REST API
 
-Status: accepted (2026-10-03)
+Status: accepted (2026-10-03); attachments are restored since ADR 0005
 
 ## Context
 

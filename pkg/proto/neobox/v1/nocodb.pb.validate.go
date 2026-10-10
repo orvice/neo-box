@@ -125,6 +125,8 @@ func (m *BackupPolicy) validate(all bool) error {
 		}
 	}
 
+	// no validation rules for IncludeAttachments
+
 	if len(errors) > 0 {
 		return BackupPolicyMultiError(errors)
 	}
@@ -671,6 +673,10 @@ func (m *UpsertBackupPolicyRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if m.IncludeAttachments != nil {
+		// no validation rules for IncludeAttachments
+	}
+
 	if len(errors) > 0 {
 		return UpsertBackupPolicyRequestMultiError(errors)
 	}
@@ -914,6 +920,12 @@ func (m *SnapshotTable) validate(all bool) error {
 
 	// no validation rules for LinkCount
 
+	// no validation rules for FileCount
+
+	// no validation rules for FileBytes
+
+	// no validation rules for FilesMissing
+
 	if len(errors) > 0 {
 		return SnapshotTableMultiError(errors)
 	}
@@ -1156,6 +1168,14 @@ func (m *Snapshot) validate(all bool) error {
 	}
 
 	// no validation rules for Progress
+
+	// no validation rules for AttachmentsIncluded
+
+	// no validation rules for FileCount
+
+	// no validation rules for FileBytes
+
+	// no validation rules for FilesMissing
 
 	if len(errors) > 0 {
 		return SnapshotMultiError(errors)
@@ -2878,6 +2898,8 @@ func (m *Restore) validate(all bool) error {
 		}
 
 	}
+
+	// no validation rules for FileCount
 
 	if len(errors) > 0 {
 		return RestoreMultiError(errors)

@@ -163,6 +163,83 @@ func (_u *NocoDBSnapshotUpdate) AddLinkCount(v int64) *NocoDBSnapshotUpdate {
 	return _u
 }
 
+// SetAttachmentsIncluded sets the "attachments_included" field.
+func (_u *NocoDBSnapshotUpdate) SetAttachmentsIncluded(v bool) *NocoDBSnapshotUpdate {
+	_u.mutation.SetAttachmentsIncluded(v)
+	return _u
+}
+
+// SetNillableAttachmentsIncluded sets the "attachments_included" field if the given value is not nil.
+func (_u *NocoDBSnapshotUpdate) SetNillableAttachmentsIncluded(v *bool) *NocoDBSnapshotUpdate {
+	if v != nil {
+		_u.SetAttachmentsIncluded(*v)
+	}
+	return _u
+}
+
+// SetFileCount sets the "file_count" field.
+func (_u *NocoDBSnapshotUpdate) SetFileCount(v int64) *NocoDBSnapshotUpdate {
+	_u.mutation.ResetFileCount()
+	_u.mutation.SetFileCount(v)
+	return _u
+}
+
+// SetNillableFileCount sets the "file_count" field if the given value is not nil.
+func (_u *NocoDBSnapshotUpdate) SetNillableFileCount(v *int64) *NocoDBSnapshotUpdate {
+	if v != nil {
+		_u.SetFileCount(*v)
+	}
+	return _u
+}
+
+// AddFileCount adds value to the "file_count" field.
+func (_u *NocoDBSnapshotUpdate) AddFileCount(v int64) *NocoDBSnapshotUpdate {
+	_u.mutation.AddFileCount(v)
+	return _u
+}
+
+// SetFileBytes sets the "file_bytes" field.
+func (_u *NocoDBSnapshotUpdate) SetFileBytes(v int64) *NocoDBSnapshotUpdate {
+	_u.mutation.ResetFileBytes()
+	_u.mutation.SetFileBytes(v)
+	return _u
+}
+
+// SetNillableFileBytes sets the "file_bytes" field if the given value is not nil.
+func (_u *NocoDBSnapshotUpdate) SetNillableFileBytes(v *int64) *NocoDBSnapshotUpdate {
+	if v != nil {
+		_u.SetFileBytes(*v)
+	}
+	return _u
+}
+
+// AddFileBytes adds value to the "file_bytes" field.
+func (_u *NocoDBSnapshotUpdate) AddFileBytes(v int64) *NocoDBSnapshotUpdate {
+	_u.mutation.AddFileBytes(v)
+	return _u
+}
+
+// SetFilesMissing sets the "files_missing" field.
+func (_u *NocoDBSnapshotUpdate) SetFilesMissing(v int64) *NocoDBSnapshotUpdate {
+	_u.mutation.ResetFilesMissing()
+	_u.mutation.SetFilesMissing(v)
+	return _u
+}
+
+// SetNillableFilesMissing sets the "files_missing" field if the given value is not nil.
+func (_u *NocoDBSnapshotUpdate) SetNillableFilesMissing(v *int64) *NocoDBSnapshotUpdate {
+	if v != nil {
+		_u.SetFilesMissing(*v)
+	}
+	return _u
+}
+
+// AddFilesMissing adds value to the "files_missing" field.
+func (_u *NocoDBSnapshotUpdate) AddFilesMissing(v int64) *NocoDBSnapshotUpdate {
+	_u.mutation.AddFilesMissing(v)
+	return _u
+}
+
 // SetTables sets the "tables" field.
 func (_u *NocoDBSnapshotUpdate) SetTables(v []nocodb.SnapshotTable) *NocoDBSnapshotUpdate {
 	_u.mutation.SetTables(v)
@@ -294,6 +371,27 @@ func (_u *NocoDBSnapshotUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	if value, ok := _u.mutation.AddedLinkCount(); ok {
 		_spec.AddField(nocodbsnapshot.FieldLinkCount, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AttachmentsIncluded(); ok {
+		_spec.SetField(nocodbsnapshot.FieldAttachmentsIncluded, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.FileCount(); ok {
+		_spec.SetField(nocodbsnapshot.FieldFileCount, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedFileCount(); ok {
+		_spec.AddField(nocodbsnapshot.FieldFileCount, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.FileBytes(); ok {
+		_spec.SetField(nocodbsnapshot.FieldFileBytes, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedFileBytes(); ok {
+		_spec.AddField(nocodbsnapshot.FieldFileBytes, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.FilesMissing(); ok {
+		_spec.SetField(nocodbsnapshot.FieldFilesMissing, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedFilesMissing(); ok {
+		_spec.AddField(nocodbsnapshot.FieldFilesMissing, field.TypeInt64, value)
 	}
 	if value, ok := _u.mutation.Tables(); ok {
 		_spec.SetField(nocodbsnapshot.FieldTables, field.TypeJSON, value)
@@ -471,6 +569,83 @@ func (_u *NocoDBSnapshotUpdateOne) AddLinkCount(v int64) *NocoDBSnapshotUpdateOn
 	return _u
 }
 
+// SetAttachmentsIncluded sets the "attachments_included" field.
+func (_u *NocoDBSnapshotUpdateOne) SetAttachmentsIncluded(v bool) *NocoDBSnapshotUpdateOne {
+	_u.mutation.SetAttachmentsIncluded(v)
+	return _u
+}
+
+// SetNillableAttachmentsIncluded sets the "attachments_included" field if the given value is not nil.
+func (_u *NocoDBSnapshotUpdateOne) SetNillableAttachmentsIncluded(v *bool) *NocoDBSnapshotUpdateOne {
+	if v != nil {
+		_u.SetAttachmentsIncluded(*v)
+	}
+	return _u
+}
+
+// SetFileCount sets the "file_count" field.
+func (_u *NocoDBSnapshotUpdateOne) SetFileCount(v int64) *NocoDBSnapshotUpdateOne {
+	_u.mutation.ResetFileCount()
+	_u.mutation.SetFileCount(v)
+	return _u
+}
+
+// SetNillableFileCount sets the "file_count" field if the given value is not nil.
+func (_u *NocoDBSnapshotUpdateOne) SetNillableFileCount(v *int64) *NocoDBSnapshotUpdateOne {
+	if v != nil {
+		_u.SetFileCount(*v)
+	}
+	return _u
+}
+
+// AddFileCount adds value to the "file_count" field.
+func (_u *NocoDBSnapshotUpdateOne) AddFileCount(v int64) *NocoDBSnapshotUpdateOne {
+	_u.mutation.AddFileCount(v)
+	return _u
+}
+
+// SetFileBytes sets the "file_bytes" field.
+func (_u *NocoDBSnapshotUpdateOne) SetFileBytes(v int64) *NocoDBSnapshotUpdateOne {
+	_u.mutation.ResetFileBytes()
+	_u.mutation.SetFileBytes(v)
+	return _u
+}
+
+// SetNillableFileBytes sets the "file_bytes" field if the given value is not nil.
+func (_u *NocoDBSnapshotUpdateOne) SetNillableFileBytes(v *int64) *NocoDBSnapshotUpdateOne {
+	if v != nil {
+		_u.SetFileBytes(*v)
+	}
+	return _u
+}
+
+// AddFileBytes adds value to the "file_bytes" field.
+func (_u *NocoDBSnapshotUpdateOne) AddFileBytes(v int64) *NocoDBSnapshotUpdateOne {
+	_u.mutation.AddFileBytes(v)
+	return _u
+}
+
+// SetFilesMissing sets the "files_missing" field.
+func (_u *NocoDBSnapshotUpdateOne) SetFilesMissing(v int64) *NocoDBSnapshotUpdateOne {
+	_u.mutation.ResetFilesMissing()
+	_u.mutation.SetFilesMissing(v)
+	return _u
+}
+
+// SetNillableFilesMissing sets the "files_missing" field if the given value is not nil.
+func (_u *NocoDBSnapshotUpdateOne) SetNillableFilesMissing(v *int64) *NocoDBSnapshotUpdateOne {
+	if v != nil {
+		_u.SetFilesMissing(*v)
+	}
+	return _u
+}
+
+// AddFilesMissing adds value to the "files_missing" field.
+func (_u *NocoDBSnapshotUpdateOne) AddFilesMissing(v int64) *NocoDBSnapshotUpdateOne {
+	_u.mutation.AddFilesMissing(v)
+	return _u
+}
+
 // SetTables sets the "tables" field.
 func (_u *NocoDBSnapshotUpdateOne) SetTables(v []nocodb.SnapshotTable) *NocoDBSnapshotUpdateOne {
 	_u.mutation.SetTables(v)
@@ -632,6 +807,27 @@ func (_u *NocoDBSnapshotUpdateOne) sqlSave(ctx context.Context) (_node *NocoDBSn
 	}
 	if value, ok := _u.mutation.AddedLinkCount(); ok {
 		_spec.AddField(nocodbsnapshot.FieldLinkCount, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AttachmentsIncluded(); ok {
+		_spec.SetField(nocodbsnapshot.FieldAttachmentsIncluded, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.FileCount(); ok {
+		_spec.SetField(nocodbsnapshot.FieldFileCount, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedFileCount(); ok {
+		_spec.AddField(nocodbsnapshot.FieldFileCount, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.FileBytes(); ok {
+		_spec.SetField(nocodbsnapshot.FieldFileBytes, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedFileBytes(); ok {
+		_spec.AddField(nocodbsnapshot.FieldFileBytes, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.FilesMissing(); ok {
+		_spec.SetField(nocodbsnapshot.FieldFilesMissing, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedFilesMissing(); ok {
+		_spec.AddField(nocodbsnapshot.FieldFilesMissing, field.TypeInt64, value)
 	}
 	if value, ok := _u.mutation.Tables(); ok {
 		_spec.SetField(nocodbsnapshot.FieldTables, field.TypeJSON, value)

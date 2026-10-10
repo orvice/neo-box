@@ -3,11 +3,14 @@ package snapshot
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"slices"
+	"sync"
 	"testing"
 	"time"
 
@@ -46,15 +49,21 @@ func TestLiveRestoreRoundTrip(t *testing.T) {
 	srcID := buildFixture(ctx, t, c, "neobox-restore-src-"+suffix)
 	t.Cleanup(func() { cleanup(srcID) })
 
+	files := &memFiles{c: c, content: map[string][]byte{}}
 	var src bytes.Buffer
-	if _, err := Build(ctx, c, Source{BaseURL: baseURL, BaseID: srcID}, &src, Options{}); err != nil {
+	stats, err := Build(ctx, c, Source{BaseURL: baseURL, BaseID: srcID}, &src, Options{Files: files})
+	if err != nil {
 		t.Fatalf("build source snapshot: %v", err)
+	}
+	if stats.FileCount != 2 || stats.FilesMissing != 0 {
+		t.Fatalf("source files: %d stored, %d missing", stats.FileCount, stats.FilesMissing)
 	}
 	report, err := Restore(ctx, c, func() (io.ReadCloser, error) {
 		return io.NopCloser(bytes.NewReader(src.Bytes())), nil
 	}, RestoreOptions{
 		Title:    "neobox-restore-dst-" + suffix,
 		Progress: func(msg string) { t.Log(msg) },
+		OpenFile: files.open,
 	})
 	if report != nil && report.BaseID != "" {
 		t.Cleanup(func() { cleanup(report.BaseID) })
@@ -67,17 +76,58 @@ func TestLiveRestoreRoundTrip(t *testing.T) {
 	}
 
 	var dst bytes.Buffer
-	if _, err := Build(ctx, c, Source{BaseURL: baseURL, BaseID: report.BaseID}, &dst, Options{}); err != nil {
+	if _, err := Build(ctx, c, Source{BaseURL: baseURL, BaseID: report.BaseID}, &dst, Options{Files: files}); err != nil {
 		t.Fatalf("build restored snapshot: %v", err)
 	}
 	compareSnapshots(t, src.Bytes(), dst.Bytes())
 
-	wantWarnings := map[string]bool{WarnAttachmentsSkipped: true}
-	for _, w := range report.Warnings {
-		if !wantWarnings[w.Code] {
-			t.Errorf("unexpected warning %+v", w)
-		}
+	if report.FileCount != 2 {
+		t.Errorf("restored %d files, want 2", report.FileCount)
 	}
+	for _, w := range report.Warnings {
+		t.Errorf("unexpected warning %+v", w)
+	}
+}
+
+// memFiles keeps attachment files in memory by sha256, downloading them
+// the way the backup manager does.
+type memFiles struct {
+	c       *nocodb.Client
+	mu      sync.Mutex
+	content map[string][]byte
+}
+
+func (m *memFiles) Store(ctx context.Context, a nocodb.Attachment) (string, error) {
+	var lastErr error
+	for _, ref := range a.DownloadRefs() {
+		rc, err := m.c.Download(ctx, ref)
+		if err != nil {
+			lastErr = err
+			continue
+		}
+		b, err := io.ReadAll(rc)
+		rc.Close()
+		if err != nil {
+			return "", err
+		}
+		sum := sha256.Sum256(b)
+		sha := hex.EncodeToString(sum[:])
+		m.mu.Lock()
+		m.content[sha] = b
+		m.mu.Unlock()
+		return sha, nil
+	}
+	return "", fmt.Errorf("%w: %v", ErrFileUnavailable, lastErr)
+}
+
+func (m *memFiles) open(_ context.Context, sha string) (io.ReadCloser, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	b, ok := m.content[sha]
+	if !ok {
+		return nil, ErrFileUnavailable
+	}
+	return io.NopCloser(bytes.NewReader(b)), nil
 }
 
 // buildFixture creates a Base covering every field class a restore treats
@@ -163,7 +213,7 @@ func buildFixture(ctx context.Context, t *testing.T, c *nocodb.Client, title str
 
 	owner := os.Getenv("NEOBOX_TEST_NOCODB_EMAIL")
 	custIDs, err := c.InsertRecords(ctx, baseID, customers.ID, []map[string]json.RawMessage{
-		raw(`{"Owner":[{"email":"` + owner + `"}],"Name":"Ada","Email":"ada@example.com","Notes":"line1\nline2","Score":42,"Balance":10.5,"Active":true,"Joined":"2026-01-02","Tier":"Gold","Tags":["vip","new"],"Meta":{"k":[1,2]},"Stars":4,"Docs":[{"url":"https://example.com/a.png","title":"a.png","mimetype":"image/png"}]}`),
+		raw(`{"Owner":[{"email":"` + owner + `"}],"Name":"Ada","Email":"ada@example.com","Notes":"line1\nline2","Score":42,"Balance":10.5,"Active":true,"Joined":"2026-01-02","Tier":"Gold","Tags":["vip","new"],"Meta":{"k":[1,2]},"Stars":4}`),
 		raw(`{"Name":"Bob","Score":7,"Active":false,"Tier":"Silver","Tags":["churn"]}`),
 		raw(`{"Name":"Cy"}`),
 	})
@@ -174,6 +224,15 @@ func buildFixture(ctx context.Context, t *testing.T, c *nocodb.Client, title str
 	must(err)
 	prodIDs, err := c.InsertRecords(ctx, baseID, products.ID, []map[string]json.RawMessage{raw(`{"Name":"p1"}`), raw(`{"Name":"p2"}`)})
 	must(err)
+
+	// Attachments go in through v2: storage upload, then a record update.
+	docs, err := c.UploadFiles(ctx, []nocodb.UploadFile{
+		{Title: "notes \"v1\".txt", Mimetype: "text/plain", Content: []byte("hello attachment\n")},
+		{Title: "blob.bin", Mimetype: "application/octet-stream", Content: bytes.Repeat([]byte{0, 1, 2, 254, 255}, 400)},
+	})
+	must(err)
+	docsValue, _ := json.Marshal(docs)
+	must(c.UpdateRecordsV2(ctx, customers.ID, []map[string]json.RawMessage{{"Id": custIDs[0], "Docs": docsValue}}))
 
 	id := func(ids []json.RawMessage, i int) string { return nocodb.RawIDString(ids[i]) }
 	must(c.LinkRecords(ctx, baseID, customers.ID, custOrders.ID, id(custIDs, 0), ordIDs[0:2]))
@@ -307,6 +366,10 @@ func compareSnapshots(t *testing.T, src, dst []byte) {
 					continue
 				}
 				if f.Type == "Attachment" {
+					a, b := attachments(st, sr.Fields[f.Title]), attachments(dt, dr.Fields[f.Title])
+					if !slices.Equal(a, b) {
+						t.Errorf("%s record %d %q = %v, want %v", st.Title, j, f.Title, b, a)
+					}
 					continue
 				}
 				a, b := normalize(sr.Fields[f.Title]), normalize(dr.Fields[f.Title])
@@ -338,6 +401,20 @@ func compareSnapshots(t *testing.T, src, dst []byte) {
 			t.Errorf("%s links:\n got %v\nwant %v", st.Title, b, a)
 		}
 	}
+}
+
+// attachments describes an Attachment value by what a restore keeps: each
+// file's title, type, size and content (as stored in the table's files).
+func attachments(tb *Table, v json.RawMessage) []string {
+	shas := map[string]string{}
+	for _, f := range tb.Files {
+		shas[FileKey(f.Source, f.Size)] = f.SHA256
+	}
+	var out []string
+	for _, a := range nocodb.ParseAttachments(v) {
+		out = append(out, fmt.Sprintf("%s|%s|%d|%s", a.Title, a.Mimetype, a.Size, shas[FileKey(a.Source(), a.Size)]))
+	}
+	return out
 }
 
 func normalize(v json.RawMessage) string {

@@ -140,10 +140,25 @@ func (s *NocoDBServiceServer) UpsertBackupPolicy(ctx context.Context, req *conne
 	if req.Msg.GetRetention() < 0 {
 		return nil, connectx.InvalidArgument("retention", "must be >= 0")
 	}
+	includeAttachments := true
+	if req.Msg.IncludeAttachments != nil {
+		includeAttachments = req.Msg.GetIncludeAttachments()
+	} else {
+		existing, err := r.ListPolicies(ctx, userID, conn.ID)
+		if err != nil {
+			return nil, connectx.InternalWith(err)
+		}
+		for _, p := range existing {
+			if p.BaseID == baseID {
+				includeAttachments = p.IncludeAttachments
+			}
+		}
+	}
 	p := &repo.Policy{
 		ConnectionID: conn.ID, BaseID: baseID, UserID: userID,
 		Enabled: req.Msg.GetEnabled(), Cron: cronExpr, Retention: int(req.Msg.GetRetention()),
-		UpdatedAt: time.Now().UTC(),
+		IncludeAttachments: includeAttachments,
+		UpdatedAt:          time.Now().UTC(),
 	}
 	if err := r.UpsertPolicy(ctx, p); err != nil {
 		return nil, connectx.InternalWith(err)
@@ -429,6 +444,7 @@ func policyToProto(p *repo.Policy, next time.Time) *neoboxv1.BackupPolicy {
 	out := &neoboxv1.BackupPolicy{
 		ConnectionId: p.ConnectionID, BaseId: p.BaseID, Enabled: p.Enabled, Cron: p.Cron,
 		Retention: int32(p.Retention), UpdatedAt: timestamppb.New(p.UpdatedAt),
+		IncludeAttachments: p.IncludeAttachments,
 	}
 	if p.Enabled && !next.IsZero() {
 		out.NextRunAt = timestamppb.New(next)
@@ -442,6 +458,8 @@ func snapshotToProto(s *repo.Snapshot) *neoboxv1.Snapshot {
 		Status: snapshotStatusToProto(s.Status), Trigger: snapshotTriggerToProto(s.Trigger),
 		Error: s.Error, Progress: s.Progress, CreatedAt: timestamppb.New(s.CreatedAt),
 		SizeBytes: s.SizeBytes, RecordCount: s.RecordCount, LinkCount: s.LinkCount,
+		AttachmentsIncluded: s.AttachmentsIncluded, FileCount: s.FileCount, FileBytes: s.FileBytes,
+		FilesMissing: s.FilesMissing,
 	}
 	if !s.StartedAt.IsZero() {
 		out.StartedAt = timestamppb.New(s.StartedAt)
@@ -452,6 +470,7 @@ func snapshotToProto(s *repo.Snapshot) *neoboxv1.Snapshot {
 	for _, t := range s.Tables {
 		out.Tables = append(out.Tables, &neoboxv1.SnapshotTable{
 			Id: t.ID, Title: t.Title, RecordCount: t.RecordCount, FieldCount: int32(t.FieldCount), LinkCount: t.LinkCount,
+			FileCount: t.FileCount, FileBytes: t.FileBytes, FilesMissing: t.FilesMissing,
 		})
 	}
 	return out
@@ -489,6 +508,7 @@ func restoreToProto(r *repo.Restore) *neoboxv1.Restore {
 		Status: restoreStatusToProto(r.Status), Error: r.Error, Progress: r.Progress,
 		CreatedAt:  timestamppb.New(r.CreatedAt),
 		TableCount: int32(r.TableCount), RecordCount: r.RecordCount, LinkCount: r.LinkCount,
+		FileCount: r.FileCount,
 	}
 	if !r.StartedAt.IsZero() {
 		out.StartedAt = timestamppb.New(r.StartedAt)

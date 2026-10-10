@@ -18,10 +18,16 @@ type Tx struct {
 	Connection *ConnectionClient
 	// NocoDBBackupPolicy is the client for interacting with the NocoDBBackupPolicy builders.
 	NocoDBBackupPolicy *NocoDBBackupPolicyClient
+	// NocoDBFile is the client for interacting with the NocoDBFile builders.
+	NocoDBFile *NocoDBFileClient
+	// NocoDBFileSource is the client for interacting with the NocoDBFileSource builders.
+	NocoDBFileSource *NocoDBFileSourceClient
 	// NocoDBRestore is the client for interacting with the NocoDBRestore builders.
 	NocoDBRestore *NocoDBRestoreClient
 	// NocoDBSnapshot is the client for interacting with the NocoDBSnapshot builders.
 	NocoDBSnapshot *NocoDBSnapshotClient
+	// NocoDBSnapshotFile is the client for interacting with the NocoDBSnapshotFile builders.
+	NocoDBSnapshotFile *NocoDBSnapshotFileClient
 	// NotificationChannel is the client for interacting with the NotificationChannel builders.
 	NotificationChannel *NotificationChannelClient
 	// OAuthState is the client for interacting with the OAuthState builders.
@@ -170,8 +176,11 @@ func (tx *Tx) init() {
 	tx.Alert = NewAlertClient(tx.config)
 	tx.Connection = NewConnectionClient(tx.config)
 	tx.NocoDBBackupPolicy = NewNocoDBBackupPolicyClient(tx.config)
+	tx.NocoDBFile = NewNocoDBFileClient(tx.config)
+	tx.NocoDBFileSource = NewNocoDBFileSourceClient(tx.config)
 	tx.NocoDBRestore = NewNocoDBRestoreClient(tx.config)
 	tx.NocoDBSnapshot = NewNocoDBSnapshotClient(tx.config)
+	tx.NocoDBSnapshotFile = NewNocoDBSnapshotFileClient(tx.config)
 	tx.NotificationChannel = NewNotificationChannelClient(tx.config)
 	tx.OAuthState = NewOAuthStateClient(tx.config)
 	tx.Session = NewSessionClient(tx.config)

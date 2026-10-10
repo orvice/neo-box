@@ -23,6 +23,8 @@ type WriteAPI interface {
 	InsertRecords(ctx context.Context, baseID, tableID string, records []map[string]json.RawMessage) ([]json.RawMessage, error)
 	LinkRecords(ctx context.Context, baseID, tableID, fieldID, recordID string, ids []json.RawMessage) error
 	ListBaseUserEmails(ctx context.Context, baseID string) ([]string, error)
+	UploadFiles(ctx context.Context, files []nocodb.UploadFile) ([]json.RawMessage, error)
+	UpdateRecordsV2(ctx context.Context, tableID string, rows []map[string]json.RawMessage) error
 }
 
 // RestoreOptions tune a restore.
@@ -39,6 +41,9 @@ type RestoreOptions struct {
 	// OnBaseCreated is called as soon as the new Base exists, before
 	// anything else can fail. May be nil.
 	OnBaseCreated func(baseID string)
+	// OpenFile opens a stored attachment file by sha256. Nil leaves
+	// attachments out, as for a snapshot without files.
+	OpenFile func(ctx context.Context, sha256 string) (io.ReadCloser, error)
 }
 
 // Warning codes: what a restore could not bring back.
@@ -69,6 +74,7 @@ type RestoreReport struct {
 	Tables      []TableStats
 	RecordCount int64
 	LinkCount   int64
+	FileCount   int64
 	Warnings    []Warning
 }
 
@@ -79,7 +85,8 @@ type RestoreReport struct {
 // The order of work is fixed by what NocoDB accepts: tables with their
 // plain fields, then relations (from one side; NocoDB creates the inverse),
 // then records, then links between the new record IDs, then lookups,
-// rollups and formulas in dependency order, then display fields.
+// rollups and formulas in dependency order, then display fields, then
+// attachment files.
 func Restore(ctx context.Context, api WriteAPI, open func() (io.ReadCloser, error), opts RestoreOptions) (*RestoreReport, error) {
 	if opts.BatchSize <= 0 {
 		opts.BatchSize = 10
@@ -157,6 +164,9 @@ type planTable struct {
 	displayField string
 	fields       []*planField
 	newID        string
+	// pkTitle is the title of the new table's ID field, which v2 record
+	// updates name the record by.
+	pkTitle string
 	// known holds the new IDs of every field the restore has seen on the
 	// new table, so an auto-created inverse link can be told apart.
 	known map[string]bool
@@ -249,6 +259,9 @@ func (r *restorer) run(ctx context.Context) error {
 	if err := r.setDisplayFields(ctx); err != nil {
 		return err
 	}
+	if err := r.restoreFiles(ctx); err != nil {
+		return err
+	}
 	r.opts.Progress("done")
 	return nil
 }
@@ -269,7 +282,7 @@ func (r *restorer) plan() error {
 	if err != nil {
 		return err
 	}
-	if header.Version != FormatVersion {
+	if header.Version < MinFormatVersion || header.Version > FormatVersion {
 		return fmt.Errorf("snapshot: format version %d is not supported", header.Version)
 	}
 	r.header = header
@@ -380,6 +393,9 @@ func (r *restorer) createTable(ctx context.Context, t *planTable) error {
 func (r *restorer) learn(t *planTable, created *nocodb.Table) {
 	for _, nf := range created.Fields {
 		t.known[nf.ID] = true
+		if nf.Type == "ID" && t.pkTitle == "" {
+			t.pkTitle = nf.Title
+		}
 		for _, f := range t.fields {
 			if r.ids[f.ID] != "" {
 				continue
@@ -560,7 +576,7 @@ func (r *restorer) finishReport() {
 		}
 	}
 	r.report.Tables = r.report.Tables[:0]
-	r.report.RecordCount, r.report.LinkCount = 0, 0
+	r.report.RecordCount, r.report.LinkCount, r.report.FileCount = 0, 0, 0
 	for _, t := range r.tables {
 		if t.newID == "" {
 			continue
@@ -575,6 +591,7 @@ func (r *restorer) finishReport() {
 		r.report.Tables = append(r.report.Tables, t.stats)
 		r.report.RecordCount += t.stats.RecordCount
 		r.report.LinkCount += t.stats.LinkCount
+		r.report.FileCount += t.stats.FileCount
 	}
 	r.report.Warnings = r.report.Warnings[:0]
 	for _, k := range r.warningOrder {

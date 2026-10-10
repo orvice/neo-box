@@ -4,9 +4,10 @@
 // rebuilds snapshots into new Bases.
 //
 // State lives in PostgreSQL (snapshot and restore metadata) and the blob
-// store (content). Nothing in-flight survives a restart: Start marks
-// leftover pending/running snapshots and restores failed. The scheduler
-// assumes a single neo-box process.
+// store (content, and attachment files shared across snapshots; see
+// files.go). Nothing in-flight survives a restart: Start marks leftover
+// pending/running snapshots and restores failed. The scheduler and file
+// collection assume a single neo-box process.
 package backup
 
 import (
@@ -37,6 +38,7 @@ type NocoDB interface {
 	snapshot.API
 	snapshot.WriteAPI
 	ListBases(ctx context.Context) ([]nocodb.Base, error)
+	Download(ctx context.Context, ref string) (io.ReadCloser, error)
 }
 
 // Connections is what the manager needs from the generic connection
@@ -110,6 +112,10 @@ type Manager struct {
 	inFlight map[string]string       // connection/base -> snapshot id
 	limiters map[string]*connLimiter // connection id -> shared limiter
 	notifier notify.Notifier
+
+	// filesMu orders registering attachment files against collecting
+	// unused ones (files.go).
+	filesMu sync.RWMutex
 
 	// newClient is swapped in tests. limiter is nil for a connection that
 	// isn't stored yet.
@@ -405,10 +411,13 @@ func (m *Manager) execute(parent context.Context, snapshotID string) {
 		snap.Status = repo.StatusFailed
 		snap.Error = runErr.Error()
 		logger.Warn("snapshot failed", "snapshot_id", snap.ID, "base_id", snap.BaseID, "err", runErr)
+		// A failed snapshot keeps no files.
+		m.releaseFiles(finishCtx, snap)
 	} else {
 		snap.Status = repo.StatusSucceeded
 		logger.Info("snapshot succeeded", "snapshot_id", snap.ID, "base_id", snap.BaseID,
-			"records", snap.RecordCount, "links", snap.LinkCount, "bytes", snap.SizeBytes)
+			"records", snap.RecordCount, "links", snap.LinkCount, "bytes", snap.SizeBytes,
+			"files", snap.FileCount, "file_bytes", snap.FileBytes, "files_missing", snap.FilesMissing)
 	}
 	if err := m.repo.UpdateSnapshot(finishCtx, snap); err != nil {
 		logger.Error("snapshot finish update failed", "snapshot_id", snap.ID, "err", err)
@@ -456,6 +465,16 @@ func (m *Manager) capture(ctx context.Context, snap *repo.Snapshot) error {
 		}
 	}
 
+	include, err := m.includeAttachments(ctx, snap)
+	if err != nil {
+		return fmt.Errorf("load backup policy: %w", err)
+	}
+	var files snapshot.Files
+	if include {
+		files = &fileStore{m: m, api: api, snap: snap}
+	}
+	snap.AttachmentsIncluded = include
+
 	tmp, err := os.CreateTemp("", "neobox-snapshot-*.json.gz")
 	if err != nil {
 		return err
@@ -469,6 +488,7 @@ func (m *Manager) capture(ctx context.Context, snap *repo.Snapshot) error {
 	)
 	stats, err := snapshot.Build(ctx, api, snapshot.Source{BaseURL: cfg.BaseURL, BaseID: snap.BaseID}, tmp, snapshot.Options{
 		PageSize: m.cfg.PageSize,
+		Files:    files,
 		// Called from concurrent link lookups; throttled because the UI
 		// only polls every few seconds.
 		Progress: func(msg string) {
@@ -502,10 +522,14 @@ func (m *Manager) capture(ctx context.Context, snap *repo.Snapshot) error {
 	snap.SizeBytes = size
 	snap.RecordCount = stats.RecordCount
 	snap.LinkCount = stats.LinkCount
+	snap.FileCount = stats.FileCount
+	snap.FileBytes = stats.FileBytes
+	snap.FilesMissing = stats.FilesMissing
 	snap.Tables = make([]repo.SnapshotTable, 0, len(stats.Tables))
 	for _, t := range stats.Tables {
 		snap.Tables = append(snap.Tables, repo.SnapshotTable{
 			ID: t.ID, Title: t.Title, RecordCount: t.RecordCount, FieldCount: t.FieldCount, LinkCount: t.LinkCount,
+			FileCount: t.FileCount, FileBytes: t.FileBytes, FilesMissing: t.FilesMissing,
 		})
 	}
 	return nil
@@ -553,8 +577,9 @@ func (m *Manager) applyRetention(ctx context.Context, connectionID, baseID strin
 	return nil
 }
 
-// DeleteSnapshot removes a snapshot's content and metadata. Refuses while the
-// snapshot is still pending or running, or while a restore reads it.
+// DeleteSnapshot removes a snapshot's content and metadata, and the
+// attachment files no other snapshot uses. Refuses while the snapshot is
+// still pending or running, or while a restore reads it.
 func (m *Manager) DeleteSnapshot(ctx context.Context, s *repo.Snapshot) error {
 	if s.Status == repo.StatusPending || s.Status == repo.StatusRunning {
 		return ErrSnapshotInProgress
@@ -571,7 +596,11 @@ func (m *Manager) DeleteSnapshot(ctx context.Context, s *repo.Snapshot) error {
 			return err
 		}
 	}
-	return m.repo.DeleteSnapshot(ctx, s.ID)
+	if err := m.repo.DeleteSnapshot(ctx, s.ID); err != nil {
+		return err
+	}
+	m.collectFiles(ctx, s.UserID)
+	return nil
 }
 
 // OpenContent opens a succeeded snapshot's stored content.

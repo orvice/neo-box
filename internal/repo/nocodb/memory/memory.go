@@ -3,8 +3,10 @@ package memory
 
 import (
 	"context"
+	"fmt"
 	"slices"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -16,6 +18,9 @@ type Store struct {
 	policies map[string]*repo.Policy
 	snaps    map[string]*repo.Snapshot
 	restores map[string]*repo.Restore
+	files    map[string]*repo.File      // user/sha256
+	refs     map[string]map[string]bool // snapshot id -> user/sha256
+	sources  map[string]string          // connection/size/source -> sha256
 }
 
 var _ repo.Repository = (*Store)(nil)
@@ -25,6 +30,9 @@ func New() *Store {
 		policies: map[string]*repo.Policy{},
 		snaps:    map[string]*repo.Snapshot{},
 		restores: map[string]*repo.Restore{},
+		files:    map[string]*repo.File{},
+		refs:     map[string]map[string]bool{},
+		sources:  map[string]string{},
 	}
 }
 
@@ -129,6 +137,7 @@ func (s *Store) DeleteSnapshot(_ context.Context, id string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	delete(s.snaps, id)
+	delete(s.refs, id)
 	return nil
 }
 
@@ -239,4 +248,98 @@ func (s *Store) FailUnfinishedRestores(_ context.Context, reason string, at time
 		}
 	}
 	return n, nil
+}
+
+// --- files ---
+
+func fileKey(userID, sha256 string) string { return userID + "/" + sha256 }
+
+func (s *Store) FileExists(_ context.Context, userID, sha256 string) (bool, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	_, ok := s.files[fileKey(userID, sha256)]
+	return ok, nil
+}
+
+func (s *Store) CreateFile(_ context.Context, f *repo.File) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if _, ok := s.files[fileKey(f.UserID, f.SHA256)]; !ok {
+		cp := *f
+		s.files[fileKey(f.UserID, f.SHA256)] = &cp
+	}
+	return nil
+}
+
+func (s *Store) AddSnapshotFile(_ context.Context, snapshotID, userID, sha256 string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.refs[snapshotID] == nil {
+		s.refs[snapshotID] = map[string]bool{}
+	}
+	s.refs[snapshotID][fileKey(userID, sha256)] = true
+	return nil
+}
+
+func (s *Store) DeleteSnapshotFiles(_ context.Context, snapshotID string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.refs, snapshotID)
+	return nil
+}
+
+func (s *Store) ListUnusedFiles(_ context.Context, userID string) ([]string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	var out []string
+	for key, f := range s.files {
+		if f.UserID != userID {
+			continue
+		}
+		used := false
+		for _, refs := range s.refs {
+			used = used || refs[key]
+		}
+		if !used {
+			out = append(out, f.SHA256)
+		}
+	}
+	sort.Strings(out)
+	return out, nil
+}
+
+func (s *Store) DeleteFile(_ context.Context, userID, sha256 string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.files, fileKey(userID, sha256))
+	return nil
+}
+
+func sourceKey(connectionID, source string, size int64) string {
+	return fmt.Sprintf("%s/%d/%s", connectionID, size, source)
+}
+
+func (s *Store) FileSource(_ context.Context, connectionID, source string, size int64) (string, bool, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	sha, ok := s.sources[sourceKey(connectionID, source, size)]
+	return sha, ok, nil
+}
+
+func (s *Store) PutFileSource(_ context.Context, connectionID, source string, size int64, sha256 string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.sources[sourceKey(connectionID, source, size)] = sha256
+	return nil
+}
+
+func (s *Store) DeleteFileSourcesForConnection(_ context.Context, connectionID string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for key := range s.sources {
+		if strings.HasPrefix(key, connectionID+"/") {
+			delete(s.sources, key)
+		}
+	}
+	return nil
 }

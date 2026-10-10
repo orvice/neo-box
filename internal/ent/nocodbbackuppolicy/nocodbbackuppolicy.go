@@ -23,6 +23,8 @@ const (
 	FieldCron = "cron"
 	// FieldRetention holds the string denoting the retention field in the database.
 	FieldRetention = "retention"
+	// FieldIncludeAttachments holds the string denoting the include_attachments field in the database.
+	FieldIncludeAttachments = "include_attachments"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// Table holds the table name of the nocodbbackuppolicy in the database.
@@ -38,6 +40,7 @@ var Columns = []string{
 	FieldEnabled,
 	FieldCron,
 	FieldRetention,
+	FieldIncludeAttachments,
 	FieldUpdatedAt,
 }
 
@@ -50,6 +53,11 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultIncludeAttachments holds the default value on creation for the "include_attachments" field.
+	DefaultIncludeAttachments bool
+)
 
 // OrderOption defines the ordering options for the NocoDBBackupPolicy queries.
 type OrderOption func(*sql.Selector)
@@ -87,6 +95,11 @@ func ByCron(opts ...sql.OrderTermOption) OrderOption {
 // ByRetention orders the results by the retention field.
 func ByRetention(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRetention, opts...).ToFunc()
+}
+
+// ByIncludeAttachments orders the results by the include_attachments field.
+func ByIncludeAttachments(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIncludeAttachments, opts...).ToFunc()
 }
 
 // ByUpdatedAt orders the results by the updated_at field.
