@@ -74,6 +74,7 @@ export function SnapshotTable({
             {s.tables.length} tables · {formatCount(s.recordCount)} records ·{' '}
             {formatCount(s.linkCount)} links
             {s.viewCount > 0 && ` · ${formatCount(s.viewCount)} views`}
+            {s.hookCount > 0 && ` · ${formatCount(s.hookCount)} webhooks`}
             {s.fileCount > 0 && ` · ${formatCount(s.fileCount)} files`} ·{' '}
             {formatBytes(s.sizeBytes)}
           </div>

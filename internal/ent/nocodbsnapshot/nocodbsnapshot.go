@@ -37,6 +37,8 @@ const (
 	FieldLinkCount = "link_count"
 	// FieldViewCount holds the string denoting the view_count field in the database.
 	FieldViewCount = "view_count"
+	// FieldHookCount holds the string denoting the hook_count field in the database.
+	FieldHookCount = "hook_count"
 	// FieldAttachmentsIncluded holds the string denoting the attachments_included field in the database.
 	FieldAttachmentsIncluded = "attachments_included"
 	// FieldFileCount holds the string denoting the file_count field in the database.
@@ -73,6 +75,7 @@ var Columns = []string{
 	FieldRecordCount,
 	FieldLinkCount,
 	FieldViewCount,
+	FieldHookCount,
 	FieldAttachmentsIncluded,
 	FieldFileCount,
 	FieldFileBytes,
@@ -110,6 +113,8 @@ var (
 	DefaultLinkCount int64
 	// DefaultViewCount holds the default value on creation for the "view_count" field.
 	DefaultViewCount int
+	// DefaultHookCount holds the default value on creation for the "hook_count" field.
+	DefaultHookCount int
 	// DefaultAttachmentsIncluded holds the default value on creation for the "attachments_included" field.
 	DefaultAttachmentsIncluded bool
 	// DefaultFileCount holds the default value on creation for the "file_count" field.
@@ -191,6 +196,11 @@ func ByLinkCount(opts ...sql.OrderTermOption) OrderOption {
 // ByViewCount orders the results by the view_count field.
 func ByViewCount(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldViewCount, opts...).ToFunc()
+}
+
+// ByHookCount orders the results by the hook_count field.
+func ByHookCount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHookCount, opts...).ToFunc()
 }
 
 // ByAttachmentsIncluded orders the results by the attachments_included field.

@@ -60,6 +60,7 @@ export function SnapshotDetailPage() {
   const [newRestoreId, setNewRestoreId] = useState<string>()
   const [tableId, setTableId] = useState<string>()
   const activeTableId = tableId ?? snap?.tables[0]?.id
+  const activeTable = snap?.tables.find((t) => t.id === activeTableId)
   const restores = useRestores(
     { snapshotId },
     snap?.status === SnapshotStatus.SUCCEEDED
@@ -148,7 +149,7 @@ export function SnapshotDetailPage() {
         }
       />
       <PageScroll className='space-y-6'>
-        <div className='grid gap-4 sm:grid-cols-3 xl:grid-cols-6'>
+        <div className='grid gap-4 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7'>
           <Stat label='Status'>
             <SnapshotStatusBadge status={snap.status} />
           </Stat>
@@ -156,6 +157,9 @@ export function SnapshotDetailPage() {
           <Stat label='Links'>{formatCount(snap.linkCount)}</Stat>
           <Stat label='Views'>
             {succeeded ? formatCount(snap.viewCount) : '-'}
+          </Stat>
+          <Stat label='Webhooks'>
+            {succeeded ? formatCount(snap.hookCount) : '-'}
           </Stat>
           <Stat label='Attachment files'>
             {!succeeded ? (
@@ -254,9 +258,9 @@ export function SnapshotDetailPage() {
                 key={activeTableId}
                 snapshotId={snap.id}
                 tableId={activeTableId}
-                title={
-                  snap.tables.find((t) => t.id === activeTableId)?.title ?? ''
-                }
+                title={activeTable?.title ?? ''}
+                viewCount={activeTable?.viewCount ?? 0}
+                hookCount={activeTable?.hookCount ?? 0}
               />
             )}
           </div>
@@ -316,10 +320,14 @@ function RecordsCard({
   snapshotId,
   tableId,
   title,
+  viewCount,
+  hookCount,
 }: {
   snapshotId: string
   tableId: string
   title: string
+  viewCount: number
+  hookCount: number
 }) {
   const [page, setPage] = useState(1)
   const { data, isLoading, isFetching, error } = useSnapshotRecords(
@@ -336,7 +344,8 @@ function RecordsCard({
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>
-          {formatCount(total)} records · {data?.fields.length ?? 0} fields
+          {formatCount(total)} records · {data?.fields.length ?? 0} fields ·{' '}
+          {formatCount(viewCount)} views · {formatCount(hookCount)} webhooks
         </CardDescription>
       </CardHeader>
       <CardContent className='space-y-4'>

@@ -165,6 +165,35 @@ More checks on 2026.09.1 while building the views restore:
 - **Warnings.** View warnings (`view_skipped`, `view_setting_skipped`)
   carry the view's title, and each different loss is reported separately.
 
+### Webhooks, as built (#34)
+
+The 2026.09.1 hook controllers, service, model and request schema confirm:
+- v2 hook and hook-filter lists use the same `{list: [...]}` envelope as
+  views. Nested filter groups use the shared filter-children endpoint.
+- Only `version: "v3"` is accepted for creation. The captured version is
+  kept; older hooks rejected by the target become `hook_skipped` warnings,
+  not silently upgraded hooks.
+- `operation` is an array for v3 hooks. `notification` is returned as a
+  stored JSON string and is decoded to an object for creation, retaining
+  headers, auth and payload values. `trigger_field` is a boolean flag;
+  `trigger_fields` lists field IDs and is remapped to the new fields.
+- Hooks are created last with `active: false`, then their filters, groups
+  before members. A missing trigger field skips the hook rather than
+  broadening its trigger. A missing or rejected filter is dropped with a
+  warning; the hook stays off even with incomplete conditions.
+- `hooks_disabled` counts created hooks per table and tells the user to
+  turn them on in NocoDB. Each non-URL hook has a `hook_needs_setup` warning
+  about its target integration. Each rejected hook or condition has a
+  `hook_skipped` warning naming the hook.
+- `hook_count` counts captured or successfully created hooks per table and
+  per snapshot/restore. v1 and older v2 documents without hooks still
+  restore without webhook requests or warnings. Captured empty hooks are
+  written as `[]`, distinct from an absent list.
+
+The live round-trip fixture now has a URL hook with a condition group,
+trigger fields and an Authorization header. It checks retained settings,
+headers and remapped conditions, and that the restored hook is inactive.
+
 ## Consequences
 
 - A snapshot's `size_bytes` covers only its document. Its files are

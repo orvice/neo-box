@@ -14,12 +14,14 @@ protobuf contracts generated with buf, all in one monorepo.
   encrypted, and never returned; each connection shows whether it currently
   works.
 - **NocoDB Base snapshots**: open-source NocoDB has no Base backup, so neo-box
-  captures a Base's schema, records, and record links into point-in-time
-  snapshots. You can take them manually or on a cron schedule with retention,
-  browse them in the dashboard, download them as gzip JSON, and restore one
-  into a new Base on any of your NocoDB connections. Attachments, views,
-  and original record IDs are not restored; see
-  [ADR 0004](docs/adr/0004-nocodb-restore-into-new-base.md).
+  captures a Base's schema, records, links, views, webhooks and (by default)
+  attachment files into point-in-time snapshots. You can take them manually
+  or on a cron schedule with retention, browse them in the dashboard,
+  download them as gzip JSON, and restore one into a new Base on any of your
+  NocoDB connections. Webhooks are restored turned off: enable them in
+  NocoDB when ready; non-URL notifications need the target's integrations.
+  Original record IDs and view shares are not restored; see
+  [ADR 0005](docs/adr/0005-nocodb-snapshot-format-v2.md).
 - **Wasabi usage and cost** (read-only): daily storage, deleted storage
   still billed under the 90-day minimum, egress, and API calls for a Wasabi
   account and each of its buckets, synced from the Wasabi Stats API, plus an

@@ -53,6 +53,7 @@ type SnapshotTable struct {
 	FieldCount   int    `json:"field_count"`
 	LinkCount    int64  `json:"link_count"`
 	ViewCount    int    `json:"view_count,omitempty"`
+	HookCount    int    `json:"hook_count,omitzero"`
 	FileCount    int64  `json:"file_count,omitempty"`
 	FileBytes    int64  `json:"file_bytes,omitempty"`
 	FilesMissing int64  `json:"files_missing,omitempty"`
@@ -74,6 +75,7 @@ type Snapshot struct {
 	RecordCount  int64
 	LinkCount    int64
 	ViewCount    int
+	HookCount    int
 	// AttachmentsIncluded is set when the snapshot stored attachment
 	// files; FileCount and FileBytes count them (each distinct file of a
 	// table once), FilesMissing those that could not be downloaded.
@@ -147,6 +149,7 @@ type Restore struct {
 	LinkCount       int64
 	FileCount       int64
 	ViewCount       int
+	HookCount       int
 	Warnings        []RestoreWarning
 	CreatedAt       time.Time
 	StartedAt       time.Time

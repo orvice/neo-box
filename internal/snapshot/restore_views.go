@@ -10,7 +10,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/nocodb"
 )
 
-// Views are restored last, through v2 meta (v3 views are licence-gated in
+// Views are restored after attachments, through v2 meta (v3 views are licence-gated in
 // OSS). The new table's default grid view takes the snapshot's default
 // view's settings; every other view is created by type. Then each view
 // gets its common and type-specific settings, column settings, sorts and
@@ -253,7 +253,7 @@ func (r *restorer) restoreView(ctx context.Context, t *planTable, v srcView, id 
 	if err := r.restoreSorts(ctx, t, v, id); err != nil {
 		return err
 	}
-	return r.restoreFilters(ctx, t, v, id)
+	return r.restoreViewFilters(ctx, t, v, id)
 }
 
 // Type-specific settings copied as they are; field references are
@@ -464,49 +464,16 @@ func (r *restorer) restoreSorts(ctx context.Context, t *planTable, v srcView, id
 	return nil
 }
 
-// Filter keys copied as they are.
-var filterKeys = []string{"comparison_op", "comparison_sub_op", "value", "logical_op", "enabled", "meta"}
-
-// restoreFilters re-creates a view's filters, groups before their members.
-// A filter on a field the restore skipped is dropped with a warning, and
-// so is everything in a group that could not be created: the view then
-// shows more records than the snapshot's did.
-func (r *restorer) restoreFilters(ctx context.Context, t *planTable, v srcView, id string) error {
-	created := map[string]string{} // snapshot filter id -> new id
-	for _, f := range v.Filters {
-		parent := jsonString(f, "fk_parent_id")
-		if parent != "" && created[parent] == "" {
-			r.warnView(WarnViewSettingSkipped, t.title, v.title, "", "a filter in a group that was not restored")
-			continue
-		}
-		var body map[string]any
-		if jsonBool(f, "is_group") {
-			body = map[string]any{"is_group": true}
-		} else {
-			var missing string
-			body, missing = r.remapRefs(f, "fk_column_id", "fk_link_col_id", "fk_value_col_id", "fk_parent_column_id")
-			if missing != "" {
-				r.warnView(WarnViewSettingSkipped, t.title, v.title, r.fieldTitle(t, missing), "a filter on a field that was not restored")
-				continue
-			}
-		}
-		for _, key := range filterKeys {
-			if val := jsonValue(f, key); val != nil {
-				body[key] = val
-			}
-		}
-		if parent != "" {
-			body["fk_parent_id"] = created[parent]
-		}
-		newID, err := r.api.CreateFilter(ctx, id, body)
-		if err != nil {
-			if !rejected(err) {
-				return fmt.Errorf("view %q filter: %w", v.title, err)
-			}
-			r.warnView(WarnViewSettingSkipped, t.title, v.title, "", "filter: "+apiMessage(err))
-			continue
-		}
-		created[jsonString(f, "id")] = newID
+// restoreViewFilters binds the shared filter restoration to a view.
+// Dropped conditions can make the view show more records than before.
+func (r *restorer) restoreViewFilters(ctx context.Context, t *planTable, v srcView, id string) error {
+	err := r.restoreFilters(v.Filters, func(body any) (string, error) {
+		return r.api.CreateFilter(ctx, id, body)
+	}, func(field, msg string) {
+		r.warnView(WarnViewSettingSkipped, t.title, v.title, r.fieldTitle(t, field), msg)
+	})
+	if err != nil {
+		return fmt.Errorf("view %q %w", v.title, err)
 	}
 	return nil
 }

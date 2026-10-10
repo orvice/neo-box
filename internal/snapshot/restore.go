@@ -35,6 +35,8 @@ type WriteAPI interface {
 	UpdateFormColumn(ctx context.Context, columnID string, patch any) error
 	CreateSort(ctx context.Context, viewID string, body any) error
 	CreateFilter(ctx context.Context, viewID string, body any) (string, error)
+	CreateHook(ctx context.Context, tableID string, body any) (string, error)
+	CreateHookFilter(ctx context.Context, hookID string, body any) (string, error)
 }
 
 // RestoreOptions tune a restore.
@@ -70,6 +72,11 @@ const (
 	// WarnViewSettingSkipped: part of a view (a filter, a sort, a
 	// setting) was not restored.
 	WarnViewSettingSkipped = "view_setting_skipped"
+	// Webhooks are always restored inactive, and rejected hooks or
+	// conditions are reported without failing the restore.
+	WarnHooksDisabled  = "hooks_disabled"
+	WarnHookSkipped    = "hook_skipped"
+	WarnHookNeedsSetup = "hook_needs_setup"
 )
 
 // Warning groups one kind of loss in one table (and view and field, when
@@ -93,6 +100,7 @@ type RestoreReport struct {
 	LinkCount   int64
 	FileCount   int64
 	ViewCount   int
+	HookCount   int
 	Warnings    []Warning
 }
 
@@ -104,7 +112,7 @@ type RestoreReport struct {
 // plain fields, then relations (from one side; NocoDB creates the inverse),
 // then records, then links between the new record IDs, then lookups,
 // rollups and formulas in dependency order, then display fields, then
-// attachment files, then views.
+// attachment files, then views, then inactive webhooks.
 func Restore(ctx context.Context, api WriteAPI, open func() (io.ReadCloser, error), opts RestoreOptions) (*RestoreReport, error) {
 	if opts.BatchSize <= 0 {
 		opts.BatchSize = 10
@@ -281,6 +289,9 @@ func (r *restorer) run(ctx context.Context) error {
 		return err
 	}
 	if err := r.restoreViews(ctx); err != nil {
+		return err
+	}
+	if err := r.restoreHooks(ctx); err != nil {
 		return err
 	}
 	r.opts.Progress("done")
@@ -627,7 +638,7 @@ func (r *restorer) finishReport() {
 		}
 	}
 	r.report.Tables = r.report.Tables[:0]
-	r.report.RecordCount, r.report.LinkCount, r.report.FileCount, r.report.ViewCount = 0, 0, 0, 0
+	r.report.RecordCount, r.report.LinkCount, r.report.FileCount, r.report.ViewCount, r.report.HookCount = 0, 0, 0, 0, 0
 	for _, t := range r.tables {
 		if t.newID == "" {
 			continue
@@ -644,6 +655,7 @@ func (r *restorer) finishReport() {
 		r.report.LinkCount += t.stats.LinkCount
 		r.report.FileCount += t.stats.FileCount
 		r.report.ViewCount += t.stats.ViewCount
+		r.report.HookCount += t.stats.HookCount
 	}
 	r.report.Warnings = r.report.Warnings[:0]
 	for _, k := range r.warningOrder {

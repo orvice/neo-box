@@ -129,6 +129,11 @@ func ViewCount(v int) predicate.NocoDBSnapshot {
 	return predicate.NocoDBSnapshot(sql.FieldEQ(FieldViewCount, v))
 }
 
+// HookCount applies equality check predicate on the "hook_count" field. It's identical to HookCountEQ.
+func HookCount(v int) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldEQ(FieldHookCount, v))
+}
+
 // AttachmentsIncluded applies equality check predicate on the "attachments_included" field. It's identical to AttachmentsIncludedEQ.
 func AttachmentsIncluded(v bool) predicate.NocoDBSnapshot {
 	return predicate.NocoDBSnapshot(sql.FieldEQ(FieldAttachmentsIncluded, v))
@@ -907,6 +912,46 @@ func ViewCountLT(v int) predicate.NocoDBSnapshot {
 // ViewCountLTE applies the LTE predicate on the "view_count" field.
 func ViewCountLTE(v int) predicate.NocoDBSnapshot {
 	return predicate.NocoDBSnapshot(sql.FieldLTE(FieldViewCount, v))
+}
+
+// HookCountEQ applies the EQ predicate on the "hook_count" field.
+func HookCountEQ(v int) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldEQ(FieldHookCount, v))
+}
+
+// HookCountNEQ applies the NEQ predicate on the "hook_count" field.
+func HookCountNEQ(v int) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldNEQ(FieldHookCount, v))
+}
+
+// HookCountIn applies the In predicate on the "hook_count" field.
+func HookCountIn(vs ...int) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldIn(FieldHookCount, vs...))
+}
+
+// HookCountNotIn applies the NotIn predicate on the "hook_count" field.
+func HookCountNotIn(vs ...int) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldNotIn(FieldHookCount, vs...))
+}
+
+// HookCountGT applies the GT predicate on the "hook_count" field.
+func HookCountGT(v int) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldGT(FieldHookCount, v))
+}
+
+// HookCountGTE applies the GTE predicate on the "hook_count" field.
+func HookCountGTE(v int) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldGTE(FieldHookCount, v))
+}
+
+// HookCountLT applies the LT predicate on the "hook_count" field.
+func HookCountLT(v int) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldLT(FieldHookCount, v))
+}
+
+// HookCountLTE applies the LTE predicate on the "hook_count" field.
+func HookCountLTE(v int) predicate.NocoDBSnapshot {
+	return predicate.NocoDBSnapshot(sql.FieldLTE(FieldHookCount, v))
 }
 
 // AttachmentsIncludedEQ applies the EQ predicate on the "attachments_included" field.

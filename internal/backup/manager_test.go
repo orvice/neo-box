@@ -79,6 +79,7 @@ type fakeNocoDB struct {
 	downloads []string
 	uploads   []nocodb.UploadFile
 	updates   []map[string]json.RawMessage
+	hooks     bool
 }
 
 func (f *fakeNocoDB) ListBases(context.Context) ([]nocodb.Base, error) {
@@ -142,6 +143,23 @@ func (f *fakeNocoDB) UploadFiles(_ context.Context, files []nocodb.UploadFile) (
 		out[i] = json.RawMessage(fmt.Sprintf(`{"path":"download/new/%s","title":%q}`, file.Title, file.Title))
 	}
 	return out, nil
+}
+
+func (f *fakeNocoDB) ListHooks(context.Context, string) ([]json.RawMessage, error) {
+	if f.hooks {
+		return []json.RawMessage{json.RawMessage(`{"id":"h1","title":"Changed","active":true,"event":"after","operation":["insert"],"notification":"{\"type\":\"URL\"}","version":"v3"}`)}, nil
+	}
+	return nil, nil
+}
+func (f *fakeNocoDB) ListHookFilters(context.Context, string) ([]json.RawMessage, error) {
+	return nil, nil
+}
+
+func (f *fakeNocoDB) CreateHook(context.Context, string, any) (string, error) {
+	return "hR", nil
+}
+func (f *fakeNocoDB) CreateHookFilter(context.Context, string, any) (string, error) {
+	return "hfR", nil
 }
 
 // Views: the source table has one grid view; writes are accepted.
@@ -296,6 +314,7 @@ func (h *harness) waitDone(t *testing.T, id string) *repo.Snapshot {
 
 func TestSnapshotSucceedsAndContentIsReadable(t *testing.T) {
 	h := newHarness(t)
+	h.api.hooks = true
 	snap, err := h.m.Enqueue(context.Background(), h.conn, "p1", "", repo.TriggerManual)
 	if err != nil {
 		t.Fatal(err)
@@ -304,7 +323,8 @@ func TestSnapshotSucceedsAndContentIsReadable(t *testing.T) {
 	if done.Status != repo.StatusSucceeded {
 		t.Fatalf("status = %s (%s)", done.Status, done.Error)
 	}
-	if done.BaseTitle != "CRM" || done.RecordCount != 1 || len(done.Tables) != 1 || done.SizeBytes == 0 {
+	if done.BaseTitle != "CRM" || done.RecordCount != 1 || len(done.Tables) != 1 || done.SizeBytes == 0 ||
+		done.HookCount != 1 || done.Tables[0].HookCount != 1 {
 		t.Fatalf("snapshot = %+v", done)
 	}
 	rc, err := h.m.OpenContent(context.Background(), done)

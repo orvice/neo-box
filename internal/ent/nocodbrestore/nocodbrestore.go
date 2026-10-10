@@ -43,6 +43,8 @@ const (
 	FieldFileCount = "file_count"
 	// FieldViewCount holds the string denoting the view_count field in the database.
 	FieldViewCount = "view_count"
+	// FieldHookCount holds the string denoting the hook_count field in the database.
+	FieldHookCount = "hook_count"
 	// FieldWarnings holds the string denoting the warnings field in the database.
 	FieldWarnings = "warnings"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -74,6 +76,7 @@ var Columns = []string{
 	FieldLinkCount,
 	FieldFileCount,
 	FieldViewCount,
+	FieldHookCount,
 	FieldWarnings,
 	FieldCreatedAt,
 	FieldStartedAt,
@@ -109,6 +112,8 @@ var (
 	DefaultFileCount int64
 	// DefaultViewCount holds the default value on creation for the "view_count" field.
 	DefaultViewCount int
+	// DefaultHookCount holds the default value on creation for the "hook_count" field.
+	DefaultHookCount int
 )
 
 // OrderOption defines the ordering options for the NocoDBRestore queries.
@@ -197,6 +202,11 @@ func ByFileCount(opts ...sql.OrderTermOption) OrderOption {
 // ByViewCount orders the results by the view_count field.
 func ByViewCount(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldViewCount, opts...).ToFunc()
+}
+
+// ByHookCount orders the results by the hook_count field.
+func ByHookCount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHookCount, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
