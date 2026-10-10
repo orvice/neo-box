@@ -144,6 +144,11 @@ func ViewCount(v int) predicate.NocoDBRestore {
 	return predicate.NocoDBRestore(sql.FieldEQ(FieldViewCount, v))
 }
 
+// HookCount applies equality check predicate on the "hook_count" field. It's identical to HookCountEQ.
+func HookCount(v int) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldEQ(FieldHookCount, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.NocoDBRestore {
 	return predicate.NocoDBRestore(sql.FieldEQ(FieldCreatedAt, v))
@@ -1072,6 +1077,46 @@ func ViewCountLT(v int) predicate.NocoDBRestore {
 // ViewCountLTE applies the LTE predicate on the "view_count" field.
 func ViewCountLTE(v int) predicate.NocoDBRestore {
 	return predicate.NocoDBRestore(sql.FieldLTE(FieldViewCount, v))
+}
+
+// HookCountEQ applies the EQ predicate on the "hook_count" field.
+func HookCountEQ(v int) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldEQ(FieldHookCount, v))
+}
+
+// HookCountNEQ applies the NEQ predicate on the "hook_count" field.
+func HookCountNEQ(v int) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldNEQ(FieldHookCount, v))
+}
+
+// HookCountIn applies the In predicate on the "hook_count" field.
+func HookCountIn(vs ...int) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldIn(FieldHookCount, vs...))
+}
+
+// HookCountNotIn applies the NotIn predicate on the "hook_count" field.
+func HookCountNotIn(vs ...int) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldNotIn(FieldHookCount, vs...))
+}
+
+// HookCountGT applies the GT predicate on the "hook_count" field.
+func HookCountGT(v int) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldGT(FieldHookCount, v))
+}
+
+// HookCountGTE applies the GTE predicate on the "hook_count" field.
+func HookCountGTE(v int) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldGTE(FieldHookCount, v))
+}
+
+// HookCountLT applies the LT predicate on the "hook_count" field.
+func HookCountLT(v int) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldLT(FieldHookCount, v))
+}
+
+// HookCountLTE applies the LTE predicate on the "hook_count" field.
+func HookCountLTE(v int) predicate.NocoDBRestore {
+	return predicate.NocoDBRestore(sql.FieldLTE(FieldHookCount, v))
 }
 
 // WarningsIsNil applies the IsNil predicate on the "warnings" field.

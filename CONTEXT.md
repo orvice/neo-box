@@ -32,11 +32,11 @@ one place.
   with `p`). Neo Box does not store Bases; it lists them live from NocoDB.
 - **Snapshot** — a point-in-time, read-only capture of one Base: the base
   meta, every table's schema (fields), every record, every link between
-  records, every view (with its column settings, filters and sorts), and
-  the attachment files the records hold (unless the Base's Backup Policy
-  leaves them out). Content is a gzip JSON document in blob storage;
-  metadata (status, counts, size) is in PostgreSQL. Webhooks are not
-  captured yet.
+  records, every view (with its column settings, filters and sorts), every
+  webhook (with its conditions and notification settings), and the attachment
+  files the records hold (unless the Base's Backup Policy leaves them out).
+  Content is a gzip JSON document in blob storage; metadata (status, counts,
+  size) is in PostgreSQL.
 - **Attachment file** — the bytes behind an Attachment value. Stored once
   per User by content and shared by every Snapshot that holds it; deleted
   when no Snapshot holds it any more. A file NocoDB can't serve when the
@@ -55,11 +55,14 @@ one place.
   never changes an existing Base. It brings back tables, fields (links,
   lookups, rollups and formulas included), records, links, and attachments
   (re-uploaded, so with new storage paths) when the Snapshot holds their
-  files, and views with their column settings, filters and sorts. It does
-  not bring back original record IDs, created/modified time and by,
+  files, views with their column settings, filters and sorts, and webhooks
+  with their conditions, always turned off. The user must turn webhooks on
+  in NocoDB; non-URL notifications need the target instance's integration.
+  It does not bring back original record IDs, created/modified time and by,
   AutoNumber values, User values for people who aren't members of the new
-  Base, or views' share links, row colouring and form images. A Restore that fails partway leaves its partial Base in NocoDB
-  and records its ID; trying again builds another new Base.
+  Base, or views' share links, row colouring and form images. A Restore that
+  fails partway leaves its partial Base in NocoDB and records its ID; trying
+  again builds another new Base.
 - **Restore warning** — one kind of loss in a Restore, grouped by table and
   field with a count, e.g. "Orders / Files: 12 attachments not restored".
   Warnings don't fail a Restore.

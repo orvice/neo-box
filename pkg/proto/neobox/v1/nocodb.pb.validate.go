@@ -928,6 +928,8 @@ func (m *SnapshotTable) validate(all bool) error {
 
 	// no validation rules for ViewCount
 
+	// no validation rules for HookCount
+
 	if len(errors) > 0 {
 		return SnapshotTableMultiError(errors)
 	}
@@ -1180,6 +1182,8 @@ func (m *Snapshot) validate(all bool) error {
 	// no validation rules for FilesMissing
 
 	// no validation rules for ViewCount
+
+	// no validation rules for HookCount
 
 	if len(errors) > 0 {
 		return SnapshotMultiError(errors)
@@ -2908,6 +2912,8 @@ func (m *Restore) validate(all bool) error {
 	// no validation rules for FileCount
 
 	// no validation rules for ViewCount
+
+	// no validation rules for HookCount
 
 	if len(errors) > 0 {
 		return RestoreMultiError(errors)

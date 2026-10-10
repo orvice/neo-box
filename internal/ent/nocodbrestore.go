@@ -51,6 +51,8 @@ type NocoDBRestore struct {
 	FileCount int64 `json:"file_count,omitempty"`
 	// ViewCount holds the value of the "view_count" field.
 	ViewCount int `json:"view_count,omitempty"`
+	// HookCount holds the value of the "hook_count" field.
+	HookCount int `json:"hook_count,omitempty"`
 	// Warnings holds the value of the "warnings" field.
 	Warnings []nocodb.RestoreWarning `json:"warnings,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -69,7 +71,7 @@ func (*NocoDBRestore) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case nocodbrestore.FieldWarnings:
 			values[i] = new([]byte)
-		case nocodbrestore.FieldTableCount, nocodbrestore.FieldRecordCount, nocodbrestore.FieldLinkCount, nocodbrestore.FieldFileCount, nocodbrestore.FieldViewCount:
+		case nocodbrestore.FieldTableCount, nocodbrestore.FieldRecordCount, nocodbrestore.FieldLinkCount, nocodbrestore.FieldFileCount, nocodbrestore.FieldViewCount, nocodbrestore.FieldHookCount:
 			values[i] = new(sql.NullInt64)
 		case nocodbrestore.FieldID, nocodbrestore.FieldUserID, nocodbrestore.FieldSnapshotID, nocodbrestore.FieldSourceConnectionID, nocodbrestore.FieldSourceBaseID, nocodbrestore.FieldSourceBaseTitle, nocodbrestore.FieldTargetConnectionID, nocodbrestore.FieldTargetBaseID, nocodbrestore.FieldTargetBaseTitle, nocodbrestore.FieldStatus, nocodbrestore.FieldError, nocodbrestore.FieldProgress:
 			values[i] = new(sql.NullString)
@@ -192,6 +194,12 @@ func (_m *NocoDBRestore) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ViewCount = int(value.Int64)
 			}
+		case nocodbrestore.FieldHookCount:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field hook_count", values[i])
+			} else if value.Valid {
+				_m.HookCount = int(value.Int64)
+			}
 		case nocodbrestore.FieldWarnings:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field warnings", values[i])
@@ -303,6 +311,9 @@ func (_m *NocoDBRestore) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("view_count=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ViewCount))
+	builder.WriteString(", ")
+	builder.WriteString("hook_count=")
+	builder.WriteString(fmt.Sprintf("%v", _m.HookCount))
 	builder.WriteString(", ")
 	builder.WriteString("warnings=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Warnings))

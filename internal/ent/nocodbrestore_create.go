@@ -192,6 +192,20 @@ func (_c *NocoDBRestoreCreate) SetNillableViewCount(v *int) *NocoDBRestoreCreate
 	return _c
 }
 
+// SetHookCount sets the "hook_count" field.
+func (_c *NocoDBRestoreCreate) SetHookCount(v int) *NocoDBRestoreCreate {
+	_c.mutation.SetHookCount(v)
+	return _c
+}
+
+// SetNillableHookCount sets the "hook_count" field if the given value is not nil.
+func (_c *NocoDBRestoreCreate) SetNillableHookCount(v *int) *NocoDBRestoreCreate {
+	if v != nil {
+		_c.SetHookCount(*v)
+	}
+	return _c
+}
+
 // SetWarnings sets the "warnings" field.
 func (_c *NocoDBRestoreCreate) SetWarnings(v []nocodb.RestoreWarning) *NocoDBRestoreCreate {
 	_c.mutation.SetWarnings(v)
@@ -309,6 +323,10 @@ func (_c *NocoDBRestoreCreate) defaults() {
 		v := nocodbrestore.DefaultViewCount
 		_c.mutation.SetViewCount(v)
 	}
+	if _, ok := _c.mutation.HookCount(); !ok {
+		v := nocodbrestore.DefaultHookCount
+		_c.mutation.SetHookCount(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -360,6 +378,9 @@ func (_c *NocoDBRestoreCreate) check() error {
 	}
 	if _, ok := _c.mutation.ViewCount(); !ok {
 		return &ValidationError{Name: "view_count", err: errors.New(`ent: missing required field "NocoDBRestore.view_count"`)}
+	}
+	if _, ok := _c.mutation.HookCount(); !ok {
+		return &ValidationError{Name: "hook_count", err: errors.New(`ent: missing required field "NocoDBRestore.hook_count"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "NocoDBRestore.created_at"`)}
@@ -463,6 +484,10 @@ func (_c *NocoDBRestoreCreate) createSpec() (*NocoDBRestore, *sqlgraph.CreateSpe
 	if value, ok := _c.mutation.ViewCount(); ok {
 		_spec.SetField(nocodbrestore.FieldViewCount, field.TypeInt, value)
 		_node.ViewCount = value
+	}
+	if value, ok := _c.mutation.HookCount(); ok {
+		_spec.SetField(nocodbrestore.FieldHookCount, field.TypeInt, value)
+		_node.HookCount = value
 	}
 	if value, ok := _c.mutation.Warnings(); ok {
 		_spec.SetField(nocodbrestore.FieldWarnings, field.TypeJSON, value)
@@ -667,6 +692,24 @@ func (u *NocoDBRestoreUpsert) UpdateViewCount() *NocoDBRestoreUpsert {
 // AddViewCount adds v to the "view_count" field.
 func (u *NocoDBRestoreUpsert) AddViewCount(v int) *NocoDBRestoreUpsert {
 	u.Add(nocodbrestore.FieldViewCount, v)
+	return u
+}
+
+// SetHookCount sets the "hook_count" field.
+func (u *NocoDBRestoreUpsert) SetHookCount(v int) *NocoDBRestoreUpsert {
+	u.Set(nocodbrestore.FieldHookCount, v)
+	return u
+}
+
+// UpdateHookCount sets the "hook_count" field to the value that was provided on create.
+func (u *NocoDBRestoreUpsert) UpdateHookCount() *NocoDBRestoreUpsert {
+	u.SetExcluded(nocodbrestore.FieldHookCount)
+	return u
+}
+
+// AddHookCount adds v to the "hook_count" field.
+func (u *NocoDBRestoreUpsert) AddHookCount(v int) *NocoDBRestoreUpsert {
+	u.Add(nocodbrestore.FieldHookCount, v)
 	return u
 }
 
@@ -954,6 +997,27 @@ func (u *NocoDBRestoreUpsertOne) AddViewCount(v int) *NocoDBRestoreUpsertOne {
 func (u *NocoDBRestoreUpsertOne) UpdateViewCount() *NocoDBRestoreUpsertOne {
 	return u.Update(func(s *NocoDBRestoreUpsert) {
 		s.UpdateViewCount()
+	})
+}
+
+// SetHookCount sets the "hook_count" field.
+func (u *NocoDBRestoreUpsertOne) SetHookCount(v int) *NocoDBRestoreUpsertOne {
+	return u.Update(func(s *NocoDBRestoreUpsert) {
+		s.SetHookCount(v)
+	})
+}
+
+// AddHookCount adds v to the "hook_count" field.
+func (u *NocoDBRestoreUpsertOne) AddHookCount(v int) *NocoDBRestoreUpsertOne {
+	return u.Update(func(s *NocoDBRestoreUpsert) {
+		s.AddHookCount(v)
+	})
+}
+
+// UpdateHookCount sets the "hook_count" field to the value that was provided on create.
+func (u *NocoDBRestoreUpsertOne) UpdateHookCount() *NocoDBRestoreUpsertOne {
+	return u.Update(func(s *NocoDBRestoreUpsert) {
+		s.UpdateHookCount()
 	})
 }
 
@@ -1417,6 +1481,27 @@ func (u *NocoDBRestoreUpsertBulk) AddViewCount(v int) *NocoDBRestoreUpsertBulk {
 func (u *NocoDBRestoreUpsertBulk) UpdateViewCount() *NocoDBRestoreUpsertBulk {
 	return u.Update(func(s *NocoDBRestoreUpsert) {
 		s.UpdateViewCount()
+	})
+}
+
+// SetHookCount sets the "hook_count" field.
+func (u *NocoDBRestoreUpsertBulk) SetHookCount(v int) *NocoDBRestoreUpsertBulk {
+	return u.Update(func(s *NocoDBRestoreUpsert) {
+		s.SetHookCount(v)
+	})
+}
+
+// AddHookCount adds v to the "hook_count" field.
+func (u *NocoDBRestoreUpsertBulk) AddHookCount(v int) *NocoDBRestoreUpsertBulk {
+	return u.Update(func(s *NocoDBRestoreUpsert) {
+		s.AddHookCount(v)
+	})
+}
+
+// UpdateHookCount sets the "hook_count" field to the value that was provided on create.
+func (u *NocoDBRestoreUpsertBulk) UpdateHookCount() *NocoDBRestoreUpsertBulk {
+	return u.Update(func(s *NocoDBRestoreUpsert) {
+		s.UpdateHookCount()
 	})
 }
 

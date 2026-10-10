@@ -27,6 +27,8 @@ type API interface {
 	ListViewSorts(ctx context.Context, viewID string) ([]json.RawMessage, error)
 	ListViewFilters(ctx context.Context, viewID string) ([]json.RawMessage, error)
 	ListFilterChildren(ctx context.Context, filterID string) ([]json.RawMessage, error)
+	ListHooks(ctx context.Context, tableID string) ([]json.RawMessage, error)
+	ListHookFilters(ctx context.Context, hookID string) ([]json.RawMessage, error)
 }
 
 // Files stores the attachment files of a snapshot being built.
@@ -48,6 +50,7 @@ type TableStats struct {
 	FieldCount  int
 	LinkCount   int64
 	ViewCount   int
+	HookCount   int
 	// FileCount and FileBytes count the attachment files captured (or
 	// restored); FilesMissing those that could not be read.
 	FileCount    int64
@@ -61,6 +64,7 @@ type Stats struct {
 	RecordCount  int64
 	LinkCount    int64
 	ViewCount    int
+	HookCount    int
 	FileCount    int64
 	FileBytes    int64
 	FilesMissing int64
@@ -131,6 +135,7 @@ func Build(ctx context.Context, api API, src Source, w io.Writer, opts Options) 
 			FieldCount:  len(t.Fields()),
 			LinkCount:   t.LinkCount(),
 			ViewCount:   len(t.Views),
+			HookCount:   len(t.Hooks),
 		}
 		for _, f := range t.Files {
 			if f.SHA256 == "" {
@@ -144,6 +149,7 @@ func Build(ctx context.Context, api API, src Source, w io.Writer, opts Options) 
 		stats.RecordCount += ts.RecordCount
 		stats.LinkCount += ts.LinkCount
 		stats.ViewCount += ts.ViewCount
+		stats.HookCount += ts.HookCount
 		stats.FileCount += ts.FileCount
 		stats.FileBytes += ts.FileBytes
 		stats.FilesMissing += ts.FilesMissing
@@ -193,6 +199,12 @@ func captureTable(ctx context.Context, api API, baseID string, summary nocodb.Ta
 		return nil, fmt.Errorf("views: %w", err)
 	}
 	t.Views = views
+	progress("reading webhooks")
+	hooks, err := captureHooks(ctx, api, t.ID)
+	if err != nil {
+		return nil, fmt.Errorf("hooks: %w", err)
+	}
+	t.Hooks = hooks
 	return t, nil
 }
 
@@ -227,6 +239,28 @@ func captureViews(ctx context.Context, api API, tableID string) ([]View, error) 
 		views = append(views, v)
 	}
 	return views, nil
+}
+
+// captureHooks reads every hook with its filters. Notification secrets
+// are kept verbatim, just like record data (ADR 0005).
+func captureHooks(ctx context.Context, api API, tableID string) ([]Hook, error) {
+	list, err := api.ListHooks(ctx, tableID)
+	if err != nil {
+		return nil, err
+	}
+	hooks := make([]Hook, 0, len(list))
+	for _, raw := range list {
+		top, err := api.ListHookFilters(ctx, jsonString(raw, "id"))
+		if err != nil {
+			return nil, fmt.Errorf("hook %q filters: %w", jsonString(raw, "title"), err)
+		}
+		filters, err := flattenFilters(ctx, api, top, 0)
+		if err != nil {
+			return nil, fmt.Errorf("hook %q filters: %w", jsonString(raw, "title"), err)
+		}
+		hooks = append(hooks, Hook{Hook: raw, Filters: filters})
+	}
+	return hooks, nil
 }
 
 // flattenFilters lists filters with each group followed by its members.

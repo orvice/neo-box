@@ -17,7 +17,8 @@
 //	      "records": [ {"id": 1, "fields": {...}}, ... ],
 //	      "links": [ {"field_id": "...", "record_id": 1, "linked_ids": [3, 4]}, ... ],
 //	      "files": [ {"source": "download/...", "size": 17, "sha256": "..."}, ... ],
-//	      "views": [ {"view": {...}, "columns": [...], "sorts": [...], "filters": [...]}, ... ]
+//	      "views": [ {"view": {...}, "columns": [...], "sorts": [...], "filters": [...]}, ... ],
+//	      "hooks": [ {"hook": {...}, "filters": [...]}, ... ]
 //	    }
 //	  ]
 //	}
@@ -38,6 +39,10 @@
 // linked by fk_parent_id, each group before its members. A table without
 // "views" had them left out (version 1, or a version 2 document written
 // before views were captured).
+//
+// "hooks" holds every webhook, including its notification secrets, with
+// filters flattened as for views. Missing means not captured; [] means
+// the table had no webhooks. Restores always create hooks inactive.
 package snapshot
 
 import (
@@ -107,6 +112,13 @@ type View struct {
 	Filters []json.RawMessage `json:"filters"`
 }
 
+// Hook is one webhook of a table, verbatim from v2 meta, with its
+// filters flattened and linked by fk_parent_id as for views.
+type Hook struct {
+	Hook    json.RawMessage   `json:"hook"`
+	Filters []json.RawMessage `json:"filters"`
+}
+
 // Table is one table's schema and content.
 type Table struct {
 	ID      string          `json:"id"`
@@ -116,6 +128,8 @@ type Table struct {
 	Links   []Link          `json:"links"`
 	Files   []File          `json:"files,omitempty"`
 	Views   []View          `json:"views,omitempty"`
+	// Nil means not captured; an empty non-nil slice is captured as [].
+	Hooks []Hook `json:"hooks,omitzero"`
 }
 
 // LinkCount is the number of (record, linked record) pairs in the table.

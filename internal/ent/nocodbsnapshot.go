@@ -45,6 +45,8 @@ type NocoDBSnapshot struct {
 	LinkCount int64 `json:"link_count,omitempty"`
 	// ViewCount holds the value of the "view_count" field.
 	ViewCount int `json:"view_count,omitempty"`
+	// HookCount holds the value of the "hook_count" field.
+	HookCount int `json:"hook_count,omitempty"`
 	// AttachmentsIncluded holds the value of the "attachments_included" field.
 	AttachmentsIncluded bool `json:"attachments_included,omitempty"`
 	// FileCount holds the value of the "file_count" field.
@@ -73,7 +75,7 @@ func (*NocoDBSnapshot) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case nocodbsnapshot.FieldAttachmentsIncluded:
 			values[i] = new(sql.NullBool)
-		case nocodbsnapshot.FieldSizeBytes, nocodbsnapshot.FieldRecordCount, nocodbsnapshot.FieldLinkCount, nocodbsnapshot.FieldViewCount, nocodbsnapshot.FieldFileCount, nocodbsnapshot.FieldFileBytes, nocodbsnapshot.FieldFilesMissing:
+		case nocodbsnapshot.FieldSizeBytes, nocodbsnapshot.FieldRecordCount, nocodbsnapshot.FieldLinkCount, nocodbsnapshot.FieldViewCount, nocodbsnapshot.FieldHookCount, nocodbsnapshot.FieldFileCount, nocodbsnapshot.FieldFileBytes, nocodbsnapshot.FieldFilesMissing:
 			values[i] = new(sql.NullInt64)
 		case nocodbsnapshot.FieldID, nocodbsnapshot.FieldUserID, nocodbsnapshot.FieldConnectionID, nocodbsnapshot.FieldBaseID, nocodbsnapshot.FieldBaseTitle, nocodbsnapshot.FieldStatus, nocodbsnapshot.FieldTrigger, nocodbsnapshot.FieldError, nocodbsnapshot.FieldProgress, nocodbsnapshot.FieldObjectKey:
 			values[i] = new(sql.NullString)
@@ -177,6 +179,12 @@ func (_m *NocoDBSnapshot) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field view_count", values[i])
 			} else if value.Valid {
 				_m.ViewCount = int(value.Int64)
+			}
+		case nocodbsnapshot.FieldHookCount:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field hook_count", values[i])
+			} else if value.Valid {
+				_m.HookCount = int(value.Int64)
 			}
 		case nocodbsnapshot.FieldAttachmentsIncluded:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -304,6 +312,9 @@ func (_m *NocoDBSnapshot) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("view_count=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ViewCount))
+	builder.WriteString(", ")
+	builder.WriteString("hook_count=")
+	builder.WriteString(fmt.Sprintf("%v", _m.HookCount))
 	builder.WriteString(", ")
 	builder.WriteString("attachments_included=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AttachmentsIncluded))

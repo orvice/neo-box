@@ -54,6 +54,7 @@ func newNocoDBServer(t *testing.T) (*NocoDBServiceServer, *memory.Store) {
 
 	for _, s := range []*repo.Snapshot{
 		{ID: "s1", UserID: "u1", ConnectionID: "c1", BaseID: "p1", BaseTitle: "CRM", Status: repo.StatusSucceeded,
+			HookCount: 3, Tables: []repo.SnapshotTable{{ID: "m1", Title: "Tasks", HookCount: 3}},
 			Trigger: repo.TriggerManual, CreatedAt: time.Date(2026, 10, 1, 8, 30, 0, 0, time.UTC)},
 		{ID: "s2", UserID: "u1", ConnectionID: "c1", BaseID: "p1", Status: repo.StatusFailed,
 			Trigger: repo.TriggerManual, CreatedAt: time.Date(2026, 10, 2, 0, 0, 0, 0, time.UTC)},
@@ -126,8 +127,21 @@ func TestRestoreSnapshot(t *testing.T) {
 	}
 }
 
-func TestGetAndListRestores(t *testing.T) {
+func TestGetSnapshotHookCounts(t *testing.T) {
 	srv, _ := newNocoDBServer(t)
+	ctx := asUser("u1")
+	resp, err := srv.GetSnapshot(ctx, connect.NewRequest(&neoboxv1.GetSnapshotRequest{Id: "s1"}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	snap := resp.Msg.GetSnapshot()
+	if snap.GetHookCount() != 3 || len(snap.GetTables()) != 1 || snap.GetTables()[0].GetHookCount() != 3 {
+		t.Fatalf("snapshot = %v", snap)
+	}
+}
+
+func TestGetAndListRestores(t *testing.T) {
+	srv, store := newNocoDBServer(t)
 	ctx := asUser("u1")
 	first, err := srv.RestoreSnapshot(ctx, restoreReq("s1", "", ""))
 	if err != nil {
@@ -137,9 +151,19 @@ func TestGetAndListRestores(t *testing.T) {
 		t.Fatal(err)
 	}
 	id := first.Msg.GetRestore().GetId()
+	stored, err := store.GetRestore(ctx, "u1", id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	stored.HookCount = 2
+	stored.Warnings = []repo.RestoreWarning{{Code: "hooks_disabled", Table: "Tasks", Count: 2, Message: "turn them on in NocoDB"}}
+	if err := store.UpdateRestore(ctx, stored); err != nil {
+		t.Fatal(err)
+	}
 
 	got, err := srv.GetRestore(ctx, connect.NewRequest(&neoboxv1.GetRestoreRequest{Id: id}))
-	if err != nil || got.Msg.GetRestore().GetId() != id {
+	if err != nil || got.Msg.GetRestore().GetId() != id || got.Msg.GetRestore().GetHookCount() != 2 ||
+		len(got.Msg.GetRestore().GetWarnings()) != 1 || got.Msg.GetRestore().GetWarnings()[0].GetCode() != "hooks_disabled" {
 		t.Fatalf("GetRestore = %v, %v", got, err)
 	}
 	if _, err := srv.GetRestore(asUser("u2"), connect.NewRequest(&neoboxv1.GetRestoreRequest{Id: id})); connect.CodeOf(err) != connect.CodeNotFound {

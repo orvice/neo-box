@@ -40,6 +40,7 @@ type fakeNoco struct {
 	updates    []map[string]json.RawMessage
 	failUpload func(files []nocodb.UploadFile) bool
 
+	hooks      map[string][]*fakeHook    // table id -> hooks
 	views      map[string][]*fakeView    // table id -> views
 	colPatches map[string]map[string]any // column id -> patched settings
 }
@@ -64,7 +65,7 @@ type fakeTable struct {
 func newFakeNoco() *fakeNoco {
 	return &fakeNoco{
 		tables: map[string]*fakeTable{}, renamed: map[string]string{}, display: map[string]string{}, members: []string{"admin@x.test"},
-		views: map[string][]*fakeView{}, colPatches: map[string]map[string]any{},
+		hooks: map[string][]*fakeHook{}, views: map[string][]*fakeView{}, colPatches: map[string]map[string]any{},
 	}
 }
 
@@ -620,10 +621,16 @@ func TestRestoreReadsVersion1(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if report.HookCount != 0 || len(api.hooks) != 0 {
+		t.Fatalf("v1 hooks = %d, %+v", report.HookCount, api.hooks)
+	}
 	if report.RecordCount != 6 || len(api.uploads) != 0 {
 		t.Fatalf("records = %d, uploads = %v", report.RecordCount, api.uploads)
 	}
 	for _, w := range report.Warnings {
+		if strings.HasPrefix(w.Code, "hook") {
+			t.Fatalf("v1 webhook warning = %+v", w)
+		}
 		if w.Code == WarnAttachmentsSkipped && (w.Count != 2 || w.Message != "the snapshot holds no attachment files") {
 			t.Fatalf("attachments warning = %+v", w)
 		}

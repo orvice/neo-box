@@ -19,11 +19,13 @@ type fakeAPI struct {
 	calls   map[string]int
 	// views by table; columns, sorts and filters by view; filter group
 	// members by group.
-	views    map[string][]json.RawMessage
-	columns  map[string][]json.RawMessage
-	sorts    map[string][]json.RawMessage
-	filters  map[string][]json.RawMessage
-	children map[string][]json.RawMessage
+	views       map[string][]json.RawMessage
+	columns     map[string][]json.RawMessage
+	sorts       map[string][]json.RawMessage
+	filters     map[string][]json.RawMessage
+	children    map[string][]json.RawMessage
+	hooks       map[string][]json.RawMessage
+	hookFilters map[string][]json.RawMessage
 }
 
 func (f *fakeAPI) ListViews(_ context.Context, tableID string) ([]json.RawMessage, error) {

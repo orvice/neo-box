@@ -34,7 +34,7 @@ func TestLiveRestoreRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Minute)
 	defer cancel()
 	cleanup := func(baseID string) {
 		if os.Getenv("NEOBOX_TEST_NOCODB_KEEP") != "" {
@@ -88,8 +88,19 @@ func TestLiveRestoreRoundTrip(t *testing.T) {
 	if stats.ViewCount == 0 || report.ViewCount != stats.ViewCount {
 		t.Errorf("restored %d views, want %d", report.ViewCount, stats.ViewCount)
 	}
+	if stats.HookCount != 1 || report.HookCount != 1 {
+		t.Errorf("captured %d hooks and restored %d, want 1", stats.HookCount, report.HookCount)
+	}
+	var disabled []Warning
 	for _, w := range report.Warnings {
-		t.Errorf("unexpected warning %+v", w)
+		if w.Code != WarnHooksDisabled {
+			t.Errorf("unexpected warning %+v", w)
+		} else {
+			disabled = append(disabled, w)
+		}
+	}
+	if len(disabled) != 1 || disabled[0].Table != "Customers" || disabled[0].Count != 1 {
+		t.Errorf("disabled hook warnings = %+v", disabled)
 	}
 }
 
@@ -277,6 +288,23 @@ func buildFixture(ctx context.Context, t *testing.T, c *nocodb.Client, title str
 	must(err)
 
 	buildViews(ctx, t, c, baseID, customers.ID)
+	// Create the active source hook only after all fixture writes. The
+	// restored hook must be inactive and keep its headers and conditions.
+	name, score := fieldByTitle(t, customers, "Name"), fieldByTitle(t, customers, "Score")
+	hook, err := c.CreateHook(ctx, customers.ID, map[string]any{
+		"title": "Customer changed", "event": "after", "operation": []string{"insert", "update"},
+		"active": true, "condition": true, "version": "v3", "retries": 2, "retry_interval": 1000, "timeout": 5000,
+		"trigger_field": true, "trigger_fields": []string{name.ID, score.ID},
+		"notification": map[string]any{"type": "URL", "payload": map[string]any{
+			"method": "POST", "path": "https://example.invalid/neobox-hook", "body": "{{ json data }}",
+			"headers": []map[string]string{{"name": "Authorization", "value": "Bearer fixture-secret"}},
+		}},
+	})
+	must(err)
+	group, err := c.CreateHookFilter(ctx, hook, map[string]any{"is_group": true, "logical_op": "and"})
+	must(err)
+	_, err = c.CreateHookFilter(ctx, hook, map[string]any{"fk_parent_id": group, "fk_column_id": name.ID, "comparison_op": "eq", "value": "Ada", "logical_op": "and"})
+	must(err)
 	return baseID
 }
 
@@ -492,6 +520,14 @@ func compareSnapshots(t *testing.T, src, dst []byte) {
 		if a, b := describeViews(st), describeViews(dt); !slices.Equal(a, b) {
 			t.Errorf("%s views:\n got %s\nwant %s", st.Title, strings.Join(b, "\n     "), strings.Join(a, "\n     "))
 		}
+		if a, b := describeHooks(st), describeHooks(dt); !slices.Equal(a, b) {
+			t.Errorf("%s hooks:\n got %v\nwant %v", st.Title, b, a)
+		}
+		for _, h := range dt.Hooks {
+			if jsonBool(h.Hook, "active") {
+				t.Errorf("%s hook %q is active after restore", st.Title, jsonString(h.Hook, "title"))
+			}
+		}
 	}
 }
 
@@ -591,6 +627,53 @@ func describeViews(tb *Table) []string {
 		line += " filters=[" + strings.Join(filters, ", ") + "]"
 		out = append(out, line)
 	}
+	return out
+}
+
+// describeHooks compares retained settings (including notification
+// headers), trigger fields and the condition tree, ignoring generated IDs
+// and active, which is checked separately.
+func describeHooks(tb *Table) []string {
+	titles := map[string]string{}
+	for _, f := range tb.Fields() {
+		titles[f.ID] = f.Title
+	}
+	var out []string
+	for _, h := range tb.Hooks {
+		settings := map[string]any{}
+		for _, key := range []string{"title", "event", "operation", "condition", "retries", "retry_interval", "timeout", "version", "trigger_field"} {
+			settings[key] = jsonValue(h.Hook, key)
+		}
+		notification := jsonRaw(h.Hook, "notification")
+		if s, ok := jsonValue(h.Hook, "notification").(string); ok {
+			notification = json.RawMessage(s)
+		}
+		settings["notification"] = json.RawMessage(normalize(notification))
+		var fields []string
+		_ = json.Unmarshal(jsonRaw(h.Hook, "trigger_fields"), &fields)
+		for i, id := range fields {
+			fields[i] = titles[id]
+		}
+		settings["trigger_fields"] = fields
+		depth := map[string]int{}
+		var filters []map[string]any
+		for _, f := range h.Filters {
+			d := 0
+			if p := jsonString(f, "fk_parent_id"); p != "" {
+				d = depth[p] + 1
+			}
+			depth[jsonString(f, "id")] = d
+			entry := map[string]any{"depth": d, "is_group": jsonBool(f, "is_group"), "field": titles[jsonString(f, "fk_column_id")]}
+			for _, key := range []string{"comparison_op", "comparison_sub_op", "value", "logical_op"} {
+				entry[key] = jsonValue(f, key)
+			}
+			filters = append(filters, entry)
+		}
+		settings["filters"] = filters
+		raw, _ := json.Marshal(settings)
+		out = append(out, string(raw))
+	}
+	slices.Sort(out)
 	return out
 }
 

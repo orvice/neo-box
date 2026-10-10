@@ -40,6 +40,9 @@ const warningLabels: Record<string, string> = {
   relation_guessed: 'Relation paired by order',
   view_skipped: 'View not restored',
   view_setting_skipped: 'View setting not restored',
+  hooks_disabled: 'Webhooks turned off',
+  hook_needs_setup: 'Webhook needs setup',
+  hook_skipped: 'Webhook or condition not restored',
 }
 
 /**
@@ -162,6 +165,7 @@ export function RestoreTable({
               {r.tableCount} tables · {formatCount(r.recordCount)} records ·{' '}
               {formatCount(r.linkCount)} links
               {r.viewCount > 0 && ` · ${formatCount(r.viewCount)} views`}
+              {r.hookCount > 0 && ` · ${formatCount(r.hookCount)} webhooks`}
               {r.fileCount > 0 && ` · ${formatCount(r.fileCount)} files`}
             </div>
             {r.warnings.length > 0 && (
@@ -212,7 +216,7 @@ function WarningsDialog({
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className='sm:max-w-3xl'>
         <DialogHeader>
-          <DialogTitle>What wasn't restored</DialogTitle>
+          <DialogTitle>Restore warnings</DialogTitle>
           <DialogDescription>
             {restore.targetBaseTitle} · grouped by table, view and field
           </DialogDescription>

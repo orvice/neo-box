@@ -191,6 +191,27 @@ func (_u *NocoDBRestoreUpdate) AddViewCount(v int) *NocoDBRestoreUpdate {
 	return _u
 }
 
+// SetHookCount sets the "hook_count" field.
+func (_u *NocoDBRestoreUpdate) SetHookCount(v int) *NocoDBRestoreUpdate {
+	_u.mutation.ResetHookCount()
+	_u.mutation.SetHookCount(v)
+	return _u
+}
+
+// SetNillableHookCount sets the "hook_count" field if the given value is not nil.
+func (_u *NocoDBRestoreUpdate) SetNillableHookCount(v *int) *NocoDBRestoreUpdate {
+	if v != nil {
+		_u.SetHookCount(*v)
+	}
+	return _u
+}
+
+// AddHookCount adds value to the "hook_count" field.
+func (_u *NocoDBRestoreUpdate) AddHookCount(v int) *NocoDBRestoreUpdate {
+	_u.mutation.AddHookCount(v)
+	return _u
+}
+
 // SetWarnings sets the "warnings" field.
 func (_u *NocoDBRestoreUpdate) SetWarnings(v []nocodb.RestoreWarning) *NocoDBRestoreUpdate {
 	_u.mutation.SetWarnings(v)
@@ -331,6 +352,12 @@ func (_u *NocoDBRestoreUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	}
 	if value, ok := _u.mutation.AddedViewCount(); ok {
 		_spec.AddField(nocodbrestore.FieldViewCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.HookCount(); ok {
+		_spec.SetField(nocodbrestore.FieldHookCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedHookCount(); ok {
+		_spec.AddField(nocodbrestore.FieldHookCount, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.Warnings(); ok {
 		_spec.SetField(nocodbrestore.FieldWarnings, field.TypeJSON, value)
@@ -536,6 +563,27 @@ func (_u *NocoDBRestoreUpdateOne) AddViewCount(v int) *NocoDBRestoreUpdateOne {
 	return _u
 }
 
+// SetHookCount sets the "hook_count" field.
+func (_u *NocoDBRestoreUpdateOne) SetHookCount(v int) *NocoDBRestoreUpdateOne {
+	_u.mutation.ResetHookCount()
+	_u.mutation.SetHookCount(v)
+	return _u
+}
+
+// SetNillableHookCount sets the "hook_count" field if the given value is not nil.
+func (_u *NocoDBRestoreUpdateOne) SetNillableHookCount(v *int) *NocoDBRestoreUpdateOne {
+	if v != nil {
+		_u.SetHookCount(*v)
+	}
+	return _u
+}
+
+// AddHookCount adds value to the "hook_count" field.
+func (_u *NocoDBRestoreUpdateOne) AddHookCount(v int) *NocoDBRestoreUpdateOne {
+	_u.mutation.AddHookCount(v)
+	return _u
+}
+
 // SetWarnings sets the "warnings" field.
 func (_u *NocoDBRestoreUpdateOne) SetWarnings(v []nocodb.RestoreWarning) *NocoDBRestoreUpdateOne {
 	_u.mutation.SetWarnings(v)
@@ -706,6 +754,12 @@ func (_u *NocoDBRestoreUpdateOne) sqlSave(ctx context.Context) (_node *NocoDBRes
 	}
 	if value, ok := _u.mutation.AddedViewCount(); ok {
 		_spec.AddField(nocodbrestore.FieldViewCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.HookCount(); ok {
+		_spec.SetField(nocodbrestore.FieldHookCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedHookCount(); ok {
+		_spec.AddField(nocodbrestore.FieldHookCount, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.Warnings(); ok {
 		_spec.SetField(nocodbrestore.FieldWarnings, field.TypeJSON, value)

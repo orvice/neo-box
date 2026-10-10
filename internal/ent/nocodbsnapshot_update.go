@@ -184,6 +184,27 @@ func (_u *NocoDBSnapshotUpdate) AddViewCount(v int) *NocoDBSnapshotUpdate {
 	return _u
 }
 
+// SetHookCount sets the "hook_count" field.
+func (_u *NocoDBSnapshotUpdate) SetHookCount(v int) *NocoDBSnapshotUpdate {
+	_u.mutation.ResetHookCount()
+	_u.mutation.SetHookCount(v)
+	return _u
+}
+
+// SetNillableHookCount sets the "hook_count" field if the given value is not nil.
+func (_u *NocoDBSnapshotUpdate) SetNillableHookCount(v *int) *NocoDBSnapshotUpdate {
+	if v != nil {
+		_u.SetHookCount(*v)
+	}
+	return _u
+}
+
+// AddHookCount adds value to the "hook_count" field.
+func (_u *NocoDBSnapshotUpdate) AddHookCount(v int) *NocoDBSnapshotUpdate {
+	_u.mutation.AddHookCount(v)
+	return _u
+}
+
 // SetAttachmentsIncluded sets the "attachments_included" field.
 func (_u *NocoDBSnapshotUpdate) SetAttachmentsIncluded(v bool) *NocoDBSnapshotUpdate {
 	_u.mutation.SetAttachmentsIncluded(v)
@@ -398,6 +419,12 @@ func (_u *NocoDBSnapshotUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	if value, ok := _u.mutation.AddedViewCount(); ok {
 		_spec.AddField(nocodbsnapshot.FieldViewCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.HookCount(); ok {
+		_spec.SetField(nocodbsnapshot.FieldHookCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedHookCount(); ok {
+		_spec.AddField(nocodbsnapshot.FieldHookCount, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.AttachmentsIncluded(); ok {
 		_spec.SetField(nocodbsnapshot.FieldAttachmentsIncluded, field.TypeBool, value)
@@ -614,6 +641,27 @@ func (_u *NocoDBSnapshotUpdateOne) SetNillableViewCount(v *int) *NocoDBSnapshotU
 // AddViewCount adds value to the "view_count" field.
 func (_u *NocoDBSnapshotUpdateOne) AddViewCount(v int) *NocoDBSnapshotUpdateOne {
 	_u.mutation.AddViewCount(v)
+	return _u
+}
+
+// SetHookCount sets the "hook_count" field.
+func (_u *NocoDBSnapshotUpdateOne) SetHookCount(v int) *NocoDBSnapshotUpdateOne {
+	_u.mutation.ResetHookCount()
+	_u.mutation.SetHookCount(v)
+	return _u
+}
+
+// SetNillableHookCount sets the "hook_count" field if the given value is not nil.
+func (_u *NocoDBSnapshotUpdateOne) SetNillableHookCount(v *int) *NocoDBSnapshotUpdateOne {
+	if v != nil {
+		_u.SetHookCount(*v)
+	}
+	return _u
+}
+
+// AddHookCount adds value to the "hook_count" field.
+func (_u *NocoDBSnapshotUpdateOne) AddHookCount(v int) *NocoDBSnapshotUpdateOne {
+	_u.mutation.AddHookCount(v)
 	return _u
 }
 
@@ -861,6 +909,12 @@ func (_u *NocoDBSnapshotUpdateOne) sqlSave(ctx context.Context) (_node *NocoDBSn
 	}
 	if value, ok := _u.mutation.AddedViewCount(); ok {
 		_spec.AddField(nocodbsnapshot.FieldViewCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.HookCount(); ok {
+		_spec.SetField(nocodbsnapshot.FieldHookCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedHookCount(); ok {
+		_spec.AddField(nocodbsnapshot.FieldHookCount, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.AttachmentsIncluded(); ok {
 		_spec.SetField(nocodbsnapshot.FieldAttachmentsIncluded, field.TypeBool, value)

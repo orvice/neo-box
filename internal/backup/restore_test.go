@@ -52,6 +52,7 @@ func (h *harness) waitRestore(t *testing.T, id string) *repo.Restore {
 
 func TestRestoreSucceeds(t *testing.T) {
 	h := newHarness(t)
+	h.api.hooks = true
 	snap := h.snapshot(t)
 	target := h.target()
 
@@ -64,8 +65,11 @@ func TestRestoreSucceeds(t *testing.T) {
 	}
 	done := h.waitRestore(t, r.ID)
 	if done.Status != repo.RestoreSucceeded || done.Error != "" || done.TargetBaseID != "pR" ||
-		done.TableCount != 1 || done.RecordCount != 1 || done.StartedAt.IsZero() || done.FinishedAt.IsZero() {
+		done.TableCount != 1 || done.RecordCount != 1 || done.HookCount != 1 || done.StartedAt.IsZero() || done.FinishedAt.IsZero() {
 		t.Fatalf("done = %+v", done)
+	}
+	if len(done.Warnings) != 1 || done.Warnings[0].Code != "hooks_disabled" || done.Warnings[0].Count != 1 {
+		t.Fatalf("warnings = %+v", done.Warnings)
 	}
 	if got := h.conns.recorded("c2"); len(got) != 1 || got[0] != nil {
 		t.Fatalf("target health recorded %v, want [nil]", got)
