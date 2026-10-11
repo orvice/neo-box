@@ -115,7 +115,7 @@ can't be deleted while a Restore of it is pending or running.
   token may hold only some permissions; whatever it lacks shows as missing
   where it is needed, never as an empty account. A token Cloudflare no longer
   accepts marks the Connection error.
-- **Visible resources** — the Zones, Workers and Pages projects the token can
+- **Visible resources** — the Zones, Workers, Pages projects and Tunnels the token can
   see in the account: not necessarily all the account holds. They are read
   from Cloudflare when a page opens or is refreshed, never stored or synced.
 - **Zone** — a domain on Cloudflare, the way into its DNS records. Only Zones
@@ -145,6 +145,24 @@ can't be deleted while a Restore of it is pending or running.
   pattern, and a custom domain that isn't active may not answer: neither is
   opened as a URL. Addresses whose source can't be read are reported as
   incomplete.
+- **Tunnel** — a cloudflared Tunnel of the Connection's account, read live
+  with its status (inactive, degraded, healthy, down) and connectors. A
+  Tunnel is *managed remotely* when Cloudflare holds its ingress (created
+  here or in the dashboard) and *local* when cloudflared reads a config
+  file; only the first can have its hostnames changed here. Neo Box creates
+  and deletes Tunnels, cleans up their stale connections, and shows the
+  token that runs one without storing it. Deleting a Tunnel leaves DNS
+  records that point at it.
+- **Public hostname** — a route of a Tunnel's ingress: hostname, optional
+  path (a regular expression), and the service requests go to. Routes sit
+  before the catch-all, which Cloudflare requires last; a change replaces
+  the whole config, so Neo Box reads it first, changes only the route, and
+  keeps everything else (origin settings, other keys), one change at a
+  time per Tunnel. Adding one can create the hostname's proxied CNAME to
+  `<tunnel id>.cfargotunnel.com`; deleting one can delete that CNAME. A
+  record that is anything else is never replaced or deleted, and a DNS
+  problem never undoes the route: it is reported next to it. Route changes
+  are not logged; the DNS records they create are DNS operations.
 
 ### Notifications
 

@@ -63,6 +63,33 @@ const (
 	// CloudflareServiceListCloudflarePagesProjectsProcedure is the fully-qualified name of the
 	// CloudflareService's ListCloudflarePagesProjects RPC.
 	CloudflareServiceListCloudflarePagesProjectsProcedure = "/neobox.v1.CloudflareService/ListCloudflarePagesProjects"
+	// CloudflareServiceListCloudflareTunnelsProcedure is the fully-qualified name of the
+	// CloudflareService's ListCloudflareTunnels RPC.
+	CloudflareServiceListCloudflareTunnelsProcedure = "/neobox.v1.CloudflareService/ListCloudflareTunnels"
+	// CloudflareServiceGetCloudflareTunnelProcedure is the fully-qualified name of the
+	// CloudflareService's GetCloudflareTunnel RPC.
+	CloudflareServiceGetCloudflareTunnelProcedure = "/neobox.v1.CloudflareService/GetCloudflareTunnel"
+	// CloudflareServiceCreateCloudflareTunnelProcedure is the fully-qualified name of the
+	// CloudflareService's CreateCloudflareTunnel RPC.
+	CloudflareServiceCreateCloudflareTunnelProcedure = "/neobox.v1.CloudflareService/CreateCloudflareTunnel"
+	// CloudflareServiceDeleteCloudflareTunnelProcedure is the fully-qualified name of the
+	// CloudflareService's DeleteCloudflareTunnel RPC.
+	CloudflareServiceDeleteCloudflareTunnelProcedure = "/neobox.v1.CloudflareService/DeleteCloudflareTunnel"
+	// CloudflareServiceGetCloudflareTunnelTokenProcedure is the fully-qualified name of the
+	// CloudflareService's GetCloudflareTunnelToken RPC.
+	CloudflareServiceGetCloudflareTunnelTokenProcedure = "/neobox.v1.CloudflareService/GetCloudflareTunnelToken"
+	// CloudflareServiceCleanupCloudflareTunnelConnectionsProcedure is the fully-qualified name of the
+	// CloudflareService's CleanupCloudflareTunnelConnections RPC.
+	CloudflareServiceCleanupCloudflareTunnelConnectionsProcedure = "/neobox.v1.CloudflareService/CleanupCloudflareTunnelConnections"
+	// CloudflareServiceAddCloudflareTunnelHostnameProcedure is the fully-qualified name of the
+	// CloudflareService's AddCloudflareTunnelHostname RPC.
+	CloudflareServiceAddCloudflareTunnelHostnameProcedure = "/neobox.v1.CloudflareService/AddCloudflareTunnelHostname"
+	// CloudflareServiceUpdateCloudflareTunnelHostnameProcedure is the fully-qualified name of the
+	// CloudflareService's UpdateCloudflareTunnelHostname RPC.
+	CloudflareServiceUpdateCloudflareTunnelHostnameProcedure = "/neobox.v1.CloudflareService/UpdateCloudflareTunnelHostname"
+	// CloudflareServiceDeleteCloudflareTunnelHostnameProcedure is the fully-qualified name of the
+	// CloudflareService's DeleteCloudflareTunnelHostname RPC.
+	CloudflareServiceDeleteCloudflareTunnelHostnameProcedure = "/neobox.v1.CloudflareService/DeleteCloudflareTunnelHostname"
 )
 
 // CloudflareServiceClient is a client for the neobox.v1.CloudflareService service.
@@ -86,6 +113,32 @@ type CloudflareServiceClient interface {
 	ListCloudflareDNSOperations(context.Context, *connect.Request[v1.ListCloudflareDNSOperationsRequest]) (*connect.Response[v1.ListCloudflareDNSOperationsResponse], error)
 	ListCloudflareWorkers(context.Context, *connect.Request[v1.ListCloudflareWorkersRequest]) (*connect.Response[v1.ListCloudflareWorkersResponse], error)
 	ListCloudflarePagesProjects(context.Context, *connect.Request[v1.ListCloudflarePagesProjectsRequest]) (*connect.Response[v1.ListCloudflarePagesProjectsResponse], error)
+	// ListCloudflareTunnels pages through the Account's cloudflared Tunnels,
+	// optionally those whose name contains query.
+	ListCloudflareTunnels(context.Context, *connect.Request[v1.ListCloudflareTunnelsRequest]) (*connect.Response[v1.ListCloudflareTunnelsResponse], error)
+	// GetCloudflareTunnel reads a Tunnel with its connectors and public
+	// hostnames. A part that could not be read is reported in issues.
+	GetCloudflareTunnel(context.Context, *connect.Request[v1.GetCloudflareTunnelRequest]) (*connect.Response[v1.GetCloudflareTunnelResponse], error)
+	// CreateCloudflareTunnel creates a remotely managed Tunnel, whose
+	// hostnames are edited here and whose cloudflared runs with a token.
+	CreateCloudflareTunnel(context.Context, *connect.Request[v1.CreateCloudflareTunnelRequest]) (*connect.Response[v1.CreateCloudflareTunnelResponse], error)
+	// DeleteCloudflareTunnel deletes a Tunnel. Cloudflare refuses while
+	// cloudflared is connected. DNS records pointing at it are left alone.
+	DeleteCloudflareTunnel(context.Context, *connect.Request[v1.DeleteCloudflareTunnelRequest]) (*connect.Response[v1.DeleteCloudflareTunnelResponse], error)
+	// GetCloudflareTunnelToken returns the credential cloudflared runs the
+	// Tunnel with. It is never stored or logged by Neo Box.
+	GetCloudflareTunnelToken(context.Context, *connect.Request[v1.GetCloudflareTunnelTokenRequest]) (*connect.Response[v1.GetCloudflareTunnelTokenResponse], error)
+	// CleanupCloudflareTunnelConnections closes a Tunnel's stale connections.
+	CleanupCloudflareTunnelConnections(context.Context, *connect.Request[v1.CleanupCloudflareTunnelConnectionsRequest]) (*connect.Response[v1.CleanupCloudflareTunnelConnectionsResponse], error)
+	// AddCloudflareTunnelHostname routes a public hostname to a service of a
+	// remotely managed Tunnel, and can create its DNS record.
+	AddCloudflareTunnelHostname(context.Context, *connect.Request[v1.AddCloudflareTunnelHostnameRequest]) (*connect.Response[v1.AddCloudflareTunnelHostnameResponse], error)
+	// UpdateCloudflareTunnelHostname changes the path and service of a route;
+	// its other settings are kept.
+	UpdateCloudflareTunnelHostname(context.Context, *connect.Request[v1.UpdateCloudflareTunnelHostnameRequest]) (*connect.Response[v1.UpdateCloudflareTunnelHostnameResponse], error)
+	// DeleteCloudflareTunnelHostname removes a route, and can delete its DNS
+	// record when that is a CNAME to this Tunnel.
+	DeleteCloudflareTunnelHostname(context.Context, *connect.Request[v1.DeleteCloudflareTunnelHostnameRequest]) (*connect.Response[v1.DeleteCloudflareTunnelHostnameResponse], error)
 }
 
 // NewCloudflareServiceClient constructs a client for the neobox.v1.CloudflareService service. By
@@ -159,21 +212,84 @@ func NewCloudflareServiceClient(httpClient connect.HTTPClient, baseURL string, o
 			connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflarePagesProjects")),
 			connect.WithClientOptions(opts...),
 		),
+		listCloudflareTunnels: connect.NewClient[v1.ListCloudflareTunnelsRequest, v1.ListCloudflareTunnelsResponse](
+			httpClient,
+			baseURL+CloudflareServiceListCloudflareTunnelsProcedure,
+			connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareTunnels")),
+			connect.WithClientOptions(opts...),
+		),
+		getCloudflareTunnel: connect.NewClient[v1.GetCloudflareTunnelRequest, v1.GetCloudflareTunnelResponse](
+			httpClient,
+			baseURL+CloudflareServiceGetCloudflareTunnelProcedure,
+			connect.WithSchema(cloudflareServiceMethods.ByName("GetCloudflareTunnel")),
+			connect.WithClientOptions(opts...),
+		),
+		createCloudflareTunnel: connect.NewClient[v1.CreateCloudflareTunnelRequest, v1.CreateCloudflareTunnelResponse](
+			httpClient,
+			baseURL+CloudflareServiceCreateCloudflareTunnelProcedure,
+			connect.WithSchema(cloudflareServiceMethods.ByName("CreateCloudflareTunnel")),
+			connect.WithClientOptions(opts...),
+		),
+		deleteCloudflareTunnel: connect.NewClient[v1.DeleteCloudflareTunnelRequest, v1.DeleteCloudflareTunnelResponse](
+			httpClient,
+			baseURL+CloudflareServiceDeleteCloudflareTunnelProcedure,
+			connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareTunnel")),
+			connect.WithClientOptions(opts...),
+		),
+		getCloudflareTunnelToken: connect.NewClient[v1.GetCloudflareTunnelTokenRequest, v1.GetCloudflareTunnelTokenResponse](
+			httpClient,
+			baseURL+CloudflareServiceGetCloudflareTunnelTokenProcedure,
+			connect.WithSchema(cloudflareServiceMethods.ByName("GetCloudflareTunnelToken")),
+			connect.WithClientOptions(opts...),
+		),
+		cleanupCloudflareTunnelConnections: connect.NewClient[v1.CleanupCloudflareTunnelConnectionsRequest, v1.CleanupCloudflareTunnelConnectionsResponse](
+			httpClient,
+			baseURL+CloudflareServiceCleanupCloudflareTunnelConnectionsProcedure,
+			connect.WithSchema(cloudflareServiceMethods.ByName("CleanupCloudflareTunnelConnections")),
+			connect.WithClientOptions(opts...),
+		),
+		addCloudflareTunnelHostname: connect.NewClient[v1.AddCloudflareTunnelHostnameRequest, v1.AddCloudflareTunnelHostnameResponse](
+			httpClient,
+			baseURL+CloudflareServiceAddCloudflareTunnelHostnameProcedure,
+			connect.WithSchema(cloudflareServiceMethods.ByName("AddCloudflareTunnelHostname")),
+			connect.WithClientOptions(opts...),
+		),
+		updateCloudflareTunnelHostname: connect.NewClient[v1.UpdateCloudflareTunnelHostnameRequest, v1.UpdateCloudflareTunnelHostnameResponse](
+			httpClient,
+			baseURL+CloudflareServiceUpdateCloudflareTunnelHostnameProcedure,
+			connect.WithSchema(cloudflareServiceMethods.ByName("UpdateCloudflareTunnelHostname")),
+			connect.WithClientOptions(opts...),
+		),
+		deleteCloudflareTunnelHostname: connect.NewClient[v1.DeleteCloudflareTunnelHostnameRequest, v1.DeleteCloudflareTunnelHostnameResponse](
+			httpClient,
+			baseURL+CloudflareServiceDeleteCloudflareTunnelHostnameProcedure,
+			connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareTunnelHostname")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // cloudflareServiceClient implements CloudflareServiceClient.
 type cloudflareServiceClient struct {
-	listCloudflareZones           *connect.Client[v1.ListCloudflareZonesRequest, v1.ListCloudflareZonesResponse]
-	getCloudflareZone             *connect.Client[v1.GetCloudflareZoneRequest, v1.GetCloudflareZoneResponse]
-	listCloudflareDNSRecords      *connect.Client[v1.ListCloudflareDNSRecordsRequest, v1.ListCloudflareDNSRecordsResponse]
-	createCloudflareDNSRecord     *connect.Client[v1.CreateCloudflareDNSRecordRequest, v1.CreateCloudflareDNSRecordResponse]
-	updateCloudflareDNSRecord     *connect.Client[v1.UpdateCloudflareDNSRecordRequest, v1.UpdateCloudflareDNSRecordResponse]
-	setCloudflareDNSRecordProxied *connect.Client[v1.SetCloudflareDNSRecordProxiedRequest, v1.SetCloudflareDNSRecordProxiedResponse]
-	deleteCloudflareDNSRecord     *connect.Client[v1.DeleteCloudflareDNSRecordRequest, v1.DeleteCloudflareDNSRecordResponse]
-	listCloudflareDNSOperations   *connect.Client[v1.ListCloudflareDNSOperationsRequest, v1.ListCloudflareDNSOperationsResponse]
-	listCloudflareWorkers         *connect.Client[v1.ListCloudflareWorkersRequest, v1.ListCloudflareWorkersResponse]
-	listCloudflarePagesProjects   *connect.Client[v1.ListCloudflarePagesProjectsRequest, v1.ListCloudflarePagesProjectsResponse]
+	listCloudflareZones                *connect.Client[v1.ListCloudflareZonesRequest, v1.ListCloudflareZonesResponse]
+	getCloudflareZone                  *connect.Client[v1.GetCloudflareZoneRequest, v1.GetCloudflareZoneResponse]
+	listCloudflareDNSRecords           *connect.Client[v1.ListCloudflareDNSRecordsRequest, v1.ListCloudflareDNSRecordsResponse]
+	createCloudflareDNSRecord          *connect.Client[v1.CreateCloudflareDNSRecordRequest, v1.CreateCloudflareDNSRecordResponse]
+	updateCloudflareDNSRecord          *connect.Client[v1.UpdateCloudflareDNSRecordRequest, v1.UpdateCloudflareDNSRecordResponse]
+	setCloudflareDNSRecordProxied      *connect.Client[v1.SetCloudflareDNSRecordProxiedRequest, v1.SetCloudflareDNSRecordProxiedResponse]
+	deleteCloudflareDNSRecord          *connect.Client[v1.DeleteCloudflareDNSRecordRequest, v1.DeleteCloudflareDNSRecordResponse]
+	listCloudflareDNSOperations        *connect.Client[v1.ListCloudflareDNSOperationsRequest, v1.ListCloudflareDNSOperationsResponse]
+	listCloudflareWorkers              *connect.Client[v1.ListCloudflareWorkersRequest, v1.ListCloudflareWorkersResponse]
+	listCloudflarePagesProjects        *connect.Client[v1.ListCloudflarePagesProjectsRequest, v1.ListCloudflarePagesProjectsResponse]
+	listCloudflareTunnels              *connect.Client[v1.ListCloudflareTunnelsRequest, v1.ListCloudflareTunnelsResponse]
+	getCloudflareTunnel                *connect.Client[v1.GetCloudflareTunnelRequest, v1.GetCloudflareTunnelResponse]
+	createCloudflareTunnel             *connect.Client[v1.CreateCloudflareTunnelRequest, v1.CreateCloudflareTunnelResponse]
+	deleteCloudflareTunnel             *connect.Client[v1.DeleteCloudflareTunnelRequest, v1.DeleteCloudflareTunnelResponse]
+	getCloudflareTunnelToken           *connect.Client[v1.GetCloudflareTunnelTokenRequest, v1.GetCloudflareTunnelTokenResponse]
+	cleanupCloudflareTunnelConnections *connect.Client[v1.CleanupCloudflareTunnelConnectionsRequest, v1.CleanupCloudflareTunnelConnectionsResponse]
+	addCloudflareTunnelHostname        *connect.Client[v1.AddCloudflareTunnelHostnameRequest, v1.AddCloudflareTunnelHostnameResponse]
+	updateCloudflareTunnelHostname     *connect.Client[v1.UpdateCloudflareTunnelHostnameRequest, v1.UpdateCloudflareTunnelHostnameResponse]
+	deleteCloudflareTunnelHostname     *connect.Client[v1.DeleteCloudflareTunnelHostnameRequest, v1.DeleteCloudflareTunnelHostnameResponse]
 }
 
 // ListCloudflareZones calls neobox.v1.CloudflareService.ListCloudflareZones.
@@ -226,6 +342,52 @@ func (c *cloudflareServiceClient) ListCloudflarePagesProjects(ctx context.Contex
 	return c.listCloudflarePagesProjects.CallUnary(ctx, req)
 }
 
+// ListCloudflareTunnels calls neobox.v1.CloudflareService.ListCloudflareTunnels.
+func (c *cloudflareServiceClient) ListCloudflareTunnels(ctx context.Context, req *connect.Request[v1.ListCloudflareTunnelsRequest]) (*connect.Response[v1.ListCloudflareTunnelsResponse], error) {
+	return c.listCloudflareTunnels.CallUnary(ctx, req)
+}
+
+// GetCloudflareTunnel calls neobox.v1.CloudflareService.GetCloudflareTunnel.
+func (c *cloudflareServiceClient) GetCloudflareTunnel(ctx context.Context, req *connect.Request[v1.GetCloudflareTunnelRequest]) (*connect.Response[v1.GetCloudflareTunnelResponse], error) {
+	return c.getCloudflareTunnel.CallUnary(ctx, req)
+}
+
+// CreateCloudflareTunnel calls neobox.v1.CloudflareService.CreateCloudflareTunnel.
+func (c *cloudflareServiceClient) CreateCloudflareTunnel(ctx context.Context, req *connect.Request[v1.CreateCloudflareTunnelRequest]) (*connect.Response[v1.CreateCloudflareTunnelResponse], error) {
+	return c.createCloudflareTunnel.CallUnary(ctx, req)
+}
+
+// DeleteCloudflareTunnel calls neobox.v1.CloudflareService.DeleteCloudflareTunnel.
+func (c *cloudflareServiceClient) DeleteCloudflareTunnel(ctx context.Context, req *connect.Request[v1.DeleteCloudflareTunnelRequest]) (*connect.Response[v1.DeleteCloudflareTunnelResponse], error) {
+	return c.deleteCloudflareTunnel.CallUnary(ctx, req)
+}
+
+// GetCloudflareTunnelToken calls neobox.v1.CloudflareService.GetCloudflareTunnelToken.
+func (c *cloudflareServiceClient) GetCloudflareTunnelToken(ctx context.Context, req *connect.Request[v1.GetCloudflareTunnelTokenRequest]) (*connect.Response[v1.GetCloudflareTunnelTokenResponse], error) {
+	return c.getCloudflareTunnelToken.CallUnary(ctx, req)
+}
+
+// CleanupCloudflareTunnelConnections calls
+// neobox.v1.CloudflareService.CleanupCloudflareTunnelConnections.
+func (c *cloudflareServiceClient) CleanupCloudflareTunnelConnections(ctx context.Context, req *connect.Request[v1.CleanupCloudflareTunnelConnectionsRequest]) (*connect.Response[v1.CleanupCloudflareTunnelConnectionsResponse], error) {
+	return c.cleanupCloudflareTunnelConnections.CallUnary(ctx, req)
+}
+
+// AddCloudflareTunnelHostname calls neobox.v1.CloudflareService.AddCloudflareTunnelHostname.
+func (c *cloudflareServiceClient) AddCloudflareTunnelHostname(ctx context.Context, req *connect.Request[v1.AddCloudflareTunnelHostnameRequest]) (*connect.Response[v1.AddCloudflareTunnelHostnameResponse], error) {
+	return c.addCloudflareTunnelHostname.CallUnary(ctx, req)
+}
+
+// UpdateCloudflareTunnelHostname calls neobox.v1.CloudflareService.UpdateCloudflareTunnelHostname.
+func (c *cloudflareServiceClient) UpdateCloudflareTunnelHostname(ctx context.Context, req *connect.Request[v1.UpdateCloudflareTunnelHostnameRequest]) (*connect.Response[v1.UpdateCloudflareTunnelHostnameResponse], error) {
+	return c.updateCloudflareTunnelHostname.CallUnary(ctx, req)
+}
+
+// DeleteCloudflareTunnelHostname calls neobox.v1.CloudflareService.DeleteCloudflareTunnelHostname.
+func (c *cloudflareServiceClient) DeleteCloudflareTunnelHostname(ctx context.Context, req *connect.Request[v1.DeleteCloudflareTunnelHostnameRequest]) (*connect.Response[v1.DeleteCloudflareTunnelHostnameResponse], error) {
+	return c.deleteCloudflareTunnelHostname.CallUnary(ctx, req)
+}
+
 // CloudflareServiceHandler is an implementation of the neobox.v1.CloudflareService service.
 type CloudflareServiceHandler interface {
 	// ListCloudflareZones pages through the Account's Zones, optionally those
@@ -247,6 +409,32 @@ type CloudflareServiceHandler interface {
 	ListCloudflareDNSOperations(context.Context, *connect.Request[v1.ListCloudflareDNSOperationsRequest]) (*connect.Response[v1.ListCloudflareDNSOperationsResponse], error)
 	ListCloudflareWorkers(context.Context, *connect.Request[v1.ListCloudflareWorkersRequest]) (*connect.Response[v1.ListCloudflareWorkersResponse], error)
 	ListCloudflarePagesProjects(context.Context, *connect.Request[v1.ListCloudflarePagesProjectsRequest]) (*connect.Response[v1.ListCloudflarePagesProjectsResponse], error)
+	// ListCloudflareTunnels pages through the Account's cloudflared Tunnels,
+	// optionally those whose name contains query.
+	ListCloudflareTunnels(context.Context, *connect.Request[v1.ListCloudflareTunnelsRequest]) (*connect.Response[v1.ListCloudflareTunnelsResponse], error)
+	// GetCloudflareTunnel reads a Tunnel with its connectors and public
+	// hostnames. A part that could not be read is reported in issues.
+	GetCloudflareTunnel(context.Context, *connect.Request[v1.GetCloudflareTunnelRequest]) (*connect.Response[v1.GetCloudflareTunnelResponse], error)
+	// CreateCloudflareTunnel creates a remotely managed Tunnel, whose
+	// hostnames are edited here and whose cloudflared runs with a token.
+	CreateCloudflareTunnel(context.Context, *connect.Request[v1.CreateCloudflareTunnelRequest]) (*connect.Response[v1.CreateCloudflareTunnelResponse], error)
+	// DeleteCloudflareTunnel deletes a Tunnel. Cloudflare refuses while
+	// cloudflared is connected. DNS records pointing at it are left alone.
+	DeleteCloudflareTunnel(context.Context, *connect.Request[v1.DeleteCloudflareTunnelRequest]) (*connect.Response[v1.DeleteCloudflareTunnelResponse], error)
+	// GetCloudflareTunnelToken returns the credential cloudflared runs the
+	// Tunnel with. It is never stored or logged by Neo Box.
+	GetCloudflareTunnelToken(context.Context, *connect.Request[v1.GetCloudflareTunnelTokenRequest]) (*connect.Response[v1.GetCloudflareTunnelTokenResponse], error)
+	// CleanupCloudflareTunnelConnections closes a Tunnel's stale connections.
+	CleanupCloudflareTunnelConnections(context.Context, *connect.Request[v1.CleanupCloudflareTunnelConnectionsRequest]) (*connect.Response[v1.CleanupCloudflareTunnelConnectionsResponse], error)
+	// AddCloudflareTunnelHostname routes a public hostname to a service of a
+	// remotely managed Tunnel, and can create its DNS record.
+	AddCloudflareTunnelHostname(context.Context, *connect.Request[v1.AddCloudflareTunnelHostnameRequest]) (*connect.Response[v1.AddCloudflareTunnelHostnameResponse], error)
+	// UpdateCloudflareTunnelHostname changes the path and service of a route;
+	// its other settings are kept.
+	UpdateCloudflareTunnelHostname(context.Context, *connect.Request[v1.UpdateCloudflareTunnelHostnameRequest]) (*connect.Response[v1.UpdateCloudflareTunnelHostnameResponse], error)
+	// DeleteCloudflareTunnelHostname removes a route, and can delete its DNS
+	// record when that is a CNAME to this Tunnel.
+	DeleteCloudflareTunnelHostname(context.Context, *connect.Request[v1.DeleteCloudflareTunnelHostnameRequest]) (*connect.Response[v1.DeleteCloudflareTunnelHostnameResponse], error)
 }
 
 // NewCloudflareServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -316,6 +504,60 @@ func NewCloudflareServiceHandler(svc CloudflareServiceHandler, opts ...connect.H
 		connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflarePagesProjects")),
 		connect.WithHandlerOptions(opts...),
 	)
+	cloudflareServiceListCloudflareTunnelsHandler := connect.NewUnaryHandler(
+		CloudflareServiceListCloudflareTunnelsProcedure,
+		svc.ListCloudflareTunnels,
+		connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareTunnels")),
+		connect.WithHandlerOptions(opts...),
+	)
+	cloudflareServiceGetCloudflareTunnelHandler := connect.NewUnaryHandler(
+		CloudflareServiceGetCloudflareTunnelProcedure,
+		svc.GetCloudflareTunnel,
+		connect.WithSchema(cloudflareServiceMethods.ByName("GetCloudflareTunnel")),
+		connect.WithHandlerOptions(opts...),
+	)
+	cloudflareServiceCreateCloudflareTunnelHandler := connect.NewUnaryHandler(
+		CloudflareServiceCreateCloudflareTunnelProcedure,
+		svc.CreateCloudflareTunnel,
+		connect.WithSchema(cloudflareServiceMethods.ByName("CreateCloudflareTunnel")),
+		connect.WithHandlerOptions(opts...),
+	)
+	cloudflareServiceDeleteCloudflareTunnelHandler := connect.NewUnaryHandler(
+		CloudflareServiceDeleteCloudflareTunnelProcedure,
+		svc.DeleteCloudflareTunnel,
+		connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareTunnel")),
+		connect.WithHandlerOptions(opts...),
+	)
+	cloudflareServiceGetCloudflareTunnelTokenHandler := connect.NewUnaryHandler(
+		CloudflareServiceGetCloudflareTunnelTokenProcedure,
+		svc.GetCloudflareTunnelToken,
+		connect.WithSchema(cloudflareServiceMethods.ByName("GetCloudflareTunnelToken")),
+		connect.WithHandlerOptions(opts...),
+	)
+	cloudflareServiceCleanupCloudflareTunnelConnectionsHandler := connect.NewUnaryHandler(
+		CloudflareServiceCleanupCloudflareTunnelConnectionsProcedure,
+		svc.CleanupCloudflareTunnelConnections,
+		connect.WithSchema(cloudflareServiceMethods.ByName("CleanupCloudflareTunnelConnections")),
+		connect.WithHandlerOptions(opts...),
+	)
+	cloudflareServiceAddCloudflareTunnelHostnameHandler := connect.NewUnaryHandler(
+		CloudflareServiceAddCloudflareTunnelHostnameProcedure,
+		svc.AddCloudflareTunnelHostname,
+		connect.WithSchema(cloudflareServiceMethods.ByName("AddCloudflareTunnelHostname")),
+		connect.WithHandlerOptions(opts...),
+	)
+	cloudflareServiceUpdateCloudflareTunnelHostnameHandler := connect.NewUnaryHandler(
+		CloudflareServiceUpdateCloudflareTunnelHostnameProcedure,
+		svc.UpdateCloudflareTunnelHostname,
+		connect.WithSchema(cloudflareServiceMethods.ByName("UpdateCloudflareTunnelHostname")),
+		connect.WithHandlerOptions(opts...),
+	)
+	cloudflareServiceDeleteCloudflareTunnelHostnameHandler := connect.NewUnaryHandler(
+		CloudflareServiceDeleteCloudflareTunnelHostnameProcedure,
+		svc.DeleteCloudflareTunnelHostname,
+		connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareTunnelHostname")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/neobox.v1.CloudflareService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case CloudflareServiceListCloudflareZonesProcedure:
@@ -338,6 +580,24 @@ func NewCloudflareServiceHandler(svc CloudflareServiceHandler, opts ...connect.H
 			cloudflareServiceListCloudflareWorkersHandler.ServeHTTP(w, r)
 		case CloudflareServiceListCloudflarePagesProjectsProcedure:
 			cloudflareServiceListCloudflarePagesProjectsHandler.ServeHTTP(w, r)
+		case CloudflareServiceListCloudflareTunnelsProcedure:
+			cloudflareServiceListCloudflareTunnelsHandler.ServeHTTP(w, r)
+		case CloudflareServiceGetCloudflareTunnelProcedure:
+			cloudflareServiceGetCloudflareTunnelHandler.ServeHTTP(w, r)
+		case CloudflareServiceCreateCloudflareTunnelProcedure:
+			cloudflareServiceCreateCloudflareTunnelHandler.ServeHTTP(w, r)
+		case CloudflareServiceDeleteCloudflareTunnelProcedure:
+			cloudflareServiceDeleteCloudflareTunnelHandler.ServeHTTP(w, r)
+		case CloudflareServiceGetCloudflareTunnelTokenProcedure:
+			cloudflareServiceGetCloudflareTunnelTokenHandler.ServeHTTP(w, r)
+		case CloudflareServiceCleanupCloudflareTunnelConnectionsProcedure:
+			cloudflareServiceCleanupCloudflareTunnelConnectionsHandler.ServeHTTP(w, r)
+		case CloudflareServiceAddCloudflareTunnelHostnameProcedure:
+			cloudflareServiceAddCloudflareTunnelHostnameHandler.ServeHTTP(w, r)
+		case CloudflareServiceUpdateCloudflareTunnelHostnameProcedure:
+			cloudflareServiceUpdateCloudflareTunnelHostnameHandler.ServeHTTP(w, r)
+		case CloudflareServiceDeleteCloudflareTunnelHostnameProcedure:
+			cloudflareServiceDeleteCloudflareTunnelHostnameHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -385,4 +645,40 @@ func (UnimplementedCloudflareServiceHandler) ListCloudflareWorkers(context.Conte
 
 func (UnimplementedCloudflareServiceHandler) ListCloudflarePagesProjects(context.Context, *connect.Request[v1.ListCloudflarePagesProjectsRequest]) (*connect.Response[v1.ListCloudflarePagesProjectsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.ListCloudflarePagesProjects is not implemented"))
+}
+
+func (UnimplementedCloudflareServiceHandler) ListCloudflareTunnels(context.Context, *connect.Request[v1.ListCloudflareTunnelsRequest]) (*connect.Response[v1.ListCloudflareTunnelsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.ListCloudflareTunnels is not implemented"))
+}
+
+func (UnimplementedCloudflareServiceHandler) GetCloudflareTunnel(context.Context, *connect.Request[v1.GetCloudflareTunnelRequest]) (*connect.Response[v1.GetCloudflareTunnelResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.GetCloudflareTunnel is not implemented"))
+}
+
+func (UnimplementedCloudflareServiceHandler) CreateCloudflareTunnel(context.Context, *connect.Request[v1.CreateCloudflareTunnelRequest]) (*connect.Response[v1.CreateCloudflareTunnelResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.CreateCloudflareTunnel is not implemented"))
+}
+
+func (UnimplementedCloudflareServiceHandler) DeleteCloudflareTunnel(context.Context, *connect.Request[v1.DeleteCloudflareTunnelRequest]) (*connect.Response[v1.DeleteCloudflareTunnelResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.DeleteCloudflareTunnel is not implemented"))
+}
+
+func (UnimplementedCloudflareServiceHandler) GetCloudflareTunnelToken(context.Context, *connect.Request[v1.GetCloudflareTunnelTokenRequest]) (*connect.Response[v1.GetCloudflareTunnelTokenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.GetCloudflareTunnelToken is not implemented"))
+}
+
+func (UnimplementedCloudflareServiceHandler) CleanupCloudflareTunnelConnections(context.Context, *connect.Request[v1.CleanupCloudflareTunnelConnectionsRequest]) (*connect.Response[v1.CleanupCloudflareTunnelConnectionsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.CleanupCloudflareTunnelConnections is not implemented"))
+}
+
+func (UnimplementedCloudflareServiceHandler) AddCloudflareTunnelHostname(context.Context, *connect.Request[v1.AddCloudflareTunnelHostnameRequest]) (*connect.Response[v1.AddCloudflareTunnelHostnameResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.AddCloudflareTunnelHostname is not implemented"))
+}
+
+func (UnimplementedCloudflareServiceHandler) UpdateCloudflareTunnelHostname(context.Context, *connect.Request[v1.UpdateCloudflareTunnelHostnameRequest]) (*connect.Response[v1.UpdateCloudflareTunnelHostnameResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.UpdateCloudflareTunnelHostname is not implemented"))
+}
+
+func (UnimplementedCloudflareServiceHandler) DeleteCloudflareTunnelHostname(context.Context, *connect.Request[v1.DeleteCloudflareTunnelHostnameRequest]) (*connect.Response[v1.DeleteCloudflareTunnelHostnameResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.DeleteCloudflareTunnelHostname is not implemented"))
 }

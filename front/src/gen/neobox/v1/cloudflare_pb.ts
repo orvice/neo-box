@@ -13,7 +13,7 @@ import type { JsonObject, Message } from "@bufbuild/protobuf";
  * Describes the file neobox/v1/cloudflare.proto.
  */
 export const file_neobox_v1_cloudflare: GenFile = /*@__PURE__*/
-  fileDesc("ChpuZW9ib3gvdjEvY2xvdWRmbGFyZS5wcm90bxIJbmVvYm94LnYxIl8KEkNsb3VkZmxhcmVQYWdlSW5mbxIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBRITCgt0b3RhbF9jb3VudBgDIAEoAxITCgt0b3RhbF9wYWdlcxgEIAEoBSKlAQoOQ2xvdWRmbGFyZVpvbmUSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIOCgZzdGF0dXMYAyABKAkSDgoGcGF1c2VkGAQgASgIEgwKBHR5cGUYBSABKAkSFAoMbmFtZV9zZXJ2ZXJzGAYgAygJEjUKCmRuc19hY2Nlc3MYByABKA4yIS5uZW9ib3gudjEuQ2xvdWRmbGFyZVJlY29yZEFjY2VzcyJTChFDbG91ZGZsYXJlU1JWRGF0YRIQCghwcmlvcml0eRgBIAEoBRIOCgZ3ZWlnaHQYAiABKAUSDAoEcG9ydBgDIAEoBRIOCgZ0YXJnZXQYBCABKAkiPgoRQ2xvdWRmbGFyZUNBQURhdGESDQoFZmxhZ3MYASABKAUSCwoDdGFnGAIgASgJEg0KBXZhbHVlGAMgASgJIvkCChNDbG91ZGZsYXJlRE5TUmVjb3JkEgoKAmlkGAEgASgJEgwKBHR5cGUYAiABKAkSDAoEbmFtZRgDIAEoCRIPCgdjb250ZW50GAQgASgJEgsKA3R0bBgFIAEoBRIPCgdwcm94aWVkGAYgASgIEhEKCXByb3hpYWJsZRgHIAEoCBIQCghwcmlvcml0eRgIIAEoBRIpCgNzcnYYCSABKAsyHC5uZW9ib3gudjEuQ2xvdWRmbGFyZVNSVkRhdGESKQoDY2FhGAogASgLMhwubmVvYm94LnYxLkNsb3VkZmxhcmVDQUFEYXRhEg8KB2NvbW1lbnQYCyABKAkSDAoEdGFncxgMIAMoCRIQCghlZGl0YWJsZRgNIAEoCBIuCgpjcmVhdGVkX29uGA4gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIvCgttb2RpZmllZF9vbhgPIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAizQEKGENsb3VkZmxhcmVETlNSZWNvcmRJbnB1dBIMCgR0eXBlGAEgASgJEgwKBG5hbWUYAiABKAkSDwoHY29udGVudBgDIAEoCRILCgN0dGwYBCABKAUSDwoHcHJveGllZBgFIAEoCBIQCghwcmlvcml0eRgGIAEoBRIpCgNzcnYYByABKAsyHC5uZW9ib3gudjEuQ2xvdWRmbGFyZVNSVkRhdGESKQoDY2FhGAggASgLMhwubmVvYm94LnYxLkNsb3VkZmxhcmVDQUFEYXRhIroEChZDbG91ZGZsYXJlRE5TT3BlcmF0aW9uEgoKAmlkGAEgASgJEhUKDWNvbm5lY3Rpb25faWQYAiABKAkSEgoKYWNjb3VudF9pZBgDIAEoCRIPCgd6b25lX2lkGAQgASgJEhEKCXpvbmVfbmFtZRgFIAEoCRIxCgZhY3Rpb24YBiABKA4yIS5uZW9ib3gudjEuQ2xvdWRmbGFyZVJlY29yZEFjdGlvbhIRCglyZWNvcmRfaWQYByABKAkSEwoLcmVjb3JkX3R5cGUYCCABKAkSEwoLcmVjb3JkX25hbWUYCSABKAkSLgoGYmVmb3JlGAogASgLMh4ubmVvYm94LnYxLkNsb3VkZmxhcmVETlNSZWNvcmQSLQoFYWZ0ZXIYCyABKAsyHi5uZW9ib3gudjEuQ2xvdWRmbGFyZUROU1JlY29yZBI0CgZzdGF0dXMYDCABKA4yJC5uZW9ib3gudjEuQ2xvdWRmbGFyZU9wZXJhdGlvblN0YXR1cxINCgVlcnJvchgNIAEoCRIQCghhY3Rvcl9pZBgOIAEoCRISCgphY3Rvcl9uYW1lGA8gASgJEi4KCmNyZWF0ZWRfYXQYECABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi8KC2ZpbmlzaGVkX2F0GBEgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIqCglyZXF1ZXN0ZWQYEiABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0ImAKEUNsb3VkZmxhcmVBZGRyZXNzEgsKA3VybBgBIAEoCRIuCgRraW5kGAIgASgOMiAubmVvYm94LnYxLkNsb3VkZmxhcmVBZGRyZXNzS2luZBIOCgZzdGF0dXMYAyABKAkiVAoWQ2xvdWRmbGFyZUFkZHJlc3NJc3N1ZRIOCgZzb3VyY2UYASABKAkSDwoHbWVzc2FnZRgCIAEoCRIZChFwZXJtaXNzaW9uX2RlbmllZBgDIAEoCCJvChBDbG91ZGZsYXJlV29ya2VyEgwKBG5hbWUYASABKAkSLwoJYWRkcmVzc2VzGAIgAygLMhwubmVvYm94LnYxLkNsb3VkZmxhcmVBZGRyZXNzEhwKFGFkZHJlc3Nlc19pbmNvbXBsZXRlGAMgASgIInUKFkNsb3VkZmxhcmVQYWdlc1Byb2plY3QSDAoEbmFtZRgBIAEoCRIvCglhZGRyZXNzZXMYAiADKAsyHC5uZW9ib3gudjEuQ2xvdWRmbGFyZUFkZHJlc3MSHAoUYWRkcmVzc2VzX2luY29tcGxldGUYAyABKAgibAoaTGlzdENsb3VkZmxhcmVab25lc1JlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQARINCgVxdWVyeRgCIAEoCRIMCgRwYWdlGAMgASgFEhEKCXBhZ2Vfc2l6ZRgEIAEoBSJ5ChtMaXN0Q2xvdWRmbGFyZVpvbmVzUmVzcG9uc2USKAoFem9uZXMYASADKAsyGS5uZW9ib3gudjEuQ2xvdWRmbGFyZVpvbmUSMAoJcGFnZV9pbmZvGAIgASgLMh0ubmVvYm94LnYxLkNsb3VkZmxhcmVQYWdlSW5mbyJUChhHZXRDbG91ZGZsYXJlWm9uZVJlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQARIYCgd6b25lX2lkGAIgASgJQgf6QgRyAhABIkQKGUdldENsb3VkZmxhcmVab25lUmVzcG9uc2USJwoEem9uZRgBIAEoCzIZLm5lb2JveC52MS5DbG91ZGZsYXJlWm9uZSKZAQofTGlzdENsb3VkZmxhcmVETlNSZWNvcmRzUmVxdWVzdBIeCg1jb25uZWN0aW9uX2lkGAEgASgJQgf6QgRyAhABEhgKB3pvbmVfaWQYAiABKAlCB/pCBHICEAESDQoFcXVlcnkYAyABKAkSDAoEdHlwZRgEIAEoCRIMCgRwYWdlGAUgASgFEhEKCXBhZ2Vfc2l6ZRgGIAEoBSKFAQogTGlzdENsb3VkZmxhcmVETlNSZWNvcmRzUmVzcG9uc2USLwoHcmVjb3JkcxgBIAMoCzIeLm5lb2JveC52MS5DbG91ZGZsYXJlRE5TUmVjb3JkEjAKCXBhZ2VfaW5mbxgCIAEoCzIdLm5lb2JveC52MS5DbG91ZGZsYXJlUGFnZUluZm8imwEKIENyZWF0ZUNsb3VkZmxhcmVETlNSZWNvcmRSZXF1ZXN0Eh4KDWNvbm5lY3Rpb25faWQYASABKAlCB/pCBHICEAESGAoHem9uZV9pZBgCIAEoCUIH+kIEcgIQARI9CgZyZWNvcmQYAyABKAsyIy5uZW9ib3gudjEuQ2xvdWRmbGFyZUROU1JlY29yZElucHV0Qgj6QgWKAQIQASKmAQohQ3JlYXRlQ2xvdWRmbGFyZUROU1JlY29yZFJlc3BvbnNlEi4KBnJlY29yZBgBIAEoCzIeLm5lb2JveC52MS5DbG91ZGZsYXJlRE5TUmVjb3JkEjQKCW9wZXJhdGlvbhgCIAEoCzIhLm5lb2JveC52MS5DbG91ZGZsYXJlRE5TT3BlcmF0aW9uEhsKE29wZXJhdGlvbl9sb2dfZXJyb3IYAyABKAkitwEKIFVwZGF0ZUNsb3VkZmxhcmVETlNSZWNvcmRSZXF1ZXN0Eh4KDWNvbm5lY3Rpb25faWQYASABKAlCB/pCBHICEAESGAoHem9uZV9pZBgCIAEoCUIH+kIEcgIQARIaCglyZWNvcmRfaWQYAyABKAlCB/pCBHICEAESPQoGcmVjb3JkGAQgASgLMiMubmVvYm94LnYxLkNsb3VkZmxhcmVETlNSZWNvcmRJbnB1dEII+kIFigECEAEipgEKIVVwZGF0ZUNsb3VkZmxhcmVETlNSZWNvcmRSZXNwb25zZRIuCgZyZWNvcmQYASABKAsyHi5uZW9ib3gudjEuQ2xvdWRmbGFyZUROU1JlY29yZBI0CglvcGVyYXRpb24YAiABKAsyIS5uZW9ib3gudjEuQ2xvdWRmbGFyZUROU09wZXJhdGlvbhIbChNvcGVyYXRpb25fbG9nX2Vycm9yGAMgASgJIo0BCiRTZXRDbG91ZGZsYXJlRE5TUmVjb3JkUHJveGllZFJlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQARIYCgd6b25lX2lkGAIgASgJQgf6QgRyAhABEhoKCXJlY29yZF9pZBgDIAEoCUIH+kIEcgIQARIPCgdwcm94aWVkGAQgASgIIqoBCiVTZXRDbG91ZGZsYXJlRE5TUmVjb3JkUHJveGllZFJlc3BvbnNlEi4KBnJlY29yZBgBIAEoCzIeLm5lb2JveC52MS5DbG91ZGZsYXJlRE5TUmVjb3JkEjQKCW9wZXJhdGlvbhgCIAEoCzIhLm5lb2JveC52MS5DbG91ZGZsYXJlRE5TT3BlcmF0aW9uEhsKE29wZXJhdGlvbl9sb2dfZXJyb3IYAyABKAkieAogRGVsZXRlQ2xvdWRmbGFyZUROU1JlY29yZFJlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQARIYCgd6b25lX2lkGAIgASgJQgf6QgRyAhABEhoKCXJlY29yZF9pZBgDIAEoCUIH+kIEcgIQASJ2CiFEZWxldGVDbG91ZGZsYXJlRE5TUmVjb3JkUmVzcG9uc2USNAoJb3BlcmF0aW9uGAEgASgLMiEubmVvYm94LnYxLkNsb3VkZmxhcmVETlNPcGVyYXRpb24SGwoTb3BlcmF0aW9uX2xvZ19lcnJvchgCIAEoCSJ2CiJMaXN0Q2xvdWRmbGFyZUROU09wZXJhdGlvbnNSZXF1ZXN0Eh4KDWNvbm5lY3Rpb25faWQYASABKAlCB/pCBHICEAESDwoHem9uZV9pZBgCIAEoCRIMCgRwYWdlGAMgASgFEhEKCXBhZ2Vfc2l6ZRgEIAEoBSKOAQojTGlzdENsb3VkZmxhcmVETlNPcGVyYXRpb25zUmVzcG9uc2USNQoKb3BlcmF0aW9ucxgBIAMoCzIhLm5lb2JveC52MS5DbG91ZGZsYXJlRE5TT3BlcmF0aW9uEjAKCXBhZ2VfaW5mbxgCIAEoCzIdLm5lb2JveC52MS5DbG91ZGZsYXJlUGFnZUluZm8ibgocTGlzdENsb3VkZmxhcmVXb3JrZXJzUmVxdWVzdBIeCg1jb25uZWN0aW9uX2lkGAEgASgJQgf6QgRyAhABEg0KBXF1ZXJ5GAIgASgJEgwKBHBhZ2UYAyABKAUSEQoJcGFnZV9zaXplGAQgASgFIroBCh1MaXN0Q2xvdWRmbGFyZVdvcmtlcnNSZXNwb25zZRIsCgd3b3JrZXJzGAEgAygLMhsubmVvYm94LnYxLkNsb3VkZmxhcmVXb3JrZXISMAoJcGFnZV9pbmZvGAIgASgLMh0ubmVvYm94LnYxLkNsb3VkZmxhcmVQYWdlSW5mbxI5Cg5hZGRyZXNzX2lzc3VlcxgDIAMoCzIhLm5lb2JveC52MS5DbG91ZGZsYXJlQWRkcmVzc0lzc3VlInQKIkxpc3RDbG91ZGZsYXJlUGFnZXNQcm9qZWN0c1JlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQARINCgVxdWVyeRgCIAEoCRIMCgRwYWdlGAMgASgFEhEKCXBhZ2Vfc2l6ZRgEIAEoBSLHAQojTGlzdENsb3VkZmxhcmVQYWdlc1Byb2plY3RzUmVzcG9uc2USMwoIcHJvamVjdHMYASADKAsyIS5uZW9ib3gudjEuQ2xvdWRmbGFyZVBhZ2VzUHJvamVjdBIwCglwYWdlX2luZm8YAiABKAsyHS5uZW9ib3gudjEuQ2xvdWRmbGFyZVBhZ2VJbmZvEjkKDmFkZHJlc3NfaXNzdWVzGAMgAygLMiEubmVvYm94LnYxLkNsb3VkZmxhcmVBZGRyZXNzSXNzdWUqiwEKFkNsb3VkZmxhcmVSZWNvcmRBY2Nlc3MSKAokQ0xPVURGTEFSRV9SRUNPUkRfQUNDRVNTX1VOU1BFQ0lGSUVEEAASJAogQ0xPVURGTEFSRV9SRUNPUkRfQUNDRVNTX1VOS05PV04QARIhCh1DTE9VREZMQVJFX1JFQ09SRF9BQ0NFU1NfUkVBRBACKtsBChZDbG91ZGZsYXJlUmVjb3JkQWN0aW9uEigKJENMT1VERkxBUkVfUkVDT1JEX0FDVElPTl9VTlNQRUNJRklFRBAAEiMKH0NMT1VERkxBUkVfUkVDT1JEX0FDVElPTl9DUkVBVEUQARIjCh9DTE9VREZMQVJFX1JFQ09SRF9BQ1RJT05fVVBEQVRFEAISIwofQ0xPVURGTEFSRV9SRUNPUkRfQUNUSU9OX0RFTEVURRADEigKJENMT1VERkxBUkVfUkVDT1JEX0FDVElPTl9TRVRfUFJPWElFRBAEKu0BChlDbG91ZGZsYXJlT3BlcmF0aW9uU3RhdHVzEisKJ0NMT1VERkxBUkVfT1BFUkFUSU9OX1NUQVRVU19VTlNQRUNJRklFRBAAEicKI0NMT1VERkxBUkVfT1BFUkFUSU9OX1NUQVRVU19QRU5ESU5HEAESKQolQ0xPVURGTEFSRV9PUEVSQVRJT05fU1RBVFVTX1NVQ0NFRURFRBACEiYKIkNMT1VERkxBUkVfT1BFUkFUSU9OX1NUQVRVU19GQUlMRUQQAxInCiNDTE9VREZMQVJFX09QRVJBVElPTl9TVEFUVVNfVU5LTk9XThAEKoYCChVDbG91ZGZsYXJlQWRkcmVzc0tpbmQSJwojQ0xPVURGTEFSRV9BRERSRVNTX0tJTkRfVU5TUEVDSUZJRUQQABInCiNDTE9VREZMQVJFX0FERFJFU1NfS0lORF9XT1JLRVJTX0RFVhABEikKJUNMT1VERkxBUkVfQUREUkVTU19LSU5EX0NVU1RPTV9ET01BSU4QAhIhCh1DTE9VREZMQVJFX0FERFJFU1NfS0lORF9ST1VURRADEiUKIUNMT1VERkxBUkVfQUREUkVTU19LSU5EX1BBR0VTX0RFVhAEEiYKIkNMT1VERkxBUkVfQUREUkVTU19LSU5EX1BST0RVQ1RJT04QBTKjCQoRQ2xvdWRmbGFyZVNlcnZpY2USZAoTTGlzdENsb3VkZmxhcmVab25lcxIlLm5lb2JveC52MS5MaXN0Q2xvdWRmbGFyZVpvbmVzUmVxdWVzdBomLm5lb2JveC52MS5MaXN0Q2xvdWRmbGFyZVpvbmVzUmVzcG9uc2USXgoRR2V0Q2xvdWRmbGFyZVpvbmUSIy5uZW9ib3gudjEuR2V0Q2xvdWRmbGFyZVpvbmVSZXF1ZXN0GiQubmVvYm94LnYxLkdldENsb3VkZmxhcmVab25lUmVzcG9uc2UScwoYTGlzdENsb3VkZmxhcmVETlNSZWNvcmRzEioubmVvYm94LnYxLkxpc3RDbG91ZGZsYXJlRE5TUmVjb3Jkc1JlcXVlc3QaKy5uZW9ib3gudjEuTGlzdENsb3VkZmxhcmVETlNSZWNvcmRzUmVzcG9uc2USdgoZQ3JlYXRlQ2xvdWRmbGFyZUROU1JlY29yZBIrLm5lb2JveC52MS5DcmVhdGVDbG91ZGZsYXJlRE5TUmVjb3JkUmVxdWVzdBosLm5lb2JveC52MS5DcmVhdGVDbG91ZGZsYXJlRE5TUmVjb3JkUmVzcG9uc2USdgoZVXBkYXRlQ2xvdWRmbGFyZUROU1JlY29yZBIrLm5lb2JveC52MS5VcGRhdGVDbG91ZGZsYXJlRE5TUmVjb3JkUmVxdWVzdBosLm5lb2JveC52MS5VcGRhdGVDbG91ZGZsYXJlRE5TUmVjb3JkUmVzcG9uc2USggEKHVNldENsb3VkZmxhcmVETlNSZWNvcmRQcm94aWVkEi8ubmVvYm94LnYxLlNldENsb3VkZmxhcmVETlNSZWNvcmRQcm94aWVkUmVxdWVzdBowLm5lb2JveC52MS5TZXRDbG91ZGZsYXJlRE5TUmVjb3JkUHJveGllZFJlc3BvbnNlEnYKGURlbGV0ZUNsb3VkZmxhcmVETlNSZWNvcmQSKy5uZW9ib3gudjEuRGVsZXRlQ2xvdWRmbGFyZUROU1JlY29yZFJlcXVlc3QaLC5uZW9ib3gudjEuRGVsZXRlQ2xvdWRmbGFyZUROU1JlY29yZFJlc3BvbnNlEnwKG0xpc3RDbG91ZGZsYXJlRE5TT3BlcmF0aW9ucxItLm5lb2JveC52MS5MaXN0Q2xvdWRmbGFyZUROU09wZXJhdGlvbnNSZXF1ZXN0Gi4ubmVvYm94LnYxLkxpc3RDbG91ZGZsYXJlRE5TT3BlcmF0aW9uc1Jlc3BvbnNlEmoKFUxpc3RDbG91ZGZsYXJlV29ya2VycxInLm5lb2JveC52MS5MaXN0Q2xvdWRmbGFyZVdvcmtlcnNSZXF1ZXN0GigubmVvYm94LnYxLkxpc3RDbG91ZGZsYXJlV29ya2Vyc1Jlc3BvbnNlEnwKG0xpc3RDbG91ZGZsYXJlUGFnZXNQcm9qZWN0cxItLm5lb2JveC52MS5MaXN0Q2xvdWRmbGFyZVBhZ2VzUHJvamVjdHNSZXF1ZXN0Gi4ubmVvYm94LnYxLkxpc3RDbG91ZGZsYXJlUGFnZXNQcm9qZWN0c1Jlc3BvbnNlQjVaM2dvLm9yeC5tZS9hcHBzL25lby1ib3gvcGtnL3Byb3RvL25lb2JveC92MTtuZW9ib3h2MWIGcHJvdG8z", [file_google_protobuf_struct, file_google_protobuf_timestamp, file_validate_validate]);
+  fileDesc("ChpuZW9ib3gvdjEvY2xvdWRmbGFyZS5wcm90bxIJbmVvYm94LnYxIl8KEkNsb3VkZmxhcmVQYWdlSW5mbxIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBRITCgt0b3RhbF9jb3VudBgDIAEoAxITCgt0b3RhbF9wYWdlcxgEIAEoBSKlAQoOQ2xvdWRmbGFyZVpvbmUSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIOCgZzdGF0dXMYAyABKAkSDgoGcGF1c2VkGAQgASgIEgwKBHR5cGUYBSABKAkSFAoMbmFtZV9zZXJ2ZXJzGAYgAygJEjUKCmRuc19hY2Nlc3MYByABKA4yIS5uZW9ib3gudjEuQ2xvdWRmbGFyZVJlY29yZEFjY2VzcyJTChFDbG91ZGZsYXJlU1JWRGF0YRIQCghwcmlvcml0eRgBIAEoBRIOCgZ3ZWlnaHQYAiABKAUSDAoEcG9ydBgDIAEoBRIOCgZ0YXJnZXQYBCABKAkiPgoRQ2xvdWRmbGFyZUNBQURhdGESDQoFZmxhZ3MYASABKAUSCwoDdGFnGAIgASgJEg0KBXZhbHVlGAMgASgJIvkCChNDbG91ZGZsYXJlRE5TUmVjb3JkEgoKAmlkGAEgASgJEgwKBHR5cGUYAiABKAkSDAoEbmFtZRgDIAEoCRIPCgdjb250ZW50GAQgASgJEgsKA3R0bBgFIAEoBRIPCgdwcm94aWVkGAYgASgIEhEKCXByb3hpYWJsZRgHIAEoCBIQCghwcmlvcml0eRgIIAEoBRIpCgNzcnYYCSABKAsyHC5uZW9ib3gudjEuQ2xvdWRmbGFyZVNSVkRhdGESKQoDY2FhGAogASgLMhwubmVvYm94LnYxLkNsb3VkZmxhcmVDQUFEYXRhEg8KB2NvbW1lbnQYCyABKAkSDAoEdGFncxgMIAMoCRIQCghlZGl0YWJsZRgNIAEoCBIuCgpjcmVhdGVkX29uGA4gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIvCgttb2RpZmllZF9vbhgPIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAizQEKGENsb3VkZmxhcmVETlNSZWNvcmRJbnB1dBIMCgR0eXBlGAEgASgJEgwKBG5hbWUYAiABKAkSDwoHY29udGVudBgDIAEoCRILCgN0dGwYBCABKAUSDwoHcHJveGllZBgFIAEoCBIQCghwcmlvcml0eRgGIAEoBRIpCgNzcnYYByABKAsyHC5uZW9ib3gudjEuQ2xvdWRmbGFyZVNSVkRhdGESKQoDY2FhGAggASgLMhwubmVvYm94LnYxLkNsb3VkZmxhcmVDQUFEYXRhIroEChZDbG91ZGZsYXJlRE5TT3BlcmF0aW9uEgoKAmlkGAEgASgJEhUKDWNvbm5lY3Rpb25faWQYAiABKAkSEgoKYWNjb3VudF9pZBgDIAEoCRIPCgd6b25lX2lkGAQgASgJEhEKCXpvbmVfbmFtZRgFIAEoCRIxCgZhY3Rpb24YBiABKA4yIS5uZW9ib3gudjEuQ2xvdWRmbGFyZVJlY29yZEFjdGlvbhIRCglyZWNvcmRfaWQYByABKAkSEwoLcmVjb3JkX3R5cGUYCCABKAkSEwoLcmVjb3JkX25hbWUYCSABKAkSLgoGYmVmb3JlGAogASgLMh4ubmVvYm94LnYxLkNsb3VkZmxhcmVETlNSZWNvcmQSLQoFYWZ0ZXIYCyABKAsyHi5uZW9ib3gudjEuQ2xvdWRmbGFyZUROU1JlY29yZBI0CgZzdGF0dXMYDCABKA4yJC5uZW9ib3gudjEuQ2xvdWRmbGFyZU9wZXJhdGlvblN0YXR1cxINCgVlcnJvchgNIAEoCRIQCghhY3Rvcl9pZBgOIAEoCRISCgphY3Rvcl9uYW1lGA8gASgJEi4KCmNyZWF0ZWRfYXQYECABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi8KC2ZpbmlzaGVkX2F0GBEgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIqCglyZXF1ZXN0ZWQYEiABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0ImAKEUNsb3VkZmxhcmVBZGRyZXNzEgsKA3VybBgBIAEoCRIuCgRraW5kGAIgASgOMiAubmVvYm94LnYxLkNsb3VkZmxhcmVBZGRyZXNzS2luZBIOCgZzdGF0dXMYAyABKAkiVAoWQ2xvdWRmbGFyZUFkZHJlc3NJc3N1ZRIOCgZzb3VyY2UYASABKAkSDwoHbWVzc2FnZRgCIAEoCRIZChFwZXJtaXNzaW9uX2RlbmllZBgDIAEoCCJvChBDbG91ZGZsYXJlV29ya2VyEgwKBG5hbWUYASABKAkSLwoJYWRkcmVzc2VzGAIgAygLMhwubmVvYm94LnYxLkNsb3VkZmxhcmVBZGRyZXNzEhwKFGFkZHJlc3Nlc19pbmNvbXBsZXRlGAMgASgIInUKFkNsb3VkZmxhcmVQYWdlc1Byb2plY3QSDAoEbmFtZRgBIAEoCRIvCglhZGRyZXNzZXMYAiADKAsyHC5uZW9ib3gudjEuQ2xvdWRmbGFyZUFkZHJlc3MSHAoUYWRkcmVzc2VzX2luY29tcGxldGUYAyABKAgibAoaTGlzdENsb3VkZmxhcmVab25lc1JlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQARINCgVxdWVyeRgCIAEoCRIMCgRwYWdlGAMgASgFEhEKCXBhZ2Vfc2l6ZRgEIAEoBSJ5ChtMaXN0Q2xvdWRmbGFyZVpvbmVzUmVzcG9uc2USKAoFem9uZXMYASADKAsyGS5uZW9ib3gudjEuQ2xvdWRmbGFyZVpvbmUSMAoJcGFnZV9pbmZvGAIgASgLMh0ubmVvYm94LnYxLkNsb3VkZmxhcmVQYWdlSW5mbyJUChhHZXRDbG91ZGZsYXJlWm9uZVJlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQARIYCgd6b25lX2lkGAIgASgJQgf6QgRyAhABIkQKGUdldENsb3VkZmxhcmVab25lUmVzcG9uc2USJwoEem9uZRgBIAEoCzIZLm5lb2JveC52MS5DbG91ZGZsYXJlWm9uZSKZAQofTGlzdENsb3VkZmxhcmVETlNSZWNvcmRzUmVxdWVzdBIeCg1jb25uZWN0aW9uX2lkGAEgASgJQgf6QgRyAhABEhgKB3pvbmVfaWQYAiABKAlCB/pCBHICEAESDQoFcXVlcnkYAyABKAkSDAoEdHlwZRgEIAEoCRIMCgRwYWdlGAUgASgFEhEKCXBhZ2Vfc2l6ZRgGIAEoBSKFAQogTGlzdENsb3VkZmxhcmVETlNSZWNvcmRzUmVzcG9uc2USLwoHcmVjb3JkcxgBIAMoCzIeLm5lb2JveC52MS5DbG91ZGZsYXJlRE5TUmVjb3JkEjAKCXBhZ2VfaW5mbxgCIAEoCzIdLm5lb2JveC52MS5DbG91ZGZsYXJlUGFnZUluZm8imwEKIENyZWF0ZUNsb3VkZmxhcmVETlNSZWNvcmRSZXF1ZXN0Eh4KDWNvbm5lY3Rpb25faWQYASABKAlCB/pCBHICEAESGAoHem9uZV9pZBgCIAEoCUIH+kIEcgIQARI9CgZyZWNvcmQYAyABKAsyIy5uZW9ib3gudjEuQ2xvdWRmbGFyZUROU1JlY29yZElucHV0Qgj6QgWKAQIQASKmAQohQ3JlYXRlQ2xvdWRmbGFyZUROU1JlY29yZFJlc3BvbnNlEi4KBnJlY29yZBgBIAEoCzIeLm5lb2JveC52MS5DbG91ZGZsYXJlRE5TUmVjb3JkEjQKCW9wZXJhdGlvbhgCIAEoCzIhLm5lb2JveC52MS5DbG91ZGZsYXJlRE5TT3BlcmF0aW9uEhsKE29wZXJhdGlvbl9sb2dfZXJyb3IYAyABKAkitwEKIFVwZGF0ZUNsb3VkZmxhcmVETlNSZWNvcmRSZXF1ZXN0Eh4KDWNvbm5lY3Rpb25faWQYASABKAlCB/pCBHICEAESGAoHem9uZV9pZBgCIAEoCUIH+kIEcgIQARIaCglyZWNvcmRfaWQYAyABKAlCB/pCBHICEAESPQoGcmVjb3JkGAQgASgLMiMubmVvYm94LnYxLkNsb3VkZmxhcmVETlNSZWNvcmRJbnB1dEII+kIFigECEAEipgEKIVVwZGF0ZUNsb3VkZmxhcmVETlNSZWNvcmRSZXNwb25zZRIuCgZyZWNvcmQYASABKAsyHi5uZW9ib3gudjEuQ2xvdWRmbGFyZUROU1JlY29yZBI0CglvcGVyYXRpb24YAiABKAsyIS5uZW9ib3gudjEuQ2xvdWRmbGFyZUROU09wZXJhdGlvbhIbChNvcGVyYXRpb25fbG9nX2Vycm9yGAMgASgJIo0BCiRTZXRDbG91ZGZsYXJlRE5TUmVjb3JkUHJveGllZFJlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQARIYCgd6b25lX2lkGAIgASgJQgf6QgRyAhABEhoKCXJlY29yZF9pZBgDIAEoCUIH+kIEcgIQARIPCgdwcm94aWVkGAQgASgIIqoBCiVTZXRDbG91ZGZsYXJlRE5TUmVjb3JkUHJveGllZFJlc3BvbnNlEi4KBnJlY29yZBgBIAEoCzIeLm5lb2JveC52MS5DbG91ZGZsYXJlRE5TUmVjb3JkEjQKCW9wZXJhdGlvbhgCIAEoCzIhLm5lb2JveC52MS5DbG91ZGZsYXJlRE5TT3BlcmF0aW9uEhsKE29wZXJhdGlvbl9sb2dfZXJyb3IYAyABKAkieAogRGVsZXRlQ2xvdWRmbGFyZUROU1JlY29yZFJlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQARIYCgd6b25lX2lkGAIgASgJQgf6QgRyAhABEhoKCXJlY29yZF9pZBgDIAEoCUIH+kIEcgIQASJ2CiFEZWxldGVDbG91ZGZsYXJlRE5TUmVjb3JkUmVzcG9uc2USNAoJb3BlcmF0aW9uGAEgASgLMiEubmVvYm94LnYxLkNsb3VkZmxhcmVETlNPcGVyYXRpb24SGwoTb3BlcmF0aW9uX2xvZ19lcnJvchgCIAEoCSJ2CiJMaXN0Q2xvdWRmbGFyZUROU09wZXJhdGlvbnNSZXF1ZXN0Eh4KDWNvbm5lY3Rpb25faWQYASABKAlCB/pCBHICEAESDwoHem9uZV9pZBgCIAEoCRIMCgRwYWdlGAMgASgFEhEKCXBhZ2Vfc2l6ZRgEIAEoBSKOAQojTGlzdENsb3VkZmxhcmVETlNPcGVyYXRpb25zUmVzcG9uc2USNQoKb3BlcmF0aW9ucxgBIAMoCzIhLm5lb2JveC52MS5DbG91ZGZsYXJlRE5TT3BlcmF0aW9uEjAKCXBhZ2VfaW5mbxgCIAEoCzIdLm5lb2JveC52MS5DbG91ZGZsYXJlUGFnZUluZm8ibgocTGlzdENsb3VkZmxhcmVXb3JrZXJzUmVxdWVzdBIeCg1jb25uZWN0aW9uX2lkGAEgASgJQgf6QgRyAhABEg0KBXF1ZXJ5GAIgASgJEgwKBHBhZ2UYAyABKAUSEQoJcGFnZV9zaXplGAQgASgFIroBCh1MaXN0Q2xvdWRmbGFyZVdvcmtlcnNSZXNwb25zZRIsCgd3b3JrZXJzGAEgAygLMhsubmVvYm94LnYxLkNsb3VkZmxhcmVXb3JrZXISMAoJcGFnZV9pbmZvGAIgASgLMh0ubmVvYm94LnYxLkNsb3VkZmxhcmVQYWdlSW5mbxI5Cg5hZGRyZXNzX2lzc3VlcxgDIAMoCzIhLm5lb2JveC52MS5DbG91ZGZsYXJlQWRkcmVzc0lzc3VlInQKIkxpc3RDbG91ZGZsYXJlUGFnZXNQcm9qZWN0c1JlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQARINCgVxdWVyeRgCIAEoCRIMCgRwYWdlGAMgASgFEhEKCXBhZ2Vfc2l6ZRgEIAEoBSLHAQojTGlzdENsb3VkZmxhcmVQYWdlc1Byb2plY3RzUmVzcG9uc2USMwoIcHJvamVjdHMYASADKAsyIS5uZW9ib3gudjEuQ2xvdWRmbGFyZVBhZ2VzUHJvamVjdBIwCglwYWdlX2luZm8YAiABKAsyHS5uZW9ib3gudjEuQ2xvdWRmbGFyZVBhZ2VJbmZvEjkKDmFkZHJlc3NfaXNzdWVzGAMgAygLMiEubmVvYm94LnYxLkNsb3VkZmxhcmVBZGRyZXNzSXNzdWUi+QEKEENsb3VkZmxhcmVUdW5uZWwSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIxCgZzdGF0dXMYAyABKA4yIS5uZW9ib3gudjEuQ2xvdWRmbGFyZVR1bm5lbFN0YXR1cxIYChBtYW5hZ2VkX3JlbW90ZWx5GAQgASgIEhoKEmFjdGl2ZV9jb25uZWN0aW9ucxgFIAEoBRIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIyCg5pbmFjdGl2ZV9zaW5jZRgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAimAEKGkNsb3VkZmxhcmVUdW5uZWxDb25uZWN0aW9uEgoKAmlkGAEgASgJEhEKCWNvbG9fbmFtZRgCIAEoCRIRCglvcmlnaW5faXAYAyABKAkSGQoRcGVuZGluZ19yZWNvbm5lY3QYBCABKAgSLQoJb3BlbmVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKuAQoZQ2xvdWRmbGFyZVR1bm5lbENvbm5lY3RvchIKCgJpZBgBIAEoCRIPCgd2ZXJzaW9uGAIgASgJEgwKBGFyY2gYAyABKAkSKgoGcnVuX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBI6Cgtjb25uZWN0aW9ucxgFIAMoCzIlLm5lb2JveC52MS5DbG91ZGZsYXJlVHVubmVsQ29ubmVjdGlvbiJoChhDbG91ZGZsYXJlVHVubmVsSG9zdG5hbWUSEAoIaG9zdG5hbWUYASABKAkSDAoEcGF0aBgCIAEoCRIPCgdzZXJ2aWNlGAMgASgJEhsKE2hhc19vcmlnaW5fc2V0dGluZ3MYBCABKAgiUQoTQ2xvdWRmbGFyZVJlYWRJc3N1ZRIOCgZzb3VyY2UYASABKAkSDwoHbWVzc2FnZRgCIAEoCRIZChFwZXJtaXNzaW9uX2RlbmllZBgDIAEoCCJ7ChxDbG91ZGZsYXJlVHVubmVsUmVjb3JkUmVzdWx0EjcKBnN0YXR1cxgBIAEoDjInLm5lb2JveC52MS5DbG91ZGZsYXJlVHVubmVsUmVjb3JkU3RhdHVzEg8KB21lc3NhZ2UYAiABKAkSEQoJcmVjb3JkX2lkGAMgASgJIm4KHExpc3RDbG91ZGZsYXJlVHVubmVsc1JlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQARINCgVxdWVyeRgCIAEoCRIMCgRwYWdlGAMgASgFEhEKCXBhZ2Vfc2l6ZRgEIAEoBSJ/Ch1MaXN0Q2xvdWRmbGFyZVR1bm5lbHNSZXNwb25zZRIsCgd0dW5uZWxzGAEgAygLMhsubmVvYm94LnYxLkNsb3VkZmxhcmVUdW5uZWwSMAoJcGFnZV9pbmZvGAIgASgLMh0ubmVvYm94LnYxLkNsb3VkZmxhcmVQYWdlSW5mbyJYChpHZXRDbG91ZGZsYXJlVHVubmVsUmVxdWVzdBIeCg1jb25uZWN0aW9uX2lkGAEgASgJQgf6QgRyAhABEhoKCXR1bm5lbF9pZBgCIAEoCUIH+kIEcgIQASKfAgobR2V0Q2xvdWRmbGFyZVR1bm5lbFJlc3BvbnNlEisKBnR1bm5lbBgBIAEoCzIbLm5lb2JveC52MS5DbG91ZGZsYXJlVHVubmVsEjgKCmNvbm5lY3RvcnMYAiADKAsyJC5uZW9ib3gudjEuQ2xvdWRmbGFyZVR1bm5lbENvbm5lY3RvchI2Cglob3N0bmFtZXMYAyADKAsyIy5uZW9ib3gudjEuQ2xvdWRmbGFyZVR1bm5lbEhvc3RuYW1lEhkKEWNhdGNoX2FsbF9zZXJ2aWNlGAQgASgJEhYKDmNvbmZpZ192ZXJzaW9uGAUgASgFEi4KBmlzc3VlcxgGIAMoCzIeLm5lb2JveC52MS5DbG91ZGZsYXJlUmVhZElzc3VlIlYKHUNyZWF0ZUNsb3VkZmxhcmVUdW5uZWxSZXF1ZXN0Eh4KDWNvbm5lY3Rpb25faWQYASABKAlCB/pCBHICEAESFQoEbmFtZRgCIAEoCUIH+kIEcgIQASJNCh5DcmVhdGVDbG91ZGZsYXJlVHVubmVsUmVzcG9uc2USKwoGdHVubmVsGAEgASgLMhsubmVvYm94LnYxLkNsb3VkZmxhcmVUdW5uZWwieAodRGVsZXRlQ2xvdWRmbGFyZVR1bm5lbFJlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQARIaCgl0dW5uZWxfaWQYAiABKAlCB/pCBHICEAESGwoTY2xlYW51cF9jb25uZWN0aW9ucxgDIAEoCCIgCh5EZWxldGVDbG91ZGZsYXJlVHVubmVsUmVzcG9uc2UiXQofR2V0Q2xvdWRmbGFyZVR1bm5lbFRva2VuUmVxdWVzdBIeCg1jb25uZWN0aW9uX2lkGAEgASgJQgf6QgRyAhABEhoKCXR1bm5lbF9pZBgCIAEoCUIH+kIEcgIQASIxCiBHZXRDbG91ZGZsYXJlVHVubmVsVG9rZW5SZXNwb25zZRINCgV0b2tlbhgBIAEoCSJnCilDbGVhbnVwQ2xvdWRmbGFyZVR1bm5lbENvbm5lY3Rpb25zUmVxdWVzdBIeCg1jb25uZWN0aW9uX2lkGAEgASgJQgf6QgRyAhABEhoKCXR1bm5lbF9pZBgCIAEoCUIH+kIEcgIQASIsCipDbGVhbnVwQ2xvdWRmbGFyZVR1bm5lbENvbm5lY3Rpb25zUmVzcG9uc2UitwEKIkFkZENsb3VkZmxhcmVUdW5uZWxIb3N0bmFtZVJlcXVlc3QSHgoNY29ubmVjdGlvbl9pZBgBIAEoCUIH+kIEcgIQARIaCgl0dW5uZWxfaWQYAiABKAlCB/pCBHICEAESGQoIaG9zdG5hbWUYAyABKAlCB/pCBHICEAESDAoEcGF0aBgEIAEoCRIYCgdzZXJ2aWNlGAUgASgJQgf6QgRyAhABEhIKCmNyZWF0ZV9kbnMYBiABKAgirQEKI0FkZENsb3VkZmxhcmVUdW5uZWxIb3N0bmFtZVJlc3BvbnNlEjUKCGhvc3RuYW1lGAEgASgLMiMubmVvYm94LnYxLkNsb3VkZmxhcmVUdW5uZWxIb3N0bmFtZRIWCg5jb25maWdfdmVyc2lvbhgCIAEoBRI3CgZyZWNvcmQYAyABKAsyJy5uZW9ib3gudjEuQ2xvdWRmbGFyZVR1bm5lbFJlY29yZFJlc3VsdCK8AQolVXBkYXRlQ2xvdWRmbGFyZVR1bm5lbEhvc3RuYW1lUmVxdWVzdBIeCg1jb25uZWN0aW9uX2lkGAEgASgJQgf6QgRyAhABEhoKCXR1bm5lbF9pZBgCIAEoCUIH+kIEcgIQARIZCghob3N0bmFtZRgDIAEoCUIH+kIEcgIQARIUCgxjdXJyZW50X3BhdGgYBCABKAkSDAoEcGF0aBgFIAEoCRIYCgdzZXJ2aWNlGAYgASgJQgf6QgRyAhABIncKJlVwZGF0ZUNsb3VkZmxhcmVUdW5uZWxIb3N0bmFtZVJlc3BvbnNlEjUKCGhvc3RuYW1lGAEgASgLMiMubmVvYm94LnYxLkNsb3VkZmxhcmVUdW5uZWxIb3N0bmFtZRIWCg5jb25maWdfdmVyc2lvbhgCIAEoBSKgAQolRGVsZXRlQ2xvdWRmbGFyZVR1bm5lbEhvc3RuYW1lUmVxdWVzdBIeCg1jb25uZWN0aW9uX2lkGAEgASgJQgf6QgRyAhABEhoKCXR1bm5lbF9pZBgCIAEoCUIH+kIEcgIQARIZCghob3N0bmFtZRgDIAEoCUIH+kIEcgIQARIMCgRwYXRoGAQgASgJEhIKCmRlbGV0ZV9kbnMYBSABKAgieQomRGVsZXRlQ2xvdWRmbGFyZVR1bm5lbEhvc3RuYW1lUmVzcG9uc2USFgoOY29uZmlnX3ZlcnNpb24YASABKAUSNwoGcmVjb3JkGAIgASgLMicubmVvYm94LnYxLkNsb3VkZmxhcmVUdW5uZWxSZWNvcmRSZXN1bHQqiwEKFkNsb3VkZmxhcmVSZWNvcmRBY2Nlc3MSKAokQ0xPVURGTEFSRV9SRUNPUkRfQUNDRVNTX1VOU1BFQ0lGSUVEEAASJAogQ0xPVURGTEFSRV9SRUNPUkRfQUNDRVNTX1VOS05PV04QARIhCh1DTE9VREZMQVJFX1JFQ09SRF9BQ0NFU1NfUkVBRBACKtsBChZDbG91ZGZsYXJlUmVjb3JkQWN0aW9uEigKJENMT1VERkxBUkVfUkVDT1JEX0FDVElPTl9VTlNQRUNJRklFRBAAEiMKH0NMT1VERkxBUkVfUkVDT1JEX0FDVElPTl9DUkVBVEUQARIjCh9DTE9VREZMQVJFX1JFQ09SRF9BQ1RJT05fVVBEQVRFEAISIwofQ0xPVURGTEFSRV9SRUNPUkRfQUNUSU9OX0RFTEVURRADEigKJENMT1VERkxBUkVfUkVDT1JEX0FDVElPTl9TRVRfUFJPWElFRBAEKu0BChlDbG91ZGZsYXJlT3BlcmF0aW9uU3RhdHVzEisKJ0NMT1VERkxBUkVfT1BFUkFUSU9OX1NUQVRVU19VTlNQRUNJRklFRBAAEicKI0NMT1VERkxBUkVfT1BFUkFUSU9OX1NUQVRVU19QRU5ESU5HEAESKQolQ0xPVURGTEFSRV9PUEVSQVRJT05fU1RBVFVTX1NVQ0NFRURFRBACEiYKIkNMT1VERkxBUkVfT1BFUkFUSU9OX1NUQVRVU19GQUlMRUQQAxInCiNDTE9VREZMQVJFX09QRVJBVElPTl9TVEFUVVNfVU5LTk9XThAEKoYCChVDbG91ZGZsYXJlQWRkcmVzc0tpbmQSJwojQ0xPVURGTEFSRV9BRERSRVNTX0tJTkRfVU5TUEVDSUZJRUQQABInCiNDTE9VREZMQVJFX0FERFJFU1NfS0lORF9XT1JLRVJTX0RFVhABEikKJUNMT1VERkxBUkVfQUREUkVTU19LSU5EX0NVU1RPTV9ET01BSU4QAhIhCh1DTE9VREZMQVJFX0FERFJFU1NfS0lORF9ST1VURRADEiUKIUNMT1VERkxBUkVfQUREUkVTU19LSU5EX1BBR0VTX0RFVhAEEiYKIkNMT1VERkxBUkVfQUREUkVTU19LSU5EX1BST0RVQ1RJT04QBSrZAQoWQ2xvdWRmbGFyZVR1bm5lbFN0YXR1cxIoCiRDTE9VREZMQVJFX1RVTk5FTF9TVEFUVVNfVU5TUEVDSUZJRUQQABIlCiFDTE9VREZMQVJFX1RVTk5FTF9TVEFUVVNfSU5BQ1RJVkUQARIlCiFDTE9VREZMQVJFX1RVTk5FTF9TVEFUVVNfREVHUkFERUQQAhIkCiBDTE9VREZMQVJFX1RVTk5FTF9TVEFUVVNfSEVBTFRIWRADEiEKHUNMT1VERkxBUkVfVFVOTkVMX1NUQVRVU19ET1dOEAQquQMKHENsb3VkZmxhcmVUdW5uZWxSZWNvcmRTdGF0dXMSLworQ0xPVURGTEFSRV9UVU5ORUxfUkVDT1JEX1NUQVRVU19VTlNQRUNJRklFRBAAEjEKLUNMT1VERkxBUkVfVFVOTkVMX1JFQ09SRF9TVEFUVVNfTk9UX1JFUVVFU1RFRBABEisKJ0NMT1VERkxBUkVfVFVOTkVMX1JFQ09SRF9TVEFUVVNfQ1JFQVRFRBACEioKJkNMT1VERkxBUkVfVFVOTkVMX1JFQ09SRF9TVEFUVVNfRVhJU1RTEAMSKwonQ0xPVURGTEFSRV9UVU5ORUxfUkVDT1JEX1NUQVRVU19ERUxFVEVEEAQSKAokQ0xPVURGTEFSRV9UVU5ORUxfUkVDT1JEX1NUQVRVU19LRVBUEAUSKwonQ0xPVURGTEFSRV9UVU5ORUxfUkVDT1JEX1NUQVRVU19OT19aT05FEAYSLAooQ0xPVURGTEFSRV9UVU5ORUxfUkVDT1JEX1NUQVRVU19DT05GTElDVBAHEioKJkNMT1VERkxBUkVfVFVOTkVMX1JFQ09SRF9TVEFUVVNfRkFJTEVEEAgy6hEKEUNsb3VkZmxhcmVTZXJ2aWNlEmQKE0xpc3RDbG91ZGZsYXJlWm9uZXMSJS5uZW9ib3gudjEuTGlzdENsb3VkZmxhcmVab25lc1JlcXVlc3QaJi5uZW9ib3gudjEuTGlzdENsb3VkZmxhcmVab25lc1Jlc3BvbnNlEl4KEUdldENsb3VkZmxhcmVab25lEiMubmVvYm94LnYxLkdldENsb3VkZmxhcmVab25lUmVxdWVzdBokLm5lb2JveC52MS5HZXRDbG91ZGZsYXJlWm9uZVJlc3BvbnNlEnMKGExpc3RDbG91ZGZsYXJlRE5TUmVjb3JkcxIqLm5lb2JveC52MS5MaXN0Q2xvdWRmbGFyZUROU1JlY29yZHNSZXF1ZXN0GisubmVvYm94LnYxLkxpc3RDbG91ZGZsYXJlRE5TUmVjb3Jkc1Jlc3BvbnNlEnYKGUNyZWF0ZUNsb3VkZmxhcmVETlNSZWNvcmQSKy5uZW9ib3gudjEuQ3JlYXRlQ2xvdWRmbGFyZUROU1JlY29yZFJlcXVlc3QaLC5uZW9ib3gudjEuQ3JlYXRlQ2xvdWRmbGFyZUROU1JlY29yZFJlc3BvbnNlEnYKGVVwZGF0ZUNsb3VkZmxhcmVETlNSZWNvcmQSKy5uZW9ib3gudjEuVXBkYXRlQ2xvdWRmbGFyZUROU1JlY29yZFJlcXVlc3QaLC5uZW9ib3gudjEuVXBkYXRlQ2xvdWRmbGFyZUROU1JlY29yZFJlc3BvbnNlEoIBCh1TZXRDbG91ZGZsYXJlRE5TUmVjb3JkUHJveGllZBIvLm5lb2JveC52MS5TZXRDbG91ZGZsYXJlRE5TUmVjb3JkUHJveGllZFJlcXVlc3QaMC5uZW9ib3gudjEuU2V0Q2xvdWRmbGFyZUROU1JlY29yZFByb3hpZWRSZXNwb25zZRJ2ChlEZWxldGVDbG91ZGZsYXJlRE5TUmVjb3JkEisubmVvYm94LnYxLkRlbGV0ZUNsb3VkZmxhcmVETlNSZWNvcmRSZXF1ZXN0GiwubmVvYm94LnYxLkRlbGV0ZUNsb3VkZmxhcmVETlNSZWNvcmRSZXNwb25zZRJ8ChtMaXN0Q2xvdWRmbGFyZUROU09wZXJhdGlvbnMSLS5uZW9ib3gudjEuTGlzdENsb3VkZmxhcmVETlNPcGVyYXRpb25zUmVxdWVzdBouLm5lb2JveC52MS5MaXN0Q2xvdWRmbGFyZUROU09wZXJhdGlvbnNSZXNwb25zZRJqChVMaXN0Q2xvdWRmbGFyZVdvcmtlcnMSJy5uZW9ib3gudjEuTGlzdENsb3VkZmxhcmVXb3JrZXJzUmVxdWVzdBooLm5lb2JveC52MS5MaXN0Q2xvdWRmbGFyZVdvcmtlcnNSZXNwb25zZRJ8ChtMaXN0Q2xvdWRmbGFyZVBhZ2VzUHJvamVjdHMSLS5uZW9ib3gudjEuTGlzdENsb3VkZmxhcmVQYWdlc1Byb2plY3RzUmVxdWVzdBouLm5lb2JveC52MS5MaXN0Q2xvdWRmbGFyZVBhZ2VzUHJvamVjdHNSZXNwb25zZRJqChVMaXN0Q2xvdWRmbGFyZVR1bm5lbHMSJy5uZW9ib3gudjEuTGlzdENsb3VkZmxhcmVUdW5uZWxzUmVxdWVzdBooLm5lb2JveC52MS5MaXN0Q2xvdWRmbGFyZVR1bm5lbHNSZXNwb25zZRJkChNHZXRDbG91ZGZsYXJlVHVubmVsEiUubmVvYm94LnYxLkdldENsb3VkZmxhcmVUdW5uZWxSZXF1ZXN0GiYubmVvYm94LnYxLkdldENsb3VkZmxhcmVUdW5uZWxSZXNwb25zZRJtChZDcmVhdGVDbG91ZGZsYXJlVHVubmVsEigubmVvYm94LnYxLkNyZWF0ZUNsb3VkZmxhcmVUdW5uZWxSZXF1ZXN0GikubmVvYm94LnYxLkNyZWF0ZUNsb3VkZmxhcmVUdW5uZWxSZXNwb25zZRJtChZEZWxldGVDbG91ZGZsYXJlVHVubmVsEigubmVvYm94LnYxLkRlbGV0ZUNsb3VkZmxhcmVUdW5uZWxSZXF1ZXN0GikubmVvYm94LnYxLkRlbGV0ZUNsb3VkZmxhcmVUdW5uZWxSZXNwb25zZRJzChhHZXRDbG91ZGZsYXJlVHVubmVsVG9rZW4SKi5uZW9ib3gudjEuR2V0Q2xvdWRmbGFyZVR1bm5lbFRva2VuUmVxdWVzdBorLm5lb2JveC52MS5HZXRDbG91ZGZsYXJlVHVubmVsVG9rZW5SZXNwb25zZRKRAQoiQ2xlYW51cENsb3VkZmxhcmVUdW5uZWxDb25uZWN0aW9ucxI0Lm5lb2JveC52MS5DbGVhbnVwQ2xvdWRmbGFyZVR1bm5lbENvbm5lY3Rpb25zUmVxdWVzdBo1Lm5lb2JveC52MS5DbGVhbnVwQ2xvdWRmbGFyZVR1bm5lbENvbm5lY3Rpb25zUmVzcG9uc2USfAobQWRkQ2xvdWRmbGFyZVR1bm5lbEhvc3RuYW1lEi0ubmVvYm94LnYxLkFkZENsb3VkZmxhcmVUdW5uZWxIb3N0bmFtZVJlcXVlc3QaLi5uZW9ib3gudjEuQWRkQ2xvdWRmbGFyZVR1bm5lbEhvc3RuYW1lUmVzcG9uc2UShQEKHlVwZGF0ZUNsb3VkZmxhcmVUdW5uZWxIb3N0bmFtZRIwLm5lb2JveC52MS5VcGRhdGVDbG91ZGZsYXJlVHVubmVsSG9zdG5hbWVSZXF1ZXN0GjEubmVvYm94LnYxLlVwZGF0ZUNsb3VkZmxhcmVUdW5uZWxIb3N0bmFtZVJlc3BvbnNlEoUBCh5EZWxldGVDbG91ZGZsYXJlVHVubmVsSG9zdG5hbWUSMC5uZW9ib3gudjEuRGVsZXRlQ2xvdWRmbGFyZVR1bm5lbEhvc3RuYW1lUmVxdWVzdBoxLm5lb2JveC52MS5EZWxldGVDbG91ZGZsYXJlVHVubmVsSG9zdG5hbWVSZXNwb25zZUI1WjNnby5vcngubWUvYXBwcy9uZW8tYm94L3BrZy9wcm90by9uZW9ib3gvdjE7bmVvYm94djFiBnByb3RvMw", [file_google_protobuf_struct, file_google_protobuf_timestamp, file_validate_validate]);
 
 /**
  * CloudflarePageInfo describes one page of a list.
@@ -1149,6 +1149,734 @@ export const ListCloudflarePagesProjectsResponseSchema: GenMessage<ListCloudflar
   messageDesc(file_neobox_v1_cloudflare, 30);
 
 /**
+ * @generated from message neobox.v1.CloudflareTunnel
+ */
+export type CloudflareTunnel = Message<"neobox.v1.CloudflareTunnel"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string name = 2;
+   */
+  name: string;
+
+  /**
+   * @generated from field: neobox.v1.CloudflareTunnelStatus status = 3;
+   */
+  status: CloudflareTunnelStatus;
+
+  /**
+   * Whether the hostnames are kept at Cloudflare and so can be changed
+   * here; false means cloudflared reads a local config file.
+   *
+   * @generated from field: bool managed_remotely = 4;
+   */
+  managedRemotely: boolean;
+
+  /**
+   * Live connections to Cloudflare's edge.
+   *
+   * @generated from field: int32 active_connections = 5;
+   */
+  activeConnections: number;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 6;
+   */
+  createdAt?: Timestamp;
+
+  /**
+   * When it last had a connection, if it has none now.
+   *
+   * @generated from field: google.protobuf.Timestamp inactive_since = 7;
+   */
+  inactiveSince?: Timestamp;
+};
+
+/**
+ * Describes the message neobox.v1.CloudflareTunnel.
+ * Use `create(CloudflareTunnelSchema)` to create a new message.
+ */
+export const CloudflareTunnelSchema: GenMessage<CloudflareTunnel> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 31);
+
+/**
+ * @generated from message neobox.v1.CloudflareTunnelConnection
+ */
+export type CloudflareTunnelConnection = Message<"neobox.v1.CloudflareTunnelConnection"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * The Cloudflare data center, e.g. "SJC".
+   *
+   * @generated from field: string colo_name = 2;
+   */
+  coloName: string;
+
+  /**
+   * @generated from field: string origin_ip = 3;
+   */
+  originIp: string;
+
+  /**
+   * @generated from field: bool pending_reconnect = 4;
+   */
+  pendingReconnect: boolean;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp opened_at = 5;
+   */
+  openedAt?: Timestamp;
+};
+
+/**
+ * Describes the message neobox.v1.CloudflareTunnelConnection.
+ * Use `create(CloudflareTunnelConnectionSchema)` to create a new message.
+ */
+export const CloudflareTunnelConnectionSchema: GenMessage<CloudflareTunnelConnection> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 32);
+
+/**
+ * CloudflareTunnelConnector is one running cloudflared instance.
+ *
+ * @generated from message neobox.v1.CloudflareTunnelConnector
+ */
+export type CloudflareTunnelConnector = Message<"neobox.v1.CloudflareTunnelConnector"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string version = 2;
+   */
+  version: string;
+
+  /**
+   * @generated from field: string arch = 3;
+   */
+  arch: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp run_at = 4;
+   */
+  runAt?: Timestamp;
+
+  /**
+   * @generated from field: repeated neobox.v1.CloudflareTunnelConnection connections = 5;
+   */
+  connections: CloudflareTunnelConnection[];
+};
+
+/**
+ * Describes the message neobox.v1.CloudflareTunnelConnector.
+ * Use `create(CloudflareTunnelConnectorSchema)` to create a new message.
+ */
+export const CloudflareTunnelConnectorSchema: GenMessage<CloudflareTunnelConnector> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 33);
+
+/**
+ * CloudflareTunnelHostname is one route of a Tunnel's ingress.
+ *
+ * @generated from message neobox.v1.CloudflareTunnelHostname
+ */
+export type CloudflareTunnelHostname = Message<"neobox.v1.CloudflareTunnelHostname"> & {
+  /**
+   * Empty when the route matches any hostname.
+   *
+   * @generated from field: string hostname = 1;
+   */
+  hostname: string;
+
+  /**
+   * A regular expression on the request path; empty matches all.
+   *
+   * @generated from field: string path = 2;
+   */
+  path: string;
+
+  /**
+   * An origin URL such as http://localhost:8080, or a built-in service
+   * (http_status:404, hello_world, bastion, unix:/path).
+   *
+   * @generated from field: string service = 3;
+   */
+  service: string;
+
+  /**
+   * The route carries origin settings (originRequest) that are kept as
+   * they are when the route changes.
+   *
+   * @generated from field: bool has_origin_settings = 4;
+   */
+  hasOriginSettings: boolean;
+};
+
+/**
+ * Describes the message neobox.v1.CloudflareTunnelHostname.
+ * Use `create(CloudflareTunnelHostnameSchema)` to create a new message.
+ */
+export const CloudflareTunnelHostnameSchema: GenMessage<CloudflareTunnelHostname> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 34);
+
+/**
+ * CloudflareReadIssue says part of what is shown could not be read.
+ *
+ * @generated from message neobox.v1.CloudflareReadIssue
+ */
+export type CloudflareReadIssue = Message<"neobox.v1.CloudflareReadIssue"> & {
+  /**
+   * e.g. "Tunnel connectors", "Tunnel hostnames".
+   *
+   * @generated from field: string source = 1;
+   */
+  source: string;
+
+  /**
+   * @generated from field: string message = 2;
+   */
+  message: string;
+
+  /**
+   * The token lacks the permission to read it.
+   *
+   * @generated from field: bool permission_denied = 3;
+   */
+  permissionDenied: boolean;
+};
+
+/**
+ * Describes the message neobox.v1.CloudflareReadIssue.
+ * Use `create(CloudflareReadIssueSchema)` to create a new message.
+ */
+export const CloudflareReadIssueSchema: GenMessage<CloudflareReadIssue> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 35);
+
+/**
+ * @generated from message neobox.v1.CloudflareTunnelRecordResult
+ */
+export type CloudflareTunnelRecordResult = Message<"neobox.v1.CloudflareTunnelRecordResult"> & {
+  /**
+   * @generated from field: neobox.v1.CloudflareTunnelRecordStatus status = 1;
+   */
+  status: CloudflareTunnelRecordStatus;
+
+  /**
+   * @generated from field: string message = 2;
+   */
+  message: string;
+
+  /**
+   * @generated from field: string record_id = 3;
+   */
+  recordId: string;
+};
+
+/**
+ * Describes the message neobox.v1.CloudflareTunnelRecordResult.
+ * Use `create(CloudflareTunnelRecordResultSchema)` to create a new message.
+ */
+export const CloudflareTunnelRecordResultSchema: GenMessage<CloudflareTunnelRecordResult> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 36);
+
+/**
+ * @generated from message neobox.v1.ListCloudflareTunnelsRequest
+ */
+export type ListCloudflareTunnelsRequest = Message<"neobox.v1.ListCloudflareTunnelsRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * Part of the Tunnel name.
+   *
+   * @generated from field: string query = 2;
+   */
+  query: string;
+
+  /**
+   * @generated from field: int32 page = 3;
+   */
+  page: number;
+
+  /**
+   * 0 means 20; at most 50.
+   *
+   * @generated from field: int32 page_size = 4;
+   */
+  pageSize: number;
+};
+
+/**
+ * Describes the message neobox.v1.ListCloudflareTunnelsRequest.
+ * Use `create(ListCloudflareTunnelsRequestSchema)` to create a new message.
+ */
+export const ListCloudflareTunnelsRequestSchema: GenMessage<ListCloudflareTunnelsRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 37);
+
+/**
+ * @generated from message neobox.v1.ListCloudflareTunnelsResponse
+ */
+export type ListCloudflareTunnelsResponse = Message<"neobox.v1.ListCloudflareTunnelsResponse"> & {
+  /**
+   * @generated from field: repeated neobox.v1.CloudflareTunnel tunnels = 1;
+   */
+  tunnels: CloudflareTunnel[];
+
+  /**
+   * @generated from field: neobox.v1.CloudflarePageInfo page_info = 2;
+   */
+  pageInfo?: CloudflarePageInfo;
+};
+
+/**
+ * Describes the message neobox.v1.ListCloudflareTunnelsResponse.
+ * Use `create(ListCloudflareTunnelsResponseSchema)` to create a new message.
+ */
+export const ListCloudflareTunnelsResponseSchema: GenMessage<ListCloudflareTunnelsResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 38);
+
+/**
+ * @generated from message neobox.v1.GetCloudflareTunnelRequest
+ */
+export type GetCloudflareTunnelRequest = Message<"neobox.v1.GetCloudflareTunnelRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tunnel_id = 2;
+   */
+  tunnelId: string;
+};
+
+/**
+ * Describes the message neobox.v1.GetCloudflareTunnelRequest.
+ * Use `create(GetCloudflareTunnelRequestSchema)` to create a new message.
+ */
+export const GetCloudflareTunnelRequestSchema: GenMessage<GetCloudflareTunnelRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 39);
+
+/**
+ * @generated from message neobox.v1.GetCloudflareTunnelResponse
+ */
+export type GetCloudflareTunnelResponse = Message<"neobox.v1.GetCloudflareTunnelResponse"> & {
+  /**
+   * @generated from field: neobox.v1.CloudflareTunnel tunnel = 1;
+   */
+  tunnel?: CloudflareTunnel;
+
+  /**
+   * @generated from field: repeated neobox.v1.CloudflareTunnelConnector connectors = 2;
+   */
+  connectors: CloudflareTunnelConnector[];
+
+  /**
+   * The routes, in the order cloudflared applies them, without the
+   * catch-all. Empty for a Tunnel that is not managed remotely.
+   *
+   * @generated from field: repeated neobox.v1.CloudflareTunnelHostname hostnames = 3;
+   */
+  hostnames: CloudflareTunnelHostname[];
+
+  /**
+   * Where requests no route matches go; empty when none is configured.
+   *
+   * @generated from field: string catch_all_service = 4;
+   */
+  catchAllService: string;
+
+  /**
+   * 0 for a Tunnel never configured.
+   *
+   * @generated from field: int32 config_version = 5;
+   */
+  configVersion: number;
+
+  /**
+   * @generated from field: repeated neobox.v1.CloudflareReadIssue issues = 6;
+   */
+  issues: CloudflareReadIssue[];
+};
+
+/**
+ * Describes the message neobox.v1.GetCloudflareTunnelResponse.
+ * Use `create(GetCloudflareTunnelResponseSchema)` to create a new message.
+ */
+export const GetCloudflareTunnelResponseSchema: GenMessage<GetCloudflareTunnelResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 40);
+
+/**
+ * @generated from message neobox.v1.CreateCloudflareTunnelRequest
+ */
+export type CreateCloudflareTunnelRequest = Message<"neobox.v1.CreateCloudflareTunnelRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string name = 2;
+   */
+  name: string;
+};
+
+/**
+ * Describes the message neobox.v1.CreateCloudflareTunnelRequest.
+ * Use `create(CreateCloudflareTunnelRequestSchema)` to create a new message.
+ */
+export const CreateCloudflareTunnelRequestSchema: GenMessage<CreateCloudflareTunnelRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 41);
+
+/**
+ * @generated from message neobox.v1.CreateCloudflareTunnelResponse
+ */
+export type CreateCloudflareTunnelResponse = Message<"neobox.v1.CreateCloudflareTunnelResponse"> & {
+  /**
+   * @generated from field: neobox.v1.CloudflareTunnel tunnel = 1;
+   */
+  tunnel?: CloudflareTunnel;
+};
+
+/**
+ * Describes the message neobox.v1.CreateCloudflareTunnelResponse.
+ * Use `create(CreateCloudflareTunnelResponseSchema)` to create a new message.
+ */
+export const CreateCloudflareTunnelResponseSchema: GenMessage<CreateCloudflareTunnelResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 42);
+
+/**
+ * @generated from message neobox.v1.DeleteCloudflareTunnelRequest
+ */
+export type DeleteCloudflareTunnelRequest = Message<"neobox.v1.DeleteCloudflareTunnelRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tunnel_id = 2;
+   */
+  tunnelId: string;
+
+  /**
+   * Close stale connections first, which Cloudflare requires before it
+   * deletes a Tunnel that still lists any.
+   *
+   * @generated from field: bool cleanup_connections = 3;
+   */
+  cleanupConnections: boolean;
+};
+
+/**
+ * Describes the message neobox.v1.DeleteCloudflareTunnelRequest.
+ * Use `create(DeleteCloudflareTunnelRequestSchema)` to create a new message.
+ */
+export const DeleteCloudflareTunnelRequestSchema: GenMessage<DeleteCloudflareTunnelRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 43);
+
+/**
+ * @generated from message neobox.v1.DeleteCloudflareTunnelResponse
+ */
+export type DeleteCloudflareTunnelResponse = Message<"neobox.v1.DeleteCloudflareTunnelResponse"> & {
+};
+
+/**
+ * Describes the message neobox.v1.DeleteCloudflareTunnelResponse.
+ * Use `create(DeleteCloudflareTunnelResponseSchema)` to create a new message.
+ */
+export const DeleteCloudflareTunnelResponseSchema: GenMessage<DeleteCloudflareTunnelResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 44);
+
+/**
+ * @generated from message neobox.v1.GetCloudflareTunnelTokenRequest
+ */
+export type GetCloudflareTunnelTokenRequest = Message<"neobox.v1.GetCloudflareTunnelTokenRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tunnel_id = 2;
+   */
+  tunnelId: string;
+};
+
+/**
+ * Describes the message neobox.v1.GetCloudflareTunnelTokenRequest.
+ * Use `create(GetCloudflareTunnelTokenRequestSchema)` to create a new message.
+ */
+export const GetCloudflareTunnelTokenRequestSchema: GenMessage<GetCloudflareTunnelTokenRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 45);
+
+/**
+ * @generated from message neobox.v1.GetCloudflareTunnelTokenResponse
+ */
+export type GetCloudflareTunnelTokenResponse = Message<"neobox.v1.GetCloudflareTunnelTokenResponse"> & {
+  /**
+   * Runs the Tunnel: cloudflared tunnel run --token <token>.
+   *
+   * @generated from field: string token = 1;
+   */
+  token: string;
+};
+
+/**
+ * Describes the message neobox.v1.GetCloudflareTunnelTokenResponse.
+ * Use `create(GetCloudflareTunnelTokenResponseSchema)` to create a new message.
+ */
+export const GetCloudflareTunnelTokenResponseSchema: GenMessage<GetCloudflareTunnelTokenResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 46);
+
+/**
+ * @generated from message neobox.v1.CleanupCloudflareTunnelConnectionsRequest
+ */
+export type CleanupCloudflareTunnelConnectionsRequest = Message<"neobox.v1.CleanupCloudflareTunnelConnectionsRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tunnel_id = 2;
+   */
+  tunnelId: string;
+};
+
+/**
+ * Describes the message neobox.v1.CleanupCloudflareTunnelConnectionsRequest.
+ * Use `create(CleanupCloudflareTunnelConnectionsRequestSchema)` to create a new message.
+ */
+export const CleanupCloudflareTunnelConnectionsRequestSchema: GenMessage<CleanupCloudflareTunnelConnectionsRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 47);
+
+/**
+ * @generated from message neobox.v1.CleanupCloudflareTunnelConnectionsResponse
+ */
+export type CleanupCloudflareTunnelConnectionsResponse = Message<"neobox.v1.CleanupCloudflareTunnelConnectionsResponse"> & {
+};
+
+/**
+ * Describes the message neobox.v1.CleanupCloudflareTunnelConnectionsResponse.
+ * Use `create(CleanupCloudflareTunnelConnectionsResponseSchema)` to create a new message.
+ */
+export const CleanupCloudflareTunnelConnectionsResponseSchema: GenMessage<CleanupCloudflareTunnelConnectionsResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 48);
+
+/**
+ * @generated from message neobox.v1.AddCloudflareTunnelHostnameRequest
+ */
+export type AddCloudflareTunnelHostnameRequest = Message<"neobox.v1.AddCloudflareTunnelHostnameRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tunnel_id = 2;
+   */
+  tunnelId: string;
+
+  /**
+   * A domain name such as app.example.com; the first label may be *.
+   *
+   * @generated from field: string hostname = 3;
+   */
+  hostname: string;
+
+  /**
+   * Optional regular expression on the request path.
+   *
+   * @generated from field: string path = 4;
+   */
+  path: string;
+
+  /**
+   * @generated from field: string service = 5;
+   */
+  service: string;
+
+  /**
+   * Also point the hostname at the Tunnel with a proxied CNAME, when the
+   * Account has its Zone and nothing else is there.
+   *
+   * @generated from field: bool create_dns = 6;
+   */
+  createDns: boolean;
+};
+
+/**
+ * Describes the message neobox.v1.AddCloudflareTunnelHostnameRequest.
+ * Use `create(AddCloudflareTunnelHostnameRequestSchema)` to create a new message.
+ */
+export const AddCloudflareTunnelHostnameRequestSchema: GenMessage<AddCloudflareTunnelHostnameRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 49);
+
+/**
+ * @generated from message neobox.v1.AddCloudflareTunnelHostnameResponse
+ */
+export type AddCloudflareTunnelHostnameResponse = Message<"neobox.v1.AddCloudflareTunnelHostnameResponse"> & {
+  /**
+   * @generated from field: neobox.v1.CloudflareTunnelHostname hostname = 1;
+   */
+  hostname?: CloudflareTunnelHostname;
+
+  /**
+   * @generated from field: int32 config_version = 2;
+   */
+  configVersion: number;
+
+  /**
+   * @generated from field: neobox.v1.CloudflareTunnelRecordResult record = 3;
+   */
+  record?: CloudflareTunnelRecordResult;
+};
+
+/**
+ * Describes the message neobox.v1.AddCloudflareTunnelHostnameResponse.
+ * Use `create(AddCloudflareTunnelHostnameResponseSchema)` to create a new message.
+ */
+export const AddCloudflareTunnelHostnameResponseSchema: GenMessage<AddCloudflareTunnelHostnameResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 50);
+
+/**
+ * @generated from message neobox.v1.UpdateCloudflareTunnelHostnameRequest
+ */
+export type UpdateCloudflareTunnelHostnameRequest = Message<"neobox.v1.UpdateCloudflareTunnelHostnameRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tunnel_id = 2;
+   */
+  tunnelId: string;
+
+  /**
+   * Name the route being changed; the hostname itself cannot change.
+   *
+   * @generated from field: string hostname = 3;
+   */
+  hostname: string;
+
+  /**
+   * @generated from field: string current_path = 4;
+   */
+  currentPath: string;
+
+  /**
+   * The route's new path and service.
+   *
+   * @generated from field: string path = 5;
+   */
+  path: string;
+
+  /**
+   * @generated from field: string service = 6;
+   */
+  service: string;
+};
+
+/**
+ * Describes the message neobox.v1.UpdateCloudflareTunnelHostnameRequest.
+ * Use `create(UpdateCloudflareTunnelHostnameRequestSchema)` to create a new message.
+ */
+export const UpdateCloudflareTunnelHostnameRequestSchema: GenMessage<UpdateCloudflareTunnelHostnameRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 51);
+
+/**
+ * @generated from message neobox.v1.UpdateCloudflareTunnelHostnameResponse
+ */
+export type UpdateCloudflareTunnelHostnameResponse = Message<"neobox.v1.UpdateCloudflareTunnelHostnameResponse"> & {
+  /**
+   * @generated from field: neobox.v1.CloudflareTunnelHostname hostname = 1;
+   */
+  hostname?: CloudflareTunnelHostname;
+
+  /**
+   * @generated from field: int32 config_version = 2;
+   */
+  configVersion: number;
+};
+
+/**
+ * Describes the message neobox.v1.UpdateCloudflareTunnelHostnameResponse.
+ * Use `create(UpdateCloudflareTunnelHostnameResponseSchema)` to create a new message.
+ */
+export const UpdateCloudflareTunnelHostnameResponseSchema: GenMessage<UpdateCloudflareTunnelHostnameResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 52);
+
+/**
+ * @generated from message neobox.v1.DeleteCloudflareTunnelHostnameRequest
+ */
+export type DeleteCloudflareTunnelHostnameRequest = Message<"neobox.v1.DeleteCloudflareTunnelHostnameRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tunnel_id = 2;
+   */
+  tunnelId: string;
+
+  /**
+   * @generated from field: string hostname = 3;
+   */
+  hostname: string;
+
+  /**
+   * @generated from field: string path = 4;
+   */
+  path: string;
+
+  /**
+   * Also delete the hostname's CNAME to this Tunnel.
+   *
+   * @generated from field: bool delete_dns = 5;
+   */
+  deleteDns: boolean;
+};
+
+/**
+ * Describes the message neobox.v1.DeleteCloudflareTunnelHostnameRequest.
+ * Use `create(DeleteCloudflareTunnelHostnameRequestSchema)` to create a new message.
+ */
+export const DeleteCloudflareTunnelHostnameRequestSchema: GenMessage<DeleteCloudflareTunnelHostnameRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 53);
+
+/**
+ * @generated from message neobox.v1.DeleteCloudflareTunnelHostnameResponse
+ */
+export type DeleteCloudflareTunnelHostnameResponse = Message<"neobox.v1.DeleteCloudflareTunnelHostnameResponse"> & {
+  /**
+   * @generated from field: int32 config_version = 1;
+   */
+  configVersion: number;
+
+  /**
+   * @generated from field: neobox.v1.CloudflareTunnelRecordResult record = 2;
+   */
+  record?: CloudflareTunnelRecordResult;
+};
+
+/**
+ * Describes the message neobox.v1.DeleteCloudflareTunnelHostnameResponse.
+ * Use `create(DeleteCloudflareTunnelHostnameResponseSchema)` to create a new message.
+ */
+export const DeleteCloudflareTunnelHostnameResponseSchema: GenMessage<DeleteCloudflareTunnelHostnameResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_cloudflare, 54);
+
+/**
  * CloudflareRecordAccess is what the token may do with a Zone's DNS records,
  * as far as Cloudflare says. Cloudflare does not tell an API token's own
  * permissions, only the token owner's legacy Zone permissions, which can
@@ -1311,9 +2039,121 @@ export const CloudflareAddressKindSchema: GenEnum<CloudflareAddressKind> = /*@__
   enumDesc(file_neobox_v1_cloudflare, 3);
 
 /**
+ * @generated from enum neobox.v1.CloudflareTunnelStatus
+ */
+export enum CloudflareTunnelStatus {
+  /**
+   * @generated from enum value: CLOUDFLARE_TUNNEL_STATUS_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * Never connected.
+   *
+   * @generated from enum value: CLOUDFLARE_TUNNEL_STATUS_INACTIVE = 1;
+   */
+  INACTIVE = 1,
+
+  /**
+   * Connected, but not at full strength.
+   *
+   * @generated from enum value: CLOUDFLARE_TUNNEL_STATUS_DEGRADED = 2;
+   */
+  DEGRADED = 2,
+
+  /**
+   * @generated from enum value: CLOUDFLARE_TUNNEL_STATUS_HEALTHY = 3;
+   */
+  HEALTHY = 3,
+
+  /**
+   * Has connected before, but nothing is connected now.
+   *
+   * @generated from enum value: CLOUDFLARE_TUNNEL_STATUS_DOWN = 4;
+   */
+  DOWN = 4,
+}
+
+/**
+ * Describes the enum neobox.v1.CloudflareTunnelStatus.
+ */
+export const CloudflareTunnelStatusSchema: GenEnum<CloudflareTunnelStatus> = /*@__PURE__*/
+  enumDesc(file_neobox_v1_cloudflare, 4);
+
+/**
+ * CloudflareTunnelRecordStatus is what became of the DNS record of a
+ * hostname change. The route changed whatever it says.
+ *
+ * @generated from enum neobox.v1.CloudflareTunnelRecordStatus
+ */
+export enum CloudflareTunnelRecordStatus {
+  /**
+   * @generated from enum value: CLOUDFLARE_TUNNEL_RECORD_STATUS_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * No DNS change was asked for.
+   *
+   * @generated from enum value: CLOUDFLARE_TUNNEL_RECORD_STATUS_NOT_REQUESTED = 1;
+   */
+  NOT_REQUESTED = 1,
+
+  /**
+   * @generated from enum value: CLOUDFLARE_TUNNEL_RECORD_STATUS_CREATED = 2;
+   */
+  CREATED = 2,
+
+  /**
+   * The hostname already pointed at the Tunnel.
+   *
+   * @generated from enum value: CLOUDFLARE_TUNNEL_RECORD_STATUS_EXISTS = 3;
+   */
+  EXISTS = 3,
+
+  /**
+   * @generated from enum value: CLOUDFLARE_TUNNEL_RECORD_STATUS_DELETED = 4;
+   */
+  DELETED = 4,
+
+  /**
+   * A delete left the record in place; message says why.
+   *
+   * @generated from enum value: CLOUDFLARE_TUNNEL_RECORD_STATUS_KEPT = 5;
+   */
+  KEPT = 5,
+
+  /**
+   * The Account has no Zone for the hostname.
+   *
+   * @generated from enum value: CLOUDFLARE_TUNNEL_RECORD_STATUS_NO_ZONE = 6;
+   */
+  NO_ZONE = 6,
+
+  /**
+   * The hostname has another record, which was not touched.
+   *
+   * @generated from enum value: CLOUDFLARE_TUNNEL_RECORD_STATUS_CONFLICT = 7;
+   */
+  CONFLICT = 7,
+
+  /**
+   * @generated from enum value: CLOUDFLARE_TUNNEL_RECORD_STATUS_FAILED = 8;
+   */
+  FAILED = 8,
+}
+
+/**
+ * Describes the enum neobox.v1.CloudflareTunnelRecordStatus.
+ */
+export const CloudflareTunnelRecordStatusSchema: GenEnum<CloudflareTunnelRecordStatus> = /*@__PURE__*/
+  enumDesc(file_neobox_v1_cloudflare, 5);
+
+/**
  * CloudflareService reads the resources the API token of a Cloudflare
  * connection can see in the connection's Account (Zones, DNS records,
- * Workers, Pages projects) and changes DNS records. Everything is read live
+ * Workers, Pages projects, Tunnels), changes DNS records, and manages
+ * cloudflared Tunnels and their public hostnames. Everything is read live
  * from Cloudflare; only DNS operations started here are stored.
  *
  * connection_id must be the caller's Cloudflare connection; anything else
@@ -1417,6 +2257,104 @@ export const CloudflareService: GenService<{
     methodKind: "unary";
     input: typeof ListCloudflarePagesProjectsRequestSchema;
     output: typeof ListCloudflarePagesProjectsResponseSchema;
+  },
+  /**
+   * ListCloudflareTunnels pages through the Account's cloudflared Tunnels,
+   * optionally those whose name contains query.
+   *
+   * @generated from rpc neobox.v1.CloudflareService.ListCloudflareTunnels
+   */
+  listCloudflareTunnels: {
+    methodKind: "unary";
+    input: typeof ListCloudflareTunnelsRequestSchema;
+    output: typeof ListCloudflareTunnelsResponseSchema;
+  },
+  /**
+   * GetCloudflareTunnel reads a Tunnel with its connectors and public
+   * hostnames. A part that could not be read is reported in issues.
+   *
+   * @generated from rpc neobox.v1.CloudflareService.GetCloudflareTunnel
+   */
+  getCloudflareTunnel: {
+    methodKind: "unary";
+    input: typeof GetCloudflareTunnelRequestSchema;
+    output: typeof GetCloudflareTunnelResponseSchema;
+  },
+  /**
+   * CreateCloudflareTunnel creates a remotely managed Tunnel, whose
+   * hostnames are edited here and whose cloudflared runs with a token.
+   *
+   * @generated from rpc neobox.v1.CloudflareService.CreateCloudflareTunnel
+   */
+  createCloudflareTunnel: {
+    methodKind: "unary";
+    input: typeof CreateCloudflareTunnelRequestSchema;
+    output: typeof CreateCloudflareTunnelResponseSchema;
+  },
+  /**
+   * DeleteCloudflareTunnel deletes a Tunnel. Cloudflare refuses while
+   * cloudflared is connected. DNS records pointing at it are left alone.
+   *
+   * @generated from rpc neobox.v1.CloudflareService.DeleteCloudflareTunnel
+   */
+  deleteCloudflareTunnel: {
+    methodKind: "unary";
+    input: typeof DeleteCloudflareTunnelRequestSchema;
+    output: typeof DeleteCloudflareTunnelResponseSchema;
+  },
+  /**
+   * GetCloudflareTunnelToken returns the credential cloudflared runs the
+   * Tunnel with. It is never stored or logged by Neo Box.
+   *
+   * @generated from rpc neobox.v1.CloudflareService.GetCloudflareTunnelToken
+   */
+  getCloudflareTunnelToken: {
+    methodKind: "unary";
+    input: typeof GetCloudflareTunnelTokenRequestSchema;
+    output: typeof GetCloudflareTunnelTokenResponseSchema;
+  },
+  /**
+   * CleanupCloudflareTunnelConnections closes a Tunnel's stale connections.
+   *
+   * @generated from rpc neobox.v1.CloudflareService.CleanupCloudflareTunnelConnections
+   */
+  cleanupCloudflareTunnelConnections: {
+    methodKind: "unary";
+    input: typeof CleanupCloudflareTunnelConnectionsRequestSchema;
+    output: typeof CleanupCloudflareTunnelConnectionsResponseSchema;
+  },
+  /**
+   * AddCloudflareTunnelHostname routes a public hostname to a service of a
+   * remotely managed Tunnel, and can create its DNS record.
+   *
+   * @generated from rpc neobox.v1.CloudflareService.AddCloudflareTunnelHostname
+   */
+  addCloudflareTunnelHostname: {
+    methodKind: "unary";
+    input: typeof AddCloudflareTunnelHostnameRequestSchema;
+    output: typeof AddCloudflareTunnelHostnameResponseSchema;
+  },
+  /**
+   * UpdateCloudflareTunnelHostname changes the path and service of a route;
+   * its other settings are kept.
+   *
+   * @generated from rpc neobox.v1.CloudflareService.UpdateCloudflareTunnelHostname
+   */
+  updateCloudflareTunnelHostname: {
+    methodKind: "unary";
+    input: typeof UpdateCloudflareTunnelHostnameRequestSchema;
+    output: typeof UpdateCloudflareTunnelHostnameResponseSchema;
+  },
+  /**
+   * DeleteCloudflareTunnelHostname removes a route, and can delete its DNS
+   * record when that is a CNAME to this Tunnel.
+   *
+   * @generated from rpc neobox.v1.CloudflareService.DeleteCloudflareTunnelHostname
+   */
+  deleteCloudflareTunnelHostname: {
+    methodKind: "unary";
+    input: typeof DeleteCloudflareTunnelHostnameRequestSchema;
+    output: typeof DeleteCloudflareTunnelHostnameResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_neobox_v1_cloudflare, 0);

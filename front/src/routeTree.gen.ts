@@ -29,6 +29,7 @@ import { Route as AuthenticatedConnectionsConnectionIdIndexRouteImport } from '.
 import { Route as authAuthOauthCallbackProviderRouteImport } from './routes/(auth)/auth.oauth.callback.$provider'
 import { Route as AuthenticatedConnectionsConnectionIdBucketsBucketRouteImport } from './routes/_authenticated/connections/$connectionId/buckets/$bucket'
 import { Route as AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRouteImport } from './routes/_authenticated/connections/$connectionId/snapshots/$snapshotId'
+import { Route as AuthenticatedConnectionsConnectionIdTunnelsTunnelIdRouteImport } from './routes/_authenticated/connections/$connectionId/tunnels/$tunnelId'
 import { Route as AuthenticatedConnectionsConnectionIdZonesZoneIdRouteImport } from './routes/_authenticated/connections/$connectionId/zones/$zoneId'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -140,6 +141,12 @@ const AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRoute =
     path: '/connections/$connectionId/snapshots/$snapshotId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedConnectionsConnectionIdTunnelsTunnelIdRoute =
+  AuthenticatedConnectionsConnectionIdTunnelsTunnelIdRouteImport.update({
+    id: '/connections/$connectionId/tunnels/$tunnelId',
+    path: '/connections/$connectionId/tunnels/$tunnelId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedConnectionsConnectionIdZonesZoneIdRoute =
   AuthenticatedConnectionsConnectionIdZonesZoneIdRouteImport.update({
     id: '/connections/$connectionId/zones/$zoneId',
@@ -167,6 +174,7 @@ export interface FileRoutesByFullPath {
   '/auth/oauth/callback/$provider': typeof authAuthOauthCallbackProviderRoute
   '/connections/$connectionId/buckets/$bucket': typeof AuthenticatedConnectionsConnectionIdBucketsBucketRoute
   '/connections/$connectionId/snapshots/$snapshotId': typeof AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRoute
+  '/connections/$connectionId/tunnels/$tunnelId': typeof AuthenticatedConnectionsConnectionIdTunnelsTunnelIdRoute
   '/connections/$connectionId/zones/$zoneId': typeof AuthenticatedConnectionsConnectionIdZonesZoneIdRoute
 }
 export interface FileRoutesByTo {
@@ -188,6 +196,7 @@ export interface FileRoutesByTo {
   '/auth/oauth/callback/$provider': typeof authAuthOauthCallbackProviderRoute
   '/connections/$connectionId/buckets/$bucket': typeof AuthenticatedConnectionsConnectionIdBucketsBucketRoute
   '/connections/$connectionId/snapshots/$snapshotId': typeof AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRoute
+  '/connections/$connectionId/tunnels/$tunnelId': typeof AuthenticatedConnectionsConnectionIdTunnelsTunnelIdRoute
   '/connections/$connectionId/zones/$zoneId': typeof AuthenticatedConnectionsConnectionIdZonesZoneIdRoute
 }
 export interface FileRoutesById {
@@ -212,6 +221,7 @@ export interface FileRoutesById {
   '/(auth)/auth/oauth/callback/$provider': typeof authAuthOauthCallbackProviderRoute
   '/_authenticated/connections/$connectionId/buckets/$bucket': typeof AuthenticatedConnectionsConnectionIdBucketsBucketRoute
   '/_authenticated/connections/$connectionId/snapshots/$snapshotId': typeof AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRoute
+  '/_authenticated/connections/$connectionId/tunnels/$tunnelId': typeof AuthenticatedConnectionsConnectionIdTunnelsTunnelIdRoute
   '/_authenticated/connections/$connectionId/zones/$zoneId': typeof AuthenticatedConnectionsConnectionIdZonesZoneIdRoute
 }
 export interface FileRouteTypes {
@@ -236,6 +246,7 @@ export interface FileRouteTypes {
     | '/auth/oauth/callback/$provider'
     | '/connections/$connectionId/buckets/$bucket'
     | '/connections/$connectionId/snapshots/$snapshotId'
+    | '/connections/$connectionId/tunnels/$tunnelId'
     | '/connections/$connectionId/zones/$zoneId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -257,6 +268,7 @@ export interface FileRouteTypes {
     | '/auth/oauth/callback/$provider'
     | '/connections/$connectionId/buckets/$bucket'
     | '/connections/$connectionId/snapshots/$snapshotId'
+    | '/connections/$connectionId/tunnels/$tunnelId'
     | '/connections/$connectionId/zones/$zoneId'
   id:
     | '__root__'
@@ -280,6 +292,7 @@ export interface FileRouteTypes {
     | '/(auth)/auth/oauth/callback/$provider'
     | '/_authenticated/connections/$connectionId/buckets/$bucket'
     | '/_authenticated/connections/$connectionId/snapshots/$snapshotId'
+    | '/_authenticated/connections/$connectionId/tunnels/$tunnelId'
     | '/_authenticated/connections/$connectionId/zones/$zoneId'
   fileRoutesById: FileRoutesById
 }
@@ -436,6 +449,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/connections/$connectionId/tunnels/$tunnelId': {
+      id: '/_authenticated/connections/$connectionId/tunnels/$tunnelId'
+      path: '/connections/$connectionId/tunnels/$tunnelId'
+      fullPath: '/connections/$connectionId/tunnels/$tunnelId'
+      preLoaderRoute: typeof AuthenticatedConnectionsConnectionIdTunnelsTunnelIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/connections/$connectionId/zones/$zoneId': {
       id: '/_authenticated/connections/$connectionId/zones/$zoneId'
       path: '/connections/$connectionId/zones/$zoneId'
@@ -476,6 +496,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedConnectionsConnectionIdIndexRoute: typeof AuthenticatedConnectionsConnectionIdIndexRoute
   AuthenticatedConnectionsConnectionIdBucketsBucketRoute: typeof AuthenticatedConnectionsConnectionIdBucketsBucketRoute
   AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRoute: typeof AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRoute
+  AuthenticatedConnectionsConnectionIdTunnelsTunnelIdRoute: typeof AuthenticatedConnectionsConnectionIdTunnelsTunnelIdRoute
   AuthenticatedConnectionsConnectionIdZonesZoneIdRoute: typeof AuthenticatedConnectionsConnectionIdZonesZoneIdRoute
 }
 
@@ -491,6 +512,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedConnectionsConnectionIdBucketsBucketRoute,
   AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRoute:
     AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRoute,
+  AuthenticatedConnectionsConnectionIdTunnelsTunnelIdRoute:
+    AuthenticatedConnectionsConnectionIdTunnelsTunnelIdRoute,
   AuthenticatedConnectionsConnectionIdZonesZoneIdRoute:
     AuthenticatedConnectionsConnectionIdZonesZoneIdRoute,
 }

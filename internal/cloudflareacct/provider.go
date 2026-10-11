@@ -54,7 +54,7 @@ func (p provider) Verify(ctx context.Context, config, secret json.RawMessage) er
 // Account.
 var errAccountUnreachable = errors.New("the API token cannot reach this account: check the Account ID, " +
 	"and that the token's account resources include it with at least one of " +
-	"Zone Read, Workers Scripts Read, Cloudflare Pages Read or Account Settings Read")
+	"Zone Read, Workers Scripts Read, Cloudflare Pages Read, Cloudflare Tunnel Read or Account Settings Read")
 
 // reachAccount looks for anything that shows the token reaches the
 // Account, in the order the commonest tokens allow. Refusals move on to the
@@ -82,6 +82,10 @@ func reachAccount(ctx context.Context, api *cloudflare.Client, accountID string)
 		},
 		func() (bool, error) {
 			_, err := api.ListPagesProjects(ctx, accountID)
+			return err == nil, err
+		},
+		func() (bool, error) {
+			_, err := api.ListTunnels(ctx, accountID)
 			return err == nil, err
 		},
 	}

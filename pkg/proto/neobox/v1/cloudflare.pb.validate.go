@@ -4680,3 +4680,3296 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ListCloudflarePagesProjectsResponseValidationError{}
+
+// Validate checks the field values on CloudflareTunnel with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *CloudflareTunnel) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CloudflareTunnel with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CloudflareTunnelMultiError, or nil if none found.
+func (m *CloudflareTunnel) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CloudflareTunnel) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Name
+
+	// no validation rules for Status
+
+	// no validation rules for ManagedRemotely
+
+	// no validation rules for ActiveConnections
+
+	if all {
+		switch v := interface{}(m.GetCreatedAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CloudflareTunnelValidationError{
+					field:  "CreatedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CloudflareTunnelValidationError{
+					field:  "CreatedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetCreatedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CloudflareTunnelValidationError{
+				field:  "CreatedAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetInactiveSince()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CloudflareTunnelValidationError{
+					field:  "InactiveSince",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CloudflareTunnelValidationError{
+					field:  "InactiveSince",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetInactiveSince()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CloudflareTunnelValidationError{
+				field:  "InactiveSince",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return CloudflareTunnelMultiError(errors)
+	}
+
+	return nil
+}
+
+// CloudflareTunnelMultiError is an error wrapping multiple validation errors
+// returned by CloudflareTunnel.ValidateAll() if the designated constraints
+// aren't met.
+type CloudflareTunnelMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CloudflareTunnelMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CloudflareTunnelMultiError) AllErrors() []error { return m }
+
+// CloudflareTunnelValidationError is the validation error returned by
+// CloudflareTunnel.Validate if the designated constraints aren't met.
+type CloudflareTunnelValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CloudflareTunnelValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CloudflareTunnelValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CloudflareTunnelValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CloudflareTunnelValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CloudflareTunnelValidationError) ErrorName() string { return "CloudflareTunnelValidationError" }
+
+// Error satisfies the builtin error interface
+func (e CloudflareTunnelValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCloudflareTunnel.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CloudflareTunnelValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CloudflareTunnelValidationError{}
+
+// Validate checks the field values on CloudflareTunnelConnection with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CloudflareTunnelConnection) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CloudflareTunnelConnection with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CloudflareTunnelConnectionMultiError, or nil if none found.
+func (m *CloudflareTunnelConnection) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CloudflareTunnelConnection) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for ColoName
+
+	// no validation rules for OriginIp
+
+	// no validation rules for PendingReconnect
+
+	if all {
+		switch v := interface{}(m.GetOpenedAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CloudflareTunnelConnectionValidationError{
+					field:  "OpenedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CloudflareTunnelConnectionValidationError{
+					field:  "OpenedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetOpenedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CloudflareTunnelConnectionValidationError{
+				field:  "OpenedAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return CloudflareTunnelConnectionMultiError(errors)
+	}
+
+	return nil
+}
+
+// CloudflareTunnelConnectionMultiError is an error wrapping multiple
+// validation errors returned by CloudflareTunnelConnection.ValidateAll() if
+// the designated constraints aren't met.
+type CloudflareTunnelConnectionMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CloudflareTunnelConnectionMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CloudflareTunnelConnectionMultiError) AllErrors() []error { return m }
+
+// CloudflareTunnelConnectionValidationError is the validation error returned
+// by CloudflareTunnelConnection.Validate if the designated constraints aren't met.
+type CloudflareTunnelConnectionValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CloudflareTunnelConnectionValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CloudflareTunnelConnectionValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CloudflareTunnelConnectionValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CloudflareTunnelConnectionValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CloudflareTunnelConnectionValidationError) ErrorName() string {
+	return "CloudflareTunnelConnectionValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CloudflareTunnelConnectionValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCloudflareTunnelConnection.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CloudflareTunnelConnectionValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CloudflareTunnelConnectionValidationError{}
+
+// Validate checks the field values on CloudflareTunnelConnector with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CloudflareTunnelConnector) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CloudflareTunnelConnector with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CloudflareTunnelConnectorMultiError, or nil if none found.
+func (m *CloudflareTunnelConnector) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CloudflareTunnelConnector) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Version
+
+	// no validation rules for Arch
+
+	if all {
+		switch v := interface{}(m.GetRunAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CloudflareTunnelConnectorValidationError{
+					field:  "RunAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CloudflareTunnelConnectorValidationError{
+					field:  "RunAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetRunAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CloudflareTunnelConnectorValidationError{
+				field:  "RunAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	for idx, item := range m.GetConnections() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, CloudflareTunnelConnectorValidationError{
+						field:  fmt.Sprintf("Connections[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, CloudflareTunnelConnectorValidationError{
+						field:  fmt.Sprintf("Connections[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return CloudflareTunnelConnectorValidationError{
+					field:  fmt.Sprintf("Connections[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return CloudflareTunnelConnectorMultiError(errors)
+	}
+
+	return nil
+}
+
+// CloudflareTunnelConnectorMultiError is an error wrapping multiple validation
+// errors returned by CloudflareTunnelConnector.ValidateAll() if the
+// designated constraints aren't met.
+type CloudflareTunnelConnectorMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CloudflareTunnelConnectorMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CloudflareTunnelConnectorMultiError) AllErrors() []error { return m }
+
+// CloudflareTunnelConnectorValidationError is the validation error returned by
+// CloudflareTunnelConnector.Validate if the designated constraints aren't met.
+type CloudflareTunnelConnectorValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CloudflareTunnelConnectorValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CloudflareTunnelConnectorValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CloudflareTunnelConnectorValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CloudflareTunnelConnectorValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CloudflareTunnelConnectorValidationError) ErrorName() string {
+	return "CloudflareTunnelConnectorValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CloudflareTunnelConnectorValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCloudflareTunnelConnector.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CloudflareTunnelConnectorValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CloudflareTunnelConnectorValidationError{}
+
+// Validate checks the field values on CloudflareTunnelHostname with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CloudflareTunnelHostname) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CloudflareTunnelHostname with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CloudflareTunnelHostnameMultiError, or nil if none found.
+func (m *CloudflareTunnelHostname) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CloudflareTunnelHostname) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Hostname
+
+	// no validation rules for Path
+
+	// no validation rules for Service
+
+	// no validation rules for HasOriginSettings
+
+	if len(errors) > 0 {
+		return CloudflareTunnelHostnameMultiError(errors)
+	}
+
+	return nil
+}
+
+// CloudflareTunnelHostnameMultiError is an error wrapping multiple validation
+// errors returned by CloudflareTunnelHostname.ValidateAll() if the designated
+// constraints aren't met.
+type CloudflareTunnelHostnameMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CloudflareTunnelHostnameMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CloudflareTunnelHostnameMultiError) AllErrors() []error { return m }
+
+// CloudflareTunnelHostnameValidationError is the validation error returned by
+// CloudflareTunnelHostname.Validate if the designated constraints aren't met.
+type CloudflareTunnelHostnameValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CloudflareTunnelHostnameValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CloudflareTunnelHostnameValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CloudflareTunnelHostnameValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CloudflareTunnelHostnameValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CloudflareTunnelHostnameValidationError) ErrorName() string {
+	return "CloudflareTunnelHostnameValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CloudflareTunnelHostnameValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCloudflareTunnelHostname.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CloudflareTunnelHostnameValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CloudflareTunnelHostnameValidationError{}
+
+// Validate checks the field values on CloudflareReadIssue with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CloudflareReadIssue) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CloudflareReadIssue with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CloudflareReadIssueMultiError, or nil if none found.
+func (m *CloudflareReadIssue) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CloudflareReadIssue) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Source
+
+	// no validation rules for Message
+
+	// no validation rules for PermissionDenied
+
+	if len(errors) > 0 {
+		return CloudflareReadIssueMultiError(errors)
+	}
+
+	return nil
+}
+
+// CloudflareReadIssueMultiError is an error wrapping multiple validation
+// errors returned by CloudflareReadIssue.ValidateAll() if the designated
+// constraints aren't met.
+type CloudflareReadIssueMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CloudflareReadIssueMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CloudflareReadIssueMultiError) AllErrors() []error { return m }
+
+// CloudflareReadIssueValidationError is the validation error returned by
+// CloudflareReadIssue.Validate if the designated constraints aren't met.
+type CloudflareReadIssueValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CloudflareReadIssueValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CloudflareReadIssueValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CloudflareReadIssueValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CloudflareReadIssueValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CloudflareReadIssueValidationError) ErrorName() string {
+	return "CloudflareReadIssueValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CloudflareReadIssueValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCloudflareReadIssue.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CloudflareReadIssueValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CloudflareReadIssueValidationError{}
+
+// Validate checks the field values on CloudflareTunnelRecordResult with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CloudflareTunnelRecordResult) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CloudflareTunnelRecordResult with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CloudflareTunnelRecordResultMultiError, or nil if none found.
+func (m *CloudflareTunnelRecordResult) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CloudflareTunnelRecordResult) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Status
+
+	// no validation rules for Message
+
+	// no validation rules for RecordId
+
+	if len(errors) > 0 {
+		return CloudflareTunnelRecordResultMultiError(errors)
+	}
+
+	return nil
+}
+
+// CloudflareTunnelRecordResultMultiError is an error wrapping multiple
+// validation errors returned by CloudflareTunnelRecordResult.ValidateAll() if
+// the designated constraints aren't met.
+type CloudflareTunnelRecordResultMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CloudflareTunnelRecordResultMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CloudflareTunnelRecordResultMultiError) AllErrors() []error { return m }
+
+// CloudflareTunnelRecordResultValidationError is the validation error returned
+// by CloudflareTunnelRecordResult.Validate if the designated constraints
+// aren't met.
+type CloudflareTunnelRecordResultValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CloudflareTunnelRecordResultValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CloudflareTunnelRecordResultValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CloudflareTunnelRecordResultValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CloudflareTunnelRecordResultValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CloudflareTunnelRecordResultValidationError) ErrorName() string {
+	return "CloudflareTunnelRecordResultValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CloudflareTunnelRecordResultValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCloudflareTunnelRecordResult.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CloudflareTunnelRecordResultValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CloudflareTunnelRecordResultValidationError{}
+
+// Validate checks the field values on ListCloudflareTunnelsRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListCloudflareTunnelsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListCloudflareTunnelsRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListCloudflareTunnelsRequestMultiError, or nil if none found.
+func (m *ListCloudflareTunnelsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListCloudflareTunnelsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := ListCloudflareTunnelsRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Query
+
+	// no validation rules for Page
+
+	// no validation rules for PageSize
+
+	if len(errors) > 0 {
+		return ListCloudflareTunnelsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListCloudflareTunnelsRequestMultiError is an error wrapping multiple
+// validation errors returned by ListCloudflareTunnelsRequest.ValidateAll() if
+// the designated constraints aren't met.
+type ListCloudflareTunnelsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListCloudflareTunnelsRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListCloudflareTunnelsRequestMultiError) AllErrors() []error { return m }
+
+// ListCloudflareTunnelsRequestValidationError is the validation error returned
+// by ListCloudflareTunnelsRequest.Validate if the designated constraints
+// aren't met.
+type ListCloudflareTunnelsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListCloudflareTunnelsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListCloudflareTunnelsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListCloudflareTunnelsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListCloudflareTunnelsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListCloudflareTunnelsRequestValidationError) ErrorName() string {
+	return "ListCloudflareTunnelsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListCloudflareTunnelsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListCloudflareTunnelsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListCloudflareTunnelsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListCloudflareTunnelsRequestValidationError{}
+
+// Validate checks the field values on ListCloudflareTunnelsResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListCloudflareTunnelsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListCloudflareTunnelsResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// ListCloudflareTunnelsResponseMultiError, or nil if none found.
+func (m *ListCloudflareTunnelsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListCloudflareTunnelsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetTunnels() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListCloudflareTunnelsResponseValidationError{
+						field:  fmt.Sprintf("Tunnels[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListCloudflareTunnelsResponseValidationError{
+						field:  fmt.Sprintf("Tunnels[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListCloudflareTunnelsResponseValidationError{
+					field:  fmt.Sprintf("Tunnels[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if all {
+		switch v := interface{}(m.GetPageInfo()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ListCloudflareTunnelsResponseValidationError{
+					field:  "PageInfo",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ListCloudflareTunnelsResponseValidationError{
+					field:  "PageInfo",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetPageInfo()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ListCloudflareTunnelsResponseValidationError{
+				field:  "PageInfo",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return ListCloudflareTunnelsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListCloudflareTunnelsResponseMultiError is an error wrapping multiple
+// validation errors returned by ListCloudflareTunnelsResponse.ValidateAll()
+// if the designated constraints aren't met.
+type ListCloudflareTunnelsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListCloudflareTunnelsResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListCloudflareTunnelsResponseMultiError) AllErrors() []error { return m }
+
+// ListCloudflareTunnelsResponseValidationError is the validation error
+// returned by ListCloudflareTunnelsResponse.Validate if the designated
+// constraints aren't met.
+type ListCloudflareTunnelsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListCloudflareTunnelsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListCloudflareTunnelsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListCloudflareTunnelsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListCloudflareTunnelsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListCloudflareTunnelsResponseValidationError) ErrorName() string {
+	return "ListCloudflareTunnelsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListCloudflareTunnelsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListCloudflareTunnelsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListCloudflareTunnelsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListCloudflareTunnelsResponseValidationError{}
+
+// Validate checks the field values on GetCloudflareTunnelRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetCloudflareTunnelRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetCloudflareTunnelRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetCloudflareTunnelRequestMultiError, or nil if none found.
+func (m *GetCloudflareTunnelRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetCloudflareTunnelRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := GetCloudflareTunnelRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetTunnelId()) < 1 {
+		err := GetCloudflareTunnelRequestValidationError{
+			field:  "TunnelId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return GetCloudflareTunnelRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetCloudflareTunnelRequestMultiError is an error wrapping multiple
+// validation errors returned by GetCloudflareTunnelRequest.ValidateAll() if
+// the designated constraints aren't met.
+type GetCloudflareTunnelRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetCloudflareTunnelRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetCloudflareTunnelRequestMultiError) AllErrors() []error { return m }
+
+// GetCloudflareTunnelRequestValidationError is the validation error returned
+// by GetCloudflareTunnelRequest.Validate if the designated constraints aren't met.
+type GetCloudflareTunnelRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetCloudflareTunnelRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetCloudflareTunnelRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetCloudflareTunnelRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetCloudflareTunnelRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetCloudflareTunnelRequestValidationError) ErrorName() string {
+	return "GetCloudflareTunnelRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetCloudflareTunnelRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetCloudflareTunnelRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetCloudflareTunnelRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetCloudflareTunnelRequestValidationError{}
+
+// Validate checks the field values on GetCloudflareTunnelResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetCloudflareTunnelResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetCloudflareTunnelResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetCloudflareTunnelResponseMultiError, or nil if none found.
+func (m *GetCloudflareTunnelResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetCloudflareTunnelResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetTunnel()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GetCloudflareTunnelResponseValidationError{
+					field:  "Tunnel",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GetCloudflareTunnelResponseValidationError{
+					field:  "Tunnel",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTunnel()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetCloudflareTunnelResponseValidationError{
+				field:  "Tunnel",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	for idx, item := range m.GetConnectors() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetCloudflareTunnelResponseValidationError{
+						field:  fmt.Sprintf("Connectors[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetCloudflareTunnelResponseValidationError{
+						field:  fmt.Sprintf("Connectors[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetCloudflareTunnelResponseValidationError{
+					field:  fmt.Sprintf("Connectors[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	for idx, item := range m.GetHostnames() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetCloudflareTunnelResponseValidationError{
+						field:  fmt.Sprintf("Hostnames[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetCloudflareTunnelResponseValidationError{
+						field:  fmt.Sprintf("Hostnames[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetCloudflareTunnelResponseValidationError{
+					field:  fmt.Sprintf("Hostnames[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for CatchAllService
+
+	// no validation rules for ConfigVersion
+
+	for idx, item := range m.GetIssues() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetCloudflareTunnelResponseValidationError{
+						field:  fmt.Sprintf("Issues[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetCloudflareTunnelResponseValidationError{
+						field:  fmt.Sprintf("Issues[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetCloudflareTunnelResponseValidationError{
+					field:  fmt.Sprintf("Issues[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return GetCloudflareTunnelResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetCloudflareTunnelResponseMultiError is an error wrapping multiple
+// validation errors returned by GetCloudflareTunnelResponse.ValidateAll() if
+// the designated constraints aren't met.
+type GetCloudflareTunnelResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetCloudflareTunnelResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetCloudflareTunnelResponseMultiError) AllErrors() []error { return m }
+
+// GetCloudflareTunnelResponseValidationError is the validation error returned
+// by GetCloudflareTunnelResponse.Validate if the designated constraints
+// aren't met.
+type GetCloudflareTunnelResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetCloudflareTunnelResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetCloudflareTunnelResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetCloudflareTunnelResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetCloudflareTunnelResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetCloudflareTunnelResponseValidationError) ErrorName() string {
+	return "GetCloudflareTunnelResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetCloudflareTunnelResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetCloudflareTunnelResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetCloudflareTunnelResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetCloudflareTunnelResponseValidationError{}
+
+// Validate checks the field values on CreateCloudflareTunnelRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CreateCloudflareTunnelRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreateCloudflareTunnelRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// CreateCloudflareTunnelRequestMultiError, or nil if none found.
+func (m *CreateCloudflareTunnelRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreateCloudflareTunnelRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := CreateCloudflareTunnelRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetName()) < 1 {
+		err := CreateCloudflareTunnelRequestValidationError{
+			field:  "Name",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return CreateCloudflareTunnelRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreateCloudflareTunnelRequestMultiError is an error wrapping multiple
+// validation errors returned by CreateCloudflareTunnelRequest.ValidateAll()
+// if the designated constraints aren't met.
+type CreateCloudflareTunnelRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreateCloudflareTunnelRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreateCloudflareTunnelRequestMultiError) AllErrors() []error { return m }
+
+// CreateCloudflareTunnelRequestValidationError is the validation error
+// returned by CreateCloudflareTunnelRequest.Validate if the designated
+// constraints aren't met.
+type CreateCloudflareTunnelRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreateCloudflareTunnelRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreateCloudflareTunnelRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreateCloudflareTunnelRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreateCloudflareTunnelRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreateCloudflareTunnelRequestValidationError) ErrorName() string {
+	return "CreateCloudflareTunnelRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreateCloudflareTunnelRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreateCloudflareTunnelRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreateCloudflareTunnelRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreateCloudflareTunnelRequestValidationError{}
+
+// Validate checks the field values on CreateCloudflareTunnelResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CreateCloudflareTunnelResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreateCloudflareTunnelResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// CreateCloudflareTunnelResponseMultiError, or nil if none found.
+func (m *CreateCloudflareTunnelResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreateCloudflareTunnelResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetTunnel()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CreateCloudflareTunnelResponseValidationError{
+					field:  "Tunnel",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CreateCloudflareTunnelResponseValidationError{
+					field:  "Tunnel",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTunnel()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreateCloudflareTunnelResponseValidationError{
+				field:  "Tunnel",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return CreateCloudflareTunnelResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreateCloudflareTunnelResponseMultiError is an error wrapping multiple
+// validation errors returned by CreateCloudflareTunnelResponse.ValidateAll()
+// if the designated constraints aren't met.
+type CreateCloudflareTunnelResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreateCloudflareTunnelResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreateCloudflareTunnelResponseMultiError) AllErrors() []error { return m }
+
+// CreateCloudflareTunnelResponseValidationError is the validation error
+// returned by CreateCloudflareTunnelResponse.Validate if the designated
+// constraints aren't met.
+type CreateCloudflareTunnelResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreateCloudflareTunnelResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreateCloudflareTunnelResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreateCloudflareTunnelResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreateCloudflareTunnelResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreateCloudflareTunnelResponseValidationError) ErrorName() string {
+	return "CreateCloudflareTunnelResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreateCloudflareTunnelResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreateCloudflareTunnelResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreateCloudflareTunnelResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreateCloudflareTunnelResponseValidationError{}
+
+// Validate checks the field values on DeleteCloudflareTunnelRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DeleteCloudflareTunnelRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeleteCloudflareTunnelRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// DeleteCloudflareTunnelRequestMultiError, or nil if none found.
+func (m *DeleteCloudflareTunnelRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeleteCloudflareTunnelRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := DeleteCloudflareTunnelRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetTunnelId()) < 1 {
+		err := DeleteCloudflareTunnelRequestValidationError{
+			field:  "TunnelId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for CleanupConnections
+
+	if len(errors) > 0 {
+		return DeleteCloudflareTunnelRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeleteCloudflareTunnelRequestMultiError is an error wrapping multiple
+// validation errors returned by DeleteCloudflareTunnelRequest.ValidateAll()
+// if the designated constraints aren't met.
+type DeleteCloudflareTunnelRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeleteCloudflareTunnelRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeleteCloudflareTunnelRequestMultiError) AllErrors() []error { return m }
+
+// DeleteCloudflareTunnelRequestValidationError is the validation error
+// returned by DeleteCloudflareTunnelRequest.Validate if the designated
+// constraints aren't met.
+type DeleteCloudflareTunnelRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeleteCloudflareTunnelRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeleteCloudflareTunnelRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeleteCloudflareTunnelRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeleteCloudflareTunnelRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeleteCloudflareTunnelRequestValidationError) ErrorName() string {
+	return "DeleteCloudflareTunnelRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeleteCloudflareTunnelRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeleteCloudflareTunnelRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeleteCloudflareTunnelRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeleteCloudflareTunnelRequestValidationError{}
+
+// Validate checks the field values on DeleteCloudflareTunnelResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DeleteCloudflareTunnelResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeleteCloudflareTunnelResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// DeleteCloudflareTunnelResponseMultiError, or nil if none found.
+func (m *DeleteCloudflareTunnelResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeleteCloudflareTunnelResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return DeleteCloudflareTunnelResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeleteCloudflareTunnelResponseMultiError is an error wrapping multiple
+// validation errors returned by DeleteCloudflareTunnelResponse.ValidateAll()
+// if the designated constraints aren't met.
+type DeleteCloudflareTunnelResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeleteCloudflareTunnelResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeleteCloudflareTunnelResponseMultiError) AllErrors() []error { return m }
+
+// DeleteCloudflareTunnelResponseValidationError is the validation error
+// returned by DeleteCloudflareTunnelResponse.Validate if the designated
+// constraints aren't met.
+type DeleteCloudflareTunnelResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeleteCloudflareTunnelResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeleteCloudflareTunnelResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeleteCloudflareTunnelResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeleteCloudflareTunnelResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeleteCloudflareTunnelResponseValidationError) ErrorName() string {
+	return "DeleteCloudflareTunnelResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeleteCloudflareTunnelResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeleteCloudflareTunnelResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeleteCloudflareTunnelResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeleteCloudflareTunnelResponseValidationError{}
+
+// Validate checks the field values on GetCloudflareTunnelTokenRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetCloudflareTunnelTokenRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetCloudflareTunnelTokenRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// GetCloudflareTunnelTokenRequestMultiError, or nil if none found.
+func (m *GetCloudflareTunnelTokenRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetCloudflareTunnelTokenRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := GetCloudflareTunnelTokenRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetTunnelId()) < 1 {
+		err := GetCloudflareTunnelTokenRequestValidationError{
+			field:  "TunnelId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return GetCloudflareTunnelTokenRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetCloudflareTunnelTokenRequestMultiError is an error wrapping multiple
+// validation errors returned by GetCloudflareTunnelTokenRequest.ValidateAll()
+// if the designated constraints aren't met.
+type GetCloudflareTunnelTokenRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetCloudflareTunnelTokenRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetCloudflareTunnelTokenRequestMultiError) AllErrors() []error { return m }
+
+// GetCloudflareTunnelTokenRequestValidationError is the validation error
+// returned by GetCloudflareTunnelTokenRequest.Validate if the designated
+// constraints aren't met.
+type GetCloudflareTunnelTokenRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetCloudflareTunnelTokenRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetCloudflareTunnelTokenRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetCloudflareTunnelTokenRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetCloudflareTunnelTokenRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetCloudflareTunnelTokenRequestValidationError) ErrorName() string {
+	return "GetCloudflareTunnelTokenRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetCloudflareTunnelTokenRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetCloudflareTunnelTokenRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetCloudflareTunnelTokenRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetCloudflareTunnelTokenRequestValidationError{}
+
+// Validate checks the field values on GetCloudflareTunnelTokenResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *GetCloudflareTunnelTokenResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetCloudflareTunnelTokenResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// GetCloudflareTunnelTokenResponseMultiError, or nil if none found.
+func (m *GetCloudflareTunnelTokenResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetCloudflareTunnelTokenResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Token
+
+	if len(errors) > 0 {
+		return GetCloudflareTunnelTokenResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetCloudflareTunnelTokenResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// GetCloudflareTunnelTokenResponse.ValidateAll() if the designated
+// constraints aren't met.
+type GetCloudflareTunnelTokenResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetCloudflareTunnelTokenResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetCloudflareTunnelTokenResponseMultiError) AllErrors() []error { return m }
+
+// GetCloudflareTunnelTokenResponseValidationError is the validation error
+// returned by GetCloudflareTunnelTokenResponse.Validate if the designated
+// constraints aren't met.
+type GetCloudflareTunnelTokenResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetCloudflareTunnelTokenResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetCloudflareTunnelTokenResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetCloudflareTunnelTokenResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetCloudflareTunnelTokenResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetCloudflareTunnelTokenResponseValidationError) ErrorName() string {
+	return "GetCloudflareTunnelTokenResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetCloudflareTunnelTokenResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetCloudflareTunnelTokenResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetCloudflareTunnelTokenResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetCloudflareTunnelTokenResponseValidationError{}
+
+// Validate checks the field values on
+// CleanupCloudflareTunnelConnectionsRequest with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *CleanupCloudflareTunnelConnectionsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on
+// CleanupCloudflareTunnelConnectionsRequest with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in
+// CleanupCloudflareTunnelConnectionsRequestMultiError, or nil if none found.
+func (m *CleanupCloudflareTunnelConnectionsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CleanupCloudflareTunnelConnectionsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := CleanupCloudflareTunnelConnectionsRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetTunnelId()) < 1 {
+		err := CleanupCloudflareTunnelConnectionsRequestValidationError{
+			field:  "TunnelId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return CleanupCloudflareTunnelConnectionsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// CleanupCloudflareTunnelConnectionsRequestMultiError is an error wrapping
+// multiple validation errors returned by
+// CleanupCloudflareTunnelConnectionsRequest.ValidateAll() if the designated
+// constraints aren't met.
+type CleanupCloudflareTunnelConnectionsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CleanupCloudflareTunnelConnectionsRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CleanupCloudflareTunnelConnectionsRequestMultiError) AllErrors() []error { return m }
+
+// CleanupCloudflareTunnelConnectionsRequestValidationError is the validation
+// error returned by CleanupCloudflareTunnelConnectionsRequest.Validate if the
+// designated constraints aren't met.
+type CleanupCloudflareTunnelConnectionsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CleanupCloudflareTunnelConnectionsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CleanupCloudflareTunnelConnectionsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CleanupCloudflareTunnelConnectionsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CleanupCloudflareTunnelConnectionsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CleanupCloudflareTunnelConnectionsRequestValidationError) ErrorName() string {
+	return "CleanupCloudflareTunnelConnectionsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CleanupCloudflareTunnelConnectionsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCleanupCloudflareTunnelConnectionsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CleanupCloudflareTunnelConnectionsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CleanupCloudflareTunnelConnectionsRequestValidationError{}
+
+// Validate checks the field values on
+// CleanupCloudflareTunnelConnectionsResponse with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *CleanupCloudflareTunnelConnectionsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on
+// CleanupCloudflareTunnelConnectionsResponse with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in
+// CleanupCloudflareTunnelConnectionsResponseMultiError, or nil if none found.
+func (m *CleanupCloudflareTunnelConnectionsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CleanupCloudflareTunnelConnectionsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return CleanupCloudflareTunnelConnectionsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// CleanupCloudflareTunnelConnectionsResponseMultiError is an error wrapping
+// multiple validation errors returned by
+// CleanupCloudflareTunnelConnectionsResponse.ValidateAll() if the designated
+// constraints aren't met.
+type CleanupCloudflareTunnelConnectionsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CleanupCloudflareTunnelConnectionsResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CleanupCloudflareTunnelConnectionsResponseMultiError) AllErrors() []error { return m }
+
+// CleanupCloudflareTunnelConnectionsResponseValidationError is the validation
+// error returned by CleanupCloudflareTunnelConnectionsResponse.Validate if
+// the designated constraints aren't met.
+type CleanupCloudflareTunnelConnectionsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CleanupCloudflareTunnelConnectionsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CleanupCloudflareTunnelConnectionsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CleanupCloudflareTunnelConnectionsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CleanupCloudflareTunnelConnectionsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CleanupCloudflareTunnelConnectionsResponseValidationError) ErrorName() string {
+	return "CleanupCloudflareTunnelConnectionsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CleanupCloudflareTunnelConnectionsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCleanupCloudflareTunnelConnectionsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CleanupCloudflareTunnelConnectionsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CleanupCloudflareTunnelConnectionsResponseValidationError{}
+
+// Validate checks the field values on AddCloudflareTunnelHostnameRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *AddCloudflareTunnelHostnameRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AddCloudflareTunnelHostnameRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// AddCloudflareTunnelHostnameRequestMultiError, or nil if none found.
+func (m *AddCloudflareTunnelHostnameRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AddCloudflareTunnelHostnameRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := AddCloudflareTunnelHostnameRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetTunnelId()) < 1 {
+		err := AddCloudflareTunnelHostnameRequestValidationError{
+			field:  "TunnelId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetHostname()) < 1 {
+		err := AddCloudflareTunnelHostnameRequestValidationError{
+			field:  "Hostname",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Path
+
+	if utf8.RuneCountInString(m.GetService()) < 1 {
+		err := AddCloudflareTunnelHostnameRequestValidationError{
+			field:  "Service",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for CreateDns
+
+	if len(errors) > 0 {
+		return AddCloudflareTunnelHostnameRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// AddCloudflareTunnelHostnameRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// AddCloudflareTunnelHostnameRequest.ValidateAll() if the designated
+// constraints aren't met.
+type AddCloudflareTunnelHostnameRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AddCloudflareTunnelHostnameRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AddCloudflareTunnelHostnameRequestMultiError) AllErrors() []error { return m }
+
+// AddCloudflareTunnelHostnameRequestValidationError is the validation error
+// returned by AddCloudflareTunnelHostnameRequest.Validate if the designated
+// constraints aren't met.
+type AddCloudflareTunnelHostnameRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AddCloudflareTunnelHostnameRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AddCloudflareTunnelHostnameRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AddCloudflareTunnelHostnameRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AddCloudflareTunnelHostnameRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AddCloudflareTunnelHostnameRequestValidationError) ErrorName() string {
+	return "AddCloudflareTunnelHostnameRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e AddCloudflareTunnelHostnameRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAddCloudflareTunnelHostnameRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AddCloudflareTunnelHostnameRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AddCloudflareTunnelHostnameRequestValidationError{}
+
+// Validate checks the field values on AddCloudflareTunnelHostnameResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *AddCloudflareTunnelHostnameResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AddCloudflareTunnelHostnameResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// AddCloudflareTunnelHostnameResponseMultiError, or nil if none found.
+func (m *AddCloudflareTunnelHostnameResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AddCloudflareTunnelHostnameResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetHostname()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, AddCloudflareTunnelHostnameResponseValidationError{
+					field:  "Hostname",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, AddCloudflareTunnelHostnameResponseValidationError{
+					field:  "Hostname",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetHostname()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AddCloudflareTunnelHostnameResponseValidationError{
+				field:  "Hostname",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for ConfigVersion
+
+	if all {
+		switch v := interface{}(m.GetRecord()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, AddCloudflareTunnelHostnameResponseValidationError{
+					field:  "Record",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, AddCloudflareTunnelHostnameResponseValidationError{
+					field:  "Record",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetRecord()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AddCloudflareTunnelHostnameResponseValidationError{
+				field:  "Record",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return AddCloudflareTunnelHostnameResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// AddCloudflareTunnelHostnameResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// AddCloudflareTunnelHostnameResponse.ValidateAll() if the designated
+// constraints aren't met.
+type AddCloudflareTunnelHostnameResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AddCloudflareTunnelHostnameResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AddCloudflareTunnelHostnameResponseMultiError) AllErrors() []error { return m }
+
+// AddCloudflareTunnelHostnameResponseValidationError is the validation error
+// returned by AddCloudflareTunnelHostnameResponse.Validate if the designated
+// constraints aren't met.
+type AddCloudflareTunnelHostnameResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AddCloudflareTunnelHostnameResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AddCloudflareTunnelHostnameResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AddCloudflareTunnelHostnameResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AddCloudflareTunnelHostnameResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AddCloudflareTunnelHostnameResponseValidationError) ErrorName() string {
+	return "AddCloudflareTunnelHostnameResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e AddCloudflareTunnelHostnameResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAddCloudflareTunnelHostnameResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AddCloudflareTunnelHostnameResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AddCloudflareTunnelHostnameResponseValidationError{}
+
+// Validate checks the field values on UpdateCloudflareTunnelHostnameRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *UpdateCloudflareTunnelHostnameRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpdateCloudflareTunnelHostnameRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// UpdateCloudflareTunnelHostnameRequestMultiError, or nil if none found.
+func (m *UpdateCloudflareTunnelHostnameRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpdateCloudflareTunnelHostnameRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := UpdateCloudflareTunnelHostnameRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetTunnelId()) < 1 {
+		err := UpdateCloudflareTunnelHostnameRequestValidationError{
+			field:  "TunnelId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetHostname()) < 1 {
+		err := UpdateCloudflareTunnelHostnameRequestValidationError{
+			field:  "Hostname",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for CurrentPath
+
+	// no validation rules for Path
+
+	if utf8.RuneCountInString(m.GetService()) < 1 {
+		err := UpdateCloudflareTunnelHostnameRequestValidationError{
+			field:  "Service",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return UpdateCloudflareTunnelHostnameRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpdateCloudflareTunnelHostnameRequestMultiError is an error wrapping
+// multiple validation errors returned by
+// UpdateCloudflareTunnelHostnameRequest.ValidateAll() if the designated
+// constraints aren't met.
+type UpdateCloudflareTunnelHostnameRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpdateCloudflareTunnelHostnameRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpdateCloudflareTunnelHostnameRequestMultiError) AllErrors() []error { return m }
+
+// UpdateCloudflareTunnelHostnameRequestValidationError is the validation error
+// returned by UpdateCloudflareTunnelHostnameRequest.Validate if the
+// designated constraints aren't met.
+type UpdateCloudflareTunnelHostnameRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdateCloudflareTunnelHostnameRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdateCloudflareTunnelHostnameRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdateCloudflareTunnelHostnameRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdateCloudflareTunnelHostnameRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdateCloudflareTunnelHostnameRequestValidationError) ErrorName() string {
+	return "UpdateCloudflareTunnelHostnameRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdateCloudflareTunnelHostnameRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdateCloudflareTunnelHostnameRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdateCloudflareTunnelHostnameRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdateCloudflareTunnelHostnameRequestValidationError{}
+
+// Validate checks the field values on UpdateCloudflareTunnelHostnameResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *UpdateCloudflareTunnelHostnameResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on
+// UpdateCloudflareTunnelHostnameResponse with the rules defined in the proto
+// definition for this message. If any rules are violated, the result is a
+// list of violation errors wrapped in
+// UpdateCloudflareTunnelHostnameResponseMultiError, or nil if none found.
+func (m *UpdateCloudflareTunnelHostnameResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpdateCloudflareTunnelHostnameResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetHostname()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpdateCloudflareTunnelHostnameResponseValidationError{
+					field:  "Hostname",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpdateCloudflareTunnelHostnameResponseValidationError{
+					field:  "Hostname",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetHostname()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpdateCloudflareTunnelHostnameResponseValidationError{
+				field:  "Hostname",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for ConfigVersion
+
+	if len(errors) > 0 {
+		return UpdateCloudflareTunnelHostnameResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpdateCloudflareTunnelHostnameResponseMultiError is an error wrapping
+// multiple validation errors returned by
+// UpdateCloudflareTunnelHostnameResponse.ValidateAll() if the designated
+// constraints aren't met.
+type UpdateCloudflareTunnelHostnameResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpdateCloudflareTunnelHostnameResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpdateCloudflareTunnelHostnameResponseMultiError) AllErrors() []error { return m }
+
+// UpdateCloudflareTunnelHostnameResponseValidationError is the validation
+// error returned by UpdateCloudflareTunnelHostnameResponse.Validate if the
+// designated constraints aren't met.
+type UpdateCloudflareTunnelHostnameResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdateCloudflareTunnelHostnameResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdateCloudflareTunnelHostnameResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdateCloudflareTunnelHostnameResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdateCloudflareTunnelHostnameResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdateCloudflareTunnelHostnameResponseValidationError) ErrorName() string {
+	return "UpdateCloudflareTunnelHostnameResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdateCloudflareTunnelHostnameResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdateCloudflareTunnelHostnameResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdateCloudflareTunnelHostnameResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdateCloudflareTunnelHostnameResponseValidationError{}
+
+// Validate checks the field values on DeleteCloudflareTunnelHostnameRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *DeleteCloudflareTunnelHostnameRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeleteCloudflareTunnelHostnameRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// DeleteCloudflareTunnelHostnameRequestMultiError, or nil if none found.
+func (m *DeleteCloudflareTunnelHostnameRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeleteCloudflareTunnelHostnameRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := DeleteCloudflareTunnelHostnameRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetTunnelId()) < 1 {
+		err := DeleteCloudflareTunnelHostnameRequestValidationError{
+			field:  "TunnelId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetHostname()) < 1 {
+		err := DeleteCloudflareTunnelHostnameRequestValidationError{
+			field:  "Hostname",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Path
+
+	// no validation rules for DeleteDns
+
+	if len(errors) > 0 {
+		return DeleteCloudflareTunnelHostnameRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeleteCloudflareTunnelHostnameRequestMultiError is an error wrapping
+// multiple validation errors returned by
+// DeleteCloudflareTunnelHostnameRequest.ValidateAll() if the designated
+// constraints aren't met.
+type DeleteCloudflareTunnelHostnameRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeleteCloudflareTunnelHostnameRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeleteCloudflareTunnelHostnameRequestMultiError) AllErrors() []error { return m }
+
+// DeleteCloudflareTunnelHostnameRequestValidationError is the validation error
+// returned by DeleteCloudflareTunnelHostnameRequest.Validate if the
+// designated constraints aren't met.
+type DeleteCloudflareTunnelHostnameRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeleteCloudflareTunnelHostnameRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeleteCloudflareTunnelHostnameRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeleteCloudflareTunnelHostnameRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeleteCloudflareTunnelHostnameRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeleteCloudflareTunnelHostnameRequestValidationError) ErrorName() string {
+	return "DeleteCloudflareTunnelHostnameRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeleteCloudflareTunnelHostnameRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeleteCloudflareTunnelHostnameRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeleteCloudflareTunnelHostnameRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeleteCloudflareTunnelHostnameRequestValidationError{}
+
+// Validate checks the field values on DeleteCloudflareTunnelHostnameResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *DeleteCloudflareTunnelHostnameResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on
+// DeleteCloudflareTunnelHostnameResponse with the rules defined in the proto
+// definition for this message. If any rules are violated, the result is a
+// list of violation errors wrapped in
+// DeleteCloudflareTunnelHostnameResponseMultiError, or nil if none found.
+func (m *DeleteCloudflareTunnelHostnameResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeleteCloudflareTunnelHostnameResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ConfigVersion
+
+	if all {
+		switch v := interface{}(m.GetRecord()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, DeleteCloudflareTunnelHostnameResponseValidationError{
+					field:  "Record",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, DeleteCloudflareTunnelHostnameResponseValidationError{
+					field:  "Record",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetRecord()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return DeleteCloudflareTunnelHostnameResponseValidationError{
+				field:  "Record",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return DeleteCloudflareTunnelHostnameResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeleteCloudflareTunnelHostnameResponseMultiError is an error wrapping
+// multiple validation errors returned by
+// DeleteCloudflareTunnelHostnameResponse.ValidateAll() if the designated
+// constraints aren't met.
+type DeleteCloudflareTunnelHostnameResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeleteCloudflareTunnelHostnameResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeleteCloudflareTunnelHostnameResponseMultiError) AllErrors() []error { return m }
+
+// DeleteCloudflareTunnelHostnameResponseValidationError is the validation
+// error returned by DeleteCloudflareTunnelHostnameResponse.Validate if the
+// designated constraints aren't met.
+type DeleteCloudflareTunnelHostnameResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeleteCloudflareTunnelHostnameResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeleteCloudflareTunnelHostnameResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeleteCloudflareTunnelHostnameResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeleteCloudflareTunnelHostnameResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeleteCloudflareTunnelHostnameResponseValidationError) ErrorName() string {
+	return "DeleteCloudflareTunnelHostnameResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeleteCloudflareTunnelHostnameResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeleteCloudflareTunnelHostnameResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeleteCloudflareTunnelHostnameResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeleteCloudflareTunnelHostnameResponseValidationError{}

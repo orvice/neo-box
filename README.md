@@ -26,11 +26,12 @@ protobuf contracts generated with buf, all in one monorepo.
   still billed under the 90-day minimum, egress, and API calls for a Wasabi
   account and each of its buckets, synced from the Wasabi Stats API, plus an
   estimated charge for the current billing cycle. See [Wasabi](#wasabi).
-- **Cloudflare Zones, DNS, Workers and Pages**: the Zones, Workers and Pages
-  projects an API token can see in one Cloudflare account, read live, with
-  every address of each Worker and project; DNS records can be added,
-  changed, deleted and proxied, and every change made from Neo Box is
-  logged. See [Cloudflare](#cloudflare).
+- **Cloudflare Zones, DNS, Workers, Pages and Tunnels**: the Zones, Workers,
+  Pages projects and Tunnels an API token can see in one Cloudflare account,
+  read live, with every address of each Worker and project; DNS records can
+  be added, changed, deleted and proxied, and every change made from Neo Box
+  is logged. Tunnels can be created and deleted, and their public hostnames
+  managed, with the DNS record. See [Cloudflare](#cloudflare).
 - Stores users, sessions, and metadata in PostgreSQL, and snapshot content in
   S3-compatible object storage.
 
@@ -336,6 +337,8 @@ include the account in its resources, and grant only what you want to use:
 | Account → Workers Scripts → Read | Workers tab, workers.dev URLs, custom domains |
 | Zone → Workers Routes → Read | Worker routes |
 | Account → Cloudflare Pages → Read | Pages tab |
+| Account → Cloudflare Tunnel → Read | Tunnels tab, a Tunnel's connectors and hostnames, its run token |
+| Account → Cloudflare Tunnel → Edit | creating and deleting Tunnels, changing their public hostnames |
 
 Saving checks, without changing anything, that Cloudflare accepts the token
 and that the token reaches the account through at least one of these. A tab
@@ -355,6 +358,19 @@ never sent again: check the record before retrying. Neo Box changes A, AAAA,
 CNAME, TXT, MX, NS, SRV and CAA records and keeps whatever the form doesn't
 show (comment, tags, settings); other types are listed read-only. Deleting
 the connection deletes its log in Neo Box and nothing in Cloudflare.
+
+**Tunnels.** The Tunnels tab lists the account's cloudflared Tunnels with
+their status and connections. A Tunnel created here (or in the dashboard) is
+configured at Cloudflare: its page lists its public hostnames and connectors
+and adds, edits and removes hostnames; adding one can also create the
+proxied CNAME to the Tunnel, and removing one can delete it. Neo Box only
+creates a CNAME where the hostname has no record, and only deletes one that
+points at that Tunnel. **Connect cloudflared** shows the commands that run
+the Tunnel with its token; the token is read when the dialog opens and not
+stored. Tunnels configured by a local file are listed but their hostnames
+are not changed. Deleting a Tunnel needs cloudflared stopped (or "clean up
+its connections first") and leaves DNS records alone. Route changes are not
+logged, unlike DNS changes.
 
 ### Environment variables
 

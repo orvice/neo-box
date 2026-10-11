@@ -109,7 +109,9 @@ shadcn/ui + Connect-Web on the frontend.
   `not_supported`); `BucketFindings` flags risky settings.
 - `internal/cloudflare/` — Cloudflare API client (bearer token, one rate
   limiter per connection), connection settings, DNS record input and
-  validation. Reads retry 429/5xx/network errors; writes retry only 429 and
+  validation, and Tunnels (`tunnels.go`; `ingress.go` is the ingress model
+  that keeps unknown config keys, and the hostname / path / service
+  validation). Reads retry 429/5xx/network errors; writes retry only 429 and
   otherwise return `UncertainError`, never resent. `cftest/` is a stateful
   fake Cloudflare API (tokens with per-account permissions) for client and
   service tests.
@@ -118,8 +120,12 @@ shadcn/ui + Connect-Web on the frontend.
   account / zones / Workers / Pages reads; it never writes), live reads
   always checked against the connection's Account, DNS changes logged
   before they are sent (`dns.go`), and Worker / Pages addresses with
-  per-source issues (`resources.go`). A Zone's `permissions` describe the
-  token owner, not the token, so they can only rule DNS edits out.
+  per-source issues (`resources.go`), and cloudflared Tunnels
+  (`tunnels.go`): list / create / delete / token / connection cleanup, and
+  public hostnames edited by read-modify-write of the whole config under a
+  per-Tunnel lock, with optional CNAME create/delete through the DNS path.
+  A Zone's `permissions` describe the token owner, not the token, so they
+  can only rule DNS edits out.
 - `internal/wasabisync/` — `Manager`: one sync at a time; 12-month backfill in
   30-day chunks that resumes after failures, daily run at 02:30 UTC from the
   last synced day, `Refresh` for the last 7 days, catch-up at startup. Also
@@ -158,8 +164,11 @@ estimate's period by active / deleted / 1 TB minimum and by bucket), and
 test needs `NEOBOX_TEST_WASABI_ACCESS_KEY` / `NEOBOX_TEST_WASABI_SECRET_KEY`.
 
 **Cloudflare** (`proto/neobox/v1/cloudflare.proto`, `CloudflareService`):
-Zones, DNS records, Workers and Pages projects read live (search and paging
-cover the whole list), DNS create / update (partial, keeps unshown fields) /
+Zones, DNS records, Workers, Pages projects and Tunnels read live (search
+and paging cover the whole list), Tunnel create / delete / token /
+connection cleanup and public hostname add / update / delete (with optional
+DNS record; a DNS problem is reported beside the saved route, not an error),
+DNS create / update (partial, keeps unshown fields) /
 proxy switch / delete for A, AAAA, CNAME, TXT, MX, NS, SRV, CAA, and
 `ListCloudflareDNSOperations` (rows in `cloudflare_dns_operations`).
 `connection_id` must be the caller's Cloudflare connection. A missing
@@ -180,7 +189,8 @@ hooks. `src/stores/auth-store.ts` (Zustand) holds token + user. Routes under
 Provider registry: `provider-info.ts` (key, label, icon; used by the sidebar)
 and `providers.ts` (each Provider's form, card summary, and detail page from
 its feature folder). Cloudflare's logic lives in `src/features/cloudflare/`
-`addresses.ts`, `dns.ts` and `access.ts`, each with a Vitest test.
+`addresses.ts`, `dns.ts`, `access.ts` and `tunnels.ts`, each with a Vitest
+test.
 
 ## Conventions
 
