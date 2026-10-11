@@ -37,4 +37,14 @@ export const TOKEN_PERMISSIONS: {
     permission: 'Cloudflare Pages · Read',
     unlocks: 'Pages tab',
   },
+  {
+    scope: 'Account',
+    permission: 'Cloudflare Tunnel · Read',
+    unlocks: 'Tunnels tab',
+  },
+  {
+    scope: 'Account',
+    permission: 'Cloudflare Tunnel · Edit',
+    unlocks: 'creating Tunnels and changing their hostnames',
+  },
 ]

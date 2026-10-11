@@ -24,6 +24,8 @@ const (
 	PermWorkersRead = "workers:read" // Workers Scripts Read
 	PermRoutesRead  = "routes:read"  // Workers Routes Read (zone)
 	PermPagesRead   = "pages:read"
+	PermTunnelRead  = "tunnel:read" // Cloudflare Tunnel Read (account)
+	PermTunnelEdit  = "tunnel:edit" // Cloudflare Tunnel Edit (account)
 )
 
 // Token is an API token known to the fake.
@@ -100,6 +102,7 @@ type Server struct {
 	domains    map[string][]*WorkerDomain
 	routes     []*Route
 	projects   map[string][]*PagesProject
+	tunnels    map[string][]*Tunnel // account → tunnels
 	requests   []Request
 
 	// Intercept, when set, sees every request first; returning true means
@@ -115,7 +118,7 @@ func New() *Server {
 	s := &Server{
 		tokens: map[string]*Token{}, accounts: map[string]string{}, records: map[string][]map[string]any{},
 		scripts: map[string][]*Script{}, subdomains: map[string]string{}, domains: map[string][]*WorkerDomain{},
-		projects: map[string][]*PagesProject{},
+		projects: map[string][]*PagesProject{}, tunnels: map[string][]*Tunnel{},
 	}
 	s.Server = httptest.NewServer(http.HandlerFunc(s.serve))
 	return s
@@ -302,6 +305,8 @@ func (s *Server) handle(w http.ResponseWriter, r *http.Request, path string, bod
 		s.listZones(w, r, tok)
 	case len(parts) >= 2 && parts[0] == "zones":
 		s.zoneRoutes(w, r, tok, parts, path, body)
+	case len(parts) >= 3 && parts[0] == "accounts" && parts[2] == "cfd_tunnel":
+		s.tunnelRoutes(w, r, tok, parts, body)
 	case len(parts) >= 3 && parts[0] == "accounts" && parts[2] == "workers":
 		s.workers(w, r, tok, parts, path)
 	case len(parts) >= 4 && parts[0] == "accounts" && parts[2] == "pages" && parts[3] == "projects":

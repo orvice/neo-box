@@ -10,7 +10,8 @@ option go_package = "go.orx.me/apps/neo-box/pkg/proto/neobox/v1;neoboxv1";
 
 // CloudflareService reads the resources the API token of a Cloudflare
 // connection can see in the connection's Account (Zones, DNS records,
-// Workers, Pages projects) and changes DNS records. Everything is read live
+// Workers, Pages projects, Tunnels), changes DNS records, and manages
+// cloudflared Tunnels and their public hostnames. Everything is read live
 // from Cloudflare; only DNS operations started here are stored.
 //
 // connection_id must be the caller's Cloudflare connection; anything else
@@ -37,6 +38,32 @@ service CloudflareService {
   rpc ListCloudflareDNSOperations(ListCloudflareDNSOperationsRequest) returns (ListCloudflareDNSOperationsResponse);
   rpc ListCloudflareWorkers(ListCloudflareWorkersRequest) returns (ListCloudflareWorkersResponse);
   rpc ListCloudflarePagesProjects(ListCloudflarePagesProjectsRequest) returns (ListCloudflarePagesProjectsResponse);
+  // ListCloudflareTunnels pages through the Account's cloudflared Tunnels,
+  // optionally those whose name contains query.
+  rpc ListCloudflareTunnels(ListCloudflareTunnelsRequest) returns (ListCloudflareTunnelsResponse);
+  // GetCloudflareTunnel reads a Tunnel with its connectors and public
+  // hostnames. A part that could not be read is reported in issues.
+  rpc GetCloudflareTunnel(GetCloudflareTunnelRequest) returns (GetCloudflareTunnelResponse);
+  // CreateCloudflareTunnel creates a remotely managed Tunnel, whose
+  // hostnames are edited here and whose cloudflared runs with a token.
+  rpc CreateCloudflareTunnel(CreateCloudflareTunnelRequest) returns (CreateCloudflareTunnelResponse);
+  // DeleteCloudflareTunnel deletes a Tunnel. Cloudflare refuses while
+  // cloudflared is connected. DNS records pointing at it are left alone.
+  rpc DeleteCloudflareTunnel(DeleteCloudflareTunnelRequest) returns (DeleteCloudflareTunnelResponse);
+  // GetCloudflareTunnelToken returns the credential cloudflared runs the
+  // Tunnel with. It is never stored or logged by Neo Box.
+  rpc GetCloudflareTunnelToken(GetCloudflareTunnelTokenRequest) returns (GetCloudflareTunnelTokenResponse);
+  // CleanupCloudflareTunnelConnections closes a Tunnel's stale connections.
+  rpc CleanupCloudflareTunnelConnections(CleanupCloudflareTunnelConnectionsRequest) returns (CleanupCloudflareTunnelConnectionsResponse);
+  // AddCloudflareTunnelHostname routes a public hostname to a service of a
+  // remotely managed Tunnel, and can create its DNS record.
+  rpc AddCloudflareTunnelHostname(AddCloudflareTunnelHostnameRequest) returns (AddCloudflareTunnelHostnameResponse);
+  // UpdateCloudflareTunnelHostname changes the path and service of a route;
+  // its other settings are kept.
+  rpc UpdateCloudflareTunnelHostname(UpdateCloudflareTunnelHostnameRequest) returns (UpdateCloudflareTunnelHostnameResponse);
+  // DeleteCloudflareTunnelHostname removes a route, and can delete its DNS
+  // record when that is a CNAME to this Tunnel.
+  rpc DeleteCloudflareTunnelHostname(DeleteCloudflareTunnelHostnameRequest) returns (DeleteCloudflareTunnelHostnameResponse);
 }
 
 // CloudflarePageInfo describes one page of a list.
@@ -360,4 +387,212 @@ message ListCloudflarePagesProjectsResponse {
   repeated CloudflarePagesProject projects = 1;
   CloudflarePageInfo page_info = 2;
   repeated CloudflareAddressIssue address_issues = 3;
+}
+
+enum CloudflareTunnelStatus {
+  CLOUDFLARE_TUNNEL_STATUS_UNSPECIFIED = 0;
+  // Never connected.
+  CLOUDFLARE_TUNNEL_STATUS_INACTIVE = 1;
+  // Connected, but not at full strength.
+  CLOUDFLARE_TUNNEL_STATUS_DEGRADED = 2;
+  CLOUDFLARE_TUNNEL_STATUS_HEALTHY = 3;
+  // Has connected before, but nothing is connected now.
+  CLOUDFLARE_TUNNEL_STATUS_DOWN = 4;
+}
+
+message CloudflareTunnel {
+  string id = 1;
+  string name = 2;
+  CloudflareTunnelStatus status = 3;
+  // Whether the hostnames are kept at Cloudflare and so can be changed
+  // here; false means cloudflared reads a local config file.
+  bool managed_remotely = 4;
+  // Live connections to Cloudflare's edge.
+  int32 active_connections = 5;
+  google.protobuf.Timestamp created_at = 6;
+  // When it last had a connection, if it has none now.
+  google.protobuf.Timestamp inactive_since = 7;
+}
+
+message CloudflareTunnelConnection {
+  string id = 1;
+  // The Cloudflare data center, e.g. "SJC".
+  string colo_name = 2;
+  string origin_ip = 3;
+  bool pending_reconnect = 4;
+  google.protobuf.Timestamp opened_at = 5;
+}
+
+// CloudflareTunnelConnector is one running cloudflared instance.
+message CloudflareTunnelConnector {
+  string id = 1;
+  string version = 2;
+  string arch = 3;
+  google.protobuf.Timestamp run_at = 4;
+  repeated CloudflareTunnelConnection connections = 5;
+}
+
+// CloudflareTunnelHostname is one route of a Tunnel's ingress.
+message CloudflareTunnelHostname {
+  // Empty when the route matches any hostname.
+  string hostname = 1;
+  // A regular expression on the request path; empty matches all.
+  string path = 2;
+  // An origin URL such as http://localhost:8080, or a built-in service
+  // (http_status:404, hello_world, bastion, unix:/path).
+  string service = 3;
+  // The route carries origin settings (originRequest) that are kept as
+  // they are when the route changes.
+  bool has_origin_settings = 4;
+}
+
+// CloudflareReadIssue says part of what is shown could not be read.
+message CloudflareReadIssue {
+  // e.g. "Tunnel connectors", "Tunnel hostnames".
+  string source = 1;
+  string message = 2;
+  // The token lacks the permission to read it.
+  bool permission_denied = 3;
+}
+
+// CloudflareTunnelRecordStatus is what became of the DNS record of a
+// hostname change. The route changed whatever it says.
+enum CloudflareTunnelRecordStatus {
+  CLOUDFLARE_TUNNEL_RECORD_STATUS_UNSPECIFIED = 0;
+  // No DNS change was asked for.
+  CLOUDFLARE_TUNNEL_RECORD_STATUS_NOT_REQUESTED = 1;
+  CLOUDFLARE_TUNNEL_RECORD_STATUS_CREATED = 2;
+  // The hostname already pointed at the Tunnel.
+  CLOUDFLARE_TUNNEL_RECORD_STATUS_EXISTS = 3;
+  CLOUDFLARE_TUNNEL_RECORD_STATUS_DELETED = 4;
+  // A delete left the record in place; message says why.
+  CLOUDFLARE_TUNNEL_RECORD_STATUS_KEPT = 5;
+  // The Account has no Zone for the hostname.
+  CLOUDFLARE_TUNNEL_RECORD_STATUS_NO_ZONE = 6;
+  // The hostname has another record, which was not touched.
+  CLOUDFLARE_TUNNEL_RECORD_STATUS_CONFLICT = 7;
+  CLOUDFLARE_TUNNEL_RECORD_STATUS_FAILED = 8;
+}
+
+message CloudflareTunnelRecordResult {
+  CloudflareTunnelRecordStatus status = 1;
+  string message = 2;
+  string record_id = 3;
+}
+
+message ListCloudflareTunnelsRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  // Part of the Tunnel name.
+  string query = 2;
+  int32 page = 3;
+  // 0 means 20; at most 50.
+  int32 page_size = 4;
+}
+
+message ListCloudflareTunnelsResponse {
+  repeated CloudflareTunnel tunnels = 1;
+  CloudflarePageInfo page_info = 2;
+}
+
+message GetCloudflareTunnelRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string tunnel_id = 2 [(validate.rules).string.min_len = 1];
+}
+
+message GetCloudflareTunnelResponse {
+  CloudflareTunnel tunnel = 1;
+  repeated CloudflareTunnelConnector connectors = 2;
+  // The routes, in the order cloudflared applies them, without the
+  // catch-all. Empty for a Tunnel that is not managed remotely.
+  repeated CloudflareTunnelHostname hostnames = 3;
+  // Where requests no route matches go; empty when none is configured.
+  string catch_all_service = 4;
+  // 0 for a Tunnel never configured.
+  int32 config_version = 5;
+  repeated CloudflareReadIssue issues = 6;
+}
+
+message CreateCloudflareTunnelRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+}
+
+message CreateCloudflareTunnelResponse {
+  CloudflareTunnel tunnel = 1;
+}
+
+message DeleteCloudflareTunnelRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string tunnel_id = 2 [(validate.rules).string.min_len = 1];
+  // Close stale connections first, which Cloudflare requires before it
+  // deletes a Tunnel that still lists any.
+  bool cleanup_connections = 3;
+}
+
+message DeleteCloudflareTunnelResponse {}
+
+message GetCloudflareTunnelTokenRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string tunnel_id = 2 [(validate.rules).string.min_len = 1];
+}
+
+message GetCloudflareTunnelTokenResponse {
+  // Runs the Tunnel: cloudflared tunnel run --token <token>.
+  string token = 1;
+}
+
+message CleanupCloudflareTunnelConnectionsRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string tunnel_id = 2 [(validate.rules).string.min_len = 1];
+}
+
+message CleanupCloudflareTunnelConnectionsResponse {}
+
+message AddCloudflareTunnelHostnameRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string tunnel_id = 2 [(validate.rules).string.min_len = 1];
+  // A domain name such as app.example.com; the first label may be *.
+  string hostname = 3 [(validate.rules).string.min_len = 1];
+  // Optional regular expression on the request path.
+  string path = 4;
+  string service = 5 [(validate.rules).string.min_len = 1];
+  // Also point the hostname at the Tunnel with a proxied CNAME, when the
+  // Account has its Zone and nothing else is there.
+  bool create_dns = 6;
+}
+
+message AddCloudflareTunnelHostnameResponse {
+  CloudflareTunnelHostname hostname = 1;
+  int32 config_version = 2;
+  CloudflareTunnelRecordResult record = 3;
+}
+
+message UpdateCloudflareTunnelHostnameRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string tunnel_id = 2 [(validate.rules).string.min_len = 1];
+  // Name the route being changed; the hostname itself cannot change.
+  string hostname = 3 [(validate.rules).string.min_len = 1];
+  string current_path = 4;
+  // The route's new path and service.
+  string path = 5;
+  string service = 6 [(validate.rules).string.min_len = 1];
+}
+
+message UpdateCloudflareTunnelHostnameResponse {
+  CloudflareTunnelHostname hostname = 1;
+  int32 config_version = 2;
+}
+
+message DeleteCloudflareTunnelHostnameRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string tunnel_id = 2 [(validate.rules).string.min_len = 1];
+  string hostname = 3 [(validate.rules).string.min_len = 1];
+  string path = 4;
+  // Also delete the hostname's CNAME to this Tunnel.
+  bool delete_dns = 5;
+}
+
+message DeleteCloudflareTunnelHostnameResponse {
+  int32 config_version = 1;
+  CloudflareTunnelRecordResult record = 2;
 }

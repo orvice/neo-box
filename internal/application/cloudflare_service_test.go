@@ -52,12 +52,16 @@ func newCFFixture(t *testing.T) *cfFixture {
 	all := []string{
 		cftest.PermAccountRead, cftest.PermZoneRead, cftest.PermDNSRead, cftest.PermDNSEdit,
 		cftest.PermWorkersRead, cftest.PermRoutesRead, cftest.PermPagesRead,
+		cftest.PermTunnelRead, cftest.PermTunnelEdit,
 	}
 	cf.AddToken("full", &cftest.Token{Accounts: []string{cfAccA, cfAccB}, Perms: all,
 		ZonePermissions: []string{"#zone:read", "#dns_records:read", "#dns_records:edit"}})
 	cf.AddToken("dns-read", &cftest.Token{Accounts: []string{cfAccA}, Perms: []string{cftest.PermZoneRead, cftest.PermDNSRead},
 		ZonePermissions: []string{"#zone:read", "#dns_records:read"}})
 	cf.AddToken("zones-only", &cftest.Token{Accounts: []string{cfAccA}, Perms: []string{cftest.PermZoneRead, cftest.PermDNSEdit}})
+	cf.AddToken("tunnel-read", &cftest.Token{Accounts: []string{cfAccA}, Perms: []string{cftest.PermZoneRead, cftest.PermTunnelRead}})
+	cf.AddToken("tunnel-no-dns", &cftest.Token{Accounts: []string{cfAccA},
+		Perms: []string{cftest.PermZoneRead, cftest.PermDNSRead, cftest.PermTunnelRead, cftest.PermTunnelEdit}})
 	cf.AddToken("acct-owned", &cftest.Token{OwnerAccount: cfAccA, Accounts: []string{cfAccA}, Perms: []string{cftest.PermPagesRead}})
 	cf.AddZone(&cftest.Zone{ID: "za1", Name: "alpha.com", Account: cfAccA})
 	cf.AddZone(&cftest.Zone{ID: "za2", Name: "bravo.com", Account: cfAccA})

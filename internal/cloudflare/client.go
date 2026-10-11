@@ -417,6 +417,8 @@ func (c *Client) GetAccount(ctx context.Context, id string) (*Account, error) {
 type ZoneQuery struct {
 	AccountID string
 	Name      string
+	// ExactName matches the whole Zone name and takes precedence over Name.
+	ExactName string
 	Page      int
 	PerPage   int
 }
@@ -427,7 +429,9 @@ func (c *Client) ListZones(ctx context.Context, zq ZoneQuery) ([]Zone, *PageInfo
 	if zq.AccountID != "" {
 		q.Set("account.id", zq.AccountID)
 	}
-	if name := strings.TrimSpace(zq.Name); name != "" {
+	if exact := strings.TrimSpace(zq.ExactName); exact != "" {
+		q.Set("name", exact)
+	} else if name := strings.TrimSpace(zq.Name); name != "" {
 		q.Set("name", "contains:"+name)
 	}
 	setPage(q, zq.Page, zq.PerPage)
@@ -653,8 +657,16 @@ func (c *Client) ListPagesDomains(ctx context.Context, accountID, project string
 
 // eachPage walks a paged list until total_pages (or a short page).
 func (c *Client) eachPage(ctx context.Context, path string, perPage int, fn func(json.RawMessage) error) error {
+	return c.eachPageWith(ctx, path, perPage, nil, fn)
+}
+
+// eachPageWith is eachPage with more query parameters on every request.
+func (c *Client) eachPageWith(ctx context.Context, path string, perPage int, extra url.Values, fn func(json.RawMessage) error) error {
 	for page := 1; page <= maxPages; page++ {
 		q := url.Values{}
+		for k, v := range extra {
+			q[k] = v
+		}
 		setPage(q, page, perPage)
 		env, err := c.do(ctx, http.MethodGet, path, q, nil)
 		if err != nil {

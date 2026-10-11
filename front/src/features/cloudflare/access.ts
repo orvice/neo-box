@@ -95,7 +95,11 @@ export function moduleProblem(err: unknown): ModuleProblem {
 }
 
 /** A failed change, and whether it may have been made anyway. */
-export function changeError(err: unknown): {
+export function changeError(
+  err: unknown,
+  /** What to check before trying again. */
+  what = 'records'
+): {
   uncertain: boolean
   message: string
 } {
@@ -103,8 +107,7 @@ export function changeError(err: unknown): {
   if (e.code === Code.Unknown) {
     return {
       uncertain: true,
-      message:
-        'Cloudflare did not confirm the change, so it may or may not have been made. Check the records before trying again.',
+      message: `Cloudflare did not confirm the change, so it may or may not have been made. Check the ${what} before trying again.`,
     }
   }
   return { uncertain: false, message: e.rawMessage }

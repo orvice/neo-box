@@ -1,18 +1,9 @@
 import { Copy, ExternalLink } from 'lucide-react'
-import { toast } from 'sonner'
 import type { CloudflareAddress } from '@/api/cloudflare'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { addressKindLabel, addressLinks } from './addresses'
-
-async function copy(text: string) {
-  try {
-    await navigator.clipboard.writeText(text)
-    toast.success('Copied')
-  } catch {
-    toast.error('Could not copy')
-  }
-}
+import { copy } from './clipboard'
 
 /** A Worker's or Pages project's addresses, each openable and copyable. */
 export function AddressList({

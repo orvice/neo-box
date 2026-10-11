@@ -46,6 +46,8 @@ type Manager struct {
 
 	mu       sync.Mutex
 	limiters map[string]*rate.Limiter
+	// tunnelLocks holds a mutex per Tunnel, keyed account/tunnel.
+	tunnelLocks sync.Map
 }
 
 func New(cfg Config, r cfrepo.Repository, conns Connections) *Manager {

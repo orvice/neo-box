@@ -27,6 +27,14 @@ export {
   type CloudflarePagesProject,
   type CloudflareWorker,
   type CloudflareZone,
+  CloudflareTunnelRecordStatus,
+  CloudflareTunnelStatus,
+  type CloudflareReadIssue,
+  type CloudflareTunnel,
+  type CloudflareTunnelConnector,
+  type CloudflareTunnelHostname,
+  type CloudflareTunnelRecordResult,
+  type GetCloudflareTunnelResponse,
 } from '@/gen/neobox/v1/cloudflare_pb'
 
 /** A DNS record as sent on create and update. */
@@ -61,6 +69,12 @@ const keys = {
     ['cloudflare', connectionId, 'workers', q] as const,
   pages: (connectionId: string, q: ListQuery) =>
     ['cloudflare', connectionId, 'pages', q] as const,
+  tunnels: (connectionId: string, q?: ListQuery) =>
+    q
+      ? (['cloudflare', connectionId, 'tunnels', q] as const)
+      : (['cloudflare', connectionId, 'tunnels'] as const),
+  tunnel: (connectionId: string, tunnelId: string) =>
+    ['cloudflare', connectionId, 'tunnel', tunnelId] as const,
 }
 
 // Everything is read live from Cloudflare when a page opens; there is no
@@ -138,6 +152,118 @@ export function useCloudflarePagesProjects(connectionId: string, q: ListQuery) {
     placeholderData: keepPreviousData,
     retry: false,
   })
+}
+
+export function useCloudflareTunnels(connectionId: string, q: ListQuery) {
+  return useQuery({
+    queryKey: keys.tunnels(connectionId, q),
+    queryFn: async () =>
+      await client.listCloudflareTunnels({ connectionId, ...q }),
+    placeholderData: keepPreviousData,
+    retry: false,
+  })
+}
+
+export function useCloudflareTunnel(connectionId: string, tunnelId: string) {
+  return useQuery({
+    queryKey: keys.tunnel(connectionId, tunnelId),
+    queryFn: async () =>
+      await client.getCloudflareTunnel({ connectionId, tunnelId }),
+    retry: false,
+  })
+}
+
+/**
+ * Reads a Tunnel's token on demand. It is a credential, so it is neither
+ * cached nor kept: the caller holds it only while it is shown.
+ */
+export function useCloudflareTunnelToken(connectionId: string) {
+  return useMutation({
+    mutationFn: async (tunnelId: string) =>
+      (await client.getCloudflareTunnelToken({ connectionId, tunnelId })).token,
+    gcTime: 0,
+  })
+}
+
+/** Create, delete and clean up Tunnels; the lists are read again after. */
+export function useCloudflareTunnelChanges(connectionId: string) {
+  const qc = useQueryClient()
+  const onSettled = () =>
+    qc.invalidateQueries({ queryKey: keys.tunnels(connectionId) })
+  return {
+    create: useMutation({
+      mutationFn: async (name: string) =>
+        (await client.createCloudflareTunnel({ connectionId, name })).tunnel,
+      onSettled,
+    }),
+    remove: useMutation({
+      mutationFn: async (v: {
+        tunnelId: string
+        cleanupConnections: boolean
+      }) => await client.deleteCloudflareTunnel({ connectionId, ...v }),
+      onSettled: async () => {
+        await onSettled()
+        qc.removeQueries({ queryKey: ['cloudflare', connectionId, 'tunnel'] })
+      },
+    }),
+    cleanup: useMutation({
+      mutationFn: async (tunnelId: string) =>
+        await client.cleanupCloudflareTunnelConnections({
+          connectionId,
+          tunnelId,
+        }),
+      onSettled: async (_d, _e, tunnelId) => {
+        await Promise.all([
+          onSettled(),
+          qc.invalidateQueries({
+            queryKey: keys.tunnel(connectionId, tunnelId),
+          }),
+        ])
+      },
+    }),
+  }
+}
+
+/**
+ * A Tunnel's public hostnames. A change may have been made even when it
+ * fails with an unconfirmed result, so the Tunnel is read again either way.
+ */
+export function useCloudflareTunnelHostnames(
+  connectionId: string,
+  tunnelId: string
+) {
+  const qc = useQueryClient()
+  const onSettled = () =>
+    qc.invalidateQueries({ queryKey: keys.tunnel(connectionId, tunnelId) })
+  const base = { connectionId, tunnelId }
+  return {
+    add: useMutation({
+      mutationFn: async (v: {
+        hostname: string
+        path: string
+        service: string
+        createDns: boolean
+      }) => await client.addCloudflareTunnelHostname({ ...base, ...v }),
+      onSettled,
+    }),
+    update: useMutation({
+      mutationFn: async (v: {
+        hostname: string
+        currentPath: string
+        path: string
+        service: string
+      }) => await client.updateCloudflareTunnelHostname({ ...base, ...v }),
+      onSettled,
+    }),
+    remove: useMutation({
+      mutationFn: async (v: {
+        hostname: string
+        path: string
+        deleteDns: boolean
+      }) => await client.deleteCloudflareTunnelHostname({ ...base, ...v }),
+      onSettled,
+    }),
+  }
 }
 
 /**

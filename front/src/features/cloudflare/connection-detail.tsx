@@ -27,6 +27,7 @@ import {
   RefreshButton,
   SearchBox,
 } from './list-parts'
+import { TunnelsTab } from './tunnels-tab'
 
 const PAGE_SIZE = 20
 
@@ -43,7 +44,10 @@ function useListQuery() {
   }
 }
 
-/** A Cloudflare connection: the Zones, Workers and Pages its token sees. */
+/**
+ * A Cloudflare connection: the Zones, Workers, Pages and Tunnels its token
+ * sees.
+ */
 export function CloudflareConnectionDetail({
   connection,
 }: {
@@ -79,6 +83,7 @@ export function CloudflareConnectionDetail({
             <TabsTrigger value='zones'>Zones</TabsTrigger>
             <TabsTrigger value='workers'>Workers</TabsTrigger>
             <TabsTrigger value='pages'>Pages</TabsTrigger>
+            <TabsTrigger value='tunnels'>Tunnels</TabsTrigger>
           </TabsList>
           <TabsContent value='zones' className='pt-2'>
             <ZonesTab connectionId={connection.id} />
@@ -88,6 +93,9 @@ export function CloudflareConnectionDetail({
           </TabsContent>
           <TabsContent value='pages' className='pt-2'>
             <PagesTab connectionId={connection.id} />
+          </TabsContent>
+          <TabsContent value='tunnels' className='pt-2'>
+            <TunnelsTab connectionId={connection.id} />
           </TabsContent>
         </Tabs>
       </PageScroll>
