@@ -30,6 +30,7 @@ type Handlers struct {
 	nocodbSvcServer     *application.NocoDBServiceServer
 	wasabiSvcServer     *application.WasabiServiceServer
 	cloudflareSvcServer *application.CloudflareServiceServer
+	workspaceSvcServer  *application.GoogleWorkspaceServiceServer
 	notifySvcServer     *application.NotificationServiceServer
 	authRepo            atomic.Value // auth.Repository
 	snapshots           atomic.Value // *snapshotContent
@@ -83,11 +84,15 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 	wasabiConnectPath, wasabiConnectHandler := neoboxv1connect.NewWasabiServiceHandler(wasabiSvcServer, connectOpts...)
 	cloudflareSvcServer := application.NewCloudflareServiceServer()
 	cloudflareConnectPath, cloudflareConnectHandler := neoboxv1connect.NewCloudflareServiceHandler(cloudflareSvcServer, connectOpts...)
+	workspaceSvcServer := application.NewGoogleWorkspaceServiceServer()
+	workspaceConnectPath, workspaceConnectHandler := neoboxv1connect.NewGoogleWorkspaceServiceHandler(workspaceSvcServer, connectOpts...)
+
 	notifySvcServer := application.NewNotificationServiceServer()
 	notifyConnectPath, notifyConnectHandler := neoboxv1connect.NewNotificationServiceHandler(notifySvcServer, connectOpts...)
 
 	handlers := &Handlers{
 		cfg:                 cfg,
+		workspaceSvcServer:  workspaceSvcServer,
 		authSvcServer:       authSvcServer,
 		connectionSvcServer: connectionSvcServer,
 		nocodbSvcServer:     nocodbSvcServer,
@@ -106,6 +111,8 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 		r.Any("/api"+nocodbConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", nocodbConnectHandler)))
 		r.Any("/api"+wasabiConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", wasabiConnectHandler)))
 		r.Any("/api"+cloudflareConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", cloudflareConnectHandler)))
+		r.Any("/api"+workspaceConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", workspaceConnectHandler)))
+
 		r.Any("/api"+notifyConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", notifyConnectHandler)))
 	}
 

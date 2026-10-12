@@ -53,3 +53,6 @@ type WasabiDailyUsage func(*sql.Selector)
 
 // WasabiSyncState is the predicate function for wasabisyncstate builders.
 type WasabiSyncState func(*sql.Selector)
+
+// WorkspaceTenant is the predicate function for workspacetenant builders.
+type WorkspaceTenant func(*sql.Selector)

@@ -12,10 +12,10 @@ one place.
 - **Session** — a bearer token issued at sign-in. Only its sha256 is stored;
   it expires after `auth.session_ttl`.
 - **Provider** — a kind of third-party service Neo Box integrates with
-  (today: NocoDB, Wasabi and Cloudflare). Each Provider decides what it
+  (today: NocoDB, Wasabi, Cloudflare and Google Workspace). Each Provider decides what it
   shows and does for a Connection; Neo Box has no provider-independent model
   of resources. Not to be confused with the OAuth sign-in providers above.
-- **Connection** — one account at a Provider, owned by one User: a name,
+- **Connection** — access to a Provider, owned by one User: a name,
   the Provider's settings, and its credentials. Credentials are encrypted
   with `crypto.encryption_key` and never returned by the API. A Connection
   has a health status (ok / error, with a message), set whenever its
@@ -163,6 +163,18 @@ can't be deleted while a Restore of it is pending or running.
   record that is anything else is never replaced or deleted, and a DNS
   problem never undoes the route: it is reported next to it. Route changes
   are not logged; the DNS records they create are DNS operations.
+
+### Google Workspace
+
+- **Workspace Connection** — one Service Account owned by a Neo Box User,
+  reusable across several independent Workspace Tenants.
+- **Workspace Tenant** — one independent Google Workspace organization,
+  identified by its Customer ID, that authorizes a Workspace Connection.
+  Multiple domains within the same organization belong to the same Tenant.
+- **Delegated administrator** — the administrator in a Workspace Tenant
+  whose authority the Service Account uses to manage that Tenant's users.
+- **Workspace User** — a Google user account within one Workspace Tenant;
+  distinct from a User who signs in to Neo Box.
 
 ### Notifications
 

@@ -28,6 +28,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent/wasabibucketconfig"
 	"go.orx.me/apps/neo-box/internal/ent/wasabidailyusage"
 	"go.orx.me/apps/neo-box/internal/ent/wasabisyncstate"
+	"go.orx.me/apps/neo-box/internal/ent/workspacetenant"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -104,6 +105,7 @@ func checkColumn(t, c string) error {
 			wasabibucketconfig.Table:     wasabibucketconfig.ValidColumn,
 			wasabidailyusage.Table:       wasabidailyusage.ValidColumn,
 			wasabisyncstate.Table:        wasabisyncstate.ValidColumn,
+			workspacetenant.Table:        workspacetenant.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

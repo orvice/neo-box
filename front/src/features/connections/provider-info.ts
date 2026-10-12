@@ -1,4 +1,10 @@
-import { Cloud, DatabaseBackup, Globe, type LucideIcon } from 'lucide-react'
+import {
+  Cloud,
+  DatabaseBackup,
+  Globe,
+  Users,
+  type LucideIcon,
+} from 'lucide-react'
 import { Provider } from '@/api/connections'
 
 /**
@@ -15,6 +21,14 @@ export type ProviderInfo = {
 }
 
 export const providerInfos: ProviderInfo[] = [
+  {
+    provider: Provider.GOOGLE_WORKSPACE,
+    key: 'google_workspace',
+    label: 'Google Workspace',
+    description:
+      'Manage users across independent Workspace tenants with one Service Account.',
+    icon: Users,
+  },
   {
     provider: Provider.NOCODB,
     key: 'nocodb',
