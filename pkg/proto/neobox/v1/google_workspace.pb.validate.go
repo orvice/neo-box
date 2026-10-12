@@ -218,6 +218,26 @@ func (m *WorkspaceUser) validate(all bool) error {
 
 	// no validation rules for CustomerId
 
+	// no validation rules for LastLoginTime
+
+	// no validation rules for CreationTime
+
+	if m.SuperAdmin != nil {
+		// no validation rules for SuperAdmin
+	}
+
+	if m.DelegatedAdmin != nil {
+		// no validation rules for DelegatedAdmin
+	}
+
+	if m.TwoStepEnrolled != nil {
+		// no validation rules for TwoStepEnrolled
+	}
+
+	if m.TwoStepEnforced != nil {
+		// no validation rules for TwoStepEnforced
+	}
+
 	if len(errors) > 0 {
 		return WorkspaceUserMultiError(errors)
 	}
@@ -8458,3 +8478,1863 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = RevokeWorkspaceUserTokenResponseValidationError{}
+
+// Validate checks the field values on WorkspaceOperation with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WorkspaceOperation) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WorkspaceOperation with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WorkspaceOperationMultiError, or nil if none found.
+func (m *WorkspaceOperation) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WorkspaceOperation) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for ConnectionId
+
+	// no validation rules for TenantId
+
+	// no validation rules for TenantName
+
+	// no validation rules for CustomerId
+
+	// no validation rules for Action
+
+	// no validation rules for Target
+
+	if all {
+		switch v := interface{}(m.GetRequested()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, WorkspaceOperationValidationError{
+					field:  "Requested",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, WorkspaceOperationValidationError{
+					field:  "Requested",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetRequested()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return WorkspaceOperationValidationError{
+				field:  "Requested",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetResult()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, WorkspaceOperationValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, WorkspaceOperationValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetResult()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return WorkspaceOperationValidationError{
+				field:  "Result",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for Status
+
+	// no validation rules for Error
+
+	// no validation rules for ActorId
+
+	// no validation rules for ActorName
+
+	if all {
+		switch v := interface{}(m.GetCreatedAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, WorkspaceOperationValidationError{
+					field:  "CreatedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, WorkspaceOperationValidationError{
+					field:  "CreatedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetCreatedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return WorkspaceOperationValidationError{
+				field:  "CreatedAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetFinishedAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, WorkspaceOperationValidationError{
+					field:  "FinishedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, WorkspaceOperationValidationError{
+					field:  "FinishedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetFinishedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return WorkspaceOperationValidationError{
+				field:  "FinishedAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return WorkspaceOperationMultiError(errors)
+	}
+
+	return nil
+}
+
+// WorkspaceOperationMultiError is an error wrapping multiple validation errors
+// returned by WorkspaceOperation.ValidateAll() if the designated constraints
+// aren't met.
+type WorkspaceOperationMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WorkspaceOperationMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WorkspaceOperationMultiError) AllErrors() []error { return m }
+
+// WorkspaceOperationValidationError is the validation error returned by
+// WorkspaceOperation.Validate if the designated constraints aren't met.
+type WorkspaceOperationValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WorkspaceOperationValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WorkspaceOperationValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WorkspaceOperationValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WorkspaceOperationValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WorkspaceOperationValidationError) ErrorName() string {
+	return "WorkspaceOperationValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WorkspaceOperationValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWorkspaceOperation.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WorkspaceOperationValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WorkspaceOperationValidationError{}
+
+// Validate checks the field values on ListWorkspaceOperationsRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListWorkspaceOperationsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListWorkspaceOperationsRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// ListWorkspaceOperationsRequestMultiError, or nil if none found.
+func (m *ListWorkspaceOperationsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListWorkspaceOperationsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ConnectionId
+
+	// no validation rules for TenantId
+
+	// no validation rules for Query
+
+	// no validation rules for Status
+
+	// no validation rules for Page
+
+	// no validation rules for PageSize
+
+	if len(errors) > 0 {
+		return ListWorkspaceOperationsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListWorkspaceOperationsRequestMultiError is an error wrapping multiple
+// validation errors returned by ListWorkspaceOperationsRequest.ValidateAll()
+// if the designated constraints aren't met.
+type ListWorkspaceOperationsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListWorkspaceOperationsRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListWorkspaceOperationsRequestMultiError) AllErrors() []error { return m }
+
+// ListWorkspaceOperationsRequestValidationError is the validation error
+// returned by ListWorkspaceOperationsRequest.Validate if the designated
+// constraints aren't met.
+type ListWorkspaceOperationsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListWorkspaceOperationsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListWorkspaceOperationsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListWorkspaceOperationsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListWorkspaceOperationsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListWorkspaceOperationsRequestValidationError) ErrorName() string {
+	return "ListWorkspaceOperationsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListWorkspaceOperationsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListWorkspaceOperationsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListWorkspaceOperationsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListWorkspaceOperationsRequestValidationError{}
+
+// Validate checks the field values on ListWorkspaceOperationsResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListWorkspaceOperationsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListWorkspaceOperationsResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// ListWorkspaceOperationsResponseMultiError, or nil if none found.
+func (m *ListWorkspaceOperationsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListWorkspaceOperationsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetOperations() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListWorkspaceOperationsResponseValidationError{
+						field:  fmt.Sprintf("Operations[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListWorkspaceOperationsResponseValidationError{
+						field:  fmt.Sprintf("Operations[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListWorkspaceOperationsResponseValidationError{
+					field:  fmt.Sprintf("Operations[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for TotalCount
+
+	// no validation rules for Page
+
+	// no validation rules for PageSize
+
+	if len(errors) > 0 {
+		return ListWorkspaceOperationsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListWorkspaceOperationsResponseMultiError is an error wrapping multiple
+// validation errors returned by ListWorkspaceOperationsResponse.ValidateAll()
+// if the designated constraints aren't met.
+type ListWorkspaceOperationsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListWorkspaceOperationsResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListWorkspaceOperationsResponseMultiError) AllErrors() []error { return m }
+
+// ListWorkspaceOperationsResponseValidationError is the validation error
+// returned by ListWorkspaceOperationsResponse.Validate if the designated
+// constraints aren't met.
+type ListWorkspaceOperationsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListWorkspaceOperationsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListWorkspaceOperationsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListWorkspaceOperationsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListWorkspaceOperationsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListWorkspaceOperationsResponseValidationError) ErrorName() string {
+	return "ListWorkspaceOperationsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListWorkspaceOperationsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListWorkspaceOperationsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListWorkspaceOperationsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListWorkspaceOperationsResponseValidationError{}
+
+// Validate checks the field values on WorkspaceTenantSummary with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WorkspaceTenantSummary) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WorkspaceTenantSummary with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WorkspaceTenantSummaryMultiError, or nil if none found.
+func (m *WorkspaceTenantSummary) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WorkspaceTenantSummary) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ConnectionId
+
+	// no validation rules for ConnectionName
+
+	if all {
+		switch v := interface{}(m.GetTenant()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, WorkspaceTenantSummaryValidationError{
+					field:  "Tenant",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, WorkspaceTenantSummaryValidationError{
+					field:  "Tenant",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTenant()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return WorkspaceTenantSummaryValidationError{
+				field:  "Tenant",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for UserCount
+
+	// no validation rules for ActiveCount
+
+	// no validation rules for SuspendedCount
+
+	// no validation rules for AdminCount
+
+	// no validation rules for AdminsWithoutTwoStep
+
+	// no validation rules for InactiveCount
+
+	// no validation rules for NeverLoggedInCount
+
+	// no validation rules for SecurityUnknownCount
+
+	// no validation rules for UsersComplete
+
+	// no validation rules for UsersError
+
+	// no validation rules for GroupsComplete
+
+	// no validation rules for GroupsError
+
+	if m.GroupCount != nil {
+		// no validation rules for GroupCount
+	}
+
+	if len(errors) > 0 {
+		return WorkspaceTenantSummaryMultiError(errors)
+	}
+
+	return nil
+}
+
+// WorkspaceTenantSummaryMultiError is an error wrapping multiple validation
+// errors returned by WorkspaceTenantSummary.ValidateAll() if the designated
+// constraints aren't met.
+type WorkspaceTenantSummaryMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WorkspaceTenantSummaryMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WorkspaceTenantSummaryMultiError) AllErrors() []error { return m }
+
+// WorkspaceTenantSummaryValidationError is the validation error returned by
+// WorkspaceTenantSummary.Validate if the designated constraints aren't met.
+type WorkspaceTenantSummaryValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WorkspaceTenantSummaryValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WorkspaceTenantSummaryValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WorkspaceTenantSummaryValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WorkspaceTenantSummaryValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WorkspaceTenantSummaryValidationError) ErrorName() string {
+	return "WorkspaceTenantSummaryValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WorkspaceTenantSummaryValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWorkspaceTenantSummary.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WorkspaceTenantSummaryValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WorkspaceTenantSummaryValidationError{}
+
+// Validate checks the field values on WorkspaceOverviewUser with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WorkspaceOverviewUser) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WorkspaceOverviewUser with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WorkspaceOverviewUserMultiError, or nil if none found.
+func (m *WorkspaceOverviewUser) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WorkspaceOverviewUser) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ConnectionId
+
+	// no validation rules for ConnectionName
+
+	// no validation rules for TenantId
+
+	// no validation rules for TenantName
+
+	if all {
+		switch v := interface{}(m.GetUser()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, WorkspaceOverviewUserValidationError{
+					field:  "User",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, WorkspaceOverviewUserValidationError{
+					field:  "User",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetUser()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return WorkspaceOverviewUserValidationError{
+				field:  "User",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for Inactive
+
+	// no validation rules for NeverLoggedIn
+
+	// no validation rules for AdminWithoutTwoStep
+
+	// no validation rules for SecurityUnknown
+
+	if len(errors) > 0 {
+		return WorkspaceOverviewUserMultiError(errors)
+	}
+
+	return nil
+}
+
+// WorkspaceOverviewUserMultiError is an error wrapping multiple validation
+// errors returned by WorkspaceOverviewUser.ValidateAll() if the designated
+// constraints aren't met.
+type WorkspaceOverviewUserMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WorkspaceOverviewUserMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WorkspaceOverviewUserMultiError) AllErrors() []error { return m }
+
+// WorkspaceOverviewUserValidationError is the validation error returned by
+// WorkspaceOverviewUser.Validate if the designated constraints aren't met.
+type WorkspaceOverviewUserValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WorkspaceOverviewUserValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WorkspaceOverviewUserValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WorkspaceOverviewUserValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WorkspaceOverviewUserValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WorkspaceOverviewUserValidationError) ErrorName() string {
+	return "WorkspaceOverviewUserValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WorkspaceOverviewUserValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWorkspaceOverviewUser.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WorkspaceOverviewUserValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WorkspaceOverviewUserValidationError{}
+
+// Validate checks the field values on GetWorkspaceOverviewRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetWorkspaceOverviewRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetWorkspaceOverviewRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetWorkspaceOverviewRequestMultiError, or nil if none found.
+func (m *GetWorkspaceOverviewRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetWorkspaceOverviewRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ConnectionId
+
+	// no validation rules for TenantId
+
+	// no validation rules for Query
+
+	// no validation rules for SecurityFilter
+
+	// no validation rules for InactivityDays
+
+	// no validation rules for IncludeGroups
+
+	// no validation rules for Page
+
+	// no validation rules for PageSize
+
+	if len(errors) > 0 {
+		return GetWorkspaceOverviewRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetWorkspaceOverviewRequestMultiError is an error wrapping multiple
+// validation errors returned by GetWorkspaceOverviewRequest.ValidateAll() if
+// the designated constraints aren't met.
+type GetWorkspaceOverviewRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetWorkspaceOverviewRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetWorkspaceOverviewRequestMultiError) AllErrors() []error { return m }
+
+// GetWorkspaceOverviewRequestValidationError is the validation error returned
+// by GetWorkspaceOverviewRequest.Validate if the designated constraints
+// aren't met.
+type GetWorkspaceOverviewRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetWorkspaceOverviewRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetWorkspaceOverviewRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetWorkspaceOverviewRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetWorkspaceOverviewRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetWorkspaceOverviewRequestValidationError) ErrorName() string {
+	return "GetWorkspaceOverviewRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetWorkspaceOverviewRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetWorkspaceOverviewRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetWorkspaceOverviewRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetWorkspaceOverviewRequestValidationError{}
+
+// Validate checks the field values on GetWorkspaceOverviewResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetWorkspaceOverviewResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetWorkspaceOverviewResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetWorkspaceOverviewResponseMultiError, or nil if none found.
+func (m *GetWorkspaceOverviewResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetWorkspaceOverviewResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetTenants() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetWorkspaceOverviewResponseValidationError{
+						field:  fmt.Sprintf("Tenants[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetWorkspaceOverviewResponseValidationError{
+						field:  fmt.Sprintf("Tenants[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetWorkspaceOverviewResponseValidationError{
+					field:  fmt.Sprintf("Tenants[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	for idx, item := range m.GetUsers() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetWorkspaceOverviewResponseValidationError{
+						field:  fmt.Sprintf("Users[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetWorkspaceOverviewResponseValidationError{
+						field:  fmt.Sprintf("Users[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetWorkspaceOverviewResponseValidationError{
+					field:  fmt.Sprintf("Users[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for TotalCount
+
+	// no validation rules for Page
+
+	// no validation rules for PageSize
+
+	if all {
+		switch v := interface{}(m.GetObservedAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GetWorkspaceOverviewResponseValidationError{
+					field:  "ObservedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GetWorkspaceOverviewResponseValidationError{
+					field:  "ObservedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetObservedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetWorkspaceOverviewResponseValidationError{
+				field:  "ObservedAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for UsersComplete
+
+	if all {
+		switch v := interface{}(m.GetTotals()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GetWorkspaceOverviewResponseValidationError{
+					field:  "Totals",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GetWorkspaceOverviewResponseValidationError{
+					field:  "Totals",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTotals()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetWorkspaceOverviewResponseValidationError{
+				field:  "Totals",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return GetWorkspaceOverviewResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetWorkspaceOverviewResponseMultiError is an error wrapping multiple
+// validation errors returned by GetWorkspaceOverviewResponse.ValidateAll() if
+// the designated constraints aren't met.
+type GetWorkspaceOverviewResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetWorkspaceOverviewResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetWorkspaceOverviewResponseMultiError) AllErrors() []error { return m }
+
+// GetWorkspaceOverviewResponseValidationError is the validation error returned
+// by GetWorkspaceOverviewResponse.Validate if the designated constraints
+// aren't met.
+type GetWorkspaceOverviewResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetWorkspaceOverviewResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetWorkspaceOverviewResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetWorkspaceOverviewResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetWorkspaceOverviewResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetWorkspaceOverviewResponseValidationError) ErrorName() string {
+	return "GetWorkspaceOverviewResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetWorkspaceOverviewResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetWorkspaceOverviewResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetWorkspaceOverviewResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetWorkspaceOverviewResponseValidationError{}
+
+// Validate checks the field values on WorkspaceAuditEvent with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WorkspaceAuditEvent) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WorkspaceAuditEvent with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WorkspaceAuditEventMultiError, or nil if none found.
+func (m *WorkspaceAuditEvent) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WorkspaceAuditEvent) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Name
+
+	// no validation rules for Type
+
+	if all {
+		switch v := interface{}(m.GetParameters()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, WorkspaceAuditEventValidationError{
+					field:  "Parameters",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, WorkspaceAuditEventValidationError{
+					field:  "Parameters",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetParameters()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return WorkspaceAuditEventValidationError{
+				field:  "Parameters",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return WorkspaceAuditEventMultiError(errors)
+	}
+
+	return nil
+}
+
+// WorkspaceAuditEventMultiError is an error wrapping multiple validation
+// errors returned by WorkspaceAuditEvent.ValidateAll() if the designated
+// constraints aren't met.
+type WorkspaceAuditEventMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WorkspaceAuditEventMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WorkspaceAuditEventMultiError) AllErrors() []error { return m }
+
+// WorkspaceAuditEventValidationError is the validation error returned by
+// WorkspaceAuditEvent.Validate if the designated constraints aren't met.
+type WorkspaceAuditEventValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WorkspaceAuditEventValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WorkspaceAuditEventValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WorkspaceAuditEventValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WorkspaceAuditEventValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WorkspaceAuditEventValidationError) ErrorName() string {
+	return "WorkspaceAuditEventValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WorkspaceAuditEventValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWorkspaceAuditEvent.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WorkspaceAuditEventValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WorkspaceAuditEventValidationError{}
+
+// Validate checks the field values on WorkspaceAuditActivity with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WorkspaceAuditActivity) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WorkspaceAuditActivity with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WorkspaceAuditActivityMultiError, or nil if none found.
+func (m *WorkspaceAuditActivity) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WorkspaceAuditActivity) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	if all {
+		switch v := interface{}(m.GetOccurredAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, WorkspaceAuditActivityValidationError{
+					field:  "OccurredAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, WorkspaceAuditActivityValidationError{
+					field:  "OccurredAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetOccurredAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return WorkspaceAuditActivityValidationError{
+				field:  "OccurredAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for Application
+
+	// no validation rules for ActorEmail
+
+	// no validation rules for ActorProfileId
+
+	// no validation rules for IpAddress
+
+	for idx, item := range m.GetEvents() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, WorkspaceAuditActivityValidationError{
+						field:  fmt.Sprintf("Events[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, WorkspaceAuditActivityValidationError{
+						field:  fmt.Sprintf("Events[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return WorkspaceAuditActivityValidationError{
+					field:  fmt.Sprintf("Events[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return WorkspaceAuditActivityMultiError(errors)
+	}
+
+	return nil
+}
+
+// WorkspaceAuditActivityMultiError is an error wrapping multiple validation
+// errors returned by WorkspaceAuditActivity.ValidateAll() if the designated
+// constraints aren't met.
+type WorkspaceAuditActivityMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WorkspaceAuditActivityMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WorkspaceAuditActivityMultiError) AllErrors() []error { return m }
+
+// WorkspaceAuditActivityValidationError is the validation error returned by
+// WorkspaceAuditActivity.Validate if the designated constraints aren't met.
+type WorkspaceAuditActivityValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WorkspaceAuditActivityValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WorkspaceAuditActivityValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WorkspaceAuditActivityValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WorkspaceAuditActivityValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WorkspaceAuditActivityValidationError) ErrorName() string {
+	return "WorkspaceAuditActivityValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WorkspaceAuditActivityValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWorkspaceAuditActivity.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WorkspaceAuditActivityValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WorkspaceAuditActivityValidationError{}
+
+// Validate checks the field values on ListWorkspaceAuditActivitiesRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *ListWorkspaceAuditActivitiesRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListWorkspaceAuditActivitiesRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// ListWorkspaceAuditActivitiesRequestMultiError, or nil if none found.
+func (m *ListWorkspaceAuditActivitiesRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListWorkspaceAuditActivitiesRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ConnectionId
+
+	// no validation rules for TenantId
+
+	// no validation rules for Application
+
+	// no validation rules for UserKey
+
+	// no validation rules for StartTime
+
+	// no validation rules for EndTime
+
+	// no validation rules for EventName
+
+	// no validation rules for PageToken
+
+	// no validation rules for PageSize
+
+	if len(errors) > 0 {
+		return ListWorkspaceAuditActivitiesRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListWorkspaceAuditActivitiesRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// ListWorkspaceAuditActivitiesRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ListWorkspaceAuditActivitiesRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListWorkspaceAuditActivitiesRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListWorkspaceAuditActivitiesRequestMultiError) AllErrors() []error { return m }
+
+// ListWorkspaceAuditActivitiesRequestValidationError is the validation error
+// returned by ListWorkspaceAuditActivitiesRequest.Validate if the designated
+// constraints aren't met.
+type ListWorkspaceAuditActivitiesRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListWorkspaceAuditActivitiesRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListWorkspaceAuditActivitiesRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListWorkspaceAuditActivitiesRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListWorkspaceAuditActivitiesRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListWorkspaceAuditActivitiesRequestValidationError) ErrorName() string {
+	return "ListWorkspaceAuditActivitiesRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListWorkspaceAuditActivitiesRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListWorkspaceAuditActivitiesRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListWorkspaceAuditActivitiesRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListWorkspaceAuditActivitiesRequestValidationError{}
+
+// Validate checks the field values on ListWorkspaceAuditActivitiesResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *ListWorkspaceAuditActivitiesResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListWorkspaceAuditActivitiesResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// ListWorkspaceAuditActivitiesResponseMultiError, or nil if none found.
+func (m *ListWorkspaceAuditActivitiesResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListWorkspaceAuditActivitiesResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetActivities() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListWorkspaceAuditActivitiesResponseValidationError{
+						field:  fmt.Sprintf("Activities[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListWorkspaceAuditActivitiesResponseValidationError{
+						field:  fmt.Sprintf("Activities[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListWorkspaceAuditActivitiesResponseValidationError{
+					field:  fmt.Sprintf("Activities[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for NextPageToken
+
+	// no validation rules for StartTime
+
+	// no validation rules for EndTime
+
+	if len(errors) > 0 {
+		return ListWorkspaceAuditActivitiesResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListWorkspaceAuditActivitiesResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// ListWorkspaceAuditActivitiesResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ListWorkspaceAuditActivitiesResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListWorkspaceAuditActivitiesResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListWorkspaceAuditActivitiesResponseMultiError) AllErrors() []error { return m }
+
+// ListWorkspaceAuditActivitiesResponseValidationError is the validation error
+// returned by ListWorkspaceAuditActivitiesResponse.Validate if the designated
+// constraints aren't met.
+type ListWorkspaceAuditActivitiesResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListWorkspaceAuditActivitiesResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListWorkspaceAuditActivitiesResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListWorkspaceAuditActivitiesResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListWorkspaceAuditActivitiesResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListWorkspaceAuditActivitiesResponseValidationError) ErrorName() string {
+	return "ListWorkspaceAuditActivitiesResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListWorkspaceAuditActivitiesResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListWorkspaceAuditActivitiesResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListWorkspaceAuditActivitiesResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListWorkspaceAuditActivitiesResponseValidationError{}
+
+// Validate checks the field values on WorkspaceSecurityTotals with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WorkspaceSecurityTotals) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WorkspaceSecurityTotals with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WorkspaceSecurityTotalsMultiError, or nil if none found.
+func (m *WorkspaceSecurityTotals) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WorkspaceSecurityTotals) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for UserCount
+
+	// no validation rules for ActiveCount
+
+	// no validation rules for SuspendedCount
+
+	// no validation rules for AdminCount
+
+	// no validation rules for AdminsWithoutTwoStep
+
+	// no validation rules for InactiveCount
+
+	// no validation rules for NeverLoggedInCount
+
+	// no validation rules for SecurityUnknownCount
+
+	if len(errors) > 0 {
+		return WorkspaceSecurityTotalsMultiError(errors)
+	}
+
+	return nil
+}
+
+// WorkspaceSecurityTotalsMultiError is an error wrapping multiple validation
+// errors returned by WorkspaceSecurityTotals.ValidateAll() if the designated
+// constraints aren't met.
+type WorkspaceSecurityTotalsMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WorkspaceSecurityTotalsMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WorkspaceSecurityTotalsMultiError) AllErrors() []error { return m }
+
+// WorkspaceSecurityTotalsValidationError is the validation error returned by
+// WorkspaceSecurityTotals.Validate if the designated constraints aren't met.
+type WorkspaceSecurityTotalsValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WorkspaceSecurityTotalsValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WorkspaceSecurityTotalsValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WorkspaceSecurityTotalsValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WorkspaceSecurityTotalsValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WorkspaceSecurityTotalsValidationError) ErrorName() string {
+	return "WorkspaceSecurityTotalsValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WorkspaceSecurityTotalsValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWorkspaceSecurityTotals.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WorkspaceSecurityTotalsValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WorkspaceSecurityTotalsValidationError{}

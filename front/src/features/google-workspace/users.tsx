@@ -21,6 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { DataTable, type Column } from '@/components/data-table'
 import { PasswordInput } from '@/components/password-input'
+import { triState, lastLoginText } from './observability-format'
 import { OrgUnitPicker } from './org-units'
 import { UserAliases, UserGroups, UserSecurity } from './user-tools'
 
@@ -208,7 +209,7 @@ export function WorkspaceUsers({
             <DialogHeader>
               <DialogTitle>User details</DialogTitle>
             </DialogHeader>
-            <UserDetail
+            <WorkspaceUserDetail
               connectionId={connectionId}
               tenantId={tenant.id}
               userId={detail.id}
@@ -258,7 +259,7 @@ export function WorkspaceUsers({
     </section>
   )
 }
-function UserDetail({
+export function WorkspaceUserDetail({
   connectionId,
   tenantId,
   userId,
@@ -300,7 +301,15 @@ function UserDetail({
           <dt>Status</dt>
           <dd>{u.suspended ? 'Suspended' : 'Active'}</dd>
           <dt>Administrator</dt>
-          <dd>{u.isAdmin ? 'Yes' : 'No'}</dd>
+          <dd>{triState(u.superAdmin)}</dd>
+          <dt>Delegated administrator</dt>
+          <dd>{triState(u.delegatedAdmin)}</dd>
+          <dt>2-step enrolled / enforced</dt>
+          <dd>
+            {triState(u.twoStepEnrolled)} / {triState(u.twoStepEnforced)}
+          </dd>
+          <dt>Last login</dt>
+          <dd>{lastLoginText(u.lastLoginTime)}</dd>
           <dt>Password change required</dt>
           <dd>{u.changePasswordAtNextLogin ? 'Yes' : 'No'}</dd>
         </dl>

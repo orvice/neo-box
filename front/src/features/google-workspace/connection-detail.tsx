@@ -17,9 +17,12 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Page, PageHeader, PageScroll } from '@/components/common/page-parts'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { DataTable, type Column } from '@/components/data-table'
+import { WorkspaceOperations } from './operations'
+import { WorkspaceOverview } from './overview'
 import { WorkspaceTenantDetail } from './tenant-detail'
 
 export function WorkspaceConnectionDetail({
@@ -169,6 +172,12 @@ export function WorkspaceConnectionDetail({
                 </code>
               </li>
               <li>
+                Google audit:{' '}
+                <code>
+                  https://www.googleapis.com/auth/admin.reports.audit.readonly
+                </code>
+              </li>
+              <li>
                 Sign-out and application grants:{' '}
                 <code>
                   https://www.googleapis.com/auth/admin.directory.user.security
@@ -184,22 +193,38 @@ export function WorkspaceConnectionDetail({
             </AlertDescription>
           </Alert>
         )}
-        {!tenants.error && (
-          <DataTable
-            columns={columns}
-            data={tenants.data}
-            isLoading={tenants.isLoading}
-            emptyMessage='No Workspace tenants yet'
-            emptyDescription='Add a Customer ID and delegated administrator for each independent organization.'
-          />
-        )}
-        {selected && (
-          <WorkspaceTenantDetail
-            key={selected.id}
-            connectionId={connection.id}
-            tenant={selected}
-          />
-        )}
+        <Tabs defaultValue='tenants'>
+          <TabsList>
+            <TabsTrigger value='tenants'>Tenants</TabsTrigger>
+            <TabsTrigger value='overview'>Overview</TabsTrigger>
+            <TabsTrigger value='operations'>Neo Box operations</TabsTrigger>
+          </TabsList>
+          <TabsContent value='tenants' className='space-y-6 pt-4'>
+            {' '}
+            {!tenants.error && (
+              <DataTable
+                columns={columns}
+                data={tenants.data}
+                isLoading={tenants.isLoading}
+                emptyMessage='No Workspace tenants yet'
+                emptyDescription='Add a Customer ID and delegated administrator for each independent organization.'
+              />
+            )}
+            {selected && (
+              <WorkspaceTenantDetail
+                key={selected.id}
+                connectionId={connection.id}
+                tenant={selected}
+              />
+            )}
+          </TabsContent>
+          <TabsContent value='overview' className='pt-4'>
+            <WorkspaceOverview connectionId={connection.id} />
+          </TabsContent>
+          <TabsContent value='operations' className='pt-4'>
+            <WorkspaceOperations connectionId={connection.id} />
+          </TabsContent>
+        </Tabs>
         {form && (
           <Dialog
             open

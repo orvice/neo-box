@@ -30,6 +30,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent/wasabibucketconfig"
 	"go.orx.me/apps/neo-box/internal/ent/wasabidailyusage"
 	"go.orx.me/apps/neo-box/internal/ent/wasabisyncstate"
+	"go.orx.me/apps/neo-box/internal/ent/workspaceoperation"
 	"go.orx.me/apps/neo-box/internal/ent/workspacetenant"
 )
 
@@ -70,6 +71,8 @@ type Client struct {
 	WasabiDailyUsage *WasabiDailyUsageClient
 	// WasabiSyncState is the client for interacting with the WasabiSyncState builders.
 	WasabiSyncState *WasabiSyncStateClient
+	// WorkspaceOperation is the client for interacting with the WorkspaceOperation builders.
+	WorkspaceOperation *WorkspaceOperationClient
 	// WorkspaceTenant is the client for interacting with the WorkspaceTenant builders.
 	WorkspaceTenant *WorkspaceTenantClient
 }
@@ -99,6 +102,7 @@ func (c *Client) init() {
 	c.WasabiBucketConfig = NewWasabiBucketConfigClient(c.config)
 	c.WasabiDailyUsage = NewWasabiDailyUsageClient(c.config)
 	c.WasabiSyncState = NewWasabiSyncStateClient(c.config)
+	c.WorkspaceOperation = NewWorkspaceOperationClient(c.config)
 	c.WorkspaceTenant = NewWorkspaceTenantClient(c.config)
 }
 
@@ -208,6 +212,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		WasabiBucketConfig:     NewWasabiBucketConfigClient(cfg),
 		WasabiDailyUsage:       NewWasabiDailyUsageClient(cfg),
 		WasabiSyncState:        NewWasabiSyncStateClient(cfg),
+		WorkspaceOperation:     NewWorkspaceOperationClient(cfg),
 		WorkspaceTenant:        NewWorkspaceTenantClient(cfg),
 	}, nil
 }
@@ -244,6 +249,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		WasabiBucketConfig:     NewWasabiBucketConfigClient(cfg),
 		WasabiDailyUsage:       NewWasabiDailyUsageClient(cfg),
 		WasabiSyncState:        NewWasabiSyncStateClient(cfg),
+		WorkspaceOperation:     NewWorkspaceOperationClient(cfg),
 		WorkspaceTenant:        NewWorkspaceTenantClient(cfg),
 	}, nil
 }
@@ -277,7 +283,8 @@ func (c *Client) Use(hooks ...Hook) {
 		c.Alert, c.CloudflareDNSOperation, c.Connection, c.NocoDBBackupPolicy,
 		c.NocoDBFile, c.NocoDBFileSource, c.NocoDBRestore, c.NocoDBSnapshot,
 		c.NocoDBSnapshotFile, c.NotificationChannel, c.OAuthState, c.Session, c.User,
-		c.WasabiBucketConfig, c.WasabiDailyUsage, c.WasabiSyncState, c.WorkspaceTenant,
+		c.WasabiBucketConfig, c.WasabiDailyUsage, c.WasabiSyncState,
+		c.WorkspaceOperation, c.WorkspaceTenant,
 	} {
 		n.Use(hooks...)
 	}
@@ -290,7 +297,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.Alert, c.CloudflareDNSOperation, c.Connection, c.NocoDBBackupPolicy,
 		c.NocoDBFile, c.NocoDBFileSource, c.NocoDBRestore, c.NocoDBSnapshot,
 		c.NocoDBSnapshotFile, c.NotificationChannel, c.OAuthState, c.Session, c.User,
-		c.WasabiBucketConfig, c.WasabiDailyUsage, c.WasabiSyncState, c.WorkspaceTenant,
+		c.WasabiBucketConfig, c.WasabiDailyUsage, c.WasabiSyncState,
+		c.WorkspaceOperation, c.WorkspaceTenant,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -331,6 +339,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.WasabiDailyUsage.mutate(ctx, m)
 	case *WasabiSyncStateMutation:
 		return c.WasabiSyncState.mutate(ctx, m)
+	case *WorkspaceOperationMutation:
+		return c.WorkspaceOperation.mutate(ctx, m)
 	case *WorkspaceTenantMutation:
 		return c.WorkspaceTenant.mutate(ctx, m)
 	default:
@@ -2466,6 +2476,139 @@ func (c *WasabiSyncStateClient) mutate(ctx context.Context, m *WasabiSyncStateMu
 	}
 }
 
+// WorkspaceOperationClient is a client for the WorkspaceOperation schema.
+type WorkspaceOperationClient struct {
+	config
+}
+
+// NewWorkspaceOperationClient returns a client for the WorkspaceOperation from the given config.
+func NewWorkspaceOperationClient(c config) *WorkspaceOperationClient {
+	return &WorkspaceOperationClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `workspaceoperation.Hooks(f(g(h())))`.
+func (c *WorkspaceOperationClient) Use(hooks ...Hook) {
+	c.hooks.WorkspaceOperation = append(c.hooks.WorkspaceOperation, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `workspaceoperation.Intercept(f(g(h())))`.
+func (c *WorkspaceOperationClient) Intercept(interceptors ...Interceptor) {
+	c.inters.WorkspaceOperation = append(c.inters.WorkspaceOperation, interceptors...)
+}
+
+// Create returns a builder for creating a WorkspaceOperation entity.
+func (c *WorkspaceOperationClient) Create() *WorkspaceOperationCreate {
+	mutation := newWorkspaceOperationMutation(c.config, OpCreate)
+	return &WorkspaceOperationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of WorkspaceOperation entities.
+func (c *WorkspaceOperationClient) CreateBulk(builders ...*WorkspaceOperationCreate) *WorkspaceOperationCreateBulk {
+	return &WorkspaceOperationCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *WorkspaceOperationClient) MapCreateBulk(slice any, setFunc func(*WorkspaceOperationCreate, int)) *WorkspaceOperationCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &WorkspaceOperationCreateBulk{err: fmt.Errorf("calling to WorkspaceOperationClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*WorkspaceOperationCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &WorkspaceOperationCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for WorkspaceOperation.
+func (c *WorkspaceOperationClient) Update() *WorkspaceOperationUpdate {
+	mutation := newWorkspaceOperationMutation(c.config, OpUpdate)
+	return &WorkspaceOperationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *WorkspaceOperationClient) UpdateOne(_m *WorkspaceOperation) *WorkspaceOperationUpdateOne {
+	mutation := newWorkspaceOperationMutation(c.config, OpUpdateOne, withWorkspaceOperation(_m))
+	return &WorkspaceOperationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *WorkspaceOperationClient) UpdateOneID(id string) *WorkspaceOperationUpdateOne {
+	mutation := newWorkspaceOperationMutation(c.config, OpUpdateOne, withWorkspaceOperationID(id))
+	return &WorkspaceOperationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for WorkspaceOperation.
+func (c *WorkspaceOperationClient) Delete() *WorkspaceOperationDelete {
+	mutation := newWorkspaceOperationMutation(c.config, OpDelete)
+	return &WorkspaceOperationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *WorkspaceOperationClient) DeleteOne(_m *WorkspaceOperation) *WorkspaceOperationDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *WorkspaceOperationClient) DeleteOneID(id string) *WorkspaceOperationDeleteOne {
+	builder := c.Delete().Where(workspaceoperation.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &WorkspaceOperationDeleteOne{builder}
+}
+
+// Query returns a query builder for WorkspaceOperation.
+func (c *WorkspaceOperationClient) Query() *WorkspaceOperationQuery {
+	return &WorkspaceOperationQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeWorkspaceOperation},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a WorkspaceOperation entity by its id.
+func (c *WorkspaceOperationClient) Get(ctx context.Context, id string) (*WorkspaceOperation, error) {
+	return c.Query().Where(workspaceoperation.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *WorkspaceOperationClient) GetX(ctx context.Context, id string) *WorkspaceOperation {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *WorkspaceOperationClient) Hooks() []Hook {
+	return c.hooks.WorkspaceOperation
+}
+
+// Interceptors returns the client interceptors.
+func (c *WorkspaceOperationClient) Interceptors() []Interceptor {
+	return c.inters.WorkspaceOperation
+}
+
+func (c *WorkspaceOperationClient) mutate(ctx context.Context, m *WorkspaceOperationMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&WorkspaceOperationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&WorkspaceOperationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&WorkspaceOperationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&WorkspaceOperationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown WorkspaceOperation mutation op: %q", m.Op())
+	}
+}
+
 // WorkspaceTenantClient is a client for the WorkspaceTenant schema.
 type WorkspaceTenantClient struct {
 	config
@@ -2605,12 +2748,14 @@ type (
 		Alert, CloudflareDNSOperation, Connection, NocoDBBackupPolicy, NocoDBFile,
 		NocoDBFileSource, NocoDBRestore, NocoDBSnapshot, NocoDBSnapshotFile,
 		NotificationChannel, OAuthState, Session, User, WasabiBucketConfig,
-		WasabiDailyUsage, WasabiSyncState, WorkspaceTenant []ent.Hook
+		WasabiDailyUsage, WasabiSyncState, WorkspaceOperation,
+		WorkspaceTenant []ent.Hook
 	}
 	inters struct {
 		Alert, CloudflareDNSOperation, Connection, NocoDBBackupPolicy, NocoDBFile,
 		NocoDBFileSource, NocoDBRestore, NocoDBSnapshot, NocoDBSnapshotFile,
 		NotificationChannel, OAuthState, Session, User, WasabiBucketConfig,
-		WasabiDailyUsage, WasabiSyncState, WorkspaceTenant []ent.Interceptor
+		WasabiDailyUsage, WasabiSyncState, WorkspaceOperation,
+		WorkspaceTenant []ent.Interceptor
 	}
 )

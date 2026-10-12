@@ -201,6 +201,18 @@ func (f WasabiSyncStateFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WasabiSyncStateMutation", m)
 }
 
+// The WorkspaceOperationFunc type is an adapter to allow the use of ordinary
+// function as WorkspaceOperation mutator.
+type WorkspaceOperationFunc func(context.Context, *ent.WorkspaceOperationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WorkspaceOperationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.WorkspaceOperationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WorkspaceOperationMutation", m)
+}
+
 // The WorkspaceTenantFunc type is an adapter to allow the use of ordinary
 // function as WorkspaceTenant mutator.
 type WorkspaceTenantFunc func(context.Context, *ent.WorkspaceTenantMutation) (ent.Value, error)

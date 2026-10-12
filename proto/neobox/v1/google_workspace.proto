@@ -1,6 +1,7 @@
 syntax = "proto3";
 package neobox.v1;
 
+import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "neobox/v1/connection.proto";
 
@@ -38,6 +39,9 @@ service GoogleWorkspaceService {
   rpc SignOutWorkspaceUser(SignOutWorkspaceUserRequest) returns (SignOutWorkspaceUserResponse);
   rpc ListWorkspaceUserTokens(ListWorkspaceUserTokensRequest) returns (ListWorkspaceUserTokensResponse);
   rpc RevokeWorkspaceUserToken(RevokeWorkspaceUserTokenRequest) returns (RevokeWorkspaceUserTokenResponse);
+  rpc ListWorkspaceOperations(ListWorkspaceOperationsRequest) returns (ListWorkspaceOperationsResponse);
+  rpc GetWorkspaceOverview(GetWorkspaceOverviewRequest) returns (GetWorkspaceOverviewResponse);
+  rpc ListWorkspaceAuditActivities(ListWorkspaceAuditActivitiesRequest) returns (ListWorkspaceAuditActivitiesResponse);
 }
 message WorkspaceTenant {
   string id = 1;
@@ -59,6 +63,12 @@ message WorkspaceUser {
   bool is_admin = 7;
   bool change_password_at_next_login = 8;
   string customer_id = 9;
+  optional bool super_admin = 10;
+  optional bool delegated_admin = 11;
+  optional bool two_step_enrolled = 12;
+  optional bool two_step_enforced = 13;
+  string last_login_time = 14;
+  string creation_time = 15;
 }
 message WorkspaceUserProfile {
   string given_name = 1;
@@ -401,3 +411,144 @@ message RevokeWorkspaceUserTokenRequest {
 }
 
 message RevokeWorkspaceUserTokenResponse {}
+
+// PENDING also covers an interrupted process or a failed outcome-log write.
+enum WorkspaceOperationStatus {
+  WORKSPACE_OPERATION_STATUS_UNSPECIFIED = 0;
+  WORKSPACE_OPERATION_STATUS_PENDING = 1;
+  WORKSPACE_OPERATION_STATUS_SUCCEEDED = 2;
+  WORKSPACE_OPERATION_STATUS_FAILED = 3;
+  WORKSPACE_OPERATION_STATUS_UNKNOWN = 4;
+}
+message WorkspaceOperation {
+  string id = 1;
+  string connection_id = 2;
+  string tenant_id = 3;
+  string tenant_name = 4;
+  string customer_id = 5;
+  string action = 6;
+  string target = 7;
+  google.protobuf.Struct requested = 8;
+  google.protobuf.Struct result = 9;
+  WorkspaceOperationStatus status = 10;
+  string error = 11;
+  string actor_id = 12;
+  string actor_name = 13;
+  google.protobuf.Timestamp created_at = 14;
+  google.protobuf.Timestamp finished_at = 15;
+}
+message ListWorkspaceOperationsRequest {
+  string connection_id = 1;
+  // Empty includes retained history of removed tenants.
+  string tenant_id = 2;
+  string query = 3;
+  WorkspaceOperationStatus status = 4;
+  int32 page = 5;
+  int32 page_size = 6;
+}
+message ListWorkspaceOperationsResponse {
+  repeated WorkspaceOperation operations = 1;
+  int64 total_count = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+message WorkspaceTenantSummary {
+  string connection_id = 1;
+  string connection_name = 2;
+  WorkspaceTenant tenant = 3;
+  int64 user_count = 4;
+  int64 active_count = 5;
+  int64 suspended_count = 6;
+  int64 admin_count = 7;
+  int64 admins_without_two_step = 8;
+  int64 inactive_count = 9;
+  int64 never_logged_in_count = 10;
+  int64 security_unknown_count = 11;
+  // Counts describe the users actually observed, not estimated totals.
+  bool users_complete = 12;
+  string users_error = 13;
+  optional int64 group_count = 14;
+  bool groups_complete = 15;
+  string groups_error = 16;
+}
+message WorkspaceOverviewUser {
+  string connection_id = 1;
+  string connection_name = 2;
+  string tenant_id = 3;
+  string tenant_name = 4;
+  WorkspaceUser user = 5;
+  bool inactive = 6;
+  bool never_logged_in = 7;
+  bool admin_without_two_step = 8;
+  bool security_unknown = 9;
+}
+message GetWorkspaceOverviewRequest {
+  // Empty reads every Google Workspace connection owned by the caller.
+  string connection_id = 1;
+  // Requires connection_id when set.
+  string tenant_id = 2;
+  string query = 3;
+  // all, admins, admins_without_two_step, inactive, never_logged_in,
+  // suspended or unknown. Empty means all.
+  string security_filter = 4;
+  int32 inactivity_days = 5;
+  bool include_groups = 6;
+  int32 page = 7;
+  int32 page_size = 8;
+}
+message GetWorkspaceOverviewResponse {
+  repeated WorkspaceTenantSummary tenants = 1;
+  repeated WorkspaceOverviewUser users = 2;
+  int64 total_count = 3;
+  int32 page = 4;
+  int32 page_size = 5;
+  google.protobuf.Timestamp observed_at = 6;
+  bool users_complete = 7;
+  WorkspaceSecurityTotals totals = 8;
+}
+message WorkspaceAuditEvent {
+  string name = 1;
+  string type = 2;
+  google.protobuf.Struct parameters = 3;
+}
+message WorkspaceAuditActivity {
+  string id = 1;
+  google.protobuf.Timestamp occurred_at = 2;
+  string application = 3;
+  string actor_email = 4;
+  string actor_profile_id = 5;
+  string ip_address = 6;
+  repeated WorkspaceAuditEvent events = 7;
+}
+message ListWorkspaceAuditActivitiesRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  // login, admin, groups, groups_enterprise, token or user_accounts.
+  string application = 3;
+  // Empty or all reads the customer; otherwise an existing tenant user ID/email.
+  string user_key = 4;
+  // RFC3339. Empty defaults to the last seven days through now.
+  string start_time = 5;
+  string end_time = 6;
+  string event_name = 7;
+  string page_token = 8;
+  int32 page_size = 9;
+}
+message ListWorkspaceAuditActivitiesResponse {
+  repeated WorkspaceAuditActivity activities = 1;
+  string next_page_token = 2;
+  string start_time = 3;
+  string end_time = 4;
+}
+
+// Counts deduplicated by Customer ID plus immutable user ID across credentials.
+message WorkspaceSecurityTotals {
+  int64 user_count = 1;
+  int64 active_count = 2;
+  int64 suspended_count = 3;
+  int64 admin_count = 4;
+  int64 admins_without_two_step = 5;
+  int64 inactive_count = 6;
+  int64 never_logged_in_count = 7;
+  int64 security_unknown_count = 8;
+}

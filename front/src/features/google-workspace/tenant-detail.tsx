@@ -1,7 +1,10 @@
 import type { WorkspaceTenant } from '@/api/google-workspace'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { WorkspaceAudit } from './audit'
 import { WorkspaceGroups } from './groups'
+import { WorkspaceOperations } from './operations'
 import { WorkspaceOrgUnits } from './org-units'
+import { WorkspaceOverview } from './overview'
 import { WorkspaceUsers } from './users'
 
 export function WorkspaceTenantDetail({
@@ -20,10 +23,13 @@ export function WorkspaceTenantDetail({
         </p>
       </div>
       <Tabs defaultValue='users'>
-        <TabsList>
+        <TabsList className='h-auto flex-wrap'>
           <TabsTrigger value='users'>Users</TabsTrigger>
           <TabsTrigger value='groups'>Groups</TabsTrigger>
           <TabsTrigger value='org-units'>Organization units</TabsTrigger>
+          <TabsTrigger value='security'>Account security</TabsTrigger>
+          <TabsTrigger value='operations'>Neo Box operations</TabsTrigger>
+          <TabsTrigger value='audit'>Google audit</TabsTrigger>
         </TabsList>
         <TabsContent value='users' className='pt-4'>
           <WorkspaceUsers connectionId={connectionId} tenant={tenant} />
@@ -33,6 +39,22 @@ export function WorkspaceTenantDetail({
         </TabsContent>
         <TabsContent value='org-units' className='pt-4'>
           <WorkspaceOrgUnits connectionId={connectionId} tenantId={tenant.id} />
+        </TabsContent>
+        <TabsContent value='security' className='pt-4'>
+          <WorkspaceOverview
+            connectionId={connectionId}
+            tenantId={tenant.id}
+            securityOnly
+          />
+        </TabsContent>
+        <TabsContent value='operations' className='pt-4'>
+          <WorkspaceOperations
+            connectionId={connectionId}
+            tenantId={tenant.id}
+          />
+        </TabsContent>
+        <TabsContent value='audit' className='pt-4'>
+          <WorkspaceAudit connectionId={connectionId} tenantId={tenant.id} />
         </TabsContent>
       </Tabs>
     </section>

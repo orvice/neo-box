@@ -25,7 +25,11 @@ export function useWorkspaceTenants(connectionId: string) {
 }
 export function useWorkspaceTenantChanges(connectionId: string) {
   const qc = useQueryClient()
-  const onSettled = () => qc.invalidateQueries({ queryKey: key(connectionId) })
+  const onSettled = () =>
+    Promise.all([
+      qc.invalidateQueries({ queryKey: key(connectionId) }),
+      qc.invalidateQueries({ queryKey: ['google-workspace', 'overview'] }),
+    ])
   return {
     create: useMutation({
       mutationFn: (v: {
@@ -96,7 +100,10 @@ export function useWorkspaceUserChanges(
 ) {
   const qc = useQueryClient()
   const onSettled = () =>
-    qc.invalidateQueries({ queryKey: [...key(connectionId), tenantId] })
+    Promise.all([
+      qc.invalidateQueries({ queryKey: key(connectionId) }),
+      qc.invalidateQueries({ queryKey: ['google-workspace', 'overview'] }),
+    ])
   const base = { connectionId, tenantId }
   type Profile = { givenName: string; familyName: string; orgUnitPath: string }
   return {
@@ -235,7 +242,10 @@ export function useWorkspaceDirectoryChanges(
   const base = { connectionId, tenantId }
   // A server error may be an unconfirmed write; re-read every affected list.
   const onSettled = () =>
-    qc.invalidateQueries({ queryKey: [...key(connectionId), tenantId] })
+    Promise.all([
+      qc.invalidateQueries({ queryKey: key(connectionId) }),
+      qc.invalidateQueries({ queryKey: ['google-workspace', 'overview'] }),
+    ])
   type GroupInput = { email: string; name: string; description: string }
   type OrgInput = { name: string; description: string; parentPath: string }
   return {
@@ -305,4 +315,78 @@ export function useWorkspaceDirectoryChanges(
       onSettled,
     }),
   }
+}
+
+export {
+  WorkspaceOperationStatus,
+  type WorkspaceOperation,
+  type WorkspaceTenantSummary,
+  type WorkspaceOverviewUser,
+  type WorkspaceAuditActivity,
+} from '@/gen/neobox/v1/google_workspace_pb'
+export type WorkspaceOverviewQuery = {
+  connectionId: string
+  tenantId: string
+  query: string
+  securityFilter: string
+  inactivityDays: number
+  includeGroups: boolean
+  page: number
+  pageSize: number
+}
+export function useWorkspaceOverview(q: WorkspaceOverviewQuery) {
+  return useQuery({
+    queryKey: ['google-workspace', 'overview', q],
+    queryFn: () => client.getWorkspaceOverview(q),
+    retry: false,
+    staleTime: 60000,
+    refetchOnWindowFocus: false,
+  })
+}
+export function useWorkspaceOperations(
+  connectionId: string,
+  tenantId: string,
+  query: string,
+  status: import('@/gen/neobox/v1/google_workspace_pb').WorkspaceOperationStatus,
+  page: number
+) {
+  return useQuery({
+    queryKey: [
+      ...key(connectionId),
+      'operations',
+      tenantId,
+      query,
+      status,
+      page,
+    ],
+    queryFn: () =>
+      client.listWorkspaceOperations({
+        connectionId,
+        tenantId,
+        query,
+        status,
+        page,
+        pageSize: 20,
+      }),
+    retry: false,
+  })
+}
+export type WorkspaceAuditQuery = {
+  connectionId: string
+  tenantId: string
+  application: string
+  userKey: string
+  startTime: string
+  endTime: string
+  eventName: string
+  pageToken: string
+  pageSize: number
+}
+export function useWorkspaceAudit(q: WorkspaceAuditQuery) {
+  return useQuery({
+    queryKey: [...key(q.connectionId), q.tenantId, 'google-audit', q],
+    queryFn: () => client.listWorkspaceAuditActivities(q),
+    retry: false,
+    refetchOnWindowFocus: false,
+  })
 }
