@@ -19,6 +19,25 @@ service GoogleWorkspaceService {
   rpc UpdateWorkspaceUser(UpdateWorkspaceUserRequest) returns (UpdateWorkspaceUserResponse);
   rpc ResetWorkspaceUserPassword(ResetWorkspaceUserPasswordRequest) returns (ResetWorkspaceUserPasswordResponse);
   rpc SetWorkspaceUserSuspended(SetWorkspaceUserSuspendedRequest) returns (SetWorkspaceUserSuspendedResponse);
+  rpc ListWorkspaceUserAliases(ListWorkspaceUserAliasesRequest) returns (ListWorkspaceUserAliasesResponse);
+  rpc AddWorkspaceUserAlias(AddWorkspaceUserAliasRequest) returns (AddWorkspaceUserAliasResponse);
+  rpc DeleteWorkspaceUserAlias(DeleteWorkspaceUserAliasRequest) returns (DeleteWorkspaceUserAliasResponse);
+  rpc ListWorkspaceGroups(ListWorkspaceGroupsRequest) returns (ListWorkspaceGroupsResponse);
+  rpc ListWorkspaceUserGroups(ListWorkspaceUserGroupsRequest) returns (ListWorkspaceUserGroupsResponse);
+  rpc CreateWorkspaceGroup(CreateWorkspaceGroupRequest) returns (CreateWorkspaceGroupResponse);
+  rpc UpdateWorkspaceGroup(UpdateWorkspaceGroupRequest) returns (UpdateWorkspaceGroupResponse);
+  rpc DeleteWorkspaceGroup(DeleteWorkspaceGroupRequest) returns (DeleteWorkspaceGroupResponse);
+  rpc ListWorkspaceGroupMembers(ListWorkspaceGroupMembersRequest) returns (ListWorkspaceGroupMembersResponse);
+  rpc AddWorkspaceGroupMember(AddWorkspaceGroupMemberRequest) returns (AddWorkspaceGroupMemberResponse);
+  rpc UpdateWorkspaceGroupMember(UpdateWorkspaceGroupMemberRequest) returns (UpdateWorkspaceGroupMemberResponse);
+  rpc DeleteWorkspaceGroupMember(DeleteWorkspaceGroupMemberRequest) returns (DeleteWorkspaceGroupMemberResponse);
+  rpc ListWorkspaceOrgUnits(ListWorkspaceOrgUnitsRequest) returns (ListWorkspaceOrgUnitsResponse);
+  rpc CreateWorkspaceOrgUnit(CreateWorkspaceOrgUnitRequest) returns (CreateWorkspaceOrgUnitResponse);
+  rpc UpdateWorkspaceOrgUnit(UpdateWorkspaceOrgUnitRequest) returns (UpdateWorkspaceOrgUnitResponse);
+  rpc DeleteWorkspaceOrgUnit(DeleteWorkspaceOrgUnitRequest) returns (DeleteWorkspaceOrgUnitResponse);
+  rpc SignOutWorkspaceUser(SignOutWorkspaceUserRequest) returns (SignOutWorkspaceUserResponse);
+  rpc ListWorkspaceUserTokens(ListWorkspaceUserTokensRequest) returns (ListWorkspaceUserTokensResponse);
+  rpc RevokeWorkspaceUserToken(RevokeWorkspaceUserTokenRequest) returns (RevokeWorkspaceUserTokenResponse);
 }
 message WorkspaceTenant {
   string id = 1;
@@ -140,3 +159,245 @@ message SetWorkspaceUserSuspendedRequest {
 message SetWorkspaceUserSuspendedResponse {
   WorkspaceUser user = 1;
 }
+
+message WorkspaceAlias {
+  string email = 1;
+  bool editable = 2;
+}
+
+message WorkspaceGroup {
+  string id = 1;
+  string email = 2;
+  string name = 3;
+  string description = 4;
+  string direct_member_count = 5;
+}
+
+message WorkspaceGroupInput {
+  string email = 1;
+  string name = 2;
+  string description = 3;
+}
+
+message WorkspaceGroupMember {
+  string id = 1;
+  string email = 2;
+  string role = 3;
+  string type = 4;
+  string status = 5;
+}
+
+message WorkspaceOrgUnit {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string path = 4;
+  string parent_path = 5;
+}
+
+message WorkspaceOrgUnitInput {
+  string name = 1;
+  string description = 2;
+  string parent_path = 3;
+}
+
+message WorkspaceUserToken {
+  string client_id = 1;
+  string display_text = 2;
+  repeated string scopes = 3;
+  bool anonymous = 4;
+  bool native_app = 5;
+}
+
+message ListWorkspaceUserAliasesRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string user_id = 3;
+}
+
+message ListWorkspaceUserAliasesResponse {
+  repeated WorkspaceAlias aliases = 1;
+}
+
+message AddWorkspaceUserAliasRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string user_id = 3;
+  string alias = 4;
+}
+
+message AddWorkspaceUserAliasResponse {
+  WorkspaceAlias alias = 1;
+}
+
+message DeleteWorkspaceUserAliasRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string user_id = 3;
+  string alias = 4;
+}
+
+message DeleteWorkspaceUserAliasResponse {}
+
+message ListWorkspaceGroupsRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string query = 3;
+  string page_token = 4;
+  int32 page_size = 5;
+}
+
+message ListWorkspaceGroupsResponse {
+  repeated WorkspaceGroup groups = 1;
+  string next_page_token = 2;
+}
+
+message ListWorkspaceUserGroupsRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string user_id = 3;
+}
+
+message ListWorkspaceUserGroupsResponse {
+  repeated WorkspaceGroup groups = 1;
+}
+
+message CreateWorkspaceGroupRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  WorkspaceGroupInput group = 3;
+}
+
+message CreateWorkspaceGroupResponse {
+  WorkspaceGroup group = 1;
+}
+
+message UpdateWorkspaceGroupRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string group_id = 3;
+  WorkspaceGroupInput group = 4;
+}
+
+message UpdateWorkspaceGroupResponse {
+  WorkspaceGroup group = 1;
+}
+
+message DeleteWorkspaceGroupRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string group_id = 3;
+}
+
+message DeleteWorkspaceGroupResponse {}
+
+message ListWorkspaceGroupMembersRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string group_id = 3;
+  string page_token = 4;
+  int32 page_size = 5;
+}
+
+message ListWorkspaceGroupMembersResponse {
+  repeated WorkspaceGroupMember members = 1;
+  string next_page_token = 2;
+}
+
+message AddWorkspaceGroupMemberRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string group_id = 3;
+  string email = 4;
+  string role = 5;
+}
+
+message AddWorkspaceGroupMemberResponse {
+  WorkspaceGroupMember member = 1;
+}
+
+message UpdateWorkspaceGroupMemberRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string group_id = 3;
+  string member_id = 4;
+  string role = 5;
+}
+
+message UpdateWorkspaceGroupMemberResponse {
+  WorkspaceGroupMember member = 1;
+}
+
+message DeleteWorkspaceGroupMemberRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string group_id = 3;
+  string member_id = 4;
+}
+
+message DeleteWorkspaceGroupMemberResponse {}
+
+message ListWorkspaceOrgUnitsRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+}
+
+message ListWorkspaceOrgUnitsResponse {
+  repeated WorkspaceOrgUnit org_units = 1;
+}
+
+message CreateWorkspaceOrgUnitRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  WorkspaceOrgUnitInput org_unit = 3;
+}
+
+message CreateWorkspaceOrgUnitResponse {
+  WorkspaceOrgUnit org_unit = 1;
+}
+
+message UpdateWorkspaceOrgUnitRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string org_unit_id = 3;
+  WorkspaceOrgUnitInput org_unit = 4;
+}
+
+message UpdateWorkspaceOrgUnitResponse {
+  WorkspaceOrgUnit org_unit = 1;
+}
+
+message DeleteWorkspaceOrgUnitRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string org_unit_id = 3;
+}
+
+message DeleteWorkspaceOrgUnitResponse {}
+
+message SignOutWorkspaceUserRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string user_id = 3;
+}
+
+message SignOutWorkspaceUserResponse {}
+
+message ListWorkspaceUserTokensRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string user_id = 3;
+}
+
+message ListWorkspaceUserTokensResponse {
+  repeated WorkspaceUserToken tokens = 1;
+}
+
+message RevokeWorkspaceUserTokenRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string user_id = 3;
+  string client_id = 4;
+}
+
+message RevokeWorkspaceUserTokenResponse {}

@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file neobox/v1/google_workspace.proto.
  */
 export const file_neobox_v1_google_workspace: GenFile = /*@__PURE__*/
-  fileDesc("CiBuZW9ib3gvdjEvZ29vZ2xlX3dvcmtzcGFjZS5wcm90bxIJbmVvYm94LnYxIvIBCg9Xb3Jrc3BhY2VUZW5hbnQSCgoCaWQYASABKAkSFQoNY29ubmVjdGlvbl9pZBgCIAEoCRIMCgRuYW1lGAMgASgJEhMKC2N1c3RvbWVyX2lkGAQgASgJEh0KFWRlbGVnYXRlZF9hZG1pbl9lbWFpbBgFIAEoCRIrCgZzdGF0dXMYBiABKA4yGy5uZW9ib3gudjEuQ29ubmVjdGlvblN0YXR1cxIWCg5zdGF0dXNfbWVzc2FnZRgHIAEoCRI1ChFzdGF0dXNfY2hlY2tlZF9hdBgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAi0wEKDVdvcmtzcGFjZVVzZXISCgoCaWQYASABKAkSFQoNcHJpbWFyeV9lbWFpbBgCIAEoCRISCgpnaXZlbl9uYW1lGAMgASgJEhMKC2ZhbWlseV9uYW1lGAQgASgJEhUKDW9yZ191bml0X3BhdGgYBSABKAkSEQoJc3VzcGVuZGVkGAYgASgIEhAKCGlzX2FkbWluGAcgASgIEiUKHWNoYW5nZV9wYXNzd29yZF9hdF9uZXh0X2xvZ2luGAggASgIEhMKC2N1c3RvbWVyX2lkGAkgASgJIlYKFFdvcmtzcGFjZVVzZXJQcm9maWxlEhIKCmdpdmVuX25hbWUYASABKAkSEwoLZmFtaWx5X25hbWUYAiABKAkSFQoNb3JnX3VuaXRfcGF0aBgDIAEoCSI0ChtMaXN0V29ya3NwYWNlVGVuYW50c1JlcXVlc3QSFQoNY29ubmVjdGlvbl9pZBgBIAEoCSJLChxMaXN0V29ya3NwYWNlVGVuYW50c1Jlc3BvbnNlEisKB3RlbmFudHMYASADKAsyGi5uZW9ib3gudjEuV29ya3NwYWNlVGVuYW50IncKHENyZWF0ZVdvcmtzcGFjZVRlbmFudFJlcXVlc3QSFQoNY29ubmVjdGlvbl9pZBgBIAEoCRIMCgRuYW1lGAIgASgJEhMKC2N1c3RvbWVyX2lkGAMgASgJEh0KFWRlbGVnYXRlZF9hZG1pbl9lbWFpbBgEIAEoCSJLCh1DcmVhdGVXb3Jrc3BhY2VUZW5hbnRSZXNwb25zZRIqCgZ0ZW5hbnQYASABKAsyGi5uZW9ib3gudjEuV29ya3NwYWNlVGVuYW50InUKHFVwZGF0ZVdvcmtzcGFjZVRlbmFudFJlcXVlc3QSFQoNY29ubmVjdGlvbl9pZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSDAoEbmFtZRgDIAEoCRIdChVkZWxlZ2F0ZWRfYWRtaW5fZW1haWwYBCABKAkiSwodVXBkYXRlV29ya3NwYWNlVGVuYW50UmVzcG9uc2USKgoGdGVuYW50GAEgASgLMhoubmVvYm94LnYxLldvcmtzcGFjZVRlbmFudCJIChxEZWxldGVXb3Jrc3BhY2VUZW5hbnRSZXF1ZXN0EhUKDWNvbm5lY3Rpb25faWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJIh8KHURlbGV0ZVdvcmtzcGFjZVRlbmFudFJlc3BvbnNlIkYKGlRlc3RXb3Jrc3BhY2VUZW5hbnRSZXF1ZXN0EhUKDWNvbm5lY3Rpb25faWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJIkkKG1Rlc3RXb3Jrc3BhY2VUZW5hbnRSZXNwb25zZRIqCgZ0ZW5hbnQYASABKAsyGi5uZW9ib3gudjEuV29ya3NwYWNlVGVuYW50InsKGUxpc3RXb3Jrc3BhY2VVc2Vyc1JlcXVlc3QSFQoNY29ubmVjdGlvbl9pZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSDQoFcXVlcnkYAyABKAkSEgoKcGFnZV90b2tlbhgEIAEoCRIRCglwYWdlX3NpemUYBSABKAUiXgoaTGlzdFdvcmtzcGFjZVVzZXJzUmVzcG9uc2USJwoFdXNlcnMYASADKAsyGC5uZW9ib3gudjEuV29ya3NwYWNlVXNlchIXCg9uZXh0X3BhZ2VfdG9rZW4YAiABKAkiVAoXR2V0V29ya3NwYWNlVXNlclJlcXVlc3QSFQoNY29ubmVjdGlvbl9pZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSDwoHdXNlcl9pZBgDIAEoCSJCChhHZXRXb3Jrc3BhY2VVc2VyUmVzcG9uc2USJgoEdXNlchgBIAEoCzIYLm5lb2JveC52MS5Xb3Jrc3BhY2VVc2VyIsgBChpDcmVhdGVXb3Jrc3BhY2VVc2VyUmVxdWVzdBIVCg1jb25uZWN0aW9uX2lkGAEgASgJEhEKCXRlbmFudF9pZBgCIAEoCRIVCg1wcmltYXJ5X2VtYWlsGAMgASgJEjAKB3Byb2ZpbGUYBCABKAsyHy5uZW9ib3gudjEuV29ya3NwYWNlVXNlclByb2ZpbGUSEAoIcGFzc3dvcmQYBSABKAkSJQodY2hhbmdlX3Bhc3N3b3JkX2F0X25leHRfbG9naW4YBiABKAgiRQobQ3JlYXRlV29ya3NwYWNlVXNlclJlc3BvbnNlEiYKBHVzZXIYASABKAsyGC5uZW9ib3gudjEuV29ya3NwYWNlVXNlciKJAQoaVXBkYXRlV29ya3NwYWNlVXNlclJlcXVlc3QSFQoNY29ubmVjdGlvbl9pZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSDwoHdXNlcl9pZBgDIAEoCRIwCgdwcm9maWxlGAQgASgLMh8ubmVvYm94LnYxLldvcmtzcGFjZVVzZXJQcm9maWxlIkUKG1VwZGF0ZVdvcmtzcGFjZVVzZXJSZXNwb25zZRImCgR1c2VyGAEgASgLMhgubmVvYm94LnYxLldvcmtzcGFjZVVzZXIilwEKIVJlc2V0V29ya3NwYWNlVXNlclBhc3N3b3JkUmVxdWVzdBIVCg1jb25uZWN0aW9uX2lkGAEgASgJEhEKCXRlbmFudF9pZBgCIAEoCRIPCgd1c2VyX2lkGAMgASgJEhAKCHBhc3N3b3JkGAQgASgJEiUKHWNoYW5nZV9wYXNzd29yZF9hdF9uZXh0X2xvZ2luGAUgASgIIkwKIlJlc2V0V29ya3NwYWNlVXNlclBhc3N3b3JkUmVzcG9uc2USJgoEdXNlchgBIAEoCzIYLm5lb2JveC52MS5Xb3Jrc3BhY2VVc2VyInAKIFNldFdvcmtzcGFjZVVzZXJTdXNwZW5kZWRSZXF1ZXN0EhUKDWNvbm5lY3Rpb25faWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEg8KB3VzZXJfaWQYAyABKAkSEQoJc3VzcGVuZGVkGAQgASgIIksKIVNldFdvcmtzcGFjZVVzZXJTdXNwZW5kZWRSZXNwb25zZRImCgR1c2VyGAEgASgLMhgubmVvYm94LnYxLldvcmtzcGFjZVVzZXIyqgkKFkdvb2dsZVdvcmtzcGFjZVNlcnZpY2USZwoUTGlzdFdvcmtzcGFjZVRlbmFudHMSJi5uZW9ib3gudjEuTGlzdFdvcmtzcGFjZVRlbmFudHNSZXF1ZXN0GicubmVvYm94LnYxLkxpc3RXb3Jrc3BhY2VUZW5hbnRzUmVzcG9uc2USagoVQ3JlYXRlV29ya3NwYWNlVGVuYW50EicubmVvYm94LnYxLkNyZWF0ZVdvcmtzcGFjZVRlbmFudFJlcXVlc3QaKC5uZW9ib3gudjEuQ3JlYXRlV29ya3NwYWNlVGVuYW50UmVzcG9uc2USagoVVXBkYXRlV29ya3NwYWNlVGVuYW50EicubmVvYm94LnYxLlVwZGF0ZVdvcmtzcGFjZVRlbmFudFJlcXVlc3QaKC5uZW9ib3gudjEuVXBkYXRlV29ya3NwYWNlVGVuYW50UmVzcG9uc2USagoVRGVsZXRlV29ya3NwYWNlVGVuYW50EicubmVvYm94LnYxLkRlbGV0ZVdvcmtzcGFjZVRlbmFudFJlcXVlc3QaKC5uZW9ib3gudjEuRGVsZXRlV29ya3NwYWNlVGVuYW50UmVzcG9uc2USZAoTVGVzdFdvcmtzcGFjZVRlbmFudBIlLm5lb2JveC52MS5UZXN0V29ya3NwYWNlVGVuYW50UmVxdWVzdBomLm5lb2JveC52MS5UZXN0V29ya3NwYWNlVGVuYW50UmVzcG9uc2USYQoSTGlzdFdvcmtzcGFjZVVzZXJzEiQubmVvYm94LnYxLkxpc3RXb3Jrc3BhY2VVc2Vyc1JlcXVlc3QaJS5uZW9ib3gudjEuTGlzdFdvcmtzcGFjZVVzZXJzUmVzcG9uc2USWwoQR2V0V29ya3NwYWNlVXNlchIiLm5lb2JveC52MS5HZXRXb3Jrc3BhY2VVc2VyUmVxdWVzdBojLm5lb2JveC52MS5HZXRXb3Jrc3BhY2VVc2VyUmVzcG9uc2USZAoTQ3JlYXRlV29ya3NwYWNlVXNlchIlLm5lb2JveC52MS5DcmVhdGVXb3Jrc3BhY2VVc2VyUmVxdWVzdBomLm5lb2JveC52MS5DcmVhdGVXb3Jrc3BhY2VVc2VyUmVzcG9uc2USZAoTVXBkYXRlV29ya3NwYWNlVXNlchIlLm5lb2JveC52MS5VcGRhdGVXb3Jrc3BhY2VVc2VyUmVxdWVzdBomLm5lb2JveC52MS5VcGRhdGVXb3Jrc3BhY2VVc2VyUmVzcG9uc2USeQoaUmVzZXRXb3Jrc3BhY2VVc2VyUGFzc3dvcmQSLC5uZW9ib3gudjEuUmVzZXRXb3Jrc3BhY2VVc2VyUGFzc3dvcmRSZXF1ZXN0Gi0ubmVvYm94LnYxLlJlc2V0V29ya3NwYWNlVXNlclBhc3N3b3JkUmVzcG9uc2USdgoZU2V0V29ya3NwYWNlVXNlclN1c3BlbmRlZBIrLm5lb2JveC52MS5TZXRXb3Jrc3BhY2VVc2VyU3VzcGVuZGVkUmVxdWVzdBosLm5lb2JveC52MS5TZXRXb3Jrc3BhY2VVc2VyU3VzcGVuZGVkUmVzcG9uc2VCNVozZ28ub3J4Lm1lL2FwcHMvbmVvLWJveC9wa2cvcHJvdG8vbmVvYm94L3YxO25lb2JveHYxYgZwcm90bzM", [file_google_protobuf_timestamp, file_neobox_v1_connection]);
+  fileDesc("CiBuZW9ib3gvdjEvZ29vZ2xlX3dvcmtzcGFjZS5wcm90bxIJbmVvYm94LnYxIvIBCg9Xb3Jrc3BhY2VUZW5hbnQSCgoCaWQYASABKAkSFQoNY29ubmVjdGlvbl9pZBgCIAEoCRIMCgRuYW1lGAMgASgJEhMKC2N1c3RvbWVyX2lkGAQgASgJEh0KFWRlbGVnYXRlZF9hZG1pbl9lbWFpbBgFIAEoCRIrCgZzdGF0dXMYBiABKA4yGy5uZW9ib3gudjEuQ29ubmVjdGlvblN0YXR1cxIWCg5zdGF0dXNfbWVzc2FnZRgHIAEoCRI1ChFzdGF0dXNfY2hlY2tlZF9hdBgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAi0wEKDVdvcmtzcGFjZVVzZXISCgoCaWQYASABKAkSFQoNcHJpbWFyeV9lbWFpbBgCIAEoCRISCgpnaXZlbl9uYW1lGAMgASgJEhMKC2ZhbWlseV9uYW1lGAQgASgJEhUKDW9yZ191bml0X3BhdGgYBSABKAkSEQoJc3VzcGVuZGVkGAYgASgIEhAKCGlzX2FkbWluGAcgASgIEiUKHWNoYW5nZV9wYXNzd29yZF9hdF9uZXh0X2xvZ2luGAggASgIEhMKC2N1c3RvbWVyX2lkGAkgASgJIlYKFFdvcmtzcGFjZVVzZXJQcm9maWxlEhIKCmdpdmVuX25hbWUYASABKAkSEwoLZmFtaWx5X25hbWUYAiABKAkSFQoNb3JnX3VuaXRfcGF0aBgDIAEoCSI0ChtMaXN0V29ya3NwYWNlVGVuYW50c1JlcXVlc3QSFQoNY29ubmVjdGlvbl9pZBgBIAEoCSJLChxMaXN0V29ya3NwYWNlVGVuYW50c1Jlc3BvbnNlEisKB3RlbmFudHMYASADKAsyGi5uZW9ib3gudjEuV29ya3NwYWNlVGVuYW50IncKHENyZWF0ZVdvcmtzcGFjZVRlbmFudFJlcXVlc3QSFQoNY29ubmVjdGlvbl9pZBgBIAEoCRIMCgRuYW1lGAIgASgJEhMKC2N1c3RvbWVyX2lkGAMgASgJEh0KFWRlbGVnYXRlZF9hZG1pbl9lbWFpbBgEIAEoCSJLCh1DcmVhdGVXb3Jrc3BhY2VUZW5hbnRSZXNwb25zZRIqCgZ0ZW5hbnQYASABKAsyGi5uZW9ib3gudjEuV29ya3NwYWNlVGVuYW50InUKHFVwZGF0ZVdvcmtzcGFjZVRlbmFudFJlcXVlc3QSFQoNY29ubmVjdGlvbl9pZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSDAoEbmFtZRgDIAEoCRIdChVkZWxlZ2F0ZWRfYWRtaW5fZW1haWwYBCABKAkiSwodVXBkYXRlV29ya3NwYWNlVGVuYW50UmVzcG9uc2USKgoGdGVuYW50GAEgASgLMhoubmVvYm94LnYxLldvcmtzcGFjZVRlbmFudCJIChxEZWxldGVXb3Jrc3BhY2VUZW5hbnRSZXF1ZXN0EhUKDWNvbm5lY3Rpb25faWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJIh8KHURlbGV0ZVdvcmtzcGFjZVRlbmFudFJlc3BvbnNlIkYKGlRlc3RXb3Jrc3BhY2VUZW5hbnRSZXF1ZXN0EhUKDWNvbm5lY3Rpb25faWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJIkkKG1Rlc3RXb3Jrc3BhY2VUZW5hbnRSZXNwb25zZRIqCgZ0ZW5hbnQYASABKAsyGi5uZW9ib3gudjEuV29ya3NwYWNlVGVuYW50InsKGUxpc3RXb3Jrc3BhY2VVc2Vyc1JlcXVlc3QSFQoNY29ubmVjdGlvbl9pZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSDQoFcXVlcnkYAyABKAkSEgoKcGFnZV90b2tlbhgEIAEoCRIRCglwYWdlX3NpemUYBSABKAUiXgoaTGlzdFdvcmtzcGFjZVVzZXJzUmVzcG9uc2USJwoFdXNlcnMYASADKAsyGC5uZW9ib3gudjEuV29ya3NwYWNlVXNlchIXCg9uZXh0X3BhZ2VfdG9rZW4YAiABKAkiVAoXR2V0V29ya3NwYWNlVXNlclJlcXVlc3QSFQoNY29ubmVjdGlvbl9pZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSDwoHdXNlcl9pZBgDIAEoCSJCChhHZXRXb3Jrc3BhY2VVc2VyUmVzcG9uc2USJgoEdXNlchgBIAEoCzIYLm5lb2JveC52MS5Xb3Jrc3BhY2VVc2VyIsgBChpDcmVhdGVXb3Jrc3BhY2VVc2VyUmVxdWVzdBIVCg1jb25uZWN0aW9uX2lkGAEgASgJEhEKCXRlbmFudF9pZBgCIAEoCRIVCg1wcmltYXJ5X2VtYWlsGAMgASgJEjAKB3Byb2ZpbGUYBCABKAsyHy5uZW9ib3gudjEuV29ya3NwYWNlVXNlclByb2ZpbGUSEAoIcGFzc3dvcmQYBSABKAkSJQodY2hhbmdlX3Bhc3N3b3JkX2F0X25leHRfbG9naW4YBiABKAgiRQobQ3JlYXRlV29ya3NwYWNlVXNlclJlc3BvbnNlEiYKBHVzZXIYASABKAsyGC5uZW9ib3gudjEuV29ya3NwYWNlVXNlciKJAQoaVXBkYXRlV29ya3NwYWNlVXNlclJlcXVlc3QSFQoNY29ubmVjdGlvbl9pZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSDwoHdXNlcl9pZBgDIAEoCRIwCgdwcm9maWxlGAQgASgLMh8ubmVvYm94LnYxLldvcmtzcGFjZVVzZXJQcm9maWxlIkUKG1VwZGF0ZVdvcmtzcGFjZVVzZXJSZXNwb25zZRImCgR1c2VyGAEgASgLMhgubmVvYm94LnYxLldvcmtzcGFjZVVzZXIilwEKIVJlc2V0V29ya3NwYWNlVXNlclBhc3N3b3JkUmVxdWVzdBIVCg1jb25uZWN0aW9uX2lkGAEgASgJEhEKCXRlbmFudF9pZBgCIAEoCRIPCgd1c2VyX2lkGAMgASgJEhAKCHBhc3N3b3JkGAQgASgJEiUKHWNoYW5nZV9wYXNzd29yZF9hdF9uZXh0X2xvZ2luGAUgASgIIkwKIlJlc2V0V29ya3NwYWNlVXNlclBhc3N3b3JkUmVzcG9uc2USJgoEdXNlchgBIAEoCzIYLm5lb2JveC52MS5Xb3Jrc3BhY2VVc2VyInAKIFNldFdvcmtzcGFjZVVzZXJTdXNwZW5kZWRSZXF1ZXN0EhUKDWNvbm5lY3Rpb25faWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEg8KB3VzZXJfaWQYAyABKAkSEQoJc3VzcGVuZGVkGAQgASgIIksKIVNldFdvcmtzcGFjZVVzZXJTdXNwZW5kZWRSZXNwb25zZRImCgR1c2VyGAEgASgLMhgubmVvYm94LnYxLldvcmtzcGFjZVVzZXIiMQoOV29ya3NwYWNlQWxpYXMSDQoFZW1haWwYASABKAkSEAoIZWRpdGFibGUYAiABKAgiawoOV29ya3NwYWNlR3JvdXASCgoCaWQYASABKAkSDQoFZW1haWwYAiABKAkSDAoEbmFtZRgDIAEoCRITCgtkZXNjcmlwdGlvbhgEIAEoCRIbChNkaXJlY3RfbWVtYmVyX2NvdW50GAUgASgJIkcKE1dvcmtzcGFjZUdyb3VwSW5wdXQSDQoFZW1haWwYASABKAkSDAoEbmFtZRgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCSJdChRXb3Jrc3BhY2VHcm91cE1lbWJlchIKCgJpZBgBIAEoCRINCgVlbWFpbBgCIAEoCRIMCgRyb2xlGAMgASgJEgwKBHR5cGUYBCABKAkSDgoGc3RhdHVzGAUgASgJImQKEFdvcmtzcGFjZU9yZ1VuaXQSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRIMCgRwYXRoGAQgASgJEhMKC3BhcmVudF9wYXRoGAUgASgJIk8KFVdvcmtzcGFjZU9yZ1VuaXRJbnB1dBIMCgRuYW1lGAEgASgJEhMKC2Rlc2NyaXB0aW9uGAIgASgJEhMKC3BhcmVudF9wYXRoGAMgASgJInQKEldvcmtzcGFjZVVzZXJUb2tlbhIRCgljbGllbnRfaWQYASABKAkSFAoMZGlzcGxheV90ZXh0GAIgASgJEg4KBnNjb3BlcxgDIAMoCRIRCglhbm9ueW1vdXMYBCABKAgSEgoKbmF0aXZlX2FwcBgFIAEoCCJcCh9MaXN0V29ya3NwYWNlVXNlckFsaWFzZXNSZXF1ZXN0EhUKDWNvbm5lY3Rpb25faWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEg8KB3VzZXJfaWQYAyABKAkiTgogTGlzdFdvcmtzcGFjZVVzZXJBbGlhc2VzUmVzcG9uc2USKgoHYWxpYXNlcxgBIAMoCzIZLm5lb2JveC52MS5Xb3Jrc3BhY2VBbGlhcyJoChxBZGRXb3Jrc3BhY2VVc2VyQWxpYXNSZXF1ZXN0EhUKDWNvbm5lY3Rpb25faWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEg8KB3VzZXJfaWQYAyABKAkSDQoFYWxpYXMYBCABKAkiSQodQWRkV29ya3NwYWNlVXNlckFsaWFzUmVzcG9uc2USKAoFYWxpYXMYASABKAsyGS5uZW9ib3gudjEuV29ya3NwYWNlQWxpYXMiawofRGVsZXRlV29ya3NwYWNlVXNlckFsaWFzUmVxdWVzdBIVCg1jb25uZWN0aW9uX2lkGAEgASgJEhEKCXRlbmFudF9pZBgCIAEoCRIPCgd1c2VyX2lkGAMgASgJEg0KBWFsaWFzGAQgASgJIiIKIERlbGV0ZVdvcmtzcGFjZVVzZXJBbGlhc1Jlc3BvbnNlInwKGkxpc3RXb3Jrc3BhY2VHcm91cHNSZXF1ZXN0EhUKDWNvbm5lY3Rpb25faWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEg0KBXF1ZXJ5GAMgASgJEhIKCnBhZ2VfdG9rZW4YBCABKAkSEQoJcGFnZV9zaXplGAUgASgFImEKG0xpc3RXb3Jrc3BhY2VHcm91cHNSZXNwb25zZRIpCgZncm91cHMYASADKAsyGS5uZW9ib3gudjEuV29ya3NwYWNlR3JvdXASFwoPbmV4dF9wYWdlX3Rva2VuGAIgASgJIlsKHkxpc3RXb3Jrc3BhY2VVc2VyR3JvdXBzUmVxdWVzdBIVCg1jb25uZWN0aW9uX2lkGAEgASgJEhEKCXRlbmFudF9pZBgCIAEoCRIPCgd1c2VyX2lkGAMgASgJIkwKH0xpc3RXb3Jrc3BhY2VVc2VyR3JvdXBzUmVzcG9uc2USKQoGZ3JvdXBzGAEgAygLMhkubmVvYm94LnYxLldvcmtzcGFjZUdyb3VwInYKG0NyZWF0ZVdvcmtzcGFjZUdyb3VwUmVxdWVzdBIVCg1jb25uZWN0aW9uX2lkGAEgASgJEhEKCXRlbmFudF9pZBgCIAEoCRItCgVncm91cBgDIAEoCzIeLm5lb2JveC52MS5Xb3Jrc3BhY2VHcm91cElucHV0IkgKHENyZWF0ZVdvcmtzcGFjZUdyb3VwUmVzcG9uc2USKAoFZ3JvdXAYASABKAsyGS5uZW9ib3gudjEuV29ya3NwYWNlR3JvdXAiiAEKG1VwZGF0ZVdvcmtzcGFjZUdyb3VwUmVxdWVzdBIVCg1jb25uZWN0aW9uX2lkGAEgASgJEhEKCXRlbmFudF9pZBgCIAEoCRIQCghncm91cF9pZBgDIAEoCRItCgVncm91cBgEIAEoCzIeLm5lb2JveC52MS5Xb3Jrc3BhY2VHcm91cElucHV0IkgKHFVwZGF0ZVdvcmtzcGFjZUdyb3VwUmVzcG9uc2USKAoFZ3JvdXAYASABKAsyGS5uZW9ib3gudjEuV29ya3NwYWNlR3JvdXAiWQobRGVsZXRlV29ya3NwYWNlR3JvdXBSZXF1ZXN0EhUKDWNvbm5lY3Rpb25faWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEhAKCGdyb3VwX2lkGAMgASgJIh4KHERlbGV0ZVdvcmtzcGFjZUdyb3VwUmVzcG9uc2UihQEKIExpc3RXb3Jrc3BhY2VHcm91cE1lbWJlcnNSZXF1ZXN0EhUKDWNvbm5lY3Rpb25faWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEhAKCGdyb3VwX2lkGAMgASgJEhIKCnBhZ2VfdG9rZW4YBCABKAkSEQoJcGFnZV9zaXplGAUgASgFIm4KIUxpc3RXb3Jrc3BhY2VHcm91cE1lbWJlcnNSZXNwb25zZRIwCgdtZW1iZXJzGAEgAygLMh8ubmVvYm94LnYxLldvcmtzcGFjZUdyb3VwTWVtYmVyEhcKD25leHRfcGFnZV90b2tlbhgCIAEoCSJ5Ch5BZGRXb3Jrc3BhY2VHcm91cE1lbWJlclJlcXVlc3QSFQoNY29ubmVjdGlvbl9pZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSEAoIZ3JvdXBfaWQYAyABKAkSDQoFZW1haWwYBCABKAkSDAoEcm9sZRgFIAEoCSJSCh9BZGRXb3Jrc3BhY2VHcm91cE1lbWJlclJlc3BvbnNlEi8KBm1lbWJlchgBIAEoCzIfLm5lb2JveC52MS5Xb3Jrc3BhY2VHcm91cE1lbWJlciKAAQohVXBkYXRlV29ya3NwYWNlR3JvdXBNZW1iZXJSZXF1ZXN0EhUKDWNvbm5lY3Rpb25faWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEhAKCGdyb3VwX2lkGAMgASgJEhEKCW1lbWJlcl9pZBgEIAEoCRIMCgRyb2xlGAUgASgJIlUKIlVwZGF0ZVdvcmtzcGFjZUdyb3VwTWVtYmVyUmVzcG9uc2USLwoGbWVtYmVyGAEgASgLMh8ubmVvYm94LnYxLldvcmtzcGFjZUdyb3VwTWVtYmVyInIKIURlbGV0ZVdvcmtzcGFjZUdyb3VwTWVtYmVyUmVxdWVzdBIVCg1jb25uZWN0aW9uX2lkGAEgASgJEhEKCXRlbmFudF9pZBgCIAEoCRIQCghncm91cF9pZBgDIAEoCRIRCgltZW1iZXJfaWQYBCABKAkiJAoiRGVsZXRlV29ya3NwYWNlR3JvdXBNZW1iZXJSZXNwb25zZSJIChxMaXN0V29ya3NwYWNlT3JnVW5pdHNSZXF1ZXN0EhUKDWNvbm5lY3Rpb25faWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJIk8KHUxpc3RXb3Jrc3BhY2VPcmdVbml0c1Jlc3BvbnNlEi4KCW9yZ191bml0cxgBIAMoCzIbLm5lb2JveC52MS5Xb3Jrc3BhY2VPcmdVbml0In0KHUNyZWF0ZVdvcmtzcGFjZU9yZ1VuaXRSZXF1ZXN0EhUKDWNvbm5lY3Rpb25faWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEjIKCG9yZ191bml0GAMgASgLMiAubmVvYm94LnYxLldvcmtzcGFjZU9yZ1VuaXRJbnB1dCJPCh5DcmVhdGVXb3Jrc3BhY2VPcmdVbml0UmVzcG9uc2USLQoIb3JnX3VuaXQYASABKAsyGy5uZW9ib3gudjEuV29ya3NwYWNlT3JnVW5pdCKSAQodVXBkYXRlV29ya3NwYWNlT3JnVW5pdFJlcXVlc3QSFQoNY29ubmVjdGlvbl9pZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSEwoLb3JnX3VuaXRfaWQYAyABKAkSMgoIb3JnX3VuaXQYBCABKAsyIC5uZW9ib3gudjEuV29ya3NwYWNlT3JnVW5pdElucHV0Ik8KHlVwZGF0ZVdvcmtzcGFjZU9yZ1VuaXRSZXNwb25zZRItCghvcmdfdW5pdBgBIAEoCzIbLm5lb2JveC52MS5Xb3Jrc3BhY2VPcmdVbml0Il4KHURlbGV0ZVdvcmtzcGFjZU9yZ1VuaXRSZXF1ZXN0EhUKDWNvbm5lY3Rpb25faWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEhMKC29yZ191bml0X2lkGAMgASgJIiAKHkRlbGV0ZVdvcmtzcGFjZU9yZ1VuaXRSZXNwb25zZSJYChtTaWduT3V0V29ya3NwYWNlVXNlclJlcXVlc3QSFQoNY29ubmVjdGlvbl9pZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSDwoHdXNlcl9pZBgDIAEoCSIeChxTaWduT3V0V29ya3NwYWNlVXNlclJlc3BvbnNlIlsKHkxpc3RXb3Jrc3BhY2VVc2VyVG9rZW5zUmVxdWVzdBIVCg1jb25uZWN0aW9uX2lkGAEgASgJEhEKCXRlbmFudF9pZBgCIAEoCRIPCgd1c2VyX2lkGAMgASgJIlAKH0xpc3RXb3Jrc3BhY2VVc2VyVG9rZW5zUmVzcG9uc2USLQoGdG9rZW5zGAEgAygLMh0ubmVvYm94LnYxLldvcmtzcGFjZVVzZXJUb2tlbiJvCh9SZXZva2VXb3Jrc3BhY2VVc2VyVG9rZW5SZXF1ZXN0EhUKDWNvbm5lY3Rpb25faWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEg8KB3VzZXJfaWQYAyABKAkSEQoJY2xpZW50X2lkGAQgASgJIiIKIFJldm9rZVdvcmtzcGFjZVVzZXJUb2tlblJlc3BvbnNlMvwZChZHb29nbGVXb3Jrc3BhY2VTZXJ2aWNlEmcKFExpc3RXb3Jrc3BhY2VUZW5hbnRzEiYubmVvYm94LnYxLkxpc3RXb3Jrc3BhY2VUZW5hbnRzUmVxdWVzdBonLm5lb2JveC52MS5MaXN0V29ya3NwYWNlVGVuYW50c1Jlc3BvbnNlEmoKFUNyZWF0ZVdvcmtzcGFjZVRlbmFudBInLm5lb2JveC52MS5DcmVhdGVXb3Jrc3BhY2VUZW5hbnRSZXF1ZXN0GigubmVvYm94LnYxLkNyZWF0ZVdvcmtzcGFjZVRlbmFudFJlc3BvbnNlEmoKFVVwZGF0ZVdvcmtzcGFjZVRlbmFudBInLm5lb2JveC52MS5VcGRhdGVXb3Jrc3BhY2VUZW5hbnRSZXF1ZXN0GigubmVvYm94LnYxLlVwZGF0ZVdvcmtzcGFjZVRlbmFudFJlc3BvbnNlEmoKFURlbGV0ZVdvcmtzcGFjZVRlbmFudBInLm5lb2JveC52MS5EZWxldGVXb3Jrc3BhY2VUZW5hbnRSZXF1ZXN0GigubmVvYm94LnYxLkRlbGV0ZVdvcmtzcGFjZVRlbmFudFJlc3BvbnNlEmQKE1Rlc3RXb3Jrc3BhY2VUZW5hbnQSJS5uZW9ib3gudjEuVGVzdFdvcmtzcGFjZVRlbmFudFJlcXVlc3QaJi5uZW9ib3gudjEuVGVzdFdvcmtzcGFjZVRlbmFudFJlc3BvbnNlEmEKEkxpc3RXb3Jrc3BhY2VVc2VycxIkLm5lb2JveC52MS5MaXN0V29ya3NwYWNlVXNlcnNSZXF1ZXN0GiUubmVvYm94LnYxLkxpc3RXb3Jrc3BhY2VVc2Vyc1Jlc3BvbnNlElsKEEdldFdvcmtzcGFjZVVzZXISIi5uZW9ib3gudjEuR2V0V29ya3NwYWNlVXNlclJlcXVlc3QaIy5uZW9ib3gudjEuR2V0V29ya3NwYWNlVXNlclJlc3BvbnNlEmQKE0NyZWF0ZVdvcmtzcGFjZVVzZXISJS5uZW9ib3gudjEuQ3JlYXRlV29ya3NwYWNlVXNlclJlcXVlc3QaJi5uZW9ib3gudjEuQ3JlYXRlV29ya3NwYWNlVXNlclJlc3BvbnNlEmQKE1VwZGF0ZVdvcmtzcGFjZVVzZXISJS5uZW9ib3gudjEuVXBkYXRlV29ya3NwYWNlVXNlclJlcXVlc3QaJi5uZW9ib3gudjEuVXBkYXRlV29ya3NwYWNlVXNlclJlc3BvbnNlEnkKGlJlc2V0V29ya3NwYWNlVXNlclBhc3N3b3JkEiwubmVvYm94LnYxLlJlc2V0V29ya3NwYWNlVXNlclBhc3N3b3JkUmVxdWVzdBotLm5lb2JveC52MS5SZXNldFdvcmtzcGFjZVVzZXJQYXNzd29yZFJlc3BvbnNlEnYKGVNldFdvcmtzcGFjZVVzZXJTdXNwZW5kZWQSKy5uZW9ib3gudjEuU2V0V29ya3NwYWNlVXNlclN1c3BlbmRlZFJlcXVlc3QaLC5uZW9ib3gudjEuU2V0V29ya3NwYWNlVXNlclN1c3BlbmRlZFJlc3BvbnNlEnMKGExpc3RXb3Jrc3BhY2VVc2VyQWxpYXNlcxIqLm5lb2JveC52MS5MaXN0V29ya3NwYWNlVXNlckFsaWFzZXNSZXF1ZXN0GisubmVvYm94LnYxLkxpc3RXb3Jrc3BhY2VVc2VyQWxpYXNlc1Jlc3BvbnNlEmoKFUFkZFdvcmtzcGFjZVVzZXJBbGlhcxInLm5lb2JveC52MS5BZGRXb3Jrc3BhY2VVc2VyQWxpYXNSZXF1ZXN0GigubmVvYm94LnYxLkFkZFdvcmtzcGFjZVVzZXJBbGlhc1Jlc3BvbnNlEnMKGERlbGV0ZVdvcmtzcGFjZVVzZXJBbGlhcxIqLm5lb2JveC52MS5EZWxldGVXb3Jrc3BhY2VVc2VyQWxpYXNSZXF1ZXN0GisubmVvYm94LnYxLkRlbGV0ZVdvcmtzcGFjZVVzZXJBbGlhc1Jlc3BvbnNlEmQKE0xpc3RXb3Jrc3BhY2VHcm91cHMSJS5uZW9ib3gudjEuTGlzdFdvcmtzcGFjZUdyb3Vwc1JlcXVlc3QaJi5uZW9ib3gudjEuTGlzdFdvcmtzcGFjZUdyb3Vwc1Jlc3BvbnNlEnAKF0xpc3RXb3Jrc3BhY2VVc2VyR3JvdXBzEikubmVvYm94LnYxLkxpc3RXb3Jrc3BhY2VVc2VyR3JvdXBzUmVxdWVzdBoqLm5lb2JveC52MS5MaXN0V29ya3NwYWNlVXNlckdyb3Vwc1Jlc3BvbnNlEmcKFENyZWF0ZVdvcmtzcGFjZUdyb3VwEiYubmVvYm94LnYxLkNyZWF0ZVdvcmtzcGFjZUdyb3VwUmVxdWVzdBonLm5lb2JveC52MS5DcmVhdGVXb3Jrc3BhY2VHcm91cFJlc3BvbnNlEmcKFFVwZGF0ZVdvcmtzcGFjZUdyb3VwEiYubmVvYm94LnYxLlVwZGF0ZVdvcmtzcGFjZUdyb3VwUmVxdWVzdBonLm5lb2JveC52MS5VcGRhdGVXb3Jrc3BhY2VHcm91cFJlc3BvbnNlEmcKFERlbGV0ZVdvcmtzcGFjZUdyb3VwEiYubmVvYm94LnYxLkRlbGV0ZVdvcmtzcGFjZUdyb3VwUmVxdWVzdBonLm5lb2JveC52MS5EZWxldGVXb3Jrc3BhY2VHcm91cFJlc3BvbnNlEnYKGUxpc3RXb3Jrc3BhY2VHcm91cE1lbWJlcnMSKy5uZW9ib3gudjEuTGlzdFdvcmtzcGFjZUdyb3VwTWVtYmVyc1JlcXVlc3QaLC5uZW9ib3gudjEuTGlzdFdvcmtzcGFjZUdyb3VwTWVtYmVyc1Jlc3BvbnNlEnAKF0FkZFdvcmtzcGFjZUdyb3VwTWVtYmVyEikubmVvYm94LnYxLkFkZFdvcmtzcGFjZUdyb3VwTWVtYmVyUmVxdWVzdBoqLm5lb2JveC52MS5BZGRXb3Jrc3BhY2VHcm91cE1lbWJlclJlc3BvbnNlEnkKGlVwZGF0ZVdvcmtzcGFjZUdyb3VwTWVtYmVyEiwubmVvYm94LnYxLlVwZGF0ZVdvcmtzcGFjZUdyb3VwTWVtYmVyUmVxdWVzdBotLm5lb2JveC52MS5VcGRhdGVXb3Jrc3BhY2VHcm91cE1lbWJlclJlc3BvbnNlEnkKGkRlbGV0ZVdvcmtzcGFjZUdyb3VwTWVtYmVyEiwubmVvYm94LnYxLkRlbGV0ZVdvcmtzcGFjZUdyb3VwTWVtYmVyUmVxdWVzdBotLm5lb2JveC52MS5EZWxldGVXb3Jrc3BhY2VHcm91cE1lbWJlclJlc3BvbnNlEmoKFUxpc3RXb3Jrc3BhY2VPcmdVbml0cxInLm5lb2JveC52MS5MaXN0V29ya3NwYWNlT3JnVW5pdHNSZXF1ZXN0GigubmVvYm94LnYxLkxpc3RXb3Jrc3BhY2VPcmdVbml0c1Jlc3BvbnNlEm0KFkNyZWF0ZVdvcmtzcGFjZU9yZ1VuaXQSKC5uZW9ib3gudjEuQ3JlYXRlV29ya3NwYWNlT3JnVW5pdFJlcXVlc3QaKS5uZW9ib3gudjEuQ3JlYXRlV29ya3NwYWNlT3JnVW5pdFJlc3BvbnNlEm0KFlVwZGF0ZVdvcmtzcGFjZU9yZ1VuaXQSKC5uZW9ib3gudjEuVXBkYXRlV29ya3NwYWNlT3JnVW5pdFJlcXVlc3QaKS5uZW9ib3gudjEuVXBkYXRlV29ya3NwYWNlT3JnVW5pdFJlc3BvbnNlEm0KFkRlbGV0ZVdvcmtzcGFjZU9yZ1VuaXQSKC5uZW9ib3gudjEuRGVsZXRlV29ya3NwYWNlT3JnVW5pdFJlcXVlc3QaKS5uZW9ib3gudjEuRGVsZXRlV29ya3NwYWNlT3JnVW5pdFJlc3BvbnNlEmcKFFNpZ25PdXRXb3Jrc3BhY2VVc2VyEiYubmVvYm94LnYxLlNpZ25PdXRXb3Jrc3BhY2VVc2VyUmVxdWVzdBonLm5lb2JveC52MS5TaWduT3V0V29ya3NwYWNlVXNlclJlc3BvbnNlEnAKF0xpc3RXb3Jrc3BhY2VVc2VyVG9rZW5zEikubmVvYm94LnYxLkxpc3RXb3Jrc3BhY2VVc2VyVG9rZW5zUmVxdWVzdBoqLm5lb2JveC52MS5MaXN0V29ya3NwYWNlVXNlclRva2Vuc1Jlc3BvbnNlEnMKGFJldm9rZVdvcmtzcGFjZVVzZXJUb2tlbhIqLm5lb2JveC52MS5SZXZva2VXb3Jrc3BhY2VVc2VyVG9rZW5SZXF1ZXN0GisubmVvYm94LnYxLlJldm9rZVdvcmtzcGFjZVVzZXJUb2tlblJlc3BvbnNlQjVaM2dvLm9yeC5tZS9hcHBzL25lby1ib3gvcGtnL3Byb3RvL25lb2JveC92MTtuZW9ib3h2MWIGcHJvdG8z", [file_google_protobuf_timestamp, file_neobox_v1_connection]);
 
 /**
  * @generated from message neobox.v1.WorkspaceTenant
@@ -673,6 +673,1117 @@ export const SetWorkspaceUserSuspendedResponseSchema: GenMessage<SetWorkspaceUse
   messageDesc(file_neobox_v1_google_workspace, 24);
 
 /**
+ * @generated from message neobox.v1.WorkspaceAlias
+ */
+export type WorkspaceAlias = Message<"neobox.v1.WorkspaceAlias"> & {
+  /**
+   * @generated from field: string email = 1;
+   */
+  email: string;
+
+  /**
+   * @generated from field: bool editable = 2;
+   */
+  editable: boolean;
+};
+
+/**
+ * Describes the message neobox.v1.WorkspaceAlias.
+ * Use `create(WorkspaceAliasSchema)` to create a new message.
+ */
+export const WorkspaceAliasSchema: GenMessage<WorkspaceAlias> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 25);
+
+/**
+ * @generated from message neobox.v1.WorkspaceGroup
+ */
+export type WorkspaceGroup = Message<"neobox.v1.WorkspaceGroup"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string email = 2;
+   */
+  email: string;
+
+  /**
+   * @generated from field: string name = 3;
+   */
+  name: string;
+
+  /**
+   * @generated from field: string description = 4;
+   */
+  description: string;
+
+  /**
+   * @generated from field: string direct_member_count = 5;
+   */
+  directMemberCount: string;
+};
+
+/**
+ * Describes the message neobox.v1.WorkspaceGroup.
+ * Use `create(WorkspaceGroupSchema)` to create a new message.
+ */
+export const WorkspaceGroupSchema: GenMessage<WorkspaceGroup> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 26);
+
+/**
+ * @generated from message neobox.v1.WorkspaceGroupInput
+ */
+export type WorkspaceGroupInput = Message<"neobox.v1.WorkspaceGroupInput"> & {
+  /**
+   * @generated from field: string email = 1;
+   */
+  email: string;
+
+  /**
+   * @generated from field: string name = 2;
+   */
+  name: string;
+
+  /**
+   * @generated from field: string description = 3;
+   */
+  description: string;
+};
+
+/**
+ * Describes the message neobox.v1.WorkspaceGroupInput.
+ * Use `create(WorkspaceGroupInputSchema)` to create a new message.
+ */
+export const WorkspaceGroupInputSchema: GenMessage<WorkspaceGroupInput> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 27);
+
+/**
+ * @generated from message neobox.v1.WorkspaceGroupMember
+ */
+export type WorkspaceGroupMember = Message<"neobox.v1.WorkspaceGroupMember"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string email = 2;
+   */
+  email: string;
+
+  /**
+   * @generated from field: string role = 3;
+   */
+  role: string;
+
+  /**
+   * @generated from field: string type = 4;
+   */
+  type: string;
+
+  /**
+   * @generated from field: string status = 5;
+   */
+  status: string;
+};
+
+/**
+ * Describes the message neobox.v1.WorkspaceGroupMember.
+ * Use `create(WorkspaceGroupMemberSchema)` to create a new message.
+ */
+export const WorkspaceGroupMemberSchema: GenMessage<WorkspaceGroupMember> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 28);
+
+/**
+ * @generated from message neobox.v1.WorkspaceOrgUnit
+ */
+export type WorkspaceOrgUnit = Message<"neobox.v1.WorkspaceOrgUnit"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string name = 2;
+   */
+  name: string;
+
+  /**
+   * @generated from field: string description = 3;
+   */
+  description: string;
+
+  /**
+   * @generated from field: string path = 4;
+   */
+  path: string;
+
+  /**
+   * @generated from field: string parent_path = 5;
+   */
+  parentPath: string;
+};
+
+/**
+ * Describes the message neobox.v1.WorkspaceOrgUnit.
+ * Use `create(WorkspaceOrgUnitSchema)` to create a new message.
+ */
+export const WorkspaceOrgUnitSchema: GenMessage<WorkspaceOrgUnit> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 29);
+
+/**
+ * @generated from message neobox.v1.WorkspaceOrgUnitInput
+ */
+export type WorkspaceOrgUnitInput = Message<"neobox.v1.WorkspaceOrgUnitInput"> & {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name: string;
+
+  /**
+   * @generated from field: string description = 2;
+   */
+  description: string;
+
+  /**
+   * @generated from field: string parent_path = 3;
+   */
+  parentPath: string;
+};
+
+/**
+ * Describes the message neobox.v1.WorkspaceOrgUnitInput.
+ * Use `create(WorkspaceOrgUnitInputSchema)` to create a new message.
+ */
+export const WorkspaceOrgUnitInputSchema: GenMessage<WorkspaceOrgUnitInput> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 30);
+
+/**
+ * @generated from message neobox.v1.WorkspaceUserToken
+ */
+export type WorkspaceUserToken = Message<"neobox.v1.WorkspaceUserToken"> & {
+  /**
+   * @generated from field: string client_id = 1;
+   */
+  clientId: string;
+
+  /**
+   * @generated from field: string display_text = 2;
+   */
+  displayText: string;
+
+  /**
+   * @generated from field: repeated string scopes = 3;
+   */
+  scopes: string[];
+
+  /**
+   * @generated from field: bool anonymous = 4;
+   */
+  anonymous: boolean;
+
+  /**
+   * @generated from field: bool native_app = 5;
+   */
+  nativeApp: boolean;
+};
+
+/**
+ * Describes the message neobox.v1.WorkspaceUserToken.
+ * Use `create(WorkspaceUserTokenSchema)` to create a new message.
+ */
+export const WorkspaceUserTokenSchema: GenMessage<WorkspaceUserToken> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 31);
+
+/**
+ * @generated from message neobox.v1.ListWorkspaceUserAliasesRequest
+ */
+export type ListWorkspaceUserAliasesRequest = Message<"neobox.v1.ListWorkspaceUserAliasesRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tenant_id = 2;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: string user_id = 3;
+   */
+  userId: string;
+};
+
+/**
+ * Describes the message neobox.v1.ListWorkspaceUserAliasesRequest.
+ * Use `create(ListWorkspaceUserAliasesRequestSchema)` to create a new message.
+ */
+export const ListWorkspaceUserAliasesRequestSchema: GenMessage<ListWorkspaceUserAliasesRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 32);
+
+/**
+ * @generated from message neobox.v1.ListWorkspaceUserAliasesResponse
+ */
+export type ListWorkspaceUserAliasesResponse = Message<"neobox.v1.ListWorkspaceUserAliasesResponse"> & {
+  /**
+   * @generated from field: repeated neobox.v1.WorkspaceAlias aliases = 1;
+   */
+  aliases: WorkspaceAlias[];
+};
+
+/**
+ * Describes the message neobox.v1.ListWorkspaceUserAliasesResponse.
+ * Use `create(ListWorkspaceUserAliasesResponseSchema)` to create a new message.
+ */
+export const ListWorkspaceUserAliasesResponseSchema: GenMessage<ListWorkspaceUserAliasesResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 33);
+
+/**
+ * @generated from message neobox.v1.AddWorkspaceUserAliasRequest
+ */
+export type AddWorkspaceUserAliasRequest = Message<"neobox.v1.AddWorkspaceUserAliasRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tenant_id = 2;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: string user_id = 3;
+   */
+  userId: string;
+
+  /**
+   * @generated from field: string alias = 4;
+   */
+  alias: string;
+};
+
+/**
+ * Describes the message neobox.v1.AddWorkspaceUserAliasRequest.
+ * Use `create(AddWorkspaceUserAliasRequestSchema)` to create a new message.
+ */
+export const AddWorkspaceUserAliasRequestSchema: GenMessage<AddWorkspaceUserAliasRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 34);
+
+/**
+ * @generated from message neobox.v1.AddWorkspaceUserAliasResponse
+ */
+export type AddWorkspaceUserAliasResponse = Message<"neobox.v1.AddWorkspaceUserAliasResponse"> & {
+  /**
+   * @generated from field: neobox.v1.WorkspaceAlias alias = 1;
+   */
+  alias?: WorkspaceAlias;
+};
+
+/**
+ * Describes the message neobox.v1.AddWorkspaceUserAliasResponse.
+ * Use `create(AddWorkspaceUserAliasResponseSchema)` to create a new message.
+ */
+export const AddWorkspaceUserAliasResponseSchema: GenMessage<AddWorkspaceUserAliasResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 35);
+
+/**
+ * @generated from message neobox.v1.DeleteWorkspaceUserAliasRequest
+ */
+export type DeleteWorkspaceUserAliasRequest = Message<"neobox.v1.DeleteWorkspaceUserAliasRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tenant_id = 2;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: string user_id = 3;
+   */
+  userId: string;
+
+  /**
+   * @generated from field: string alias = 4;
+   */
+  alias: string;
+};
+
+/**
+ * Describes the message neobox.v1.DeleteWorkspaceUserAliasRequest.
+ * Use `create(DeleteWorkspaceUserAliasRequestSchema)` to create a new message.
+ */
+export const DeleteWorkspaceUserAliasRequestSchema: GenMessage<DeleteWorkspaceUserAliasRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 36);
+
+/**
+ * @generated from message neobox.v1.DeleteWorkspaceUserAliasResponse
+ */
+export type DeleteWorkspaceUserAliasResponse = Message<"neobox.v1.DeleteWorkspaceUserAliasResponse"> & {
+};
+
+/**
+ * Describes the message neobox.v1.DeleteWorkspaceUserAliasResponse.
+ * Use `create(DeleteWorkspaceUserAliasResponseSchema)` to create a new message.
+ */
+export const DeleteWorkspaceUserAliasResponseSchema: GenMessage<DeleteWorkspaceUserAliasResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 37);
+
+/**
+ * @generated from message neobox.v1.ListWorkspaceGroupsRequest
+ */
+export type ListWorkspaceGroupsRequest = Message<"neobox.v1.ListWorkspaceGroupsRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tenant_id = 2;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: string query = 3;
+   */
+  query: string;
+
+  /**
+   * @generated from field: string page_token = 4;
+   */
+  pageToken: string;
+
+  /**
+   * @generated from field: int32 page_size = 5;
+   */
+  pageSize: number;
+};
+
+/**
+ * Describes the message neobox.v1.ListWorkspaceGroupsRequest.
+ * Use `create(ListWorkspaceGroupsRequestSchema)` to create a new message.
+ */
+export const ListWorkspaceGroupsRequestSchema: GenMessage<ListWorkspaceGroupsRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 38);
+
+/**
+ * @generated from message neobox.v1.ListWorkspaceGroupsResponse
+ */
+export type ListWorkspaceGroupsResponse = Message<"neobox.v1.ListWorkspaceGroupsResponse"> & {
+  /**
+   * @generated from field: repeated neobox.v1.WorkspaceGroup groups = 1;
+   */
+  groups: WorkspaceGroup[];
+
+  /**
+   * @generated from field: string next_page_token = 2;
+   */
+  nextPageToken: string;
+};
+
+/**
+ * Describes the message neobox.v1.ListWorkspaceGroupsResponse.
+ * Use `create(ListWorkspaceGroupsResponseSchema)` to create a new message.
+ */
+export const ListWorkspaceGroupsResponseSchema: GenMessage<ListWorkspaceGroupsResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 39);
+
+/**
+ * @generated from message neobox.v1.ListWorkspaceUserGroupsRequest
+ */
+export type ListWorkspaceUserGroupsRequest = Message<"neobox.v1.ListWorkspaceUserGroupsRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tenant_id = 2;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: string user_id = 3;
+   */
+  userId: string;
+};
+
+/**
+ * Describes the message neobox.v1.ListWorkspaceUserGroupsRequest.
+ * Use `create(ListWorkspaceUserGroupsRequestSchema)` to create a new message.
+ */
+export const ListWorkspaceUserGroupsRequestSchema: GenMessage<ListWorkspaceUserGroupsRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 40);
+
+/**
+ * @generated from message neobox.v1.ListWorkspaceUserGroupsResponse
+ */
+export type ListWorkspaceUserGroupsResponse = Message<"neobox.v1.ListWorkspaceUserGroupsResponse"> & {
+  /**
+   * @generated from field: repeated neobox.v1.WorkspaceGroup groups = 1;
+   */
+  groups: WorkspaceGroup[];
+};
+
+/**
+ * Describes the message neobox.v1.ListWorkspaceUserGroupsResponse.
+ * Use `create(ListWorkspaceUserGroupsResponseSchema)` to create a new message.
+ */
+export const ListWorkspaceUserGroupsResponseSchema: GenMessage<ListWorkspaceUserGroupsResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 41);
+
+/**
+ * @generated from message neobox.v1.CreateWorkspaceGroupRequest
+ */
+export type CreateWorkspaceGroupRequest = Message<"neobox.v1.CreateWorkspaceGroupRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tenant_id = 2;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: neobox.v1.WorkspaceGroupInput group = 3;
+   */
+  group?: WorkspaceGroupInput;
+};
+
+/**
+ * Describes the message neobox.v1.CreateWorkspaceGroupRequest.
+ * Use `create(CreateWorkspaceGroupRequestSchema)` to create a new message.
+ */
+export const CreateWorkspaceGroupRequestSchema: GenMessage<CreateWorkspaceGroupRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 42);
+
+/**
+ * @generated from message neobox.v1.CreateWorkspaceGroupResponse
+ */
+export type CreateWorkspaceGroupResponse = Message<"neobox.v1.CreateWorkspaceGroupResponse"> & {
+  /**
+   * @generated from field: neobox.v1.WorkspaceGroup group = 1;
+   */
+  group?: WorkspaceGroup;
+};
+
+/**
+ * Describes the message neobox.v1.CreateWorkspaceGroupResponse.
+ * Use `create(CreateWorkspaceGroupResponseSchema)` to create a new message.
+ */
+export const CreateWorkspaceGroupResponseSchema: GenMessage<CreateWorkspaceGroupResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 43);
+
+/**
+ * @generated from message neobox.v1.UpdateWorkspaceGroupRequest
+ */
+export type UpdateWorkspaceGroupRequest = Message<"neobox.v1.UpdateWorkspaceGroupRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tenant_id = 2;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: string group_id = 3;
+   */
+  groupId: string;
+
+  /**
+   * @generated from field: neobox.v1.WorkspaceGroupInput group = 4;
+   */
+  group?: WorkspaceGroupInput;
+};
+
+/**
+ * Describes the message neobox.v1.UpdateWorkspaceGroupRequest.
+ * Use `create(UpdateWorkspaceGroupRequestSchema)` to create a new message.
+ */
+export const UpdateWorkspaceGroupRequestSchema: GenMessage<UpdateWorkspaceGroupRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 44);
+
+/**
+ * @generated from message neobox.v1.UpdateWorkspaceGroupResponse
+ */
+export type UpdateWorkspaceGroupResponse = Message<"neobox.v1.UpdateWorkspaceGroupResponse"> & {
+  /**
+   * @generated from field: neobox.v1.WorkspaceGroup group = 1;
+   */
+  group?: WorkspaceGroup;
+};
+
+/**
+ * Describes the message neobox.v1.UpdateWorkspaceGroupResponse.
+ * Use `create(UpdateWorkspaceGroupResponseSchema)` to create a new message.
+ */
+export const UpdateWorkspaceGroupResponseSchema: GenMessage<UpdateWorkspaceGroupResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 45);
+
+/**
+ * @generated from message neobox.v1.DeleteWorkspaceGroupRequest
+ */
+export type DeleteWorkspaceGroupRequest = Message<"neobox.v1.DeleteWorkspaceGroupRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tenant_id = 2;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: string group_id = 3;
+   */
+  groupId: string;
+};
+
+/**
+ * Describes the message neobox.v1.DeleteWorkspaceGroupRequest.
+ * Use `create(DeleteWorkspaceGroupRequestSchema)` to create a new message.
+ */
+export const DeleteWorkspaceGroupRequestSchema: GenMessage<DeleteWorkspaceGroupRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 46);
+
+/**
+ * @generated from message neobox.v1.DeleteWorkspaceGroupResponse
+ */
+export type DeleteWorkspaceGroupResponse = Message<"neobox.v1.DeleteWorkspaceGroupResponse"> & {
+};
+
+/**
+ * Describes the message neobox.v1.DeleteWorkspaceGroupResponse.
+ * Use `create(DeleteWorkspaceGroupResponseSchema)` to create a new message.
+ */
+export const DeleteWorkspaceGroupResponseSchema: GenMessage<DeleteWorkspaceGroupResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 47);
+
+/**
+ * @generated from message neobox.v1.ListWorkspaceGroupMembersRequest
+ */
+export type ListWorkspaceGroupMembersRequest = Message<"neobox.v1.ListWorkspaceGroupMembersRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tenant_id = 2;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: string group_id = 3;
+   */
+  groupId: string;
+
+  /**
+   * @generated from field: string page_token = 4;
+   */
+  pageToken: string;
+
+  /**
+   * @generated from field: int32 page_size = 5;
+   */
+  pageSize: number;
+};
+
+/**
+ * Describes the message neobox.v1.ListWorkspaceGroupMembersRequest.
+ * Use `create(ListWorkspaceGroupMembersRequestSchema)` to create a new message.
+ */
+export const ListWorkspaceGroupMembersRequestSchema: GenMessage<ListWorkspaceGroupMembersRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 48);
+
+/**
+ * @generated from message neobox.v1.ListWorkspaceGroupMembersResponse
+ */
+export type ListWorkspaceGroupMembersResponse = Message<"neobox.v1.ListWorkspaceGroupMembersResponse"> & {
+  /**
+   * @generated from field: repeated neobox.v1.WorkspaceGroupMember members = 1;
+   */
+  members: WorkspaceGroupMember[];
+
+  /**
+   * @generated from field: string next_page_token = 2;
+   */
+  nextPageToken: string;
+};
+
+/**
+ * Describes the message neobox.v1.ListWorkspaceGroupMembersResponse.
+ * Use `create(ListWorkspaceGroupMembersResponseSchema)` to create a new message.
+ */
+export const ListWorkspaceGroupMembersResponseSchema: GenMessage<ListWorkspaceGroupMembersResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 49);
+
+/**
+ * @generated from message neobox.v1.AddWorkspaceGroupMemberRequest
+ */
+export type AddWorkspaceGroupMemberRequest = Message<"neobox.v1.AddWorkspaceGroupMemberRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tenant_id = 2;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: string group_id = 3;
+   */
+  groupId: string;
+
+  /**
+   * @generated from field: string email = 4;
+   */
+  email: string;
+
+  /**
+   * @generated from field: string role = 5;
+   */
+  role: string;
+};
+
+/**
+ * Describes the message neobox.v1.AddWorkspaceGroupMemberRequest.
+ * Use `create(AddWorkspaceGroupMemberRequestSchema)` to create a new message.
+ */
+export const AddWorkspaceGroupMemberRequestSchema: GenMessage<AddWorkspaceGroupMemberRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 50);
+
+/**
+ * @generated from message neobox.v1.AddWorkspaceGroupMemberResponse
+ */
+export type AddWorkspaceGroupMemberResponse = Message<"neobox.v1.AddWorkspaceGroupMemberResponse"> & {
+  /**
+   * @generated from field: neobox.v1.WorkspaceGroupMember member = 1;
+   */
+  member?: WorkspaceGroupMember;
+};
+
+/**
+ * Describes the message neobox.v1.AddWorkspaceGroupMemberResponse.
+ * Use `create(AddWorkspaceGroupMemberResponseSchema)` to create a new message.
+ */
+export const AddWorkspaceGroupMemberResponseSchema: GenMessage<AddWorkspaceGroupMemberResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 51);
+
+/**
+ * @generated from message neobox.v1.UpdateWorkspaceGroupMemberRequest
+ */
+export type UpdateWorkspaceGroupMemberRequest = Message<"neobox.v1.UpdateWorkspaceGroupMemberRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tenant_id = 2;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: string group_id = 3;
+   */
+  groupId: string;
+
+  /**
+   * @generated from field: string member_id = 4;
+   */
+  memberId: string;
+
+  /**
+   * @generated from field: string role = 5;
+   */
+  role: string;
+};
+
+/**
+ * Describes the message neobox.v1.UpdateWorkspaceGroupMemberRequest.
+ * Use `create(UpdateWorkspaceGroupMemberRequestSchema)` to create a new message.
+ */
+export const UpdateWorkspaceGroupMemberRequestSchema: GenMessage<UpdateWorkspaceGroupMemberRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 52);
+
+/**
+ * @generated from message neobox.v1.UpdateWorkspaceGroupMemberResponse
+ */
+export type UpdateWorkspaceGroupMemberResponse = Message<"neobox.v1.UpdateWorkspaceGroupMemberResponse"> & {
+  /**
+   * @generated from field: neobox.v1.WorkspaceGroupMember member = 1;
+   */
+  member?: WorkspaceGroupMember;
+};
+
+/**
+ * Describes the message neobox.v1.UpdateWorkspaceGroupMemberResponse.
+ * Use `create(UpdateWorkspaceGroupMemberResponseSchema)` to create a new message.
+ */
+export const UpdateWorkspaceGroupMemberResponseSchema: GenMessage<UpdateWorkspaceGroupMemberResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 53);
+
+/**
+ * @generated from message neobox.v1.DeleteWorkspaceGroupMemberRequest
+ */
+export type DeleteWorkspaceGroupMemberRequest = Message<"neobox.v1.DeleteWorkspaceGroupMemberRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tenant_id = 2;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: string group_id = 3;
+   */
+  groupId: string;
+
+  /**
+   * @generated from field: string member_id = 4;
+   */
+  memberId: string;
+};
+
+/**
+ * Describes the message neobox.v1.DeleteWorkspaceGroupMemberRequest.
+ * Use `create(DeleteWorkspaceGroupMemberRequestSchema)` to create a new message.
+ */
+export const DeleteWorkspaceGroupMemberRequestSchema: GenMessage<DeleteWorkspaceGroupMemberRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 54);
+
+/**
+ * @generated from message neobox.v1.DeleteWorkspaceGroupMemberResponse
+ */
+export type DeleteWorkspaceGroupMemberResponse = Message<"neobox.v1.DeleteWorkspaceGroupMemberResponse"> & {
+};
+
+/**
+ * Describes the message neobox.v1.DeleteWorkspaceGroupMemberResponse.
+ * Use `create(DeleteWorkspaceGroupMemberResponseSchema)` to create a new message.
+ */
+export const DeleteWorkspaceGroupMemberResponseSchema: GenMessage<DeleteWorkspaceGroupMemberResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 55);
+
+/**
+ * @generated from message neobox.v1.ListWorkspaceOrgUnitsRequest
+ */
+export type ListWorkspaceOrgUnitsRequest = Message<"neobox.v1.ListWorkspaceOrgUnitsRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tenant_id = 2;
+   */
+  tenantId: string;
+};
+
+/**
+ * Describes the message neobox.v1.ListWorkspaceOrgUnitsRequest.
+ * Use `create(ListWorkspaceOrgUnitsRequestSchema)` to create a new message.
+ */
+export const ListWorkspaceOrgUnitsRequestSchema: GenMessage<ListWorkspaceOrgUnitsRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 56);
+
+/**
+ * @generated from message neobox.v1.ListWorkspaceOrgUnitsResponse
+ */
+export type ListWorkspaceOrgUnitsResponse = Message<"neobox.v1.ListWorkspaceOrgUnitsResponse"> & {
+  /**
+   * @generated from field: repeated neobox.v1.WorkspaceOrgUnit org_units = 1;
+   */
+  orgUnits: WorkspaceOrgUnit[];
+};
+
+/**
+ * Describes the message neobox.v1.ListWorkspaceOrgUnitsResponse.
+ * Use `create(ListWorkspaceOrgUnitsResponseSchema)` to create a new message.
+ */
+export const ListWorkspaceOrgUnitsResponseSchema: GenMessage<ListWorkspaceOrgUnitsResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 57);
+
+/**
+ * @generated from message neobox.v1.CreateWorkspaceOrgUnitRequest
+ */
+export type CreateWorkspaceOrgUnitRequest = Message<"neobox.v1.CreateWorkspaceOrgUnitRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tenant_id = 2;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: neobox.v1.WorkspaceOrgUnitInput org_unit = 3;
+   */
+  orgUnit?: WorkspaceOrgUnitInput;
+};
+
+/**
+ * Describes the message neobox.v1.CreateWorkspaceOrgUnitRequest.
+ * Use `create(CreateWorkspaceOrgUnitRequestSchema)` to create a new message.
+ */
+export const CreateWorkspaceOrgUnitRequestSchema: GenMessage<CreateWorkspaceOrgUnitRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 58);
+
+/**
+ * @generated from message neobox.v1.CreateWorkspaceOrgUnitResponse
+ */
+export type CreateWorkspaceOrgUnitResponse = Message<"neobox.v1.CreateWorkspaceOrgUnitResponse"> & {
+  /**
+   * @generated from field: neobox.v1.WorkspaceOrgUnit org_unit = 1;
+   */
+  orgUnit?: WorkspaceOrgUnit;
+};
+
+/**
+ * Describes the message neobox.v1.CreateWorkspaceOrgUnitResponse.
+ * Use `create(CreateWorkspaceOrgUnitResponseSchema)` to create a new message.
+ */
+export const CreateWorkspaceOrgUnitResponseSchema: GenMessage<CreateWorkspaceOrgUnitResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 59);
+
+/**
+ * @generated from message neobox.v1.UpdateWorkspaceOrgUnitRequest
+ */
+export type UpdateWorkspaceOrgUnitRequest = Message<"neobox.v1.UpdateWorkspaceOrgUnitRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tenant_id = 2;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: string org_unit_id = 3;
+   */
+  orgUnitId: string;
+
+  /**
+   * @generated from field: neobox.v1.WorkspaceOrgUnitInput org_unit = 4;
+   */
+  orgUnit?: WorkspaceOrgUnitInput;
+};
+
+/**
+ * Describes the message neobox.v1.UpdateWorkspaceOrgUnitRequest.
+ * Use `create(UpdateWorkspaceOrgUnitRequestSchema)` to create a new message.
+ */
+export const UpdateWorkspaceOrgUnitRequestSchema: GenMessage<UpdateWorkspaceOrgUnitRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 60);
+
+/**
+ * @generated from message neobox.v1.UpdateWorkspaceOrgUnitResponse
+ */
+export type UpdateWorkspaceOrgUnitResponse = Message<"neobox.v1.UpdateWorkspaceOrgUnitResponse"> & {
+  /**
+   * @generated from field: neobox.v1.WorkspaceOrgUnit org_unit = 1;
+   */
+  orgUnit?: WorkspaceOrgUnit;
+};
+
+/**
+ * Describes the message neobox.v1.UpdateWorkspaceOrgUnitResponse.
+ * Use `create(UpdateWorkspaceOrgUnitResponseSchema)` to create a new message.
+ */
+export const UpdateWorkspaceOrgUnitResponseSchema: GenMessage<UpdateWorkspaceOrgUnitResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 61);
+
+/**
+ * @generated from message neobox.v1.DeleteWorkspaceOrgUnitRequest
+ */
+export type DeleteWorkspaceOrgUnitRequest = Message<"neobox.v1.DeleteWorkspaceOrgUnitRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tenant_id = 2;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: string org_unit_id = 3;
+   */
+  orgUnitId: string;
+};
+
+/**
+ * Describes the message neobox.v1.DeleteWorkspaceOrgUnitRequest.
+ * Use `create(DeleteWorkspaceOrgUnitRequestSchema)` to create a new message.
+ */
+export const DeleteWorkspaceOrgUnitRequestSchema: GenMessage<DeleteWorkspaceOrgUnitRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 62);
+
+/**
+ * @generated from message neobox.v1.DeleteWorkspaceOrgUnitResponse
+ */
+export type DeleteWorkspaceOrgUnitResponse = Message<"neobox.v1.DeleteWorkspaceOrgUnitResponse"> & {
+};
+
+/**
+ * Describes the message neobox.v1.DeleteWorkspaceOrgUnitResponse.
+ * Use `create(DeleteWorkspaceOrgUnitResponseSchema)` to create a new message.
+ */
+export const DeleteWorkspaceOrgUnitResponseSchema: GenMessage<DeleteWorkspaceOrgUnitResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 63);
+
+/**
+ * @generated from message neobox.v1.SignOutWorkspaceUserRequest
+ */
+export type SignOutWorkspaceUserRequest = Message<"neobox.v1.SignOutWorkspaceUserRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tenant_id = 2;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: string user_id = 3;
+   */
+  userId: string;
+};
+
+/**
+ * Describes the message neobox.v1.SignOutWorkspaceUserRequest.
+ * Use `create(SignOutWorkspaceUserRequestSchema)` to create a new message.
+ */
+export const SignOutWorkspaceUserRequestSchema: GenMessage<SignOutWorkspaceUserRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 64);
+
+/**
+ * @generated from message neobox.v1.SignOutWorkspaceUserResponse
+ */
+export type SignOutWorkspaceUserResponse = Message<"neobox.v1.SignOutWorkspaceUserResponse"> & {
+};
+
+/**
+ * Describes the message neobox.v1.SignOutWorkspaceUserResponse.
+ * Use `create(SignOutWorkspaceUserResponseSchema)` to create a new message.
+ */
+export const SignOutWorkspaceUserResponseSchema: GenMessage<SignOutWorkspaceUserResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 65);
+
+/**
+ * @generated from message neobox.v1.ListWorkspaceUserTokensRequest
+ */
+export type ListWorkspaceUserTokensRequest = Message<"neobox.v1.ListWorkspaceUserTokensRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tenant_id = 2;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: string user_id = 3;
+   */
+  userId: string;
+};
+
+/**
+ * Describes the message neobox.v1.ListWorkspaceUserTokensRequest.
+ * Use `create(ListWorkspaceUserTokensRequestSchema)` to create a new message.
+ */
+export const ListWorkspaceUserTokensRequestSchema: GenMessage<ListWorkspaceUserTokensRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 66);
+
+/**
+ * @generated from message neobox.v1.ListWorkspaceUserTokensResponse
+ */
+export type ListWorkspaceUserTokensResponse = Message<"neobox.v1.ListWorkspaceUserTokensResponse"> & {
+  /**
+   * @generated from field: repeated neobox.v1.WorkspaceUserToken tokens = 1;
+   */
+  tokens: WorkspaceUserToken[];
+};
+
+/**
+ * Describes the message neobox.v1.ListWorkspaceUserTokensResponse.
+ * Use `create(ListWorkspaceUserTokensResponseSchema)` to create a new message.
+ */
+export const ListWorkspaceUserTokensResponseSchema: GenMessage<ListWorkspaceUserTokensResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 67);
+
+/**
+ * @generated from message neobox.v1.RevokeWorkspaceUserTokenRequest
+ */
+export type RevokeWorkspaceUserTokenRequest = Message<"neobox.v1.RevokeWorkspaceUserTokenRequest"> & {
+  /**
+   * @generated from field: string connection_id = 1;
+   */
+  connectionId: string;
+
+  /**
+   * @generated from field: string tenant_id = 2;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: string user_id = 3;
+   */
+  userId: string;
+
+  /**
+   * @generated from field: string client_id = 4;
+   */
+  clientId: string;
+};
+
+/**
+ * Describes the message neobox.v1.RevokeWorkspaceUserTokenRequest.
+ * Use `create(RevokeWorkspaceUserTokenRequestSchema)` to create a new message.
+ */
+export const RevokeWorkspaceUserTokenRequestSchema: GenMessage<RevokeWorkspaceUserTokenRequest> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 68);
+
+/**
+ * @generated from message neobox.v1.RevokeWorkspaceUserTokenResponse
+ */
+export type RevokeWorkspaceUserTokenResponse = Message<"neobox.v1.RevokeWorkspaceUserTokenResponse"> & {
+};
+
+/**
+ * Describes the message neobox.v1.RevokeWorkspaceUserTokenResponse.
+ * Use `create(RevokeWorkspaceUserTokenResponseSchema)` to create a new message.
+ */
+export const RevokeWorkspaceUserTokenResponseSchema: GenMessage<RevokeWorkspaceUserTokenResponse> = /*@__PURE__*/
+  messageDesc(file_neobox_v1_google_workspace, 69);
+
+/**
  * Each connection owns one reusable Service Account and multiple independent tenants.
  *
  * @generated from service neobox.v1.GoogleWorkspaceService
@@ -765,6 +1876,158 @@ export const GoogleWorkspaceService: GenService<{
     methodKind: "unary";
     input: typeof SetWorkspaceUserSuspendedRequestSchema;
     output: typeof SetWorkspaceUserSuspendedResponseSchema;
+  },
+  /**
+   * @generated from rpc neobox.v1.GoogleWorkspaceService.ListWorkspaceUserAliases
+   */
+  listWorkspaceUserAliases: {
+    methodKind: "unary";
+    input: typeof ListWorkspaceUserAliasesRequestSchema;
+    output: typeof ListWorkspaceUserAliasesResponseSchema;
+  },
+  /**
+   * @generated from rpc neobox.v1.GoogleWorkspaceService.AddWorkspaceUserAlias
+   */
+  addWorkspaceUserAlias: {
+    methodKind: "unary";
+    input: typeof AddWorkspaceUserAliasRequestSchema;
+    output: typeof AddWorkspaceUserAliasResponseSchema;
+  },
+  /**
+   * @generated from rpc neobox.v1.GoogleWorkspaceService.DeleteWorkspaceUserAlias
+   */
+  deleteWorkspaceUserAlias: {
+    methodKind: "unary";
+    input: typeof DeleteWorkspaceUserAliasRequestSchema;
+    output: typeof DeleteWorkspaceUserAliasResponseSchema;
+  },
+  /**
+   * @generated from rpc neobox.v1.GoogleWorkspaceService.ListWorkspaceGroups
+   */
+  listWorkspaceGroups: {
+    methodKind: "unary";
+    input: typeof ListWorkspaceGroupsRequestSchema;
+    output: typeof ListWorkspaceGroupsResponseSchema;
+  },
+  /**
+   * @generated from rpc neobox.v1.GoogleWorkspaceService.ListWorkspaceUserGroups
+   */
+  listWorkspaceUserGroups: {
+    methodKind: "unary";
+    input: typeof ListWorkspaceUserGroupsRequestSchema;
+    output: typeof ListWorkspaceUserGroupsResponseSchema;
+  },
+  /**
+   * @generated from rpc neobox.v1.GoogleWorkspaceService.CreateWorkspaceGroup
+   */
+  createWorkspaceGroup: {
+    methodKind: "unary";
+    input: typeof CreateWorkspaceGroupRequestSchema;
+    output: typeof CreateWorkspaceGroupResponseSchema;
+  },
+  /**
+   * @generated from rpc neobox.v1.GoogleWorkspaceService.UpdateWorkspaceGroup
+   */
+  updateWorkspaceGroup: {
+    methodKind: "unary";
+    input: typeof UpdateWorkspaceGroupRequestSchema;
+    output: typeof UpdateWorkspaceGroupResponseSchema;
+  },
+  /**
+   * @generated from rpc neobox.v1.GoogleWorkspaceService.DeleteWorkspaceGroup
+   */
+  deleteWorkspaceGroup: {
+    methodKind: "unary";
+    input: typeof DeleteWorkspaceGroupRequestSchema;
+    output: typeof DeleteWorkspaceGroupResponseSchema;
+  },
+  /**
+   * @generated from rpc neobox.v1.GoogleWorkspaceService.ListWorkspaceGroupMembers
+   */
+  listWorkspaceGroupMembers: {
+    methodKind: "unary";
+    input: typeof ListWorkspaceGroupMembersRequestSchema;
+    output: typeof ListWorkspaceGroupMembersResponseSchema;
+  },
+  /**
+   * @generated from rpc neobox.v1.GoogleWorkspaceService.AddWorkspaceGroupMember
+   */
+  addWorkspaceGroupMember: {
+    methodKind: "unary";
+    input: typeof AddWorkspaceGroupMemberRequestSchema;
+    output: typeof AddWorkspaceGroupMemberResponseSchema;
+  },
+  /**
+   * @generated from rpc neobox.v1.GoogleWorkspaceService.UpdateWorkspaceGroupMember
+   */
+  updateWorkspaceGroupMember: {
+    methodKind: "unary";
+    input: typeof UpdateWorkspaceGroupMemberRequestSchema;
+    output: typeof UpdateWorkspaceGroupMemberResponseSchema;
+  },
+  /**
+   * @generated from rpc neobox.v1.GoogleWorkspaceService.DeleteWorkspaceGroupMember
+   */
+  deleteWorkspaceGroupMember: {
+    methodKind: "unary";
+    input: typeof DeleteWorkspaceGroupMemberRequestSchema;
+    output: typeof DeleteWorkspaceGroupMemberResponseSchema;
+  },
+  /**
+   * @generated from rpc neobox.v1.GoogleWorkspaceService.ListWorkspaceOrgUnits
+   */
+  listWorkspaceOrgUnits: {
+    methodKind: "unary";
+    input: typeof ListWorkspaceOrgUnitsRequestSchema;
+    output: typeof ListWorkspaceOrgUnitsResponseSchema;
+  },
+  /**
+   * @generated from rpc neobox.v1.GoogleWorkspaceService.CreateWorkspaceOrgUnit
+   */
+  createWorkspaceOrgUnit: {
+    methodKind: "unary";
+    input: typeof CreateWorkspaceOrgUnitRequestSchema;
+    output: typeof CreateWorkspaceOrgUnitResponseSchema;
+  },
+  /**
+   * @generated from rpc neobox.v1.GoogleWorkspaceService.UpdateWorkspaceOrgUnit
+   */
+  updateWorkspaceOrgUnit: {
+    methodKind: "unary";
+    input: typeof UpdateWorkspaceOrgUnitRequestSchema;
+    output: typeof UpdateWorkspaceOrgUnitResponseSchema;
+  },
+  /**
+   * @generated from rpc neobox.v1.GoogleWorkspaceService.DeleteWorkspaceOrgUnit
+   */
+  deleteWorkspaceOrgUnit: {
+    methodKind: "unary";
+    input: typeof DeleteWorkspaceOrgUnitRequestSchema;
+    output: typeof DeleteWorkspaceOrgUnitResponseSchema;
+  },
+  /**
+   * @generated from rpc neobox.v1.GoogleWorkspaceService.SignOutWorkspaceUser
+   */
+  signOutWorkspaceUser: {
+    methodKind: "unary";
+    input: typeof SignOutWorkspaceUserRequestSchema;
+    output: typeof SignOutWorkspaceUserResponseSchema;
+  },
+  /**
+   * @generated from rpc neobox.v1.GoogleWorkspaceService.ListWorkspaceUserTokens
+   */
+  listWorkspaceUserTokens: {
+    methodKind: "unary";
+    input: typeof ListWorkspaceUserTokensRequestSchema;
+    output: typeof ListWorkspaceUserTokensResponseSchema;
+  },
+  /**
+   * @generated from rpc neobox.v1.GoogleWorkspaceService.RevokeWorkspaceUserToken
+   */
+  revokeWorkspaceUserToken: {
+    methodKind: "unary";
+    input: typeof RevokeWorkspaceUserTokenRequestSchema;
+    output: typeof RevokeWorkspaceUserTokenResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_neobox_v1_google_workspace, 0);

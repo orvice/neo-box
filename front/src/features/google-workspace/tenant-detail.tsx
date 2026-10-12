@@ -1,0 +1,40 @@
+import type { WorkspaceTenant } from '@/api/google-workspace'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { WorkspaceGroups } from './groups'
+import { WorkspaceOrgUnits } from './org-units'
+import { WorkspaceUsers } from './users'
+
+export function WorkspaceTenantDetail({
+  connectionId,
+  tenant,
+}: {
+  connectionId: string
+  tenant: WorkspaceTenant
+}) {
+  return (
+    <section className='space-y-4'>
+      <div>
+        <h2 className='text-xl font-semibold'>{tenant.name}</h2>
+        <p className='text-sm text-muted-foreground'>
+          {tenant.customerId} · {tenant.delegatedAdminEmail}
+        </p>
+      </div>
+      <Tabs defaultValue='users'>
+        <TabsList>
+          <TabsTrigger value='users'>Users</TabsTrigger>
+          <TabsTrigger value='groups'>Groups</TabsTrigger>
+          <TabsTrigger value='org-units'>Organization units</TabsTrigger>
+        </TabsList>
+        <TabsContent value='users' className='pt-4'>
+          <WorkspaceUsers connectionId={connectionId} tenant={tenant} />
+        </TabsContent>
+        <TabsContent value='groups' className='pt-4'>
+          <WorkspaceGroups connectionId={connectionId} tenantId={tenant.id} />
+        </TabsContent>
+        <TabsContent value='org-units' className='pt-4'>
+          <WorkspaceOrgUnits connectionId={connectionId} tenantId={tenant.id} />
+        </TabsContent>
+      </Tabs>
+    </section>
+  )
+}

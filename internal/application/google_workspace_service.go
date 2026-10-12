@@ -27,8 +27,27 @@ type workspaceAPI interface {
 	GetUser(context.Context, string) (*googleworkspace.User, error)
 	CreateUser(context.Context, string, map[string]any) (*googleworkspace.User, error)
 	UpdateUser(context.Context, string, map[string]any) (*googleworkspace.User, error)
+	ListAliases(context.Context, string) ([]googleworkspace.Alias, error)
+	AddAlias(context.Context, string, string) (*googleworkspace.Alias, error)
+	DeleteAlias(context.Context, string, string) error
+	ListGroups(context.Context, string, string, int) (*googleworkspace.GroupPage, error)
+	ListUserGroups(context.Context, string) ([]googleworkspace.Group, error)
+	CreateGroup(context.Context, string, string, string) (*googleworkspace.Group, error)
+	UpdateGroup(context.Context, string, string, string, string) (*googleworkspace.Group, error)
+	DeleteGroup(context.Context, string) error
+	ListMembers(context.Context, string, string, int) (*googleworkspace.MemberPage, error)
+	AddMember(context.Context, string, string, string) (*googleworkspace.Member, error)
+	UpdateMember(context.Context, string, string, string) (*googleworkspace.Member, error)
+	DeleteMember(context.Context, string, string) error
+	ListOrgUnits(context.Context) ([]googleworkspace.OrgUnit, error)
+	CreateOrgUnit(context.Context, string, string, string) (*googleworkspace.OrgUnit, error)
+	UpdateOrgUnit(context.Context, string, string, string, string) (*googleworkspace.OrgUnit, error)
+	DeleteOrgUnit(context.Context, string) error
+	SignOutUser(context.Context, string) error
+	ListUserTokens(context.Context, string) ([]googleworkspace.UserToken, error)
+	RevokeUserToken(context.Context, string, string) error
 }
-type workspaceClientFactory func(context.Context, googleworkspace.ConnectionConfig, googleworkspace.ConnectionSecret, string, string) (workspaceAPI, error)
+type workspaceClientFactory func(context.Context, googleworkspace.ConnectionConfig, googleworkspace.ConnectionSecret, string, string, ...string) (workspaceAPI, error)
 type GoogleWorkspaceServiceServer struct {
 	mu        sync.RWMutex
 	conns     *connection.Service
@@ -37,8 +56,8 @@ type GoogleWorkspaceServiceServer struct {
 }
 
 func NewGoogleWorkspaceServiceServer() *GoogleWorkspaceServiceServer {
-	return &GoogleWorkspaceServiceServer{newClient: func(ctx context.Context, c googleworkspace.ConnectionConfig, s googleworkspace.ConnectionSecret, customer, admin string) (workspaceAPI, error) {
-		return googleworkspace.NewClient(ctx, c, s, customer, admin)
+	return &GoogleWorkspaceServiceServer{newClient: func(ctx context.Context, c googleworkspace.ConnectionConfig, s googleworkspace.ConnectionSecret, customer, admin string, scopes ...string) (workspaceAPI, error) {
+		return googleworkspace.NewClient(ctx, c, s, customer, admin, scopes...)
 	}}
 }
 func (s *GoogleWorkspaceServiceServer) SetDeps(r repo.Repository, c *connection.Service) {
@@ -85,13 +104,13 @@ func (d *workspaceDeps) tenant(ctx context.Context, id string) (*repo.Tenant, er
 	}
 	return t, nil
 }
-func (d *workspaceDeps) client(ctx context.Context, t *repo.Tenant) (workspaceAPI, error) {
+func (d *workspaceDeps) client(ctx context.Context, t *repo.Tenant, scopes ...string) (workspaceAPI, error) {
 	var cfg googleworkspace.ConnectionConfig
 	var sec googleworkspace.ConnectionSecret
 	if err := d.conns.Open(d.c, &cfg, &sec); err != nil {
 		return nil, mapConnectionErr(err)
 	}
-	c, err := d.factory(ctx, cfg, sec, t.CustomerID, t.DelegatedAdminEmail)
+	c, err := d.factory(ctx, cfg, sec, t.CustomerID, t.DelegatedAdminEmail, scopes...)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeFailedPrecondition, err)
 	}
@@ -215,7 +234,7 @@ func (s *GoogleWorkspaceServiceServer) TestWorkspaceTenant(ctx context.Context, 
 	}
 	return connect.NewResponse(&neoboxv1.TestWorkspaceTenantResponse{Tenant: workspaceTenantToProto(t)}), nil
 }
-func (s *GoogleWorkspaceServiceServer) open(ctx context.Context, connectionID, tenantID string) (*workspaceDeps, *repo.Tenant, workspaceAPI, error) {
+func (s *GoogleWorkspaceServiceServer) open(ctx context.Context, connectionID, tenantID string, scopes ...string) (*workspaceDeps, *repo.Tenant, workspaceAPI, error) {
 	d, err := s.deps(ctx, connectionID)
 	if err != nil {
 		return nil, nil, nil, err
@@ -224,7 +243,7 @@ func (s *GoogleWorkspaceServiceServer) open(ctx context.Context, connectionID, t
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	api, err := d.client(ctx, t)
+	api, err := d.client(ctx, t, scopes...)
 	return d, t, api, err
 }
 
@@ -315,7 +334,10 @@ func workspaceUserToProto(u *googleworkspace.User) *neoboxv1.WorkspaceUser {
 func mapWorkspaceErr(err error) error {
 	var ce *connect.Error
 	var ae *googleworkspace.APIError
+	var field *googleworkspace.FieldError
 	switch {
+	case errors.As(err, &field):
+		return connectx.InvalidArgument(field.Field, field.Message)
 	case errors.As(err, &ce):
 		return ce
 	case errors.Is(err, repo.ErrNotFound), errors.Is(err, googleworkspace.ErrTenantMismatch):
