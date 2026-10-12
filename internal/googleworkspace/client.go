@@ -26,6 +26,9 @@ import (
 const ProviderType = "google_workspace"
 const UserScope = "https://www.googleapis.com/auth/admin.directory.user"
 const DomainScope = "https://www.googleapis.com/auth/admin.directory.domain.readonly"
+const GroupScope = "https://www.googleapis.com/auth/admin.directory.group"
+const OrgUnitScope = "https://www.googleapis.com/auth/admin.directory.orgunit"
+const SecurityScope = "https://www.googleapis.com/auth/admin.directory.user.security"
 const directoryURL = "https://admin.googleapis.com/admin/directory/v1"
 
 type ConnectionConfig struct {
@@ -126,8 +129,8 @@ func (e *APIError) Error() string {
 	return fmt.Sprintf("Google Directory API returned %d (%s)", e.Status, e.Reason)
 }
 
-var ErrUncertain = errors.New("Google did not confirm this change; refresh the user before trying again")
-var ErrTenantMismatch = errors.New("user does not belong to this Workspace tenant")
+var ErrUncertain = errors.New("Google did not confirm this change; refresh the affected resource before trying again")
+var ErrTenantMismatch = errors.New("resource does not belong to this Workspace tenant")
 
 type Client struct {
 	HTTP       *http.Client
@@ -136,7 +139,7 @@ type Client struct {
 	AdminEmail string
 }
 
-func NewClient(ctx context.Context, identity ConnectionConfig, secret ConnectionSecret, customer, admin string) (*Client, error) {
+func NewClient(ctx context.Context, identity ConnectionConfig, secret ConnectionSecret, customer, admin string, extraScopes ...string) (*Client, error) {
 	metadata, cfg, err := ParseKey(secret.ServiceAccountJSON)
 	if err != nil {
 		return nil, err
@@ -148,6 +151,15 @@ func NewClient(ctx context.Context, identity ConnectionConfig, secret Connection
 		return nil, errors.New("invalid Workspace customer or delegated administrator")
 	}
 	cfg.Subject = admin
+	// Optional capabilities never expand the scopes of base user requests.
+	for _, scope := range extraScopes {
+		switch scope {
+		case GroupScope, OrgUnitScope, SecurityScope:
+			cfg.Scopes = append(cfg.Scopes, scope)
+		default:
+			return nil, errors.New("unsupported Workspace capability scope")
+		}
+	}
 	// The token source lives only in this tenant's client. Token errors are
 	// sanitized: Google's response can contain credential-related details.
 	ctx = context.WithValue(ctx, oauth2.HTTPClient, &http.Client{Timeout: 30 * time.Second})

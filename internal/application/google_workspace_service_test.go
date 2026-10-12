@@ -143,7 +143,7 @@ func TestWorkspaceSharedKeyAndIndependentTenants(t *testing.T) {
 	srv := NewGoogleWorkspaceServiceServer()
 	srv.SetDeps(rows, conns)
 	opened := 0
-	srv.newClient = func(_ context.Context, cfg googleworkspace.ConnectionConfig, sec googleworkspace.ConnectionSecret, customer, admin string) (workspaceAPI, error) {
+	srv.newClient = func(_ context.Context, cfg googleworkspace.ConnectionConfig, sec googleworkspace.ConnectionSecret, customer, admin string, scopes ...string) (workspaceAPI, error) {
 		opened++
 		if sec.ServiceAccountJSON != "SHARED-SECRET" || cfg.ClientID != "123" {
 			t.Fatal("tenants did not reuse the same key")

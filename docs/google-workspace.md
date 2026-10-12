@@ -62,6 +62,62 @@ mutation, refresh to inspect the current user before deciding whether to retry.
 Passwords and Google's raw error messages are not stored in Tenant settings or
 returned in user responses.
 
+## Optional directory features
+
+Authorize these extra scopes **per tenant** for the features you want. Keep the
+two original scopes above. Additional scopes are requested only when using the
+corresponding feature; they are not added to base user listing, profile updates,
+password resets, suspension, or the Tenant's authorization test.
+
+| Feature | Additional scope |
+| --- | --- |
+| User aliases | None; existing `admin.directory.user` suffices |
+| Groups and members | `https://www.googleapis.com/auth/admin.directory.group` |
+| Organization units | `https://www.googleapis.com/auth/admin.directory.orgunit` |
+| Sign-out and application grants | `https://www.googleapis.com/auth/admin.directory.user.security` |
+
+OAuth scope authorization and the delegated administrator's Google privileges
+are both required. Feature failures are shown beside that feature and do not
+change the Tenant's base user health. No new key upload is needed when extending
+delegation for the same Service Account.
+
+- **Aliases:** open a User's details → Aliases to list/add/remove email aliases.
+  Google-generated aliases from domain aliases are shown as managed by Google
+  and cannot be removed here. Added aliases must be on a verified primary or
+  secondary domain of the selected tenant.
+- **Groups:** select a Tenant → Groups to search/page groups, create/edit/delete
+  them, and manage direct members with Member/Manager/Owner roles. Group email
+  changes are validated against this customer's domains. External members and
+  nested groups are accepted when Google permits them. Unshown group and member
+  settings are preserved. User details → Groups lists memberships within this
+  tenant only.
+- **Organization units:** select a Tenant → Organization units to view its tree,
+  create/edit/move/delete units. The root cannot be edited/deleted, and moves
+  into the unit's own subtree are rejected. Edit a User's profile to choose a
+  new OU from the selector. When this optional scope is unavailable, the
+  existing manual path input remains usable. Moving a unit may change inherited
+  Google policies for users in its subtree.
+- **User security:** User details → Security supports forced sign-out and viewing
+  or revoking third-party application grants. Sign-out resets web/device
+  sessions and sign-in cookies; application grants are revoked separately.
+  Revocation removes the application's existing access tokens for that user,
+  and does not permanently block the application from being authorized again.
+  Only client IDs and granted scopes are displayed; actual tokens are never
+  exposed or stored.
+
+Deleting groups or organization units changes Google resources and requires an
+explicit confirmation in the UI. Google enforces deletion requirements and
+administrator privileges. These operations, alias removal, member removal,
+sign-out and grant revocation retain the same single-send/unknown-outcome rules
+as other mutations. Refresh after an unconfirmed result before retrying.
+
+API references: [aliases](https://developers.google.com/workspace/admin/directory/reference/rest/v1/users.aliases),
+[groups](https://developers.google.com/workspace/admin/directory/reference/rest/v1/groups),
+[members](https://developers.google.com/workspace/admin/directory/reference/rest/v1/members),
+[organization units](https://developers.google.com/workspace/admin/directory/reference/rest/v1/orgunits),
+[sign-out](https://developers.google.com/workspace/admin/directory/reference/rest/v1/users/signOut),
+and [application grants](https://developers.google.com/workspace/admin/directory/reference/rest/v1/tokens).
+
 ## Key rotation and removal
 
 Edit the Connection and upload another key for the **same** Service Account.
@@ -78,6 +134,10 @@ in each organization's Admin console when appropriate.
 Unit/service tests use a simulated Google Directory API, including two
 independent tenants sharing one key, cross-customer refusal, verified-domain
 checks, pagination, partial updates, permission errors and non-retried writes.
+Directory extension tests also cover editable/Google-managed aliases, later-page
+group ownership, membership filtering across tenants, external members and role
+changes, OU root/cycle protection, scope isolation, and security write failures.
+Frontend tests cover organization hierarchy ordering and valid parent choices.
 PostgreSQL repository tests use `NEOBOX_TEST_POSTGRES_DSN` and an isolated schema.
 Real Google key exchange and operations need authorized test tenants and have
 not been exercised against real Workspace accounts in this implementation.

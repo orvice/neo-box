@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label'
 import { Page, PageHeader, PageScroll } from '@/components/common/page-parts'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { DataTable, type Column } from '@/components/data-table'
-import { WorkspaceUsers } from './users'
+import { WorkspaceTenantDetail } from './tenant-detail'
 
 export function WorkspaceConnectionDetail({
   connection,
@@ -151,6 +151,30 @@ export function WorkspaceConnectionDetail({
             >
               Google setup instructions
             </a>
+            <p className='mt-2'>
+              Optional features need these additional scopes in each tenant.
+              They are requested only when using the feature:
+            </p>
+            <ul className='mt-1 space-y-1 text-xs break-all'>
+              <li>
+                Groups and members:{' '}
+                <code>
+                  https://www.googleapis.com/auth/admin.directory.group
+                </code>
+              </li>
+              <li>
+                Organization units:{' '}
+                <code>
+                  https://www.googleapis.com/auth/admin.directory.orgunit
+                </code>
+              </li>
+              <li>
+                Sign-out and application grants:{' '}
+                <code>
+                  https://www.googleapis.com/auth/admin.directory.user.security
+                </code>
+              </li>
+            </ul>
           </AlertDescription>
         </Alert>
         {(error || tenants.error) && (
@@ -170,7 +194,7 @@ export function WorkspaceConnectionDetail({
           />
         )}
         {selected && (
-          <WorkspaceUsers
+          <WorkspaceTenantDetail
             key={selected.id}
             connectionId={connection.id}
             tenant={selected}

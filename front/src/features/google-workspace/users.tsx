@@ -17,9 +17,12 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { DataTable, type Column } from '@/components/data-table'
 import { PasswordInput } from '@/components/password-input'
+import { OrgUnitPicker } from './org-units'
+import { UserAliases, UserGroups, UserSecurity } from './user-tools'
 
 type UserAction =
   { kind: 'edit' | 'password'; user: WorkspaceUser } | { kind: 'create' }
@@ -96,7 +99,7 @@ export function WorkspaceUsers({
     <section className='space-y-4'>
       <div className='flex flex-wrap items-center justify-between gap-3'>
         <div>
-          <h2 className='text-xl font-semibold'>{tenant.name} users</h2>
+          <h2 className='text-xl font-semibold'>Users</h2>
           <p className='text-sm text-muted-foreground'>
             {tenant.customerId} · read live from Google
           </p>
@@ -201,7 +204,7 @@ export function WorkspaceUsers({
             if (!open) setDetail(null)
           }}
         >
-          <DialogContent>
+          <DialogContent className='max-h-[85vh] overflow-y-auto sm:max-w-3xl'>
             <DialogHeader>
               <DialogTitle>User details</DialogTitle>
             </DialogHeader>
@@ -274,24 +277,56 @@ function UserDetail({
   if (!detail.data) return <p>Loading…</p>
   const u = detail.data
   return (
-    <dl className='grid grid-cols-2 gap-3 text-sm'>
-      <dt>Email</dt>
-      <dd className='break-all'>{u.primaryEmail}</dd>
-      <dt>Name</dt>
-      <dd>
-        {u.givenName} {u.familyName}
-      </dd>
-      <dt>Customer ID</dt>
-      <dd>{u.customerId}</dd>
-      <dt>Organization unit</dt>
-      <dd>{u.orgUnitPath}</dd>
-      <dt>Status</dt>
-      <dd>{u.suspended ? 'Suspended' : 'Active'}</dd>
-      <dt>Administrator</dt>
-      <dd>{u.isAdmin ? 'Yes' : 'No'}</dd>
-      <dt>Password change required</dt>
-      <dd>{u.changePasswordAtNextLogin ? 'Yes' : 'No'}</dd>
-    </dl>
+    <Tabs defaultValue='profile'>
+      <TabsList>
+        <TabsTrigger value='profile'>Profile</TabsTrigger>
+        <TabsTrigger value='aliases'>Aliases</TabsTrigger>
+        <TabsTrigger value='groups'>Groups</TabsTrigger>
+        <TabsTrigger value='security'>Security</TabsTrigger>
+      </TabsList>
+      <TabsContent value='profile' className='pt-4'>
+        {' '}
+        <dl className='grid grid-cols-2 gap-3 text-sm'>
+          <dt>Email</dt>
+          <dd className='break-all'>{u.primaryEmail}</dd>
+          <dt>Name</dt>
+          <dd>
+            {u.givenName} {u.familyName}
+          </dd>
+          <dt>Customer ID</dt>
+          <dd>{u.customerId}</dd>
+          <dt>Organization unit</dt>
+          <dd>{u.orgUnitPath}</dd>
+          <dt>Status</dt>
+          <dd>{u.suspended ? 'Suspended' : 'Active'}</dd>
+          <dt>Administrator</dt>
+          <dd>{u.isAdmin ? 'Yes' : 'No'}</dd>
+          <dt>Password change required</dt>
+          <dd>{u.changePasswordAtNextLogin ? 'Yes' : 'No'}</dd>
+        </dl>
+      </TabsContent>
+      <TabsContent value='aliases' className='pt-4'>
+        <UserAliases
+          connectionId={connectionId}
+          tenantId={tenantId}
+          userId={userId}
+        />
+      </TabsContent>
+      <TabsContent value='groups' className='pt-4'>
+        <UserGroups
+          connectionId={connectionId}
+          tenantId={tenantId}
+          userId={userId}
+        />
+      </TabsContent>
+      <TabsContent value='security' className='pt-4'>
+        <UserSecurity
+          connectionId={connectionId}
+          tenantId={tenantId}
+          userId={userId}
+        />
+      </TabsContent>
+    </Tabs>
   )
 }
 function UserForm({
@@ -389,16 +424,13 @@ function UserForm({
               required
             />
           </div>
-          <div className='space-y-2'>
-            <Label htmlFor='ws-user-org'>Organization unit path</Label>
-            <Input
-              id='ws-user-org'
-              value={org}
-              onChange={(e) => setOrg(e.target.value)}
-              placeholder='/'
-              required
-            />
-          </div>
+          <OrgUnitPicker
+            connectionId={connectionId}
+            tenantId={tenantId}
+            id='ws-user-org'
+            value={org}
+            onChange={setOrg}
+          />
         </>
       )}
       {action.kind !== 'edit' && (
