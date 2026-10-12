@@ -27,6 +27,7 @@ import (
 type workspaceTestRepo struct {
 	repo.Repository
 	rows map[string]*repo.Tenant
+	ops  map[string]*repo.Operation
 }
 
 func (r *workspaceTestRepo) List(_ context.Context, u, c string) ([]*repo.Tenant, error) {
@@ -320,4 +321,32 @@ func TestWorkspaceConnectionKeyRotationAndSecretResponses(t *testing.T) {
 			t.Fatal("response exposes private key")
 		}
 	}
+}
+
+func (r *workspaceTestRepo) CreateOperation(_ context.Context, o *repo.Operation) error {
+	if r.ops == nil {
+		r.ops = map[string]*repo.Operation{}
+	}
+	cp := *o
+	r.ops[o.ID] = &cp
+	return nil
+}
+func (r *workspaceTestRepo) FinishOperation(_ context.Context, o *repo.Operation) error {
+	old := r.ops[o.ID]
+	if old == nil || old.UserID != o.UserID || old.ConnectionID != o.ConnectionID {
+		return repo.ErrNotFound
+	}
+	cp := *o
+	r.ops[o.ID] = &cp
+	return nil
+}
+func (r *workspaceTestRepo) ListOperations(_ context.Context, f repo.OperationFilter) ([]*repo.Operation, int, error) {
+	out := []*repo.Operation{}
+	for _, o := range r.ops {
+		if o.UserID == f.UserID && o.ConnectionID == f.ConnectionID && (f.TenantID == "" || o.TenantID == f.TenantID) && (f.Status == "" || o.Status == f.Status) {
+			cp := *o
+			out = append(out, &cp)
+		}
+	}
+	return out, len(out), nil
 }

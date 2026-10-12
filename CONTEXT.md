@@ -188,6 +188,15 @@ can't be deleted while a Restore of it is pending or running.
   to access specified Google scopes. Revoking it removes existing grants,
   but does not permanently prohibit future authorization.
 
+- **Workspace operation** — a change initiated from Neo Box, with its actor,
+  tenant, requested change and confirmed or unconfirmed result. It does not
+  include changes made directly in Google's admin console.
+- **Google audit activity** — an event reported by Google for a Workspace
+  Tenant, such as a login or an administrator action.
+- **Security finding** — an account condition worth reviewing, such as an
+  administrator without two-step verification or an inactive account. Missing
+  account data is unknown, not evidence that a protection is disabled.
+
 ### Notifications
 
 - **Notification channel** — one place a User's alerts are delivered; today a

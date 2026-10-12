@@ -46,6 +46,8 @@ type workspaceAPI interface {
 	SignOutUser(context.Context, string) error
 	ListUserTokens(context.Context, string) ([]googleworkspace.UserToken, error)
 	RevokeUserToken(context.Context, string, string) error
+	SetWriteRecorder(googleworkspace.WriteRecorder)
+	ListAuditActivities(context.Context, googleworkspace.AuditQuery) (*googleworkspace.AuditPage, error)
 }
 type workspaceClientFactory func(context.Context, googleworkspace.ConnectionConfig, googleworkspace.ConnectionSecret, string, string, ...string) (workspaceAPI, error)
 type GoogleWorkspaceServiceServer struct {
@@ -68,10 +70,11 @@ func (s *GoogleWorkspaceServiceServer) SetDeps(r repo.Repository, c *connection.
 }
 
 type workspaceDeps struct {
-	repo    repo.Repository
-	conns   *connection.Service
-	c       *connrepo.Connection
-	factory workspaceClientFactory
+	repo      repo.Repository
+	conns     *connection.Service
+	c         *connrepo.Connection
+	factory   workspaceClientFactory
+	actorName string
 }
 
 func (s *GoogleWorkspaceServiceServer) deps(ctx context.Context, id string) (*workspaceDeps, error) {
@@ -92,7 +95,11 @@ func (s *GoogleWorkspaceServiceServer) deps(ctx context.Context, id string) (*wo
 	if conn.Provider != googleworkspace.ProviderType {
 		return nil, connectx.NotFound("connection not found")
 	}
-	return &workspaceDeps{repo: r, conns: c, c: conn, factory: f}, nil
+	actorName := user.GetDisplayName()
+	if actorName == "" {
+		actorName = user.GetUsername()
+	}
+	return &workspaceDeps{repo: r, conns: c, c: conn, factory: f, actorName: actorName}, nil
 }
 func (d *workspaceDeps) tenant(ctx context.Context, id string) (*repo.Tenant, error) {
 	if strings.TrimSpace(id) == "" {
@@ -114,6 +121,7 @@ func (d *workspaceDeps) client(ctx context.Context, t *repo.Tenant, scopes ...st
 	if err != nil {
 		return nil, connect.NewError(connect.CodeFailedPrecondition, err)
 	}
+	c.SetWriteRecorder(workspaceRecorder{repo: d.repo, connection: d.c, tenant: t, actorName: d.actorName})
 	return c, nil
 }
 func (d *workspaceDeps) record(ctx context.Context, t *repo.Tenant, err error) error {
@@ -169,7 +177,7 @@ func (s *GoogleWorkspaceServiceServer) CreateWorkspaceTenant(ctx context.Context
 	if err = api.Verify(ctx); err != nil {
 		return nil, mapWorkspaceErr(err)
 	}
-	if err = d.repo.Create(ctx, t); err != nil {
+	if err = d.localMutation(ctx, t, "tenant_create", map[string]any{"name": t.Name, "customerId": t.CustomerID, "delegated_admin_email": t.DelegatedAdminEmail}, func() error { return d.repo.Create(ctx, t) }); err != nil {
 		return nil, mapWorkspaceErr(err)
 	}
 	return connect.NewResponse(&neoboxv1.CreateWorkspaceTenantResponse{Tenant: workspaceTenantToProto(t)}), nil
@@ -196,7 +204,7 @@ func (s *GoogleWorkspaceServiceServer) UpdateWorkspaceTenant(ctx context.Context
 	}
 	t.Status, t.StatusMessage, t.StatusCheckedAt = "ok", "", time.Now().UTC()
 	t.UpdatedAt = t.StatusCheckedAt
-	if err = d.repo.Update(ctx, t); err != nil {
+	if err = d.localMutation(ctx, t, "tenant_update", map[string]any{"name": t.Name, "delegated_admin_email": t.DelegatedAdminEmail}, func() error { return d.repo.Update(ctx, t) }); err != nil {
 		return nil, mapWorkspaceErr(err)
 	}
 	return connect.NewResponse(&neoboxv1.UpdateWorkspaceTenantResponse{Tenant: workspaceTenantToProto(t)}), nil
@@ -210,7 +218,7 @@ func (s *GoogleWorkspaceServiceServer) DeleteWorkspaceTenant(ctx context.Context
 	if err != nil {
 		return nil, err
 	}
-	if err = d.repo.Delete(ctx, d.c.UserID, d.c.ID, t.ID); err != nil {
+	if err = d.localMutation(ctx, t, "tenant_delete", map[string]any{"name": t.Name}, func() error { return d.repo.Delete(ctx, d.c.UserID, d.c.ID, t.ID) }); err != nil {
 		return nil, mapWorkspaceErr(err)
 	}
 	return connect.NewResponse(&neoboxv1.DeleteWorkspaceTenantResponse{}), nil
@@ -329,7 +337,7 @@ func workspaceUserToProto(u *googleworkspace.User) *neoboxv1.WorkspaceUser {
 	if u == nil {
 		return nil
 	}
-	return &neoboxv1.WorkspaceUser{Id: u.ID, PrimaryEmail: u.PrimaryEmail, CustomerId: u.CustomerID, GivenName: u.Name.GivenName, FamilyName: u.Name.FamilyName, OrgUnitPath: u.OrgUnitPath, Suspended: u.Suspended, IsAdmin: u.IsAdmin, ChangePasswordAtNextLogin: u.ChangePasswordAtNextLogin}
+	return &neoboxv1.WorkspaceUser{Id: u.ID, PrimaryEmail: u.PrimaryEmail, CustomerId: u.CustomerID, GivenName: u.Name.GivenName, FamilyName: u.Name.FamilyName, OrgUnitPath: u.OrgUnitPath, Suspended: u.Suspended, IsAdmin: u.IsAdmin != nil && *u.IsAdmin, ChangePasswordAtNextLogin: u.ChangePasswordAtNextLogin, SuperAdmin: u.IsAdmin, DelegatedAdmin: u.IsDelegatedAdmin, TwoStepEnrolled: u.TwoStepEnrolled, TwoStepEnforced: u.TwoStepEnforced, LastLoginTime: u.LastLoginTime, CreationTime: u.CreationTime}
 }
 func mapWorkspaceErr(err error) error {
 	var ce *connect.Error
@@ -346,6 +354,10 @@ func mapWorkspaceErr(err error) error {
 		return connect.NewError(connect.CodeAlreadyExists, err)
 	case errors.Is(err, googleworkspace.ErrDelegation):
 		return connect.NewError(connect.CodeFailedPrecondition, err)
+	case errors.Is(err, googleworkspace.ErrLogUnavailable):
+		return connect.NewError(connect.CodeUnavailable, err)
+	case errors.Is(err, googleworkspace.ErrOutcomeLogUnavailable):
+		return connect.NewError(connect.CodeUnknown, err)
 	case errors.Is(err, googleworkspace.ErrUncertain):
 		return connect.NewError(connect.CodeUnknown, err)
 	case errors.Is(err, context.Canceled):

@@ -44,6 +44,8 @@ type Tx struct {
 	WasabiDailyUsage *WasabiDailyUsageClient
 	// WasabiSyncState is the client for interacting with the WasabiSyncState builders.
 	WasabiSyncState *WasabiSyncStateClient
+	// WorkspaceOperation is the client for interacting with the WorkspaceOperation builders.
+	WorkspaceOperation *WorkspaceOperationClient
 	// WorkspaceTenant is the client for interacting with the WorkspaceTenant builders.
 	WorkspaceTenant *WorkspaceTenantClient
 
@@ -193,6 +195,7 @@ func (tx *Tx) init() {
 	tx.WasabiBucketConfig = NewWasabiBucketConfigClient(tx.config)
 	tx.WasabiDailyUsage = NewWasabiDailyUsageClient(tx.config)
 	tx.WasabiSyncState = NewWasabiSyncStateClient(tx.config)
+	tx.WorkspaceOperation = NewWorkspaceOperationClient(tx.config)
 	tx.WorkspaceTenant = NewWorkspaceTenantClient(tx.config)
 }
 

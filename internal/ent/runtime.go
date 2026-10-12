@@ -16,6 +16,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent/user"
 	"go.orx.me/apps/neo-box/internal/ent/wasabidailyusage"
 	"go.orx.me/apps/neo-box/internal/ent/wasabisyncstate"
+	"go.orx.me/apps/neo-box/internal/ent/workspaceoperation"
 	"go.orx.me/apps/neo-box/internal/ent/workspacetenant"
 )
 
@@ -327,6 +328,12 @@ func init() {
 	wasabisyncstateDescConfigError := wasabisyncstateFields[7].Descriptor()
 	// wasabisyncstate.DefaultConfigError holds the default value on creation for the config_error field.
 	wasabisyncstate.DefaultConfigError = wasabisyncstateDescConfigError.Default.(string)
+	workspaceoperationFields := schema.WorkspaceOperation{}.Fields()
+	_ = workspaceoperationFields
+	// workspaceoperationDescError is the schema descriptor for error field.
+	workspaceoperationDescError := workspaceoperationFields[11].Descriptor()
+	// workspaceoperation.DefaultError holds the default value on creation for the error field.
+	workspaceoperation.DefaultError = workspaceoperationDescError.Default.(string)
 	workspacetenantFields := schema.WorkspaceTenant{}.Fields()
 	_ = workspacetenantFields
 	// workspacetenantDescStatus is the schema descriptor for status field.

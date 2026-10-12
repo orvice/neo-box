@@ -29,6 +29,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent/wasabibucketconfig"
 	"go.orx.me/apps/neo-box/internal/ent/wasabidailyusage"
 	"go.orx.me/apps/neo-box/internal/ent/wasabisyncstate"
+	"go.orx.me/apps/neo-box/internal/ent/workspaceoperation"
 	"go.orx.me/apps/neo-box/internal/ent/workspacetenant"
 	"go.orx.me/apps/neo-box/internal/repo/nocodb"
 )
@@ -58,6 +59,7 @@ const (
 	TypeWasabiBucketConfig     = "WasabiBucketConfig"
 	TypeWasabiDailyUsage       = "WasabiDailyUsage"
 	TypeWasabiSyncState        = "WasabiSyncState"
+	TypeWorkspaceOperation     = "WorkspaceOperation"
 	TypeWorkspaceTenant        = "WorkspaceTenant"
 )
 
@@ -15187,6 +15189,1154 @@ func (m *WasabiSyncStateMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *WasabiSyncStateMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown WasabiSyncState edge %s", name)
+}
+
+// WorkspaceOperationMutation represents an operation that mutates the WorkspaceOperation nodes in the graph.
+type WorkspaceOperationMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *string
+	user_id       *string
+	connection_id *string
+	tenant_id     *string
+	tenant_name   *string
+	customer_id   *string
+	action        *string
+	target        *string
+	requested     *map[string]interface{}
+	result        *map[string]interface{}
+	status        *string
+	error         *string
+	actor_id      *string
+	actor_name    *string
+	created_at    *time.Time
+	finished_at   *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*WorkspaceOperation, error)
+	predicates    []predicate.WorkspaceOperation
+}
+
+var _ ent.Mutation = (*WorkspaceOperationMutation)(nil)
+
+// workspaceoperationOption allows management of the mutation configuration using functional options.
+type workspaceoperationOption func(*WorkspaceOperationMutation)
+
+// newWorkspaceOperationMutation creates new mutation for the WorkspaceOperation entity.
+func newWorkspaceOperationMutation(c config, op Op, opts ...workspaceoperationOption) *WorkspaceOperationMutation {
+	m := &WorkspaceOperationMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeWorkspaceOperation,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withWorkspaceOperationID sets the ID field of the mutation.
+func withWorkspaceOperationID(id string) workspaceoperationOption {
+	return func(m *WorkspaceOperationMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *WorkspaceOperation
+		)
+		m.oldValue = func(ctx context.Context) (*WorkspaceOperation, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().WorkspaceOperation.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withWorkspaceOperation sets the old WorkspaceOperation of the mutation.
+func withWorkspaceOperation(node *WorkspaceOperation) workspaceoperationOption {
+	return func(m *WorkspaceOperationMutation) {
+		m.oldValue = func(context.Context) (*WorkspaceOperation, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m WorkspaceOperationMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m WorkspaceOperationMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of WorkspaceOperation entities.
+func (m *WorkspaceOperationMutation) SetID(id string) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *WorkspaceOperationMutation) ID() (id string, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *WorkspaceOperationMutation) IDs(ctx context.Context) ([]string, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []string{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().WorkspaceOperation.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetUserID sets the "user_id" field.
+func (m *WorkspaceOperationMutation) SetUserID(s string) {
+	m.user_id = &s
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *WorkspaceOperationMutation) UserID() (r string, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the WorkspaceOperation entity.
+// If the WorkspaceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkspaceOperationMutation) OldUserID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *WorkspaceOperationMutation) ResetUserID() {
+	m.user_id = nil
+}
+
+// SetConnectionID sets the "connection_id" field.
+func (m *WorkspaceOperationMutation) SetConnectionID(s string) {
+	m.connection_id = &s
+}
+
+// ConnectionID returns the value of the "connection_id" field in the mutation.
+func (m *WorkspaceOperationMutation) ConnectionID() (r string, exists bool) {
+	v := m.connection_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConnectionID returns the old "connection_id" field's value of the WorkspaceOperation entity.
+// If the WorkspaceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkspaceOperationMutation) OldConnectionID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConnectionID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConnectionID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConnectionID: %w", err)
+	}
+	return oldValue.ConnectionID, nil
+}
+
+// ResetConnectionID resets all changes to the "connection_id" field.
+func (m *WorkspaceOperationMutation) ResetConnectionID() {
+	m.connection_id = nil
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *WorkspaceOperationMutation) SetTenantID(s string) {
+	m.tenant_id = &s
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *WorkspaceOperationMutation) TenantID() (r string, exists bool) {
+	v := m.tenant_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the WorkspaceOperation entity.
+// If the WorkspaceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkspaceOperationMutation) OldTenantID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *WorkspaceOperationMutation) ResetTenantID() {
+	m.tenant_id = nil
+}
+
+// SetTenantName sets the "tenant_name" field.
+func (m *WorkspaceOperationMutation) SetTenantName(s string) {
+	m.tenant_name = &s
+}
+
+// TenantName returns the value of the "tenant_name" field in the mutation.
+func (m *WorkspaceOperationMutation) TenantName() (r string, exists bool) {
+	v := m.tenant_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantName returns the old "tenant_name" field's value of the WorkspaceOperation entity.
+// If the WorkspaceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkspaceOperationMutation) OldTenantName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantName: %w", err)
+	}
+	return oldValue.TenantName, nil
+}
+
+// ResetTenantName resets all changes to the "tenant_name" field.
+func (m *WorkspaceOperationMutation) ResetTenantName() {
+	m.tenant_name = nil
+}
+
+// SetCustomerID sets the "customer_id" field.
+func (m *WorkspaceOperationMutation) SetCustomerID(s string) {
+	m.customer_id = &s
+}
+
+// CustomerID returns the value of the "customer_id" field in the mutation.
+func (m *WorkspaceOperationMutation) CustomerID() (r string, exists bool) {
+	v := m.customer_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCustomerID returns the old "customer_id" field's value of the WorkspaceOperation entity.
+// If the WorkspaceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkspaceOperationMutation) OldCustomerID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCustomerID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCustomerID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCustomerID: %w", err)
+	}
+	return oldValue.CustomerID, nil
+}
+
+// ResetCustomerID resets all changes to the "customer_id" field.
+func (m *WorkspaceOperationMutation) ResetCustomerID() {
+	m.customer_id = nil
+}
+
+// SetAction sets the "action" field.
+func (m *WorkspaceOperationMutation) SetAction(s string) {
+	m.action = &s
+}
+
+// Action returns the value of the "action" field in the mutation.
+func (m *WorkspaceOperationMutation) Action() (r string, exists bool) {
+	v := m.action
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAction returns the old "action" field's value of the WorkspaceOperation entity.
+// If the WorkspaceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkspaceOperationMutation) OldAction(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAction is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAction requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAction: %w", err)
+	}
+	return oldValue.Action, nil
+}
+
+// ResetAction resets all changes to the "action" field.
+func (m *WorkspaceOperationMutation) ResetAction() {
+	m.action = nil
+}
+
+// SetTarget sets the "target" field.
+func (m *WorkspaceOperationMutation) SetTarget(s string) {
+	m.target = &s
+}
+
+// Target returns the value of the "target" field in the mutation.
+func (m *WorkspaceOperationMutation) Target() (r string, exists bool) {
+	v := m.target
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTarget returns the old "target" field's value of the WorkspaceOperation entity.
+// If the WorkspaceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkspaceOperationMutation) OldTarget(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTarget is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTarget requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTarget: %w", err)
+	}
+	return oldValue.Target, nil
+}
+
+// ResetTarget resets all changes to the "target" field.
+func (m *WorkspaceOperationMutation) ResetTarget() {
+	m.target = nil
+}
+
+// SetRequested sets the "requested" field.
+func (m *WorkspaceOperationMutation) SetRequested(value map[string]interface{}) {
+	m.requested = &value
+}
+
+// Requested returns the value of the "requested" field in the mutation.
+func (m *WorkspaceOperationMutation) Requested() (r map[string]interface{}, exists bool) {
+	v := m.requested
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequested returns the old "requested" field's value of the WorkspaceOperation entity.
+// If the WorkspaceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkspaceOperationMutation) OldRequested(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequested is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequested requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequested: %w", err)
+	}
+	return oldValue.Requested, nil
+}
+
+// ClearRequested clears the value of the "requested" field.
+func (m *WorkspaceOperationMutation) ClearRequested() {
+	m.requested = nil
+	m.clearedFields[workspaceoperation.FieldRequested] = struct{}{}
+}
+
+// RequestedCleared returns if the "requested" field was cleared in this mutation.
+func (m *WorkspaceOperationMutation) RequestedCleared() bool {
+	_, ok := m.clearedFields[workspaceoperation.FieldRequested]
+	return ok
+}
+
+// ResetRequested resets all changes to the "requested" field.
+func (m *WorkspaceOperationMutation) ResetRequested() {
+	m.requested = nil
+	delete(m.clearedFields, workspaceoperation.FieldRequested)
+}
+
+// SetResult sets the "result" field.
+func (m *WorkspaceOperationMutation) SetResult(value map[string]interface{}) {
+	m.result = &value
+}
+
+// Result returns the value of the "result" field in the mutation.
+func (m *WorkspaceOperationMutation) Result() (r map[string]interface{}, exists bool) {
+	v := m.result
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldResult returns the old "result" field's value of the WorkspaceOperation entity.
+// If the WorkspaceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkspaceOperationMutation) OldResult(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldResult is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldResult requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldResult: %w", err)
+	}
+	return oldValue.Result, nil
+}
+
+// ClearResult clears the value of the "result" field.
+func (m *WorkspaceOperationMutation) ClearResult() {
+	m.result = nil
+	m.clearedFields[workspaceoperation.FieldResult] = struct{}{}
+}
+
+// ResultCleared returns if the "result" field was cleared in this mutation.
+func (m *WorkspaceOperationMutation) ResultCleared() bool {
+	_, ok := m.clearedFields[workspaceoperation.FieldResult]
+	return ok
+}
+
+// ResetResult resets all changes to the "result" field.
+func (m *WorkspaceOperationMutation) ResetResult() {
+	m.result = nil
+	delete(m.clearedFields, workspaceoperation.FieldResult)
+}
+
+// SetStatus sets the "status" field.
+func (m *WorkspaceOperationMutation) SetStatus(s string) {
+	m.status = &s
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *WorkspaceOperationMutation) Status() (r string, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the WorkspaceOperation entity.
+// If the WorkspaceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkspaceOperationMutation) OldStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *WorkspaceOperationMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetError sets the "error" field.
+func (m *WorkspaceOperationMutation) SetError(s string) {
+	m.error = &s
+}
+
+// Error returns the value of the "error" field in the mutation.
+func (m *WorkspaceOperationMutation) Error() (r string, exists bool) {
+	v := m.error
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldError returns the old "error" field's value of the WorkspaceOperation entity.
+// If the WorkspaceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkspaceOperationMutation) OldError(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldError is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldError requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldError: %w", err)
+	}
+	return oldValue.Error, nil
+}
+
+// ResetError resets all changes to the "error" field.
+func (m *WorkspaceOperationMutation) ResetError() {
+	m.error = nil
+}
+
+// SetActorID sets the "actor_id" field.
+func (m *WorkspaceOperationMutation) SetActorID(s string) {
+	m.actor_id = &s
+}
+
+// ActorID returns the value of the "actor_id" field in the mutation.
+func (m *WorkspaceOperationMutation) ActorID() (r string, exists bool) {
+	v := m.actor_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldActorID returns the old "actor_id" field's value of the WorkspaceOperation entity.
+// If the WorkspaceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkspaceOperationMutation) OldActorID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldActorID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldActorID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldActorID: %w", err)
+	}
+	return oldValue.ActorID, nil
+}
+
+// ResetActorID resets all changes to the "actor_id" field.
+func (m *WorkspaceOperationMutation) ResetActorID() {
+	m.actor_id = nil
+}
+
+// SetActorName sets the "actor_name" field.
+func (m *WorkspaceOperationMutation) SetActorName(s string) {
+	m.actor_name = &s
+}
+
+// ActorName returns the value of the "actor_name" field in the mutation.
+func (m *WorkspaceOperationMutation) ActorName() (r string, exists bool) {
+	v := m.actor_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldActorName returns the old "actor_name" field's value of the WorkspaceOperation entity.
+// If the WorkspaceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkspaceOperationMutation) OldActorName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldActorName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldActorName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldActorName: %w", err)
+	}
+	return oldValue.ActorName, nil
+}
+
+// ResetActorName resets all changes to the "actor_name" field.
+func (m *WorkspaceOperationMutation) ResetActorName() {
+	m.actor_name = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *WorkspaceOperationMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *WorkspaceOperationMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the WorkspaceOperation entity.
+// If the WorkspaceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkspaceOperationMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *WorkspaceOperationMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetFinishedAt sets the "finished_at" field.
+func (m *WorkspaceOperationMutation) SetFinishedAt(t time.Time) {
+	m.finished_at = &t
+}
+
+// FinishedAt returns the value of the "finished_at" field in the mutation.
+func (m *WorkspaceOperationMutation) FinishedAt() (r time.Time, exists bool) {
+	v := m.finished_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFinishedAt returns the old "finished_at" field's value of the WorkspaceOperation entity.
+// If the WorkspaceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkspaceOperationMutation) OldFinishedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFinishedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFinishedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFinishedAt: %w", err)
+	}
+	return oldValue.FinishedAt, nil
+}
+
+// ClearFinishedAt clears the value of the "finished_at" field.
+func (m *WorkspaceOperationMutation) ClearFinishedAt() {
+	m.finished_at = nil
+	m.clearedFields[workspaceoperation.FieldFinishedAt] = struct{}{}
+}
+
+// FinishedAtCleared returns if the "finished_at" field was cleared in this mutation.
+func (m *WorkspaceOperationMutation) FinishedAtCleared() bool {
+	_, ok := m.clearedFields[workspaceoperation.FieldFinishedAt]
+	return ok
+}
+
+// ResetFinishedAt resets all changes to the "finished_at" field.
+func (m *WorkspaceOperationMutation) ResetFinishedAt() {
+	m.finished_at = nil
+	delete(m.clearedFields, workspaceoperation.FieldFinishedAt)
+}
+
+// Where appends a list predicates to the WorkspaceOperationMutation builder.
+func (m *WorkspaceOperationMutation) Where(ps ...predicate.WorkspaceOperation) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the WorkspaceOperationMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *WorkspaceOperationMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.WorkspaceOperation, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *WorkspaceOperationMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *WorkspaceOperationMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (WorkspaceOperation).
+func (m *WorkspaceOperationMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *WorkspaceOperationMutation) Fields() []string {
+	fields := make([]string, 0, 15)
+	if m.user_id != nil {
+		fields = append(fields, workspaceoperation.FieldUserID)
+	}
+	if m.connection_id != nil {
+		fields = append(fields, workspaceoperation.FieldConnectionID)
+	}
+	if m.tenant_id != nil {
+		fields = append(fields, workspaceoperation.FieldTenantID)
+	}
+	if m.tenant_name != nil {
+		fields = append(fields, workspaceoperation.FieldTenantName)
+	}
+	if m.customer_id != nil {
+		fields = append(fields, workspaceoperation.FieldCustomerID)
+	}
+	if m.action != nil {
+		fields = append(fields, workspaceoperation.FieldAction)
+	}
+	if m.target != nil {
+		fields = append(fields, workspaceoperation.FieldTarget)
+	}
+	if m.requested != nil {
+		fields = append(fields, workspaceoperation.FieldRequested)
+	}
+	if m.result != nil {
+		fields = append(fields, workspaceoperation.FieldResult)
+	}
+	if m.status != nil {
+		fields = append(fields, workspaceoperation.FieldStatus)
+	}
+	if m.error != nil {
+		fields = append(fields, workspaceoperation.FieldError)
+	}
+	if m.actor_id != nil {
+		fields = append(fields, workspaceoperation.FieldActorID)
+	}
+	if m.actor_name != nil {
+		fields = append(fields, workspaceoperation.FieldActorName)
+	}
+	if m.created_at != nil {
+		fields = append(fields, workspaceoperation.FieldCreatedAt)
+	}
+	if m.finished_at != nil {
+		fields = append(fields, workspaceoperation.FieldFinishedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *WorkspaceOperationMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case workspaceoperation.FieldUserID:
+		return m.UserID()
+	case workspaceoperation.FieldConnectionID:
+		return m.ConnectionID()
+	case workspaceoperation.FieldTenantID:
+		return m.TenantID()
+	case workspaceoperation.FieldTenantName:
+		return m.TenantName()
+	case workspaceoperation.FieldCustomerID:
+		return m.CustomerID()
+	case workspaceoperation.FieldAction:
+		return m.Action()
+	case workspaceoperation.FieldTarget:
+		return m.Target()
+	case workspaceoperation.FieldRequested:
+		return m.Requested()
+	case workspaceoperation.FieldResult:
+		return m.Result()
+	case workspaceoperation.FieldStatus:
+		return m.Status()
+	case workspaceoperation.FieldError:
+		return m.Error()
+	case workspaceoperation.FieldActorID:
+		return m.ActorID()
+	case workspaceoperation.FieldActorName:
+		return m.ActorName()
+	case workspaceoperation.FieldCreatedAt:
+		return m.CreatedAt()
+	case workspaceoperation.FieldFinishedAt:
+		return m.FinishedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *WorkspaceOperationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case workspaceoperation.FieldUserID:
+		return m.OldUserID(ctx)
+	case workspaceoperation.FieldConnectionID:
+		return m.OldConnectionID(ctx)
+	case workspaceoperation.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case workspaceoperation.FieldTenantName:
+		return m.OldTenantName(ctx)
+	case workspaceoperation.FieldCustomerID:
+		return m.OldCustomerID(ctx)
+	case workspaceoperation.FieldAction:
+		return m.OldAction(ctx)
+	case workspaceoperation.FieldTarget:
+		return m.OldTarget(ctx)
+	case workspaceoperation.FieldRequested:
+		return m.OldRequested(ctx)
+	case workspaceoperation.FieldResult:
+		return m.OldResult(ctx)
+	case workspaceoperation.FieldStatus:
+		return m.OldStatus(ctx)
+	case workspaceoperation.FieldError:
+		return m.OldError(ctx)
+	case workspaceoperation.FieldActorID:
+		return m.OldActorID(ctx)
+	case workspaceoperation.FieldActorName:
+		return m.OldActorName(ctx)
+	case workspaceoperation.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case workspaceoperation.FieldFinishedAt:
+		return m.OldFinishedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown WorkspaceOperation field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *WorkspaceOperationMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case workspaceoperation.FieldUserID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case workspaceoperation.FieldConnectionID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConnectionID(v)
+		return nil
+	case workspaceoperation.FieldTenantID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case workspaceoperation.FieldTenantName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantName(v)
+		return nil
+	case workspaceoperation.FieldCustomerID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCustomerID(v)
+		return nil
+	case workspaceoperation.FieldAction:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAction(v)
+		return nil
+	case workspaceoperation.FieldTarget:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTarget(v)
+		return nil
+	case workspaceoperation.FieldRequested:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequested(v)
+		return nil
+	case workspaceoperation.FieldResult:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetResult(v)
+		return nil
+	case workspaceoperation.FieldStatus:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case workspaceoperation.FieldError:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetError(v)
+		return nil
+	case workspaceoperation.FieldActorID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetActorID(v)
+		return nil
+	case workspaceoperation.FieldActorName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetActorName(v)
+		return nil
+	case workspaceoperation.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case workspaceoperation.FieldFinishedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFinishedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown WorkspaceOperation field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *WorkspaceOperationMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *WorkspaceOperationMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *WorkspaceOperationMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown WorkspaceOperation numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *WorkspaceOperationMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(workspaceoperation.FieldRequested) {
+		fields = append(fields, workspaceoperation.FieldRequested)
+	}
+	if m.FieldCleared(workspaceoperation.FieldResult) {
+		fields = append(fields, workspaceoperation.FieldResult)
+	}
+	if m.FieldCleared(workspaceoperation.FieldFinishedAt) {
+		fields = append(fields, workspaceoperation.FieldFinishedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *WorkspaceOperationMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *WorkspaceOperationMutation) ClearField(name string) error {
+	switch name {
+	case workspaceoperation.FieldRequested:
+		m.ClearRequested()
+		return nil
+	case workspaceoperation.FieldResult:
+		m.ClearResult()
+		return nil
+	case workspaceoperation.FieldFinishedAt:
+		m.ClearFinishedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown WorkspaceOperation nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *WorkspaceOperationMutation) ResetField(name string) error {
+	switch name {
+	case workspaceoperation.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case workspaceoperation.FieldConnectionID:
+		m.ResetConnectionID()
+		return nil
+	case workspaceoperation.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case workspaceoperation.FieldTenantName:
+		m.ResetTenantName()
+		return nil
+	case workspaceoperation.FieldCustomerID:
+		m.ResetCustomerID()
+		return nil
+	case workspaceoperation.FieldAction:
+		m.ResetAction()
+		return nil
+	case workspaceoperation.FieldTarget:
+		m.ResetTarget()
+		return nil
+	case workspaceoperation.FieldRequested:
+		m.ResetRequested()
+		return nil
+	case workspaceoperation.FieldResult:
+		m.ResetResult()
+		return nil
+	case workspaceoperation.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case workspaceoperation.FieldError:
+		m.ResetError()
+		return nil
+	case workspaceoperation.FieldActorID:
+		m.ResetActorID()
+		return nil
+	case workspaceoperation.FieldActorName:
+		m.ResetActorName()
+		return nil
+	case workspaceoperation.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case workspaceoperation.FieldFinishedAt:
+		m.ResetFinishedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown WorkspaceOperation field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *WorkspaceOperationMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *WorkspaceOperationMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *WorkspaceOperationMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *WorkspaceOperationMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *WorkspaceOperationMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *WorkspaceOperationMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *WorkspaceOperationMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown WorkspaceOperation unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *WorkspaceOperationMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown WorkspaceOperation edge %s", name)
 }
 
 // WorkspaceTenantMutation represents an operation that mutates the WorkspaceTenant nodes in the graph.

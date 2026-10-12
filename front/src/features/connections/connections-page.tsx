@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { getRouteApi } from '@tanstack/react-router'
+import { Link, getRouteApi } from '@tanstack/react-router'
 import { Cable, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -45,7 +45,16 @@ export function ConnectionsPage() {
           filter?.description ??
           'Accounts at third-party services, managed in one place.'
         }
-        actions={addButton}
+        actions={
+          <>
+            {filter?.provider === Provider.GOOGLE_WORKSPACE && (
+              <Button variant='outline' size='sm' asChild>
+                <Link to='/workspace'>Tenant overview</Link>
+              </Button>
+            )}
+            {addButton}
+          </>
+        }
       />
       <PageScroll>
         {isLoading ? (

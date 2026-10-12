@@ -29,6 +29,8 @@ const DomainScope = "https://www.googleapis.com/auth/admin.directory.domain.read
 const GroupScope = "https://www.googleapis.com/auth/admin.directory.group"
 const OrgUnitScope = "https://www.googleapis.com/auth/admin.directory.orgunit"
 const SecurityScope = "https://www.googleapis.com/auth/admin.directory.user.security"
+const AuditScope = "https://www.googleapis.com/auth/admin.reports.audit.readonly"
+const reportsURL = "https://admin.googleapis.com/admin/reports/v1"
 const directoryURL = "https://admin.googleapis.com/admin/directory/v1"
 
 type ConnectionConfig struct {
@@ -112,7 +114,12 @@ type User struct {
 	} `json:"name"`
 	OrgUnitPath               string `json:"orgUnitPath"`
 	Suspended                 bool   `json:"suspended"`
-	IsAdmin                   bool   `json:"isAdmin"`
+	IsAdmin                   *bool  `json:"isAdmin"`
+	IsDelegatedAdmin          *bool  `json:"isDelegatedAdmin"`
+	TwoStepEnrolled           *bool  `json:"isEnrolledIn2Sv"`
+	TwoStepEnforced           *bool  `json:"isEnforcedIn2Sv"`
+	LastLoginTime             string `json:"lastLoginTime"`
+	CreationTime              string `json:"creationTime"`
 	ChangePasswordAtNextLogin bool   `json:"changePasswordAtNextLogin"`
 }
 type UserPage struct {
@@ -133,10 +140,12 @@ var ErrUncertain = errors.New("Google did not confirm this change; refresh the a
 var ErrTenantMismatch = errors.New("resource does not belong to this Workspace tenant")
 
 type Client struct {
-	HTTP       *http.Client
-	Endpoint   string
-	CustomerID string
-	AdminEmail string
+	HTTP            *http.Client
+	Endpoint        string
+	CustomerID      string
+	AdminEmail      string
+	ReportsEndpoint string
+	Recorder        WriteRecorder
 }
 
 func NewClient(ctx context.Context, identity ConnectionConfig, secret ConnectionSecret, customer, admin string, extraScopes ...string) (*Client, error) {
@@ -154,7 +163,7 @@ func NewClient(ctx context.Context, identity ConnectionConfig, secret Connection
 	// Optional capabilities never expand the scopes of base user requests.
 	for _, scope := range extraScopes {
 		switch scope {
-		case GroupScope, OrgUnitScope, SecurityScope:
+		case GroupScope, OrgUnitScope, SecurityScope, AuditScope:
 			cfg.Scopes = append(cfg.Scopes, scope)
 		default:
 			return nil, errors.New("unsupported Workspace capability scope")
@@ -165,7 +174,7 @@ func NewClient(ctx context.Context, identity ConnectionConfig, secret Connection
 	ctx = context.WithValue(ctx, oauth2.HTTPClient, &http.Client{Timeout: 30 * time.Second})
 	hc := oauth2.NewClient(ctx, safeTokenSource{cfg.TokenSource(ctx)})
 	hc.Timeout = 30 * time.Second
-	return &Client{HTTP: hc, Endpoint: directoryURL, CustomerID: customer, AdminEmail: admin}, nil
+	return &Client{HTTP: hc, Endpoint: directoryURL, CustomerID: customer, AdminEmail: admin, ReportsEndpoint: reportsURL}, nil
 }
 
 type safeTokenSource struct{ oauth2.TokenSource }
@@ -173,6 +182,12 @@ type safeTokenSource struct{ oauth2.TokenSource }
 func (s safeTokenSource) Token() (*oauth2.Token, error) {
 	t, err := s.TokenSource.Token()
 	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			return nil, context.Canceled
+		}
+		if errors.Is(err, context.DeadlineExceeded) {
+			return nil, context.DeadlineExceeded
+		}
 		return nil, ErrDelegation
 	}
 	return t, nil
@@ -180,6 +195,9 @@ func (s safeTokenSource) Token() (*oauth2.Token, error) {
 
 // do never resends mutations. Reads retry temporary failures with bounded backoff.
 func (c *Client) do(ctx context.Context, method, path string, query url.Values, body any, out any) error {
+	return c.doAt(ctx, c.Endpoint, method, path, query, body, out)
+}
+func (c *Client) doAt(ctx context.Context, endpoint, method, path string, query url.Values, body, out any) (resultErr error) {
 	var data []byte
 	if body != nil {
 		var err error
@@ -188,13 +206,33 @@ func (c *Client) do(ctx context.Context, method, path string, query url.Values, 
 			return err
 		}
 	}
+	if method != http.MethodGet && c.Recorder != nil {
+		finish, err := c.Recorder.Begin(ctx, Write{Method: method, Path: path, Requested: ResourceSummary(body)})
+		if err != nil {
+			return ErrLogUnavailable
+		}
+		defer func() {
+			finishCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+			defer cancel()
+			result := map[string]any{}
+			if resultErr == nil && out != nil {
+				result = ResourceSummary(out)
+			}
+			if err := finish(finishCtx, result, resultErr); err != nil {
+				resultErr = ErrOutcomeLogUnavailable
+			}
+		}()
+	}
+	client := *c.HTTP
+	// Even a redirect must not resend a mutation or change its tenant target.
+	client.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
 	for attempt := 0; attempt < 3; attempt++ {
-		req, err := http.NewRequestWithContext(ctx, method, strings.TrimRight(c.Endpoint, "/")+path+"?"+query.Encode(), bytes.NewReader(data))
+		req, err := http.NewRequestWithContext(ctx, method, strings.TrimRight(endpoint, "/")+path+"?"+query.Encode(), bytes.NewReader(data))
 		if err != nil {
 			return err
 		}
 		req.Header.Set("Content-Type", "application/json")
-		resp, err := c.HTTP.Do(req)
+		resp, err := client.Do(req)
 		var apiErr *APIError
 		if err == nil {
 			raw, readErr := io.ReadAll(io.LimitReader(resp.Body, 8<<20))
@@ -230,7 +268,7 @@ func (c *Client) do(ctx context.Context, method, path string, query url.Values, 
 			return ErrDelegation
 		}
 		if method != http.MethodGet {
-			if apiErr != nil && apiErr.Status < 500 {
+			if apiErr != nil && apiErr.Status >= 400 && apiErr.Status < 500 {
 				return apiErr
 			}
 			return ErrUncertain
