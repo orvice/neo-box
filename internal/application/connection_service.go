@@ -14,6 +14,7 @@ import (
 
 	"go.orx.me/apps/neo-box/internal/cloudflare"
 	"go.orx.me/apps/neo-box/internal/connection"
+	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	"go.orx.me/apps/neo-box/internal/nocodb"
 	"go.orx.me/apps/neo-box/internal/repo/auth"
 	connrepo "go.orx.me/apps/neo-box/internal/repo/connection"
@@ -135,6 +136,15 @@ func (s *ConnectionServiceServer) UpdateConnection(ctx context.Context, req *con
 	if settings.provider != c.Provider {
 		return nil, connectx.InvalidArgument("settings", "must be for the connection's provider")
 	}
+	if c.Provider == googleworkspace.ProviderType {
+		var before googleworkspace.ConnectionConfig
+		if err := json.Unmarshal(c.Config, &before); err != nil {
+			return nil, connectx.InternalWith(err)
+		}
+		if before != settings.config.(googleworkspace.ConnectionConfig) {
+			return nil, connectx.InvalidArgument("service_account_json", "key rotation must keep the same Service Account; create another connection for a different identity")
+		}
+	}
 	// A nil secret keeps the stored one.
 	if err := svc.Update(ctx, c, name, settings.config, settings.secret); err != nil {
 		return nil, mapConnectionErr(err)
@@ -189,6 +199,8 @@ func createSettings(m *neoboxv1.CreateConnectionRequest) (*providerSettings, err
 		return nocodbSettings(v.Nocodb)
 	case *neoboxv1.CreateConnectionRequest_Wasabi:
 		return wasabiSettings(v.Wasabi)
+	case *neoboxv1.CreateConnectionRequest_GoogleWorkspace:
+		return workspaceSettings(v.GoogleWorkspace)
 	case *neoboxv1.CreateConnectionRequest_Cloudflare:
 		return cloudflareSettings(v.Cloudflare)
 	}
@@ -201,6 +213,8 @@ func updateSettings(m *neoboxv1.UpdateConnectionRequest) (*providerSettings, err
 		return nocodbSettings(v.Nocodb)
 	case *neoboxv1.UpdateConnectionRequest_Wasabi:
 		return wasabiSettings(v.Wasabi)
+	case *neoboxv1.UpdateConnectionRequest_GoogleWorkspace:
+		return workspaceSettings(v.GoogleWorkspace)
 	case *neoboxv1.UpdateConnectionRequest_Cloudflare:
 		return cloudflareSettings(v.Cloudflare)
 	}
@@ -282,6 +296,11 @@ func cloudflareSettings(in *neoboxv1.CloudflareConnectionSettings) (*providerSet
 
 func configToProto(c *connrepo.Connection, out *neoboxv1.Connection) {
 	switch c.Provider {
+	case googleworkspace.ProviderType:
+		var cfg googleworkspace.ConnectionConfig
+		if json.Unmarshal(c.Config, &cfg) == nil {
+			out.Config = &neoboxv1.Connection_GoogleWorkspace{GoogleWorkspace: &neoboxv1.GoogleWorkspaceConnectionConfig{ServiceAccountEmail: cfg.ServiceAccountEmail, ClientId: cfg.ClientID}}
+		}
 	case nocodb.ProviderType:
 		var cfg nocodb.ConnectionConfig
 		if json.Unmarshal(c.Config, &cfg) == nil {
@@ -308,6 +327,8 @@ func configToProto(c *connrepo.Connection, out *neoboxv1.Connection) {
 
 func providerKey(p neoboxv1.Provider) (string, bool) {
 	switch p {
+	case neoboxv1.Provider_PROVIDER_GOOGLE_WORKSPACE:
+		return googleworkspace.ProviderType, true
 	case neoboxv1.Provider_PROVIDER_NOCODB:
 		return nocodb.ProviderType, true
 	case neoboxv1.Provider_PROVIDER_WASABI:
@@ -320,6 +341,8 @@ func providerKey(p neoboxv1.Provider) (string, bool) {
 
 func providerToProto(key string) neoboxv1.Provider {
 	switch key {
+	case googleworkspace.ProviderType:
+		return neoboxv1.Provider_PROVIDER_GOOGLE_WORKSPACE
 	case nocodb.ProviderType:
 		return neoboxv1.Provider_PROVIDER_NOCODB
 	case wasabi.ProviderType:
@@ -379,4 +402,22 @@ func statusToProto(s connrepo.Status) neoboxv1.ConnectionStatus {
 		return neoboxv1.ConnectionStatus_CONNECTION_STATUS_ERROR
 	}
 	return neoboxv1.ConnectionStatus_CONNECTION_STATUS_UNSPECIFIED
+}
+
+func workspaceSettings(in *neoboxv1.GoogleWorkspaceConnectionSettings) (*providerSettings, error) {
+	cfg := googleworkspace.ConnectionConfig{ServiceAccountEmail: strings.TrimSpace(in.GetServiceAccountEmail()), ClientID: strings.TrimSpace(in.GetClientId())}
+	out := &providerSettings{provider: googleworkspace.ProviderType, secretField: "service_account_json"}
+	if raw := strings.TrimSpace(in.GetServiceAccountJson()); raw != "" {
+		metadata, _, err := googleworkspace.ParseKey(raw)
+		if err != nil {
+			return nil, connectx.InvalidArgument("service_account_json", err.Error())
+		}
+		cfg = *metadata
+		out.secret = googleworkspace.ConnectionSecret{ServiceAccountJSON: raw}
+	}
+	if !googleworkspace.ValidEmail(cfg.ServiceAccountEmail) || cfg.ClientID == "" {
+		return nil, connectx.InvalidArgument("settings", "Service Account email and Client ID are required")
+	}
+	out.config = cfg
+	return out, nil
 }

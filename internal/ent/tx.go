@@ -44,6 +44,8 @@ type Tx struct {
 	WasabiDailyUsage *WasabiDailyUsageClient
 	// WasabiSyncState is the client for interacting with the WasabiSyncState builders.
 	WasabiSyncState *WasabiSyncStateClient
+	// WorkspaceTenant is the client for interacting with the WorkspaceTenant builders.
+	WorkspaceTenant *WorkspaceTenantClient
 
 	// lazily loaded.
 	client     *Client
@@ -191,6 +193,7 @@ func (tx *Tx) init() {
 	tx.WasabiBucketConfig = NewWasabiBucketConfigClient(tx.config)
 	tx.WasabiDailyUsage = NewWasabiDailyUsageClient(tx.config)
 	tx.WasabiSyncState = NewWasabiSyncStateClient(tx.config)
+	tx.WorkspaceTenant = NewWorkspaceTenantClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

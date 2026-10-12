@@ -16,6 +16,7 @@ require (
 	github.com/jackc/pgx/v5 v5.9.2
 	github.com/robfig/cron/v3 v3.0.1
 	golang.org/x/crypto v0.57.0
+	golang.org/x/oauth2 v0.35.0
 	golang.org/x/sync v0.23.0
 	golang.org/x/time v0.16.0
 	google.golang.org/protobuf v1.36.11
@@ -23,6 +24,7 @@ require (
 
 require (
 	ariga.io/atlas v0.36.2-0.20250730182955-2c6300d0a3e1 // indirect
+	cloud.google.com/go/compute/metadata v0.6.0 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/armon/go-metrics v0.4.1 // indirect

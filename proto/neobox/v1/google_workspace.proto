@@ -1,0 +1,142 @@
+syntax = "proto3";
+package neobox.v1;
+
+import "google/protobuf/timestamp.proto";
+import "neobox/v1/connection.proto";
+
+option go_package = "go.orx.me/apps/neo-box/pkg/proto/neobox/v1;neoboxv1";
+
+// Each connection owns one reusable Service Account and multiple independent tenants.
+service GoogleWorkspaceService {
+  rpc ListWorkspaceTenants(ListWorkspaceTenantsRequest) returns (ListWorkspaceTenantsResponse);
+  rpc CreateWorkspaceTenant(CreateWorkspaceTenantRequest) returns (CreateWorkspaceTenantResponse);
+  rpc UpdateWorkspaceTenant(UpdateWorkspaceTenantRequest) returns (UpdateWorkspaceTenantResponse);
+  rpc DeleteWorkspaceTenant(DeleteWorkspaceTenantRequest) returns (DeleteWorkspaceTenantResponse);
+  rpc TestWorkspaceTenant(TestWorkspaceTenantRequest) returns (TestWorkspaceTenantResponse);
+  rpc ListWorkspaceUsers(ListWorkspaceUsersRequest) returns (ListWorkspaceUsersResponse);
+  rpc GetWorkspaceUser(GetWorkspaceUserRequest) returns (GetWorkspaceUserResponse);
+  rpc CreateWorkspaceUser(CreateWorkspaceUserRequest) returns (CreateWorkspaceUserResponse);
+  rpc UpdateWorkspaceUser(UpdateWorkspaceUserRequest) returns (UpdateWorkspaceUserResponse);
+  rpc ResetWorkspaceUserPassword(ResetWorkspaceUserPasswordRequest) returns (ResetWorkspaceUserPasswordResponse);
+  rpc SetWorkspaceUserSuspended(SetWorkspaceUserSuspendedRequest) returns (SetWorkspaceUserSuspendedResponse);
+}
+message WorkspaceTenant {
+  string id = 1;
+  string connection_id = 2;
+  string name = 3;
+  string customer_id = 4;
+  string delegated_admin_email = 5;
+  ConnectionStatus status = 6;
+  string status_message = 7;
+  google.protobuf.Timestamp status_checked_at = 8;
+}
+message WorkspaceUser {
+  string id = 1;
+  string primary_email = 2;
+  string given_name = 3;
+  string family_name = 4;
+  string org_unit_path = 5;
+  bool suspended = 6;
+  bool is_admin = 7;
+  bool change_password_at_next_login = 8;
+  string customer_id = 9;
+}
+message WorkspaceUserProfile {
+  string given_name = 1;
+  string family_name = 2;
+  string org_unit_path = 3;
+}
+message ListWorkspaceTenantsRequest {
+  string connection_id = 1;
+}
+message ListWorkspaceTenantsResponse {
+  repeated WorkspaceTenant tenants = 1;
+}
+message CreateWorkspaceTenantRequest {
+  string connection_id = 1;
+  string name = 2;
+  string customer_id = 3;
+  string delegated_admin_email = 4;
+}
+message CreateWorkspaceTenantResponse {
+  WorkspaceTenant tenant = 1;
+}
+message UpdateWorkspaceTenantRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string name = 3;
+  string delegated_admin_email = 4;
+}
+message UpdateWorkspaceTenantResponse {
+  WorkspaceTenant tenant = 1;
+}
+message DeleteWorkspaceTenantRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+}
+message DeleteWorkspaceTenantResponse {}
+message TestWorkspaceTenantRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+}
+message TestWorkspaceTenantResponse {
+  WorkspaceTenant tenant = 1;
+}
+message ListWorkspaceUsersRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string query = 3;
+  string page_token = 4;
+  int32 page_size = 5;
+}
+message ListWorkspaceUsersResponse {
+  repeated WorkspaceUser users = 1;
+  string next_page_token = 2;
+}
+message GetWorkspaceUserRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string user_id = 3;
+}
+message GetWorkspaceUserResponse {
+  WorkspaceUser user = 1;
+}
+message CreateWorkspaceUserRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string primary_email = 3;
+  WorkspaceUserProfile profile = 4;
+  string password = 5;
+  bool change_password_at_next_login = 6;
+}
+message CreateWorkspaceUserResponse {
+  WorkspaceUser user = 1;
+}
+message UpdateWorkspaceUserRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string user_id = 3;
+  WorkspaceUserProfile profile = 4;
+}
+message UpdateWorkspaceUserResponse {
+  WorkspaceUser user = 1;
+}
+message ResetWorkspaceUserPasswordRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string user_id = 3;
+  string password = 4;
+  bool change_password_at_next_login = 5;
+}
+message ResetWorkspaceUserPasswordResponse {
+  WorkspaceUser user = 1;
+}
+message SetWorkspaceUserSuspendedRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string user_id = 3;
+  bool suspended = 4;
+}
+message SetWorkspaceUserSuspendedResponse {
+  WorkspaceUser user = 1;
+}

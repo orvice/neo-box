@@ -19,10 +19,12 @@ import (
 	"go.orx.me/apps/neo-box/internal/config"
 	"go.orx.me/apps/neo-box/internal/connection"
 	"go.orx.me/apps/neo-box/internal/ent"
+	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	"go.orx.me/apps/neo-box/internal/notify"
 	authpg "go.orx.me/apps/neo-box/internal/repo/auth/postgres"
 	cloudflarepg "go.orx.me/apps/neo-box/internal/repo/cloudflare/postgres"
 	connectionpg "go.orx.me/apps/neo-box/internal/repo/connection/postgres"
+	workspacepg "go.orx.me/apps/neo-box/internal/repo/googleworkspace/postgres"
 	nocodbpg "go.orx.me/apps/neo-box/internal/repo/nocodb/postgres"
 	notifypg "go.orx.me/apps/neo-box/internal/repo/notify/postgres"
 	oauthstatepg "go.orx.me/apps/neo-box/internal/repo/oauthstate/postgres"
@@ -79,6 +81,9 @@ func (h *Handlers) Bootstrap(ctx context.Context) error {
 		return err
 	}
 	h.bootstrapCloudflare(client, conns)
+	workspaceRepo := workspacepg.New(client)
+	conns.Register(googleworkspace.Provider{Repo: workspaceRepo})
+	h.workspaceSvcServer.SetDeps(workspaceRepo, conns)
 	h.stop = stop
 	go purgeExpired(runCtx, authRepo, stateRepo)
 	return nil

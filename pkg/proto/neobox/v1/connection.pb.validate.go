@@ -278,6 +278,47 @@ func (m *Connection) validate(all bool) error {
 			}
 		}
 
+	case *Connection_GoogleWorkspace:
+		if v == nil {
+			err := ConnectionValidationError{
+				field:  "Config",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetGoogleWorkspace()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ConnectionValidationError{
+						field:  "GoogleWorkspace",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ConnectionValidationError{
+						field:  "GoogleWorkspace",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetGoogleWorkspace()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ConnectionValidationError{
+					field:  "GoogleWorkspace",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	default:
 		_ = v // ensures v is used
 	}
@@ -1709,6 +1750,48 @@ func (m *CreateConnectionRequest) validate(all bool) error {
 			}
 		}
 
+	case *CreateConnectionRequest_GoogleWorkspace:
+		if v == nil {
+			err := CreateConnectionRequestValidationError{
+				field:  "Settings",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+		oneofSettingsPresent = true
+
+		if all {
+			switch v := interface{}(m.GetGoogleWorkspace()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, CreateConnectionRequestValidationError{
+						field:  "GoogleWorkspace",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, CreateConnectionRequestValidationError{
+						field:  "GoogleWorkspace",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetGoogleWorkspace()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return CreateConnectionRequestValidationError{
+					field:  "GoogleWorkspace",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	default:
 		_ = v // ensures v is used
 	}
@@ -2100,6 +2183,48 @@ func (m *UpdateConnectionRequest) validate(all bool) error {
 			if err := v.Validate(); err != nil {
 				return UpdateConnectionRequestValidationError{
 					field:  "Cloudflare",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *UpdateConnectionRequest_GoogleWorkspace:
+		if v == nil {
+			err := UpdateConnectionRequestValidationError{
+				field:  "Settings",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+		oneofSettingsPresent = true
+
+		if all {
+			switch v := interface{}(m.GetGoogleWorkspace()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, UpdateConnectionRequestValidationError{
+						field:  "GoogleWorkspace",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, UpdateConnectionRequestValidationError{
+						field:  "GoogleWorkspace",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetGoogleWorkspace()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return UpdateConnectionRequestValidationError{
+					field:  "GoogleWorkspace",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
@@ -2789,3 +2914,221 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = TestConnectionResponseValidationError{}
+
+// Validate checks the field values on GoogleWorkspaceConnectionConfig with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GoogleWorkspaceConnectionConfig) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GoogleWorkspaceConnectionConfig with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// GoogleWorkspaceConnectionConfigMultiError, or nil if none found.
+func (m *GoogleWorkspaceConnectionConfig) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GoogleWorkspaceConnectionConfig) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ServiceAccountEmail
+
+	// no validation rules for ClientId
+
+	if len(errors) > 0 {
+		return GoogleWorkspaceConnectionConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// GoogleWorkspaceConnectionConfigMultiError is an error wrapping multiple
+// validation errors returned by GoogleWorkspaceConnectionConfig.ValidateAll()
+// if the designated constraints aren't met.
+type GoogleWorkspaceConnectionConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GoogleWorkspaceConnectionConfigMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GoogleWorkspaceConnectionConfigMultiError) AllErrors() []error { return m }
+
+// GoogleWorkspaceConnectionConfigValidationError is the validation error
+// returned by GoogleWorkspaceConnectionConfig.Validate if the designated
+// constraints aren't met.
+type GoogleWorkspaceConnectionConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GoogleWorkspaceConnectionConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GoogleWorkspaceConnectionConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GoogleWorkspaceConnectionConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GoogleWorkspaceConnectionConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GoogleWorkspaceConnectionConfigValidationError) ErrorName() string {
+	return "GoogleWorkspaceConnectionConfigValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GoogleWorkspaceConnectionConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGoogleWorkspaceConnectionConfig.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GoogleWorkspaceConnectionConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GoogleWorkspaceConnectionConfigValidationError{}
+
+// Validate checks the field values on GoogleWorkspaceConnectionSettings with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *GoogleWorkspaceConnectionSettings) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GoogleWorkspaceConnectionSettings
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// GoogleWorkspaceConnectionSettingsMultiError, or nil if none found.
+func (m *GoogleWorkspaceConnectionSettings) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GoogleWorkspaceConnectionSettings) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ServiceAccountEmail
+
+	// no validation rules for ClientId
+
+	// no validation rules for ServiceAccountJson
+
+	if len(errors) > 0 {
+		return GoogleWorkspaceConnectionSettingsMultiError(errors)
+	}
+
+	return nil
+}
+
+// GoogleWorkspaceConnectionSettingsMultiError is an error wrapping multiple
+// validation errors returned by
+// GoogleWorkspaceConnectionSettings.ValidateAll() if the designated
+// constraints aren't met.
+type GoogleWorkspaceConnectionSettingsMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GoogleWorkspaceConnectionSettingsMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GoogleWorkspaceConnectionSettingsMultiError) AllErrors() []error { return m }
+
+// GoogleWorkspaceConnectionSettingsValidationError is the validation error
+// returned by GoogleWorkspaceConnectionSettings.Validate if the designated
+// constraints aren't met.
+type GoogleWorkspaceConnectionSettingsValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GoogleWorkspaceConnectionSettingsValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GoogleWorkspaceConnectionSettingsValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GoogleWorkspaceConnectionSettingsValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GoogleWorkspaceConnectionSettingsValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GoogleWorkspaceConnectionSettingsValidationError) ErrorName() string {
+	return "GoogleWorkspaceConnectionSettingsValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GoogleWorkspaceConnectionSettingsValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGoogleWorkspaceConnectionSettings.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GoogleWorkspaceConnectionSettingsValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GoogleWorkspaceConnectionSettingsValidationError{}

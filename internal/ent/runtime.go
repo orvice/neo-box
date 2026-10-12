@@ -16,6 +16,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent/user"
 	"go.orx.me/apps/neo-box/internal/ent/wasabidailyusage"
 	"go.orx.me/apps/neo-box/internal/ent/wasabisyncstate"
+	"go.orx.me/apps/neo-box/internal/ent/workspacetenant"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -326,4 +327,14 @@ func init() {
 	wasabisyncstateDescConfigError := wasabisyncstateFields[7].Descriptor()
 	// wasabisyncstate.DefaultConfigError holds the default value on creation for the config_error field.
 	wasabisyncstate.DefaultConfigError = wasabisyncstateDescConfigError.Default.(string)
+	workspacetenantFields := schema.WorkspaceTenant{}.Fields()
+	_ = workspacetenantFields
+	// workspacetenantDescStatus is the schema descriptor for status field.
+	workspacetenantDescStatus := workspacetenantFields[6].Descriptor()
+	// workspacetenant.DefaultStatus holds the default value on creation for the status field.
+	workspacetenant.DefaultStatus = workspacetenantDescStatus.Default.(string)
+	// workspacetenantDescStatusMessage is the schema descriptor for status_message field.
+	workspacetenantDescStatusMessage := workspacetenantFields[7].Descriptor()
+	// workspacetenant.DefaultStatusMessage holds the default value on creation for the status_message field.
+	workspacetenant.DefaultStatusMessage = workspacetenantDescStatusMessage.Default.(string)
 }

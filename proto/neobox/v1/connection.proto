@@ -8,7 +8,8 @@ import "validate/validate.proto";
 option go_package = "go.orx.me/apps/neo-box/pkg/proto/neobox/v1;neoboxv1";
 
 // ConnectionService manages Connections: accounts at third-party services
-// (Providers), owned by the calling user. Provider-specific settings travel
+// (Providers), owned by the calling user. A Workspace connection instead holds
+// a reusable Service Account with multiple provider-specific tenants. Settings travel
 // in typed oneofs. Secrets are write-only and never returned.
 service ConnectionService {
   rpc ListConnections(ListConnectionsRequest) returns (ListConnectionsResponse);
@@ -33,6 +34,7 @@ enum Provider {
   PROVIDER_NOCODB = 1;
   PROVIDER_WASABI = 2;
   PROVIDER_CLOUDFLARE = 3;
+  PROVIDER_GOOGLE_WORKSPACE = 4;
 }
 
 // ConnectionStatus is the outcome of the last credential check or
@@ -58,6 +60,7 @@ message Connection {
     NocoDBConnectionConfig nocodb = 20;
     WasabiConnectionConfig wasabi = 21;
     CloudflareConnectionConfig cloudflare = 22;
+    GoogleWorkspaceConnectionConfig google_workspace = 23;
   }
 }
 
@@ -149,6 +152,7 @@ message CreateConnectionRequest {
     NocoDBConnectionSettings nocodb = 20;
     WasabiConnectionSettings wasabi = 21;
     CloudflareConnectionSettings cloudflare = 22;
+    GoogleWorkspaceConnectionSettings google_workspace = 23;
   }
 }
 
@@ -164,6 +168,7 @@ message UpdateConnectionRequest {
     NocoDBConnectionSettings nocodb = 20;
     WasabiConnectionSettings wasabi = 21;
     CloudflareConnectionSettings cloudflare = 22;
+    GoogleWorkspaceConnectionSettings google_workspace = 23;
   }
 }
 
@@ -184,4 +189,16 @@ message TestConnectionRequest {
 message TestConnectionResponse {
   // The connection with its updated status.
   Connection connection = 1;
+}
+
+// One reusable Service Account; Workspace tenants are managed separately.
+message GoogleWorkspaceConnectionConfig {
+  string service_account_email = 1;
+  string client_id = 2;
+}
+message GoogleWorkspaceConnectionSettings {
+  string service_account_email = 1;
+  string client_id = 2;
+  // Service Account key JSON. Required on create; empty keeps the key on update.
+  string service_account_json = 3;
 }

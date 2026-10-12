@@ -490,6 +490,38 @@ var (
 		Columns:    WasabiSyncStatesColumns,
 		PrimaryKey: []*schema.Column{WasabiSyncStatesColumns[0]},
 	}
+	// GoogleWorkspaceTenantsColumns holds the columns for the "google_workspace_tenants" table.
+	GoogleWorkspaceTenantsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "connection_id", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString},
+		{Name: "customer_id", Type: field.TypeString},
+		{Name: "delegated_admin_email", Type: field.TypeString},
+		{Name: "status", Type: field.TypeString, Default: "unknown"},
+		{Name: "status_message", Type: field.TypeString, Default: ""},
+		{Name: "status_checked_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// GoogleWorkspaceTenantsTable holds the schema information for the "google_workspace_tenants" table.
+	GoogleWorkspaceTenantsTable = &schema.Table{
+		Name:       "google_workspace_tenants",
+		Columns:    GoogleWorkspaceTenantsColumns,
+		PrimaryKey: []*schema.Column{GoogleWorkspaceTenantsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "workspacetenant_connection_id_customer_id",
+				Unique:  true,
+				Columns: []*schema.Column{GoogleWorkspaceTenantsColumns[2], GoogleWorkspaceTenantsColumns[4]},
+			},
+			{
+				Name:    "workspacetenant_user_id_connection_id",
+				Unique:  false,
+				Columns: []*schema.Column{GoogleWorkspaceTenantsColumns[1], GoogleWorkspaceTenantsColumns[2]},
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AlertsTable,
@@ -508,6 +540,7 @@ var (
 		WasabiBucketConfigsTable,
 		WasabiDailyUsageTable,
 		WasabiSyncStatesTable,
+		GoogleWorkspaceTenantsTable,
 	}
 )
 
@@ -559,5 +592,8 @@ func init() {
 	}
 	WasabiSyncStatesTable.Annotation = &entsql.Annotation{
 		Table: "wasabi_sync_states",
+	}
+	GoogleWorkspaceTenantsTable.Annotation = &entsql.Annotation{
+		Table: "google_workspace_tenants",
 	}
 }
