@@ -42,6 +42,10 @@ service GoogleWorkspaceService {
   rpc ListWorkspaceOperations(ListWorkspaceOperationsRequest) returns (ListWorkspaceOperationsResponse);
   rpc GetWorkspaceOverview(GetWorkspaceOverviewRequest) returns (GetWorkspaceOverviewResponse);
   rpc ListWorkspaceAuditActivities(ListWorkspaceAuditActivitiesRequest) returns (ListWorkspaceAuditActivitiesResponse);
+  // Gmail settings are read and changed by impersonating one tenant user
+  // (ADR 0008). Message content is never requested.
+  rpc GetWorkspaceUserGmailSettings(GetWorkspaceUserGmailSettingsRequest) returns (GetWorkspaceUserGmailSettingsResponse);
+  rpc UpdateWorkspaceUserGmailVacation(UpdateWorkspaceUserGmailVacationRequest) returns (UpdateWorkspaceUserGmailVacationResponse);
 }
 message WorkspaceTenant {
   string id = 1;
@@ -551,4 +555,144 @@ message WorkspaceSecurityTotals {
   int64 inactive_count = 6;
   int64 never_logged_in_count = 7;
   int64 security_unknown_count = 8;
+}
+
+// Required on every Gmail settings request. The backend checks it each time;
+// it is accountability, not authorization.
+message GmailAccessConfirmation {
+  // Why this mailbox's settings are being accessed, 1-200 characters.
+  string reason = 1;
+  // The target's primary email, typed again. Must equal the resolved user.
+  string target_email = 2;
+}
+
+// One section of the overview. A section that could not be read says why and
+// carries no values; unread is never shown as off.
+message GmailSectionState {
+  bool ok = 1;
+  string error = 2;
+}
+
+message GmailVacation {
+  GmailSectionState state = 1;
+  bool enabled = 2;
+  string subject = 3;
+  string body_plain_text = 4;
+  // The stored body is HTML; saving replaces it with plain text.
+  bool body_is_html = 5;
+  bool restrict_to_contacts = 6;
+  bool restrict_to_domain = 7;
+  google.protobuf.Timestamp start_time = 8;
+  google.protobuf.Timestamp end_time = 9;
+}
+
+message GmailVacationInput {
+  bool enabled = 1;
+  string subject = 2;
+  string body_plain_text = 3;
+  bool restrict_to_contacts = 4;
+  bool restrict_to_domain = 5;
+  google.protobuf.Timestamp start_time = 6;
+  google.protobuf.Timestamp end_time = 7;
+}
+
+// external is unset when the tenant's domains could not be read.
+message GmailAutoForwarding {
+  GmailSectionState state = 1;
+  bool enabled = 2;
+  string email_address = 3;
+  // leaveInInbox, archive, trash or markRead.
+  string disposition = 4;
+  optional bool external = 5;
+}
+
+message GmailForwardingAddress {
+  string email = 1;
+  // accepted or pending.
+  string verification_status = 2;
+  optional bool external = 3;
+}
+
+message GmailForwardingAddresses {
+  GmailSectionState state = 1;
+  repeated GmailForwardingAddress addresses = 2;
+}
+
+message GmailDelegate {
+  string email = 1;
+  // accepted, pending, rejected or expired.
+  string verification_status = 2;
+}
+
+message GmailDelegates {
+  GmailSectionState state = 1;
+  repeated GmailDelegate delegates = 2;
+}
+
+message GmailFilter {
+  string id = 1;
+  string from = 2;
+  string to = 3;
+  string subject = 4;
+  string query = 5;
+  string negated_query = 6;
+  bool has_attachment = 7;
+  string forward_to = 8;
+  optional bool forward_external = 9;
+  // Moves matching mail to the trash.
+  bool deletes = 10;
+  // Removes matching mail from the inbox.
+  bool skips_inbox = 11;
+}
+
+message GmailFilters {
+  GmailSectionState state = 1;
+  repeated GmailFilter filters = 2;
+}
+
+message GmailSendAs {
+  string email = 1;
+  string display_name = 2;
+  bool is_primary = 3;
+  bool is_default = 4;
+  bool treat_as_alias = 5;
+  // accepted or pending; empty for the primary address.
+  string verification_status = 6;
+  optional bool external = 7;
+}
+
+message GmailSendAsList {
+  GmailSectionState state = 1;
+  repeated GmailSendAs addresses = 2;
+}
+
+message GetWorkspaceUserGmailSettingsRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  // Google user ID or primary email; resolved inside the tenant first.
+  string user_id = 3;
+  GmailAccessConfirmation confirmation = 4;
+}
+
+message GetWorkspaceUserGmailSettingsResponse {
+  string user_email = 1;
+  GmailVacation vacation = 2;
+  GmailAutoForwarding auto_forwarding = 3;
+  GmailForwardingAddresses forwarding_addresses = 4;
+  GmailDelegates delegates = 5;
+  GmailFilters filters = 6;
+  GmailSendAsList send_as = 7;
+  google.protobuf.Timestamp read_at = 8;
+}
+
+message UpdateWorkspaceUserGmailVacationRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string user_id = 3;
+  GmailAccessConfirmation confirmation = 4;
+  GmailVacationInput vacation = 5;
+}
+
+message UpdateWorkspaceUserGmailVacationResponse {
+  GmailVacation vacation = 1;
 }

@@ -1,6 +1,6 @@
 # ADR 0008: Gmail settings are read by impersonating one user, and every access is logged first
 
-Status: proposed (2026-10-13)
+Status: accepted (2026-10-13)
 
 Gmail settings (vacation responder, forwarding, delegates, filters, send-as)
 can only be reached as the mailbox owner: the Gmail API takes the user as the
@@ -11,10 +11,13 @@ other than the delegated administrator, so it needs its own boundaries.
 
 ## Decisions
 
-**No mail content, ever.** Neo Box requests only `gmail.settings.basic` and
-`gmail.settings.sharing`. Neither scope reads or changes messages. Neo Box does
-not request `gmail.readonly`, `gmail.modify`, `mail.google.com` or any Drive
-scope for this feature. Reading message content is a separate decision and
+**No mail content, ever.** Neo Box requests only `gmail.settings.basic`, which
+neither reads nor changes messages. Google accepts it for reading every
+settings section Neo Box shows and for updating the vacation responder.
+`gmail.settings.sharing`, needed to change forwarding, delegates and send-as,
+is not requested until those writes exist. Neo Box does not request
+`gmail.readonly`, `gmail.modify`, `mail.google.com` or any Drive scope for this
+feature. Reading message content is a separate decision and
 would need its own ADR.
 
 **The subject is resolved, not supplied.** The target email is first resolved
@@ -33,14 +36,15 @@ and writes both use the `workspace_operations` table, with new actions
 `succeeded` or `failed`; an unreachable outcome write leaves `pending`, never
 a guess. Reads are retried like other reads; writes are sent once.
 
-**Every session starts with a reason and a typed target.** Before any Gmail
-settings request for a user, the caller supplies a required free-text reason
-(1–200 characters) and the target email typed again. Both are validated by the
-backend, not only by the form, and the reason is stored on each operation it
-covers. A confirmation covers one user in one Tenant and expires after a
-short, fixed time; it is not a bearer capability. The backend rejects a
-request whose reason or typed target is missing, so a script cannot skip the
-form.
+**Every request carries a reason and a typed target.** Each Gmail settings
+request supplies a required single-line reason (1–200 characters) and the
+target's primary email typed again. The backend validates both on every
+request and stores the reason on the operation; it keeps no confirmation
+session, so there is nothing to steal or replay. The dashboard holds one
+confirmation in page memory for ten minutes, for one user, so people are not
+asked on every click; that expiry is a convenience of the UI, not a server
+control. A script cannot skip the form because the backend rejects a request
+without them.
 
 **One user per request.** No endpoint accepts a list of users. A scan of "who
 forwards externally" would impersonate every user in a Tenant; it needs a
