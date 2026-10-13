@@ -11,8 +11,10 @@ option go_package = "go.orx.me/apps/neo-box/pkg/proto/neobox/v1;neoboxv1";
 // CloudflareService reads the resources the API token of a Cloudflare
 // connection can see in the connection's Account (Zones, DNS records,
 // Workers, Pages projects, Tunnels), changes DNS records, and manages
-// cloudflared Tunnels and their public hostnames. Everything is read live
-// from Cloudflare; only DNS operations started here are stored.
+// cloudflared Tunnels and their public hostnames, and manages Workers and
+// Pages projects without uploading code. Everything is read live from
+// Cloudflare; only DNS operations and Worker / Pages operations started here
+// are stored.
 //
 // connection_id must be the caller's Cloudflare connection; anything else
 // is NotFound. A module the token has no permission for fails with
@@ -64,6 +66,55 @@ service CloudflareService {
   // DeleteCloudflareTunnelHostname removes a route, and can delete its DNS
   // record when that is a CNAME to this Tunnel.
   rpc DeleteCloudflareTunnelHostname(DeleteCloudflareTunnelHostnameRequest) returns (DeleteCloudflareTunnelHostnameResponse);
+  // GetCloudflareWorker reads a Worker with its workers.dev switch, custom
+  // domains, routes, cron triggers, secret names, bindings, recent
+  // deployments and versions. A part that could not be read is reported in
+  // issues. Neo Box never uploads code.
+  rpc GetCloudflareWorker(GetCloudflareWorkerRequest) returns (GetCloudflareWorkerResponse);
+  rpc SetCloudflareWorkerWorkersDev(SetCloudflareWorkerWorkersDevRequest) returns (SetCloudflareWorkerWorkersDevResponse);
+  // AttachCloudflareWorkerDomain refuses a hostname that belongs to another
+  // Worker (Cloudflare itself would move it).
+  rpc AttachCloudflareWorkerDomain(AttachCloudflareWorkerDomainRequest) returns (AttachCloudflareWorkerDomainResponse);
+  rpc DetachCloudflareWorkerDomain(DetachCloudflareWorkerDomainRequest) returns (DetachCloudflareWorkerDomainResponse);
+  // AddCloudflareWorkerRoute runs the Worker on a pattern such as
+  // example.com/*, in the Zone that holds its host.
+  rpc AddCloudflareWorkerRoute(AddCloudflareWorkerRouteRequest) returns (AddCloudflareWorkerRouteResponse);
+  rpc DeleteCloudflareWorkerRoute(DeleteCloudflareWorkerRouteRequest) returns (DeleteCloudflareWorkerRouteResponse);
+  rpc AddCloudflareWorkerCron(AddCloudflareWorkerCronRequest) returns (AddCloudflareWorkerCronResponse);
+  rpc DeleteCloudflareWorkerCron(DeleteCloudflareWorkerCronRequest) returns (DeleteCloudflareWorkerCronResponse);
+  // PutCloudflareWorkerSecret sets a secret. The value goes to Cloudflare
+  // only; it is never stored, logged or returned.
+  rpc PutCloudflareWorkerSecret(PutCloudflareWorkerSecretRequest) returns (PutCloudflareWorkerSecretResponse);
+  rpc DeleteCloudflareWorkerSecret(DeleteCloudflareWorkerSecretRequest) returns (DeleteCloudflareWorkerSecretResponse);
+  // RollbackCloudflareWorker serves an earlier version at 100% of traffic.
+  rpc RollbackCloudflareWorker(RollbackCloudflareWorkerRequest) returns (RollbackCloudflareWorkerResponse);
+  rpc DeleteCloudflareWorker(DeleteCloudflareWorkerRequest) returns (DeleteCloudflareWorkerResponse);
+  // GetCloudflarePagesProject reads a project with its build settings,
+  // environment variables (secrets without values) and custom domains.
+  rpc GetCloudflarePagesProject(GetCloudflarePagesProjectRequest) returns (GetCloudflarePagesProjectResponse);
+  rpc ListCloudflarePagesDeployments(ListCloudflarePagesDeploymentsRequest) returns (ListCloudflarePagesDeploymentsResponse);
+  // CreateCloudflarePagesProject creates an empty Direct Upload project;
+  // Neo Box does not upload files.
+  rpc CreateCloudflarePagesProject(CreateCloudflarePagesProjectRequest) returns (CreateCloudflarePagesProjectResponse);
+  // UpdateCloudflarePagesProject changes the fields that are set. The
+  // production branch of a Git project is refused.
+  rpc UpdateCloudflarePagesProject(UpdateCloudflarePagesProjectRequest) returns (UpdateCloudflarePagesProjectResponse);
+  rpc DeleteCloudflarePagesProject(DeleteCloudflarePagesProjectRequest) returns (DeleteCloudflarePagesProjectResponse);
+  rpc RetryCloudflarePagesDeployment(RetryCloudflarePagesDeploymentRequest) returns (RetryCloudflarePagesDeploymentResponse);
+  rpc RollbackCloudflarePagesDeployment(RollbackCloudflarePagesDeploymentRequest) returns (RollbackCloudflarePagesDeploymentResponse);
+  // DeleteCloudflarePagesDeployment never forces: Cloudflare refuses the
+  // live production deployment.
+  rpc DeleteCloudflarePagesDeployment(DeleteCloudflarePagesDeploymentRequest) returns (DeleteCloudflarePagesDeploymentResponse);
+  // AddCloudflarePagesDomain adds a custom domain and can create its CNAME.
+  rpc AddCloudflarePagesDomain(AddCloudflarePagesDomainRequest) returns (AddCloudflarePagesDomainResponse);
+  rpc DeleteCloudflarePagesDomain(DeleteCloudflarePagesDomainRequest) returns (DeleteCloudflarePagesDomainResponse);
+  // SetCloudflarePagesEnvVar sets one environment variable. A value goes
+  // to Cloudflare only; it is never stored or logged.
+  rpc SetCloudflarePagesEnvVar(SetCloudflarePagesEnvVarRequest) returns (SetCloudflarePagesEnvVarResponse);
+  rpc DeleteCloudflarePagesEnvVar(DeleteCloudflarePagesEnvVarRequest) returns (DeleteCloudflarePagesEnvVarResponse);
+  // ListCloudflareResourceOperations lists the Worker and Pages changes
+  // started from Neo Box for a connection, newest first.
+  rpc ListCloudflareResourceOperations(ListCloudflareResourceOperationsRequest) returns (ListCloudflareResourceOperationsResponse);
 }
 
 // CloudflarePageInfo describes one page of a list.
@@ -595,4 +646,457 @@ message DeleteCloudflareTunnelHostnameRequest {
 message DeleteCloudflareTunnelHostnameResponse {
   int32 config_version = 1;
   CloudflareTunnelRecordResult record = 2;
+}
+
+// --- Workers and Pages management ---
+
+enum CloudflareResourceKind {
+  CLOUDFLARE_RESOURCE_KIND_UNSPECIFIED = 0;
+  CLOUDFLARE_RESOURCE_KIND_WORKER = 1;
+  CLOUDFLARE_RESOURCE_KIND_PAGES = 2;
+}
+
+// CloudflareResourceOperation is one change to a Worker or a Pages project
+// started from Neo Box. It never holds a secret value.
+message CloudflareResourceOperation {
+  string id = 1;
+  string connection_id = 2;
+  string account_id = 3;
+  CloudflareResourceKind kind = 4;
+  // The Worker script or Pages project name.
+  string resource = 5;
+  // e.g. attach_domain, add_route, put_secret, rollback, delete.
+  string action = 6;
+  // What the action applies to: a hostname, route pattern, secret or
+  // variable name, version or deployment ID.
+  string target = 7;
+  google.protobuf.Struct before = 8;
+  // Unset for anything that did not succeed.
+  google.protobuf.Struct after = 9;
+  CloudflareOperationStatus status = 10;
+  string error = 11;
+  string actor_id = 12;
+  string actor_name = 13;
+  google.protobuf.Timestamp created_at = 14;
+  google.protobuf.Timestamp finished_at = 15;
+  google.protobuf.Struct requested = 16;
+}
+
+// CloudflareChangeResult is what every Worker and Pages change returns.
+message CloudflareChangeResult {
+  // False when there was nothing to do (already so); no operation is
+  // logged then.
+  bool changed = 1;
+  CloudflareResourceOperation operation = 2;
+  // Set when the change was made but its outcome could not be logged.
+  string operation_log_error = 3;
+}
+
+message CloudflareWorkerDomain {
+  string hostname = 1;
+  string zone_id = 2;
+  string zone_name = 3;
+  bool enabled = 4;
+}
+
+message CloudflareWorkerRoute {
+  string id = 1;
+  string pattern = 2;
+  string zone_id = 3;
+  string zone_name = 4;
+}
+
+message CloudflareWorkerSecret {
+  string name = 1;
+  string type = 2;
+}
+
+message CloudflareWorkerBinding {
+  string name = 1;
+  string type = 2;
+}
+
+message CloudflareWorkerVersion {
+  string id = 1;
+  int32 number = 2;
+  google.protobuf.Timestamp created_at = 3;
+  string source = 4;
+  string author_email = 5;
+}
+
+message CloudflareWorkerDeploymentVersion {
+  string version_id = 1;
+  double percentage = 2;
+}
+
+message CloudflareWorkerDeployment {
+  string id = 1;
+  google.protobuf.Timestamp created_at = 2;
+  string source = 3;
+  string message = 4;
+  string author_email = 5;
+  repeated CloudflareWorkerDeploymentVersion versions = 6;
+}
+
+message GetCloudflareWorkerRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+}
+
+message GetCloudflareWorkerResponse {
+  string name = 1;
+  google.protobuf.Timestamp created_at = 2;
+  google.protobuf.Timestamp modified_at = 3;
+  // The Account's workers.dev subdomain; empty when it has none.
+  string workers_dev_subdomain = 4;
+  // Unset when it could not be read.
+  optional bool workers_dev_enabled = 5;
+  repeated CloudflareWorkerDomain domains = 6;
+  repeated CloudflareWorkerRoute routes = 7;
+  repeated string crons = 8;
+  repeated CloudflareWorkerSecret secrets = 9;
+  string compatibility_date = 10;
+  repeated string compatibility_flags = 11;
+  repeated CloudflareWorkerBinding bindings = 12;
+  // Newest first; the first one serves traffic.
+  repeated CloudflareWorkerDeployment deployments = 13;
+  // Newest first.
+  repeated CloudflareWorkerVersion versions = 14;
+  repeated CloudflareReadIssue issues = 15;
+}
+
+message SetCloudflareWorkerWorkersDevRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  bool enabled = 3;
+}
+
+message SetCloudflareWorkerWorkersDevResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message AttachCloudflareWorkerDomainRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  // A domain name in one of the Account's Zones, e.g. app.example.com.
+  string hostname = 3 [(validate.rules).string.min_len = 1];
+}
+
+message AttachCloudflareWorkerDomainResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message DetachCloudflareWorkerDomainRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  string hostname = 3 [(validate.rules).string.min_len = 1];
+}
+
+message DetachCloudflareWorkerDomainResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message AddCloudflareWorkerRouteRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  // e.g. example.com/* or *.example.com/api/*.
+  string pattern = 3 [(validate.rules).string.min_len = 1];
+}
+
+message AddCloudflareWorkerRouteResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message DeleteCloudflareWorkerRouteRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  string zone_id = 3 [(validate.rules).string.min_len = 1];
+  string route_id = 4 [(validate.rules).string.min_len = 1];
+}
+
+message DeleteCloudflareWorkerRouteResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message AddCloudflareWorkerCronRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  // Five fields, e.g. */15 * * * *.
+  string cron = 3 [(validate.rules).string.min_len = 1];
+}
+
+message AddCloudflareWorkerCronResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message DeleteCloudflareWorkerCronRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  string cron = 3 [(validate.rules).string.min_len = 1];
+}
+
+message DeleteCloudflareWorkerCronResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message PutCloudflareWorkerSecretRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  string secret_name = 3 [(validate.rules).string.min_len = 1];
+  // Write-only.
+  string value = 4 [(validate.rules).string.min_len = 1];
+}
+
+message PutCloudflareWorkerSecretResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message DeleteCloudflareWorkerSecretRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  string secret_name = 3 [(validate.rules).string.min_len = 1];
+}
+
+message DeleteCloudflareWorkerSecretResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message RollbackCloudflareWorkerRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  string version_id = 3 [(validate.rules).string.min_len = 1];
+}
+
+message RollbackCloudflareWorkerResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message DeleteCloudflareWorkerRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+}
+
+message DeleteCloudflareWorkerResponse {
+  CloudflareChangeResult result = 1;
+}
+
+enum CloudflarePagesEnvironment {
+  CLOUDFLARE_PAGES_ENVIRONMENT_UNSPECIFIED = 0;
+  CLOUDFLARE_PAGES_ENVIRONMENT_PRODUCTION = 1;
+  CLOUDFLARE_PAGES_ENVIRONMENT_PREVIEW = 2;
+}
+
+enum CloudflarePagesEnvVarType {
+  CLOUDFLARE_PAGES_ENV_VAR_TYPE_UNSPECIFIED = 0;
+  CLOUDFLARE_PAGES_ENV_VAR_TYPE_PLAIN_TEXT = 1;
+  CLOUDFLARE_PAGES_ENV_VAR_TYPE_SECRET = 2;
+}
+
+message CloudflarePagesEnvVar {
+  string name = 1;
+  CloudflarePagesEnvVarType type = 2;
+  // Only for plain text variables; a secret never has one.
+  string value = 3;
+}
+
+message CloudflarePagesDomain {
+  string name = 1;
+  // e.g. active, pending.
+  string status = 2;
+}
+
+message CloudflarePagesBuildConfig {
+  string build_command = 1;
+  string destination_dir = 2;
+  string root_dir = 3;
+  bool build_caching = 4;
+}
+
+message CloudflarePagesDeployment {
+  string id = 1;
+  string short_id = 2;
+  string url = 3;
+  CloudflarePagesEnvironment environment = 4;
+  google.protobuf.Timestamp created_at = 5;
+  string branch = 6;
+  string commit_hash = 7;
+  string commit_message = 8;
+  // The last build stage (queued, initialize, clone_repo, build, deploy)
+  // and its status (success, active, failure, idle, canceled, skipped).
+  string stage = 9;
+  string stage_status = 10;
+  bool is_skipped = 11;
+  repeated string aliases = 12;
+}
+
+message GetCloudflarePagesProjectRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+}
+
+message GetCloudflarePagesProjectResponse {
+  string name = 1;
+  string subdomain = 2;
+  string production_branch = 3;
+  google.protobuf.Timestamp created_at = 4;
+  // owner/name of the connected Git repository; empty for Direct Upload.
+  string git_repository = 5;
+  string git_provider = 6;
+  CloudflarePagesBuildConfig build_config = 7;
+  repeated CloudflarePagesEnvVar production_env_vars = 8;
+  repeated CloudflarePagesEnvVar preview_env_vars = 9;
+  repeated CloudflarePagesDomain domains = 10;
+  repeated CloudflareReadIssue issues = 11;
+}
+
+message ListCloudflarePagesDeploymentsRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  // Unspecified lists both.
+  CloudflarePagesEnvironment environment = 3;
+  int32 page = 4;
+  // 0 means 25; at most 100.
+  int32 page_size = 5;
+}
+
+message ListCloudflarePagesDeploymentsResponse {
+  repeated CloudflarePagesDeployment deployments = 1;
+  CloudflarePageInfo page_info = 2;
+}
+
+message CreateCloudflarePagesProjectRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  // Lowercase letters, digits and hyphens.
+  string name = 2 [(validate.rules).string.min_len = 1];
+  // Empty means main.
+  string production_branch = 3;
+}
+
+message CreateCloudflarePagesProjectResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message UpdateCloudflarePagesProjectRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  // Fields left unset stay as they are.
+  optional string production_branch = 3;
+  optional string build_command = 4;
+  optional string destination_dir = 5;
+  optional string root_dir = 6;
+}
+
+message UpdateCloudflarePagesProjectResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message DeleteCloudflarePagesProjectRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+}
+
+message DeleteCloudflarePagesProjectResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message RetryCloudflarePagesDeploymentRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  string deployment_id = 3 [(validate.rules).string.min_len = 1];
+}
+
+message RetryCloudflarePagesDeploymentResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message RollbackCloudflarePagesDeploymentRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  string deployment_id = 3 [(validate.rules).string.min_len = 1];
+}
+
+message RollbackCloudflarePagesDeploymentResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message DeleteCloudflarePagesDeploymentRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  string deployment_id = 3 [(validate.rules).string.min_len = 1];
+}
+
+message DeleteCloudflarePagesDeploymentResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message AddCloudflarePagesDomainRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  string hostname = 3 [(validate.rules).string.min_len = 1];
+  // Also point the hostname at the project's pages.dev address with a
+  // proxied CNAME, when the Account has its Zone and nothing else is there.
+  bool create_dns = 4;
+}
+
+message AddCloudflarePagesDomainResponse {
+  CloudflareChangeResult result = 1;
+  CloudflareTunnelRecordResult record = 2;
+}
+
+message DeleteCloudflarePagesDomainRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  string hostname = 3 [(validate.rules).string.min_len = 1];
+}
+
+message DeleteCloudflarePagesDomainResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message SetCloudflarePagesEnvVarRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  CloudflarePagesEnvironment environment = 3 [(validate.rules).enum = {
+    defined_only: true
+    not_in: [0]
+  }];
+  string var_name = 4 [(validate.rules).string.min_len = 1];
+  // Write-only.
+  string value = 5 [(validate.rules).string.min_len = 1];
+  // Store it as a secret, which Cloudflare never shows again.
+  bool secret = 6;
+}
+
+message SetCloudflarePagesEnvVarResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message DeleteCloudflarePagesEnvVarRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  CloudflarePagesEnvironment environment = 3 [(validate.rules).enum = {
+    defined_only: true
+    not_in: [0]
+  }];
+  string var_name = 4 [(validate.rules).string.min_len = 1];
+}
+
+message DeleteCloudflarePagesEnvVarResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message ListCloudflareResourceOperationsRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  // Only this kind; unspecified lists both.
+  CloudflareResourceKind kind = 2;
+  // Only this Worker or Pages project; empty lists them all.
+  string resource = 3;
+  int32 page = 4;
+  // 0 means 20; at most 100.
+  int32 page_size = 5;
+}
+
+message ListCloudflareResourceOperationsResponse {
+  repeated CloudflareResourceOperation operations = 1;
+  CloudflarePageInfo page_info = 2;
 }

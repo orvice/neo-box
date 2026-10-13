@@ -183,6 +183,9 @@ func (a *Account) zoneRoutes(ctx context.Context, issues *issueSet) (routes []cl
 			return
 		}
 		perZone[i], errs[i] = a.api.ListWorkerRoutes(ctx, zones[i].ID)
+		for j := range perZone[i] {
+			perZone[i][j].ZoneID, perZone[i][j].ZoneName = zones[i].ID, zones[i].Name
+		}
 	})
 	failed, denied := 0, 0
 	var last error

@@ -124,6 +124,12 @@ shadcn/ui + Connect-Web on the frontend.
   (`tunnels.go`): list / create / delete / token / connection cleanup, and
   public hostnames edited by read-modify-write of the whole config under a
   per-Tunnel lock, with optional CNAME create/delete through the DNS path.
+  Worker and Pages management (`worker_manage.go`, `pages_manage.go`):
+  every change goes through `operate` (`operations.go`), which logs a
+  pending `cloudflare_resource_operations` row first (no row, nothing sent),
+  sends once, and finishes the row; no-op changes return `noChange()`
+  unlogged; read-modify-write holds `lockResource` (`worker/<acc>/<name>`,
+  `pages/<acc>/<project>`). Secret values never reach the log.
   A Zone's `permissions` describe the token owner, not the token, so they
   can only rule DNS edits out.
 - `internal/wasabisync/` — `Manager`: one sync at a time; 12-month backfill in
@@ -171,6 +177,12 @@ DNS record; a DNS problem is reported beside the saved route, not an error),
 DNS create / update (partial, keeps unshown fields) /
 proxy switch / delete for A, AAAA, CNAME, TXT, MX, NS, SRV, CAA, and
 `ListCloudflareDNSOperations` (rows in `cloudflare_dns_operations`).
+Worker management (`GetCloudflareWorker`, workers.dev, custom domains,
+routes, cron triggers, secrets, version rollback, delete) and Pages
+management (project get / create / update / delete, deployments list /
+retry / rollback / delete, domains, env vars) all return
+`CloudflareChangeResult` (`changed`, `operation`, `operation_log_error`),
+and `ListCloudflareResourceOperations` lists their log. No code upload.
 `connection_id` must be the caller's Cloudflare connection. A missing
 permission is PermissionDenied, a rejected token FailedPrecondition (never
 Unauthenticated, which signs the user out), an unconfirmed write Unknown.
@@ -189,8 +201,10 @@ hooks. `src/stores/auth-store.ts` (Zustand) holds token + user. Routes under
 Provider registry: `provider-info.ts` (key, label, icon; used by the sidebar)
 and `providers.ts` (each Provider's form, card summary, and detail page from
 its feature folder). Cloudflare's logic lives in `src/features/cloudflare/`
-`addresses.ts`, `dns.ts`, `access.ts` and `tunnels.ts`, each with a Vitest
-test.
+`addresses.ts`, `dns.ts`, `access.ts`, `tunnels.ts` and `manage.ts` (input
+checks, status and log wording), each with a Vitest test. `worker-page.tsx`
+and `pages-project-page.tsx` are the management pages; they share
+`manage-dialogs.tsx` (`FormDialog`, `ConfirmChangeDialog`).
 
 ## Conventions
 

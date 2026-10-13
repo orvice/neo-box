@@ -5,6 +5,7 @@ package ent
 import (
 	"go.orx.me/apps/neo-box/internal/ent/alert"
 	"go.orx.me/apps/neo-box/internal/ent/cloudflarednsoperation"
+	"go.orx.me/apps/neo-box/internal/ent/cloudflareresourceoperation"
 	"go.orx.me/apps/neo-box/internal/ent/connection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbrestore"
@@ -68,6 +69,20 @@ func init() {
 	cloudflarednsoperationDescActorName := cloudflarednsoperationFields[16].Descriptor()
 	// cloudflarednsoperation.DefaultActorName holds the default value on creation for the actor_name field.
 	cloudflarednsoperation.DefaultActorName = cloudflarednsoperationDescActorName.Default.(string)
+	cloudflareresourceoperationFields := schema.CloudflareResourceOperation{}.Fields()
+	_ = cloudflareresourceoperationFields
+	// cloudflareresourceoperationDescTarget is the schema descriptor for target field.
+	cloudflareresourceoperationDescTarget := cloudflareresourceoperationFields[7].Descriptor()
+	// cloudflareresourceoperation.DefaultTarget holds the default value on creation for the target field.
+	cloudflareresourceoperation.DefaultTarget = cloudflareresourceoperationDescTarget.Default.(string)
+	// cloudflareresourceoperationDescError is the schema descriptor for error field.
+	cloudflareresourceoperationDescError := cloudflareresourceoperationFields[12].Descriptor()
+	// cloudflareresourceoperation.DefaultError holds the default value on creation for the error field.
+	cloudflareresourceoperation.DefaultError = cloudflareresourceoperationDescError.Default.(string)
+	// cloudflareresourceoperationDescActorName is the schema descriptor for actor_name field.
+	cloudflareresourceoperationDescActorName := cloudflareresourceoperationFields[14].Descriptor()
+	// cloudflareresourceoperation.DefaultActorName holds the default value on creation for the actor_name field.
+	cloudflareresourceoperation.DefaultActorName = cloudflareresourceoperationDescActorName.Default.(string)
 	connectionFields := schema.Connection{}.Fields()
 	_ = connectionFields
 	// connectionDescStatus is the schema descriptor for status field.

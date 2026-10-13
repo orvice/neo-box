@@ -537,6 +537,10 @@ type WorkerRoute struct {
 	ID      string `json:"id"`
 	Pattern string `json:"pattern"`
 	Script  string `json:"script"`
+	// ZoneID and ZoneName say which Zone the route belongs to. Cloudflare
+	// does not return them; whoever lists a Zone's routes fills them in.
+	ZoneID   string `json:"-"`
+	ZoneName string `json:"-"`
 }
 
 // WorkerScript is one Worker as listed.
@@ -585,9 +589,11 @@ func (c *Client) ScriptOnWorkersDev(ctx context.Context, accountID, script strin
 
 // WorkerDomain is a custom domain attached to a Worker.
 type WorkerDomain struct {
+	ID       string `json:"id"`
 	Hostname string `json:"hostname"`
 	Service  string `json:"service"`
 	ZoneID   string `json:"zone_id"`
+	ZoneName string `json:"zone_name"`
 	// Enabled is nil when Cloudflare does not say, which means enabled.
 	Enabled *bool `json:"enabled"`
 }
@@ -626,6 +632,10 @@ type PagesProject struct {
 	CanonicalDeployment *struct {
 		URL string `json:"url"`
 	} `json:"canonical_deployment"`
+	// The rest is filled by GetPagesProject; the list leaves it out.
+	BuildConfig       PagesBuildConfig       `json:"build_config"`
+	Source            *PagesSource           `json:"source"`
+	DeploymentConfigs PagesDeploymentConfigs `json:"deployment_configs"`
 }
 
 // ListPagesProjects returns every Pages project of the Account.

@@ -53,3 +53,44 @@ func (CloudflareDNSOperation) Indexes() []ent.Index {
 		index.Fields("connection_id"),
 	}
 }
+
+// CloudflareResourceOperation is one change to a Worker or a Pages project
+// started from Neo Box. Like CloudflareDNSOperation it is stored before the
+// change is sent and finished with the outcome. before, after and requested
+// never hold secret values.
+type CloudflareResourceOperation struct {
+	ent.Schema
+}
+
+func (CloudflareResourceOperation) Annotations() []schema.Annotation {
+	return []schema.Annotation{entsql.Annotation{Table: "cloudflare_resource_operations"}}
+}
+
+func (CloudflareResourceOperation) Fields() []ent.Field {
+	return []ent.Field{
+		field.String("id").Immutable(),
+		field.String("user_id").Immutable(),
+		field.String("connection_id").Immutable(),
+		field.String("account_id").Immutable(),
+		field.String("kind").Immutable(),
+		field.String("resource").Immutable(),
+		field.String("action").Immutable(),
+		field.String("target").Default("").Immutable(),
+		field.JSON("before", map[string]any{}).Optional().Immutable(),
+		field.JSON("after", map[string]any{}).Optional(),
+		field.JSON("requested", map[string]any{}).Optional().Immutable(),
+		field.String("status"),
+		field.String("error").Default(""),
+		field.String("actor_id").Immutable(),
+		field.String("actor_name").Default("").Immutable(),
+		field.Time("created_at").Immutable(),
+		field.Time("finished_at").Optional().Nillable(),
+	}
+}
+
+func (CloudflareResourceOperation) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("user_id", "connection_id", "kind", "resource", "created_at"),
+		index.Fields("connection_id"),
+	}
+}

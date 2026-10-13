@@ -31,7 +31,10 @@ protobuf contracts generated with buf, all in one monorepo.
   read live, with every address of each Worker and project; DNS records can
   be added, changed, deleted and proxied, and every change made from Neo Box
   is logged. Tunnels can be created and deleted, and their public hostnames
-  managed, with the DNS record. See [Cloudflare](#cloudflare).
+  managed, with the DNS record. Workers (workers.dev, custom domains,
+  routes, cron triggers, secrets, rollback, delete) and Pages projects
+  (settings, variables, deployments, domains, delete) can be managed, with a
+  log of every change. See [Cloudflare](#cloudflare).
 - Stores users, sessions, and metadata in PostgreSQL, and snapshot content in
   S3-compatible object storage.
 
@@ -334,9 +337,12 @@ include the account in its resources, and grant only what you want to use:
 | Zone → Zone → Read | Zones tab |
 | Zone → DNS → Read | a Zone's DNS records |
 | Zone → DNS → Edit | adding, changing, deleting and proxying records |
-| Account → Workers Scripts → Read | Workers tab, workers.dev URLs, custom domains |
+| Account → Workers Scripts → Read | Workers tab, workers.dev URLs, custom domains, a Worker's versions, cron triggers and secret names |
+| Account → Workers Scripts → Edit | workers.dev, custom domains, cron triggers, secrets, rollback and deleting a Worker |
 | Zone → Workers Routes → Read | Worker routes |
-| Account → Cloudflare Pages → Read | Pages tab |
+| Zone → Workers Routes → Edit | adding and deleting Worker routes |
+| Account → Cloudflare Pages → Read | Pages tab, a project's settings, variables, deployments and domains |
+| Account → Cloudflare Pages → Edit | creating and deleting projects, settings, variables, retrying, rolling back and deleting deployments, custom domains |
 | Account → Cloudflare Tunnel → Read | Tunnels tab, a Tunnel's connectors and hostnames, its run token |
 | Account → Cloudflare Tunnel → Edit | creating and deleting Tunnels, changing their public hostnames |
 
@@ -371,6 +377,30 @@ stored. Tunnels configured by a local file are listed but their hostnames
 are not changed. Deleting a Tunnel needs cloudflared stopped (or "clean up
 its connections first") and leaves DNS records alone. Route changes are not
 logged, unlike DNS changes.
+
+**Workers and Pages.** A Worker's or project's page manages it without
+touching its code (Neo Box does not upload code; use Wrangler or Git for
+that).
+
+- *Worker:* switch workers.dev on or off, attach and detach custom domains,
+  add and delete routes and cron triggers, put and delete secrets (a value
+  is write-only: sent to Cloudflare, never stored, logged or shown), roll
+  back to an earlier version, delete the Worker (type its name to confirm).
+  Neo Box refuses to take over a hostname or route that another Worker
+  uses.
+- *Pages project:* create an empty project, edit the production branch and
+  build settings (a Git-connected project's branch is managed in the
+  Cloudflare dashboard), set and delete production and preview variables
+  (plain text or secret), list deployments and retry, roll back (successful
+  production ones) or delete them, add and remove custom domains (adding one
+  can create the proxied CNAME to the project, never replacing a record),
+  delete the project (type its name to confirm).
+
+Every change is written to a log first and sent once; the result is logged
+after, with the state before and after (secret values never). The
+**Operation log** tab of each page lists them. A change that is already in
+effect is reported as such and not logged; one whose answer never arrives
+is "result unknown" and never sent again.
 
 ### Environment variables
 

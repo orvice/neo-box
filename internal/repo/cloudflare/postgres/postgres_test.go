@@ -121,3 +121,61 @@ func ids(ops []*repo.DNSOperation) []string {
 	}
 	return out
 }
+
+func TestResourceOperationOutcomeFilterAndCleanup(t *testing.T) {
+	s := New(pgtest.NewClient(t))
+	ctx := context.Background()
+
+	mk := func(id, conn string, kind repo.ResourceKind, res string, at time.Time) *repo.ResourceOperation {
+		return &repo.ResourceOperation{
+			ID: id, UserID: "u1", ConnectionID: conn, AccountID: "acc", Kind: kind, Resource: res,
+			Action: "attach_domain", Target: "app.example.com", Status: repo.StatusPending,
+			ActorID: "u1", ActorName: "Ann", CreatedAt: at,
+			Before: map[string]any{"enabled": false}, Requested: map[string]any{"hostname": "app.example.com"},
+		}
+	}
+	w := mk("r1", "c1", repo.KindWorker, "api", t0)
+	if err := s.CreateResourceOperation(ctx, w); err != nil {
+		t.Fatalf("CreateResourceOperation: %v", err)
+	}
+	w.Status, w.FinishedAt, w.After = repo.StatusSucceeded, t0.Add(time.Second), map[string]any{"enabled": true}
+	if err := s.FinishResourceOperation(ctx, w); err != nil {
+		t.Fatalf("FinishResourceOperation: %v", err)
+	}
+	for _, o := range []*repo.ResourceOperation{
+		mk("r2", "c1", repo.KindPages, "site", t0.Add(time.Minute)),
+		mk("r3", "c1", repo.KindWorker, "other", t0.Add(2*time.Minute)),
+		mk("r4", "c2", repo.KindWorker, "api", t0),
+	} {
+		if err := s.CreateResourceOperation(ctx, o); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	got, total, err := s.ListResourceOperations(ctx, repo.ResourceFilter{UserID: "u1", ConnectionID: "c1", Kind: repo.KindWorker, Resource: "api", Limit: 10})
+	if err != nil || total != 1 || len(got) != 1 {
+		t.Fatalf("list = %d of %d, %v", len(got), total, err)
+	}
+	o := got[0]
+	if o.ID != "r1" || o.Status != repo.StatusSucceeded || !o.FinishedAt.Equal(t0.Add(time.Second)) ||
+		o.After["enabled"] != true || o.Before["enabled"] != false || o.Requested["hostname"] != "app.example.com" ||
+		o.Target != "app.example.com" || o.ActorName != "Ann" {
+		t.Fatalf("operation = %+v", o)
+	}
+	if all, total, _ := s.ListResourceOperations(ctx, repo.ResourceFilter{UserID: "u1", ConnectionID: "c1", Limit: 10}); total != 3 || all[0].ID != "r3" {
+		t.Fatalf("connection's operations = %d of %d", len(all), total)
+	}
+	if other, total, _ := s.ListResourceOperations(ctx, repo.ResourceFilter{UserID: "u2", ConnectionID: "c1", Limit: 10}); total != 0 || len(other) != 0 {
+		t.Fatalf("another user's view = %d", len(other))
+	}
+
+	if err := s.DeleteConnectionData(ctx, "c1"); err != nil {
+		t.Fatal(err)
+	}
+	if _, total, _ := s.ListResourceOperations(ctx, repo.ResourceFilter{UserID: "u1", ConnectionID: "c1"}); total != 0 {
+		t.Fatalf("left after cleanup = %d", total)
+	}
+	if _, total, _ := s.ListResourceOperations(ctx, repo.ResourceFilter{UserID: "u1", ConnectionID: "c2"}); total != 1 {
+		t.Fatalf("other connection's operations = %d", total)
+	}
+}

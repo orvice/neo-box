@@ -24,8 +24,11 @@ const (
 	PermWorkersRead = "workers:read" // Workers Scripts Read
 	PermRoutesRead  = "routes:read"  // Workers Routes Read (zone)
 	PermPagesRead   = "pages:read"
-	PermTunnelRead  = "tunnel:read" // Cloudflare Tunnel Read (account)
-	PermTunnelEdit  = "tunnel:edit" // Cloudflare Tunnel Edit (account)
+	PermTunnelRead  = "tunnel:read"  // Cloudflare Tunnel Read (account)
+	PermTunnelEdit  = "tunnel:edit"  // Cloudflare Tunnel Edit (account)
+	PermWorkersEdit = "workers:edit" // Workers Scripts Edit (account)
+	PermRoutesEdit  = "routes:edit"  // Workers Routes Edit (zone)
+	PermPagesEdit   = "pages:edit"   // Cloudflare Pages Edit (account)
 )
 
 // Token is an API token known to the fake.
@@ -60,16 +63,28 @@ type Script struct {
 	Name           string
 	WorkersDev     bool
 	RoutesInScript []string
+	// Previews is the workers.dev preview URLs switch.
+	Previews bool
+	// Secrets and Crons are the names of the secret bindings and the cron
+	// expressions of the Worker.
+	Secrets []string
+	Crons   []string
+	// Versions is how many versions it has (1..n, the last one deployed
+	// and serving) unless set otherwise by AddScriptVersions.
+	versions    []string
+	deployments [][]string // newest first; each lists the version IDs serving
+	// CompatibilityDate is shown in the Worker's settings.
+	CompatibilityDate string
 }
 
 // WorkerDomain is a Worker custom domain.
 type WorkerDomain struct {
-	Hostname, Service, ZoneID string
+	ID, Hostname, Service, ZoneID string
 }
 
 // Route is a Worker route in a Zone.
 type Route struct {
-	ZoneID, Pattern, Script string
+	ID, ZoneID, Pattern, Script string
 }
 
 // PagesProject is a Pages project.
@@ -80,6 +95,12 @@ type PagesProject struct {
 	DomainStatus       map[string]string
 	ProductionBranch   string
 	FailDomainsRequest bool
+	// Repo makes it a Git project ("owner/name"); empty is Direct Upload.
+	Repo                                  string
+	BuildCommand, DestinationDir, RootDir string
+	ProductionEnv, PreviewEnv             map[string]EnvVar
+	Deployments                           []*PagesDeployment
+	CanonicalID                           string
 }
 
 // Request is one request the fake received.
@@ -104,6 +125,7 @@ type Server struct {
 	projects   map[string][]*PagesProject
 	tunnels    map[string][]*Tunnel // account → tunnels
 	requests   []Request
+	routeSeq   int
 
 	// Intercept, when set, sees every request first; returning true means
 	// it answered.
@@ -163,6 +185,17 @@ func (s *Server) Record(zoneID, id string) map[string]any {
 	return nil
 }
 
+// Records returns copies of a Zone's records.
+func (s *Server) Records(zoneID string) []map[string]any {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	var out []map[string]any
+	for _, r := range s.records[zoneID] {
+		out = append(out, copyMap(r))
+	}
+	return out
+}
+
 // RecordCount is how many records a Zone holds.
 func (s *Server) RecordCount(zoneID string) int {
 	s.mu.Lock()
@@ -173,6 +206,9 @@ func (s *Server) RecordCount(zoneID string) int {
 func (s *Server) AddScript(account string, sc *Script) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	if len(sc.versions) == 0 {
+		s.seedVersions(sc, 2)
+	}
 	s.scripts[account] = append(s.scripts[account], sc)
 }
 
@@ -185,12 +221,28 @@ func (s *Server) SetWorkersSubdomain(account, sub string) {
 func (s *Server) AddWorkerDomain(account string, d *WorkerDomain) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	s.insertDomain(account, d)
+}
+
+func (s *Server) insertDomain(account string, d *WorkerDomain) {
+	if d.ID == "" {
+		s.nextID++
+		d.ID = fmt.Sprintf("dom%d", s.nextID)
+	}
 	s.domains[account] = append(s.domains[account], d)
 }
 
 func (s *Server) AddRoute(r *Route) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	s.insertRoute(r)
+}
+
+func (s *Server) insertRoute(r *Route) {
+	if r.ID == "" {
+		r.ID = fmt.Sprintf("route%d", s.routeSeq)
+	}
+	s.routeSeq++
 	s.routes = append(s.routes, r)
 }
 
@@ -258,7 +310,15 @@ func (s *Server) serve(w http.ResponseWriter, r *http.Request) {
 	path := strings.TrimPrefix(r.URL.Path, "/client/v4")
 	var body map[string]any
 	if r.Body != nil && r.Method != http.MethodGet {
-		_ = json.NewDecoder(r.Body).Decode(&body)
+		var raw json.RawMessage
+		_ = json.NewDecoder(r.Body).Decode(&raw)
+		if err := json.Unmarshal(raw, &body); err != nil {
+			// A JSON array body is passed on as {"_array": [...]}.
+			var arr []any
+			if json.Unmarshal(raw, &arr) == nil {
+				body = map[string]any{"_array": arr}
+			}
+		}
 	}
 	s.mu.Lock()
 	s.requests = append(s.requests, Request{Method: r.Method, Path: path, Query: r.URL.RawQuery, Body: body})
@@ -308,9 +368,9 @@ func (s *Server) handle(w http.ResponseWriter, r *http.Request, path string, bod
 	case len(parts) >= 3 && parts[0] == "accounts" && parts[2] == "cfd_tunnel":
 		s.tunnelRoutes(w, r, tok, parts, body)
 	case len(parts) >= 3 && parts[0] == "accounts" && parts[2] == "workers":
-		s.workers(w, r, tok, parts, path)
+		s.workers(w, r, tok, parts, path, body)
 	case len(parts) >= 4 && parts[0] == "accounts" && parts[2] == "pages" && parts[3] == "projects":
-		s.pages(w, r, tok, parts, path)
+		s.pages(w, r, tok, parts, path, body)
 	default:
 		notFound(w, path)
 	}
@@ -413,18 +473,8 @@ func (s *Server) zoneRoutes(w http.ResponseWriter, r *http.Request, tok *Token, 
 			return
 		}
 		ok(w, s.zoneJSON(tok, z), nil)
-	case len(parts) == 4 && parts[2] == "workers" && parts[3] == "routes":
-		if !tok.has(PermRoutesRead, z.Account) {
-			forbidden(w)
-			return
-		}
-		out := []map[string]any{}
-		for i, rt := range s.routes {
-			if rt.ZoneID == z.ID {
-				out = append(out, map[string]any{"id": fmt.Sprintf("route%d", i), "pattern": rt.Pattern, "script": rt.Script})
-			}
-		}
-		ok(w, out, nil)
+	case len(parts) >= 4 && parts[2] == "workers" && parts[3] == "routes":
+		s.routesOfZone(w, r, tok, z, parts, body)
 	case len(parts) >= 3 && parts[2] == "dns_records":
 		s.dns(w, r, tok, z, parts, path, body)
 	default:
@@ -595,9 +645,12 @@ func (s *Server) listRecords(w http.ResponseWriter, r *http.Request, z *Zone) {
 
 // --- Workers ---
 
-func (s *Server) workers(w http.ResponseWriter, r *http.Request, tok *Token, parts []string, path string) {
+func (s *Server) workers(w http.ResponseWriter, r *http.Request, tok *Token, parts []string, path string, body map[string]any) {
 	acc := parts[1]
-	if !tok.has(PermWorkersRead, acc) {
+	if s.manageWorkers(w, r, tok, parts, path, body) {
+		return
+	}
+	if !tok.has(PermWorkersRead, acc) && !tok.has(PermWorkersEdit, acc) {
 		Fail(w, http.StatusForbidden, 10000, "Authentication error")
 		return
 	}
@@ -626,7 +679,7 @@ func (s *Server) workers(w http.ResponseWriter, r *http.Request, tok *Token, par
 	case len(parts) == 6 && parts[3] == "scripts" && parts[5] == "subdomain":
 		for _, sc := range s.scripts[acc] {
 			if sc.Name == parts[4] {
-				ok(w, map[string]any{"enabled": sc.WorkersDev, "previews_enabled": false}, nil)
+				ok(w, map[string]any{"enabled": sc.WorkersDev, "previews_enabled": sc.Previews}, nil)
 				return
 			}
 		}
@@ -639,7 +692,7 @@ func (s *Server) workers(w http.ResponseWriter, r *http.Request, tok *Token, par
 		out := []map[string]any{}
 		for _, i := range items {
 			d := list[i]
-			out = append(out, map[string]any{"id": fmt.Sprintf("dom%d", i), "hostname": d.Hostname, "service": d.Service, "zone_id": d.ZoneID, "enabled": true})
+			out = append(out, map[string]any{"id": d.ID, "hostname": d.Hostname, "service": d.Service, "zone_id": d.ZoneID, "zone_name": s.zoneName(d.ZoneID), "enabled": true})
 		}
 		ok(w, out, info)
 	default:
@@ -649,9 +702,12 @@ func (s *Server) workers(w http.ResponseWriter, r *http.Request, tok *Token, par
 
 // --- Pages ---
 
-func (s *Server) pages(w http.ResponseWriter, r *http.Request, tok *Token, parts []string, path string) {
+func (s *Server) pages(w http.ResponseWriter, r *http.Request, tok *Token, parts []string, path string, body map[string]any) {
 	acc := parts[1]
-	if !tok.has(PermPagesRead, acc) {
+	if s.managePages(w, r, tok, parts, path, body) {
+		return
+	}
+	if !tok.has(PermPagesRead, acc) && !tok.has(PermPagesEdit, acc) {
 		Fail(w, http.StatusForbidden, 10000, "Authentication error")
 		return
 	}

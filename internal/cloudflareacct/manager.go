@@ -35,6 +35,9 @@ type Config struct {
 	Endpoint string
 	// RetryDelay overrides the client's first retry delay (tests).
 	RetryDelay time.Duration
+	// Limiter returns the rate limiter of a new connection; nil means
+	// cloudflare.NewLimiter (tests).
+	Limiter func() *rate.Limiter
 }
 
 type Manager struct {
@@ -46,7 +49,9 @@ type Manager struct {
 
 	mu       sync.Mutex
 	limiters map[string]*rate.Limiter
-	// tunnelLocks holds a mutex per Tunnel, keyed account/tunnel.
+	// tunnelLocks holds a mutex per resource whose configuration a write
+	// replaces as a whole (a Tunnel, a Worker's cron triggers, a Pages
+	// project's settings), keyed by kind and name.
 	tunnelLocks sync.Map
 }
 
@@ -64,7 +69,11 @@ func (m *Manager) limiter(connectionID string) *rate.Limiter {
 	defer m.mu.Unlock()
 	l, ok := m.limiters[connectionID]
 	if !ok {
-		l = cloudflare.NewLimiter()
+		if m.cfg.Limiter != nil {
+			l = m.cfg.Limiter()
+		} else {
+			l = cloudflare.NewLimiter()
+		}
 		m.limiters[connectionID] = l
 	}
 	return l
@@ -131,7 +140,23 @@ var (
 	ErrReadOnly = errors.New("the API token may read but not change this zone's DNS records")
 	// ErrLogUnavailable: the change could not be logged, so it was not
 	// sent.
-	ErrLogUnavailable = errors.New("the DNS operation could not be logged, so nothing was changed")
+	ErrLogUnavailable = errors.New("the operation could not be logged, so nothing was changed")
+
+	// ErrWorkerNotFound: no such Worker in the connection's Account.
+	ErrWorkerNotFound = errors.New("worker not found in this account")
+	// ErrPagesProjectNotFound: no such Pages project in the Account.
+	ErrPagesProjectNotFound = errors.New("pages project not found in this account")
+	// ErrDeploymentNotFound: no such deployment (or Worker version) of it.
+	ErrDeploymentNotFound = errors.New("deployment or version not found")
+	// ErrNotAttached: the custom domain, route, cron trigger, secret or
+	// environment variable to remove is not on the resource.
+	ErrNotAttached = errors.New("not found on this resource")
+	// ErrInUse: the hostname or route already belongs to something else,
+	// and Neo Box does not take it over.
+	ErrInUse = errors.New("already in use by another resource")
+	// ErrNoWorkersSubdomain: the Account has no workers.dev subdomain, so
+	// no Worker can be served there.
+	ErrNoWorkersSubdomain = errors.New("this account has no workers.dev subdomain; create one in the Cloudflare dashboard first")
 )
 
 // TokenRejectedError means Cloudflare no longer accepts the connection's

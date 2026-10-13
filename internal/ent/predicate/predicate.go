@@ -12,6 +12,9 @@ type Alert func(*sql.Selector)
 // CloudflareDNSOperation is the predicate function for cloudflarednsoperation builders.
 type CloudflareDNSOperation func(*sql.Selector)
 
+// CloudflareResourceOperation is the predicate function for cloudflareresourceoperation builders.
+type CloudflareResourceOperation func(*sql.Selector)
+
 // Connection is the predicate function for connection builders.
 type Connection func(*sql.Selector)
 
