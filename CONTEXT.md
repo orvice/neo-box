@@ -197,6 +197,13 @@ can't be deleted while a Restore of it is pending or running.
   administrator without two-step verification or an inactive account. Missing
   account data is unknown, not evidence that a protection is disabled.
 
+- **Gmail settings** — a Workspace User's own mailbox configuration (vacation
+  responder, forwarding, delegates, filters, send-as), never messages. Read
+  and changed by impersonating that user; see ADR 0008.
+- **Access reason** — the text an administrator gives before Neo Box touches a
+  Workspace User's Gmail settings, stored with each operation it covers. It is
+  accountability, not authorization.
+
 ### Notifications
 
 - **Notification channel** — one place a User's alerts are delivered; today a
