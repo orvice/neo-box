@@ -218,6 +218,65 @@ what can be read. No automated audit alerts are enabled in this version.
 See Google's [Reports activities API](https://developers.google.com/workspace/admin/reports/reference/rest/v1/activities/list)
 and [Directory user fields](https://developers.google.com/workspace/admin/directory/reference/rest/v1/users).
 
+## Gmail settings
+
+A User's **Gmail** tab shows that mailbox's *settings* — auto-reply, automatic
+forwarding, forwarding addresses, delegates, filters and send-as addresses —
+and lets you change the auto-reply. It never reads or changes messages.
+
+Authorize this additional scope **per tenant**, keeping the base scopes:
+
+```text
+https://www.googleapis.com/auth/gmail.settings.basic
+```
+
+This scope reads and changes settings only; it does not allow reading mail.
+Neo Box requests no other Gmail scope. Changing forwarding, delegates and
+send-as would need `gmail.settings.sharing`, which Neo Box does not use.
+
+**Understand what you are authorizing.** Gmail settings can only be reached as
+the mailbox owner, so Neo Box asks Google for a token whose subject is the
+target user, not the delegated administrator. Domain-wide delegation of this
+scope lets the Service Account reach *any* user's Gmail settings in the
+organization; the delegated administrator's own privileges do not narrow it.
+Neo Box's checks are the control, and they are accountability rather than
+authorization:
+
+- The target is first resolved inside the Tenant (Customer ID checked); an
+  address from another organization, or one Directory cannot find, never gets a
+  token. The email you type must be the user's **primary** address, not an alias.
+- Every request needs a one-line **access reason** (up to 200 characters) and the
+  target's email typed again. The backend checks both on each request.
+- Every read and write is recorded before it is sent, with the reason, and the
+  request is refused when it cannot be recorded. Find these under **Neo Box
+  operations** by searching `gmail`. Records hold counts, flags and dates (for
+  example "3 filters, 1 forwarding, external destination: yes"), never the
+  auto-reply text, filter criteria, label names or addresses.
+- One user per request. The page holds your confirmation for ten minutes and
+  nothing refreshes it automatically; **Read again** is a new, recorded access.
+
+Each section is read independently. A section Gmail refused or does not offer
+for this mailbox shows why instead of values, and is never shown as "off". A
+missing Gmail authorization is reported on this tab only; it does not change
+the Tenant's health. Delegates are only available to Service Accounts using
+domain-wide delegation.
+
+Addresses are marked **outside the tenant** when their domain is not one of the
+Tenant's verified domains. Domain aliases are not included in that list, so an
+address on a domain alias can be marked as outside. If the domains cannot be
+read, addresses show **not checked** rather than a guess. Filters are flagged
+when they forward, delete (move to trash) or skip the inbox. These flags raise
+no alerts.
+
+**Auto-reply.** Saving replaces the whole auto-reply: subject, plain-text
+message, first/last day, and the contacts / organization restrictions. A stored
+HTML message is replaced by the plain text you see, and a start or end time you
+clear is removed. Like other writes it is sent once; if Google does not confirm
+it, read again before retrying.
+
+See Google's [Gmail settings API](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.settings)
+and [scopes](https://developers.google.com/workspace/gmail/api/auth/scopes).
+
 ## Key rotation and removal
 
 Edit the Connection and upload another key for the **same** Service Account.
@@ -243,5 +302,9 @@ secret exclusion, outcome uncertainty, optional report scopes, audit pagination
 and tenant isolation, multi-value parameter encoding, unknown security fields,
 never-used account age and deduplicated/partial cross-tenant scans.
 PostgreSQL repository tests use `NEOBOX_TEST_POSTGRES_DSN` and an isolated schema.
+Gmail tests cover refusal before any token is requested (missing reason, wrong
+or alias target, other-tenant user, other owner), write-ahead logging of reads
+and writes, content-free logs, independent sections, unknown external status,
+missing authorization, validation and single-send vacation updates.
 Real Google key exchange and operations need authorized test tenants and have
 not been exercised against real Workspace accounts in this implementation.

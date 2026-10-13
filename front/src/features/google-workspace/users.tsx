@@ -21,6 +21,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { DataTable, type Column } from '@/components/data-table'
 import { PasswordInput } from '@/components/password-input'
+import { useGmailConfirmation } from './gmail-access'
+import { UserGmailSettings } from './gmail-settings'
 import { triState, lastLoginText } from './observability-format'
 import { OrgUnitPicker } from './org-units'
 import { UserAliases, UserGroups, UserSecurity } from './user-tools'
@@ -269,6 +271,7 @@ export function WorkspaceUserDetail({
   userId: string
 }) {
   const detail = useWorkspaceUser(connectionId, tenantId, userId)
+  const gmail = useGmailConfirmation()
   if (detail.error)
     return (
       <p role='alert' className='text-destructive'>
@@ -284,6 +287,7 @@ export function WorkspaceUserDetail({
         <TabsTrigger value='aliases'>Aliases</TabsTrigger>
         <TabsTrigger value='groups'>Groups</TabsTrigger>
         <TabsTrigger value='security'>Security</TabsTrigger>
+        <TabsTrigger value='gmail'>Gmail</TabsTrigger>
       </TabsList>
       <TabsContent value='profile' className='pt-4'>
         {' '}
@@ -333,6 +337,16 @@ export function WorkspaceUserDetail({
           connectionId={connectionId}
           tenantId={tenantId}
           userId={userId}
+        />
+      </TabsContent>
+      <TabsContent value='gmail' className='pt-4'>
+        <UserGmailSettings
+          connectionId={connectionId}
+          tenantId={tenantId}
+          userId={userId}
+          userEmail={u.primaryEmail}
+          confirmation={gmail.confirmation}
+          onConfirmation={gmail.setConfirmation}
         />
       </TabsContent>
     </Tabs>

@@ -6,6 +6,8 @@ export const ORG_SCOPE =
   'https://www.googleapis.com/auth/admin.directory.orgunit'
 export const SECURITY_SCOPE =
   'https://www.googleapis.com/auth/admin.directory.user.security'
+export const GMAIL_SCOPE =
+  'https://www.googleapis.com/auth/gmail.settings.basic'
 export function useCursor() {
   const [tokens, setTokens] = useState<string[]>([''])
   return {

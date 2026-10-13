@@ -47,6 +47,7 @@ type workspaceAPI interface {
 	ListUserTokens(context.Context, string) ([]googleworkspace.UserToken, error)
 	RevokeUserToken(context.Context, string, string) error
 	SetWriteRecorder(googleworkspace.WriteRecorder)
+	VerifiedDomains(context.Context) ([]string, error)
 	ListAuditActivities(context.Context, googleworkspace.AuditQuery) (*googleworkspace.AuditPage, error)
 }
 type workspaceClientFactory func(context.Context, googleworkspace.ConnectionConfig, googleworkspace.ConnectionSecret, string, string, ...string) (workspaceAPI, error)
@@ -55,12 +56,13 @@ type GoogleWorkspaceServiceServer struct {
 	conns     *connection.Service
 	repo      repo.Repository
 	newClient workspaceClientFactory
+	newGmail  gmailClientFactory
 }
 
 func NewGoogleWorkspaceServiceServer() *GoogleWorkspaceServiceServer {
 	return &GoogleWorkspaceServiceServer{newClient: func(ctx context.Context, c googleworkspace.ConnectionConfig, s googleworkspace.ConnectionSecret, customer, admin string, scopes ...string) (workspaceAPI, error) {
 		return googleworkspace.NewClient(ctx, c, s, customer, admin, scopes...)
-	}}
+	}, newGmail: defaultGmailClient}
 }
 func (s *GoogleWorkspaceServiceServer) SetDeps(r repo.Repository, c *connection.Service) {
 	s.mu.Lock()
@@ -74,6 +76,7 @@ type workspaceDeps struct {
 	conns     *connection.Service
 	c         *connrepo.Connection
 	factory   workspaceClientFactory
+	gmail     gmailClientFactory
 	actorName string
 }
 
@@ -83,7 +86,7 @@ func (s *GoogleWorkspaceServiceServer) deps(ctx context.Context, id string) (*wo
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
 	}
 	s.mu.RLock()
-	r, c, f := s.repo, s.conns, s.newClient
+	r, c, f, gm := s.repo, s.conns, s.newClient, s.newGmail
 	s.mu.RUnlock()
 	if r == nil || c == nil {
 		return nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("Google Workspace is not available"))
@@ -99,7 +102,7 @@ func (s *GoogleWorkspaceServiceServer) deps(ctx context.Context, id string) (*wo
 	if actorName == "" {
 		actorName = user.GetUsername()
 	}
-	return &workspaceDeps{repo: r, conns: c, c: conn, factory: f, actorName: actorName}, nil
+	return &workspaceDeps{repo: r, conns: c, c: conn, factory: f, gmail: gm, actorName: actorName}, nil
 }
 func (d *workspaceDeps) tenant(ctx context.Context, id string) (*repo.Tenant, error) {
 	if strings.TrimSpace(id) == "" {

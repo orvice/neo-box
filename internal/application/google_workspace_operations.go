@@ -13,6 +13,7 @@ import (
 	neoboxv1 "go.orx.me/apps/neo-box/pkg/proto/neobox/v1"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"net/http"
 	"strings"
 	"time"
 )
@@ -48,7 +49,13 @@ func (r workspaceRecorder) Begin(ctx context.Context, w googleworkspace.Write) (
 			case errors.Is(writeErr, googleworkspace.ErrDelegation):
 				o.Error = "Google delegation was rejected before the change was sent"
 			case errors.As(writeErr, &api):
-				o.Error = fmt.Sprintf("Google rejected the change (HTTP %d)", api.Status)
+				noun := "change"
+				if w.Method == http.MethodGet {
+					noun = "request"
+				}
+				o.Error = fmt.Sprintf("Google rejected the %s (HTTP %d)", noun, api.Status)
+			case w.Method != "LOCAL":
+				o.Error = "Google did not return the requested settings"
 			default:
 				o.Error = "The local configuration change failed"
 			}

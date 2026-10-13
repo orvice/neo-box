@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { GoogleWorkspaceService } from '@/gen/neobox/v1/google_workspace_pb'
+import { timestampFromDate } from '@bufbuild/protobuf/wkt'
 import { makeClient } from './transport'
 
 export type {
@@ -388,5 +389,91 @@ export function useWorkspaceAudit(q: WorkspaceAuditQuery) {
     queryFn: () => client.listWorkspaceAuditActivities(q),
     retry: false,
     refetchOnWindowFocus: false,
+  })
+}
+
+export type {
+  GetWorkspaceUserGmailSettingsResponse as GmailSettings,
+  GmailVacation,
+  GmailSectionState,
+  GmailFilter,
+  GmailSendAs,
+  GmailDelegate,
+  GmailForwardingAddress,
+} from '@/gen/neobox/v1/google_workspace_pb'
+
+export type GmailAccess = { reason: string; targetEmail: string }
+
+// Every read of a mailbox's settings is logged by the backend, so nothing here
+// refetches on its own: no window-focus, reconnect or invalidation refreshes,
+// and results are dropped as soon as nothing shows them. `nonce` ties the
+// result to one confirmation.
+const gmailKey = (
+  connectionId: string,
+  tenantId: string,
+  userId: string,
+  nonce: number
+) => ['google-workspace-gmail', connectionId, tenantId, userId, nonce] as const
+
+export function useWorkspaceGmailSettings(
+  connectionId: string,
+  tenantId: string,
+  userId: string,
+  access: GmailAccess | null,
+  nonce: number
+) {
+  return useQuery({
+    queryKey: [...gmailKey(connectionId, tenantId, userId, nonce), access],
+    queryFn: () =>
+      client.getWorkspaceUserGmailSettings({
+        connectionId,
+        tenantId,
+        userId,
+        confirmation: access ?? undefined,
+      }),
+    enabled: access !== null,
+    retry: false,
+    gcTime: 0,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+  })
+}
+
+export type GmailVacationDraft = {
+  enabled: boolean
+  subject: string
+  bodyPlainText: string
+  restrictToContacts: boolean
+  restrictToDomain: boolean
+  startTime?: Date
+  endTime?: Date
+}
+
+export function useWorkspaceGmailVacation(
+  connectionId: string,
+  tenantId: string,
+  userId: string,
+  access: GmailAccess | null
+) {
+  return useMutation({
+    mutationFn: (v: GmailVacationDraft) =>
+      client.updateWorkspaceUserGmailVacation({
+        connectionId,
+        tenantId,
+        userId,
+        confirmation: access ?? undefined,
+        vacation: {
+          enabled: v.enabled,
+          subject: v.subject,
+          bodyPlainText: v.bodyPlainText,
+          restrictToContacts: v.restrictToContacts,
+          restrictToDomain: v.restrictToDomain,
+          startTime: v.startTime ? timestampFromDate(v.startTime) : undefined,
+          endTime: v.endTime ? timestampFromDate(v.endTime) : undefined,
+        },
+      }),
+    gcTime: 0,
   })
 }
