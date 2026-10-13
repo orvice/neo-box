@@ -138,6 +138,12 @@ const (
 	// GoogleWorkspaceServiceUpdateWorkspaceUserGmailVacationProcedure is the fully-qualified name of
 	// the GoogleWorkspaceService's UpdateWorkspaceUserGmailVacation RPC.
 	GoogleWorkspaceServiceUpdateWorkspaceUserGmailVacationProcedure = "/neobox.v1.GoogleWorkspaceService/UpdateWorkspaceUserGmailVacation"
+	// GoogleWorkspaceServiceListWorkspaceDriveActivitiesProcedure is the fully-qualified name of the
+	// GoogleWorkspaceService's ListWorkspaceDriveActivities RPC.
+	GoogleWorkspaceServiceListWorkspaceDriveActivitiesProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceDriveActivities"
+	// GoogleWorkspaceServiceListWorkspaceDriveUsageProcedure is the fully-qualified name of the
+	// GoogleWorkspaceService's ListWorkspaceDriveUsage RPC.
+	GoogleWorkspaceServiceListWorkspaceDriveUsageProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceDriveUsage"
 )
 
 // GoogleWorkspaceServiceClient is a client for the neobox.v1.GoogleWorkspaceService service.
@@ -179,6 +185,10 @@ type GoogleWorkspaceServiceClient interface {
 	// (ADR 0008). Message content is never requested.
 	GetWorkspaceUserGmailSettings(context.Context, *connect.Request[v1.GetWorkspaceUserGmailSettingsRequest]) (*connect.Response[v1.GetWorkspaceUserGmailSettingsResponse], error)
 	UpdateWorkspaceUserGmailVacation(context.Context, *connect.Request[v1.UpdateWorkspaceUserGmailVacationRequest]) (*connect.Response[v1.UpdateWorkspaceUserGmailVacationResponse], error)
+	// Drive governance reads Google's Reports API only (ADR 0009); no file
+	// content is reachable with these scopes.
+	ListWorkspaceDriveActivities(context.Context, *connect.Request[v1.ListWorkspaceDriveActivitiesRequest]) (*connect.Response[v1.ListWorkspaceDriveActivitiesResponse], error)
+	ListWorkspaceDriveUsage(context.Context, *connect.Request[v1.ListWorkspaceDriveUsageRequest]) (*connect.Response[v1.ListWorkspaceDriveUsageResponse], error)
 }
 
 // NewGoogleWorkspaceServiceClient constructs a client for the neobox.v1.GoogleWorkspaceService
@@ -402,6 +412,18 @@ func NewGoogleWorkspaceServiceClient(httpClient connect.HTTPClient, baseURL stri
 			connect.WithSchema(googleWorkspaceServiceMethods.ByName("UpdateWorkspaceUserGmailVacation")),
 			connect.WithClientOptions(opts...),
 		),
+		listWorkspaceDriveActivities: connect.NewClient[v1.ListWorkspaceDriveActivitiesRequest, v1.ListWorkspaceDriveActivitiesResponse](
+			httpClient,
+			baseURL+GoogleWorkspaceServiceListWorkspaceDriveActivitiesProcedure,
+			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceDriveActivities")),
+			connect.WithClientOptions(opts...),
+		),
+		listWorkspaceDriveUsage: connect.NewClient[v1.ListWorkspaceDriveUsageRequest, v1.ListWorkspaceDriveUsageResponse](
+			httpClient,
+			baseURL+GoogleWorkspaceServiceListWorkspaceDriveUsageProcedure,
+			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceDriveUsage")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -442,6 +464,8 @@ type googleWorkspaceServiceClient struct {
 	listWorkspaceAuditActivities     *connect.Client[v1.ListWorkspaceAuditActivitiesRequest, v1.ListWorkspaceAuditActivitiesResponse]
 	getWorkspaceUserGmailSettings    *connect.Client[v1.GetWorkspaceUserGmailSettingsRequest, v1.GetWorkspaceUserGmailSettingsResponse]
 	updateWorkspaceUserGmailVacation *connect.Client[v1.UpdateWorkspaceUserGmailVacationRequest, v1.UpdateWorkspaceUserGmailVacationResponse]
+	listWorkspaceDriveActivities     *connect.Client[v1.ListWorkspaceDriveActivitiesRequest, v1.ListWorkspaceDriveActivitiesResponse]
+	listWorkspaceDriveUsage          *connect.Client[v1.ListWorkspaceDriveUsageRequest, v1.ListWorkspaceDriveUsageResponse]
 }
 
 // ListWorkspaceTenants calls neobox.v1.GoogleWorkspaceService.ListWorkspaceTenants.
@@ -621,6 +645,16 @@ func (c *googleWorkspaceServiceClient) UpdateWorkspaceUserGmailVacation(ctx cont
 	return c.updateWorkspaceUserGmailVacation.CallUnary(ctx, req)
 }
 
+// ListWorkspaceDriveActivities calls neobox.v1.GoogleWorkspaceService.ListWorkspaceDriveActivities.
+func (c *googleWorkspaceServiceClient) ListWorkspaceDriveActivities(ctx context.Context, req *connect.Request[v1.ListWorkspaceDriveActivitiesRequest]) (*connect.Response[v1.ListWorkspaceDriveActivitiesResponse], error) {
+	return c.listWorkspaceDriveActivities.CallUnary(ctx, req)
+}
+
+// ListWorkspaceDriveUsage calls neobox.v1.GoogleWorkspaceService.ListWorkspaceDriveUsage.
+func (c *googleWorkspaceServiceClient) ListWorkspaceDriveUsage(ctx context.Context, req *connect.Request[v1.ListWorkspaceDriveUsageRequest]) (*connect.Response[v1.ListWorkspaceDriveUsageResponse], error) {
+	return c.listWorkspaceDriveUsage.CallUnary(ctx, req)
+}
+
 // GoogleWorkspaceServiceHandler is an implementation of the neobox.v1.GoogleWorkspaceService
 // service.
 type GoogleWorkspaceServiceHandler interface {
@@ -661,6 +695,10 @@ type GoogleWorkspaceServiceHandler interface {
 	// (ADR 0008). Message content is never requested.
 	GetWorkspaceUserGmailSettings(context.Context, *connect.Request[v1.GetWorkspaceUserGmailSettingsRequest]) (*connect.Response[v1.GetWorkspaceUserGmailSettingsResponse], error)
 	UpdateWorkspaceUserGmailVacation(context.Context, *connect.Request[v1.UpdateWorkspaceUserGmailVacationRequest]) (*connect.Response[v1.UpdateWorkspaceUserGmailVacationResponse], error)
+	// Drive governance reads Google's Reports API only (ADR 0009); no file
+	// content is reachable with these scopes.
+	ListWorkspaceDriveActivities(context.Context, *connect.Request[v1.ListWorkspaceDriveActivitiesRequest]) (*connect.Response[v1.ListWorkspaceDriveActivitiesResponse], error)
+	ListWorkspaceDriveUsage(context.Context, *connect.Request[v1.ListWorkspaceDriveUsageRequest]) (*connect.Response[v1.ListWorkspaceDriveUsageResponse], error)
 }
 
 // NewGoogleWorkspaceServiceHandler builds an HTTP handler from the service implementation. It
@@ -880,6 +918,18 @@ func NewGoogleWorkspaceServiceHandler(svc GoogleWorkspaceServiceHandler, opts ..
 		connect.WithSchema(googleWorkspaceServiceMethods.ByName("UpdateWorkspaceUserGmailVacation")),
 		connect.WithHandlerOptions(opts...),
 	)
+	googleWorkspaceServiceListWorkspaceDriveActivitiesHandler := connect.NewUnaryHandler(
+		GoogleWorkspaceServiceListWorkspaceDriveActivitiesProcedure,
+		svc.ListWorkspaceDriveActivities,
+		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceDriveActivities")),
+		connect.WithHandlerOptions(opts...),
+	)
+	googleWorkspaceServiceListWorkspaceDriveUsageHandler := connect.NewUnaryHandler(
+		GoogleWorkspaceServiceListWorkspaceDriveUsageProcedure,
+		svc.ListWorkspaceDriveUsage,
+		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceDriveUsage")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/neobox.v1.GoogleWorkspaceService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case GoogleWorkspaceServiceListWorkspaceTenantsProcedure:
@@ -952,6 +1002,10 @@ func NewGoogleWorkspaceServiceHandler(svc GoogleWorkspaceServiceHandler, opts ..
 			googleWorkspaceServiceGetWorkspaceUserGmailSettingsHandler.ServeHTTP(w, r)
 		case GoogleWorkspaceServiceUpdateWorkspaceUserGmailVacationProcedure:
 			googleWorkspaceServiceUpdateWorkspaceUserGmailVacationHandler.ServeHTTP(w, r)
+		case GoogleWorkspaceServiceListWorkspaceDriveActivitiesProcedure:
+			googleWorkspaceServiceListWorkspaceDriveActivitiesHandler.ServeHTTP(w, r)
+		case GoogleWorkspaceServiceListWorkspaceDriveUsageProcedure:
+			googleWorkspaceServiceListWorkspaceDriveUsageHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -1099,4 +1153,12 @@ func (UnimplementedGoogleWorkspaceServiceHandler) GetWorkspaceUserGmailSettings(
 
 func (UnimplementedGoogleWorkspaceServiceHandler) UpdateWorkspaceUserGmailVacation(context.Context, *connect.Request[v1.UpdateWorkspaceUserGmailVacationRequest]) (*connect.Response[v1.UpdateWorkspaceUserGmailVacationResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.UpdateWorkspaceUserGmailVacation is not implemented"))
+}
+
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceDriveActivities(context.Context, *connect.Request[v1.ListWorkspaceDriveActivitiesRequest]) (*connect.Response[v1.ListWorkspaceDriveActivitiesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceDriveActivities is not implemented"))
+}
+
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceDriveUsage(context.Context, *connect.Request[v1.ListWorkspaceDriveUsageRequest]) (*connect.Response[v1.ListWorkspaceDriveUsageResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceDriveUsage is not implemented"))
 }

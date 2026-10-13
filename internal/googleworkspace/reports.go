@@ -13,8 +13,10 @@ import (
 
 type AuditQuery struct {
 	Application, UserKey, EventName, PageToken string
-	Start, End                                 time.Time
-	PageSize                                   int
+	// Filters is Google's event-parameter filter, e.g. visibility==public_on_the_web.
+	Filters    string
+	Start, End time.Time
+	PageSize   int
 }
 type AuditParameter struct {
 	Name              string          `json:"name"`
@@ -53,7 +55,7 @@ type AuditPage struct {
 
 func ValidAuditApplication(app string) bool {
 	switch app {
-	case "login", "admin", "groups", "groups_enterprise", "token", "user_accounts":
+	case "login", "admin", "groups", "groups_enterprise", "token", "user_accounts", "drive":
 		return true
 	}
 	return false
@@ -79,6 +81,9 @@ func (c *Client) ListAuditActivities(ctx context.Context, q AuditQuery) (*AuditP
 	}
 	if q.EventName != "" {
 		values.Set("eventName", q.EventName)
+	}
+	if q.Filters != "" {
+		values.Set("filters", q.Filters)
 	}
 	endpoint := c.ReportsEndpoint
 	if endpoint == "" {

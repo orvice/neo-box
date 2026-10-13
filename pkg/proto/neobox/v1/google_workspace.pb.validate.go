@@ -12920,3 +12920,1007 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = UpdateWorkspaceUserGmailVacationResponseValidationError{}
+
+// Validate checks the field values on WorkspaceDriveEvent with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WorkspaceDriveEvent) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WorkspaceDriveEvent with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WorkspaceDriveEventMultiError, or nil if none found.
+func (m *WorkspaceDriveEvent) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WorkspaceDriveEvent) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Name
+
+	// no validation rules for DocId
+
+	// no validation rules for DocTitle
+
+	// no validation rules for DocType
+
+	// no validation rules for Owner
+
+	// no validation rules for OwnerIsSharedDrive
+
+	// no validation rules for SharedDriveId
+
+	// no validation rules for Visibility
+
+	// no validation rules for OldVisibility
+
+	// no validation rules for VisibilityChange
+
+	// no validation rules for TargetUser
+
+	// no validation rules for TargetDomain
+
+	// no validation rules for Target
+
+	// no validation rules for OldRole
+
+	// no validation rules for NewRole
+
+	// no validation rules for NewOwner
+
+	// no validation rules for MembershipChangeType
+
+	// no validation rules for AddedRole
+
+	// no validation rules for RemovedRole
+
+	if all {
+		switch v := interface{}(m.GetParameters()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, WorkspaceDriveEventValidationError{
+					field:  "Parameters",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, WorkspaceDriveEventValidationError{
+					field:  "Parameters",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetParameters()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return WorkspaceDriveEventValidationError{
+				field:  "Parameters",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if m.Primary != nil {
+		// no validation rules for Primary
+	}
+
+	if len(errors) > 0 {
+		return WorkspaceDriveEventMultiError(errors)
+	}
+
+	return nil
+}
+
+// WorkspaceDriveEventMultiError is an error wrapping multiple validation
+// errors returned by WorkspaceDriveEvent.ValidateAll() if the designated
+// constraints aren't met.
+type WorkspaceDriveEventMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WorkspaceDriveEventMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WorkspaceDriveEventMultiError) AllErrors() []error { return m }
+
+// WorkspaceDriveEventValidationError is the validation error returned by
+// WorkspaceDriveEvent.Validate if the designated constraints aren't met.
+type WorkspaceDriveEventValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WorkspaceDriveEventValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WorkspaceDriveEventValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WorkspaceDriveEventValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WorkspaceDriveEventValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WorkspaceDriveEventValidationError) ErrorName() string {
+	return "WorkspaceDriveEventValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WorkspaceDriveEventValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWorkspaceDriveEvent.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WorkspaceDriveEventValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WorkspaceDriveEventValidationError{}
+
+// Validate checks the field values on WorkspaceDriveActivity with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WorkspaceDriveActivity) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WorkspaceDriveActivity with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WorkspaceDriveActivityMultiError, or nil if none found.
+func (m *WorkspaceDriveActivity) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WorkspaceDriveActivity) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	if all {
+		switch v := interface{}(m.GetOccurredAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, WorkspaceDriveActivityValidationError{
+					field:  "OccurredAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, WorkspaceDriveActivityValidationError{
+					field:  "OccurredAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetOccurredAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return WorkspaceDriveActivityValidationError{
+				field:  "OccurredAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for ActorEmail
+
+	// no validation rules for ActorProfileId
+
+	// no validation rules for IpAddress
+
+	for idx, item := range m.GetEvents() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, WorkspaceDriveActivityValidationError{
+						field:  fmt.Sprintf("Events[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, WorkspaceDriveActivityValidationError{
+						field:  fmt.Sprintf("Events[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return WorkspaceDriveActivityValidationError{
+					field:  fmt.Sprintf("Events[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return WorkspaceDriveActivityMultiError(errors)
+	}
+
+	return nil
+}
+
+// WorkspaceDriveActivityMultiError is an error wrapping multiple validation
+// errors returned by WorkspaceDriveActivity.ValidateAll() if the designated
+// constraints aren't met.
+type WorkspaceDriveActivityMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WorkspaceDriveActivityMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WorkspaceDriveActivityMultiError) AllErrors() []error { return m }
+
+// WorkspaceDriveActivityValidationError is the validation error returned by
+// WorkspaceDriveActivity.Validate if the designated constraints aren't met.
+type WorkspaceDriveActivityValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WorkspaceDriveActivityValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WorkspaceDriveActivityValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WorkspaceDriveActivityValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WorkspaceDriveActivityValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WorkspaceDriveActivityValidationError) ErrorName() string {
+	return "WorkspaceDriveActivityValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WorkspaceDriveActivityValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWorkspaceDriveActivity.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WorkspaceDriveActivityValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WorkspaceDriveActivityValidationError{}
+
+// Validate checks the field values on ListWorkspaceDriveActivitiesRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *ListWorkspaceDriveActivitiesRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListWorkspaceDriveActivitiesRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// ListWorkspaceDriveActivitiesRequestMultiError, or nil if none found.
+func (m *ListWorkspaceDriveActivitiesRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListWorkspaceDriveActivitiesRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ConnectionId
+
+	// no validation rules for TenantId
+
+	// no validation rules for Preset
+
+	// no validation rules for UserKey
+
+	// no validation rules for StartTime
+
+	// no validation rules for EndTime
+
+	// no validation rules for PageToken
+
+	// no validation rules for PageSize
+
+	// no validation rules for IncludeSideEffects
+
+	if len(errors) > 0 {
+		return ListWorkspaceDriveActivitiesRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListWorkspaceDriveActivitiesRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// ListWorkspaceDriveActivitiesRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ListWorkspaceDriveActivitiesRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListWorkspaceDriveActivitiesRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListWorkspaceDriveActivitiesRequestMultiError) AllErrors() []error { return m }
+
+// ListWorkspaceDriveActivitiesRequestValidationError is the validation error
+// returned by ListWorkspaceDriveActivitiesRequest.Validate if the designated
+// constraints aren't met.
+type ListWorkspaceDriveActivitiesRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListWorkspaceDriveActivitiesRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListWorkspaceDriveActivitiesRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListWorkspaceDriveActivitiesRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListWorkspaceDriveActivitiesRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListWorkspaceDriveActivitiesRequestValidationError) ErrorName() string {
+	return "ListWorkspaceDriveActivitiesRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListWorkspaceDriveActivitiesRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListWorkspaceDriveActivitiesRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListWorkspaceDriveActivitiesRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListWorkspaceDriveActivitiesRequestValidationError{}
+
+// Validate checks the field values on ListWorkspaceDriveActivitiesResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *ListWorkspaceDriveActivitiesResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListWorkspaceDriveActivitiesResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// ListWorkspaceDriveActivitiesResponseMultiError, or nil if none found.
+func (m *ListWorkspaceDriveActivitiesResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListWorkspaceDriveActivitiesResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetActivities() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListWorkspaceDriveActivitiesResponseValidationError{
+						field:  fmt.Sprintf("Activities[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListWorkspaceDriveActivitiesResponseValidationError{
+						field:  fmt.Sprintf("Activities[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListWorkspaceDriveActivitiesResponseValidationError{
+					field:  fmt.Sprintf("Activities[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for NextPageToken
+
+	// no validation rules for StartTime
+
+	// no validation rules for EndTime
+
+	// no validation rules for HiddenEventCount
+
+	if len(errors) > 0 {
+		return ListWorkspaceDriveActivitiesResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListWorkspaceDriveActivitiesResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// ListWorkspaceDriveActivitiesResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ListWorkspaceDriveActivitiesResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListWorkspaceDriveActivitiesResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListWorkspaceDriveActivitiesResponseMultiError) AllErrors() []error { return m }
+
+// ListWorkspaceDriveActivitiesResponseValidationError is the validation error
+// returned by ListWorkspaceDriveActivitiesResponse.Validate if the designated
+// constraints aren't met.
+type ListWorkspaceDriveActivitiesResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListWorkspaceDriveActivitiesResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListWorkspaceDriveActivitiesResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListWorkspaceDriveActivitiesResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListWorkspaceDriveActivitiesResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListWorkspaceDriveActivitiesResponseValidationError) ErrorName() string {
+	return "ListWorkspaceDriveActivitiesResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListWorkspaceDriveActivitiesResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListWorkspaceDriveActivitiesResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListWorkspaceDriveActivitiesResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListWorkspaceDriveActivitiesResponseValidationError{}
+
+// Validate checks the field values on WorkspaceDriveUsageUser with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WorkspaceDriveUsageUser) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WorkspaceDriveUsageUser with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WorkspaceDriveUsageUserMultiError, or nil if none found.
+func (m *WorkspaceDriveUsageUser) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WorkspaceDriveUsageUser) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Email
+
+	if m.UsedMb != nil {
+		// no validation rules for UsedMb
+	}
+
+	if m.TotalMb != nil {
+		// no validation rules for TotalMb
+	}
+
+	if m.SharePercent != nil {
+		// no validation rules for SharePercent
+	}
+
+	if len(errors) > 0 {
+		return WorkspaceDriveUsageUserMultiError(errors)
+	}
+
+	return nil
+}
+
+// WorkspaceDriveUsageUserMultiError is an error wrapping multiple validation
+// errors returned by WorkspaceDriveUsageUser.ValidateAll() if the designated
+// constraints aren't met.
+type WorkspaceDriveUsageUserMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WorkspaceDriveUsageUserMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WorkspaceDriveUsageUserMultiError) AllErrors() []error { return m }
+
+// WorkspaceDriveUsageUserValidationError is the validation error returned by
+// WorkspaceDriveUsageUser.Validate if the designated constraints aren't met.
+type WorkspaceDriveUsageUserValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WorkspaceDriveUsageUserValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WorkspaceDriveUsageUserValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WorkspaceDriveUsageUserValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WorkspaceDriveUsageUserValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WorkspaceDriveUsageUserValidationError) ErrorName() string {
+	return "WorkspaceDriveUsageUserValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WorkspaceDriveUsageUserValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWorkspaceDriveUsageUser.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WorkspaceDriveUsageUserValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WorkspaceDriveUsageUserValidationError{}
+
+// Validate checks the field values on ListWorkspaceDriveUsageRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListWorkspaceDriveUsageRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListWorkspaceDriveUsageRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// ListWorkspaceDriveUsageRequestMultiError, or nil if none found.
+func (m *ListWorkspaceDriveUsageRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListWorkspaceDriveUsageRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ConnectionId
+
+	// no validation rules for TenantId
+
+	// no validation rules for Query
+
+	// no validation rules for Sort
+
+	// no validation rules for Page
+
+	// no validation rules for PageSize
+
+	if len(errors) > 0 {
+		return ListWorkspaceDriveUsageRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListWorkspaceDriveUsageRequestMultiError is an error wrapping multiple
+// validation errors returned by ListWorkspaceDriveUsageRequest.ValidateAll()
+// if the designated constraints aren't met.
+type ListWorkspaceDriveUsageRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListWorkspaceDriveUsageRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListWorkspaceDriveUsageRequestMultiError) AllErrors() []error { return m }
+
+// ListWorkspaceDriveUsageRequestValidationError is the validation error
+// returned by ListWorkspaceDriveUsageRequest.Validate if the designated
+// constraints aren't met.
+type ListWorkspaceDriveUsageRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListWorkspaceDriveUsageRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListWorkspaceDriveUsageRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListWorkspaceDriveUsageRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListWorkspaceDriveUsageRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListWorkspaceDriveUsageRequestValidationError) ErrorName() string {
+	return "ListWorkspaceDriveUsageRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListWorkspaceDriveUsageRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListWorkspaceDriveUsageRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListWorkspaceDriveUsageRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListWorkspaceDriveUsageRequestValidationError{}
+
+// Validate checks the field values on ListWorkspaceDriveUsageResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListWorkspaceDriveUsageResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListWorkspaceDriveUsageResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// ListWorkspaceDriveUsageResponseMultiError, or nil if none found.
+func (m *ListWorkspaceDriveUsageResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListWorkspaceDriveUsageResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for HasData
+
+	// no validation rules for Date
+
+	for idx, item := range m.GetUsers() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListWorkspaceDriveUsageResponseValidationError{
+						field:  fmt.Sprintf("Users[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListWorkspaceDriveUsageResponseValidationError{
+						field:  fmt.Sprintf("Users[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListWorkspaceDriveUsageResponseValidationError{
+					field:  fmt.Sprintf("Users[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for TotalCount
+
+	// no validation rules for Page
+
+	// no validation rules for PageSize
+
+	// no validation rules for TotalUsedMb
+
+	// no validation rules for UsersRead
+
+	// no validation rules for UnknownUsedCount
+
+	// no validation rules for Partial
+
+	// no validation rules for PartialReason
+
+	if len(errors) > 0 {
+		return ListWorkspaceDriveUsageResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListWorkspaceDriveUsageResponseMultiError is an error wrapping multiple
+// validation errors returned by ListWorkspaceDriveUsageResponse.ValidateAll()
+// if the designated constraints aren't met.
+type ListWorkspaceDriveUsageResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListWorkspaceDriveUsageResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListWorkspaceDriveUsageResponseMultiError) AllErrors() []error { return m }
+
+// ListWorkspaceDriveUsageResponseValidationError is the validation error
+// returned by ListWorkspaceDriveUsageResponse.Validate if the designated
+// constraints aren't met.
+type ListWorkspaceDriveUsageResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListWorkspaceDriveUsageResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListWorkspaceDriveUsageResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListWorkspaceDriveUsageResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListWorkspaceDriveUsageResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListWorkspaceDriveUsageResponseValidationError) ErrorName() string {
+	return "ListWorkspaceDriveUsageResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListWorkspaceDriveUsageResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListWorkspaceDriveUsageResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListWorkspaceDriveUsageResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListWorkspaceDriveUsageResponseValidationError{}
