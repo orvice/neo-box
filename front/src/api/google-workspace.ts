@@ -392,6 +392,49 @@ export function useWorkspaceAudit(q: WorkspaceAuditQuery) {
   })
 }
 
+export type WorkspaceDriveActivityQuery = {
+  connectionId: string
+  tenantId: string
+  preset: string
+  userKey: string
+  startTime: string
+  endTime: string
+  includeSideEffects: boolean
+  pageToken: string
+  pageSize: number
+}
+export function useWorkspaceDriveActivities(q: WorkspaceDriveActivityQuery) {
+  return useQuery({
+    queryKey: [...key(q.connectionId), q.tenantId, 'drive-activities', q],
+    queryFn: () => client.listWorkspaceDriveActivities(q),
+    retry: false,
+    refetchOnWindowFocus: false,
+  })
+}
+export type WorkspaceDriveUsageQuery = {
+  connectionId: string
+  tenantId: string
+  query: string
+  sort: string
+  page: number
+  pageSize: number
+}
+// Usage is a daily report that lags; refetching on focus would only repeat it.
+export function useWorkspaceDriveUsage(q: WorkspaceDriveUsageQuery) {
+  return useQuery({
+    queryKey: [...key(q.connectionId), q.tenantId, 'drive-usage', q],
+    queryFn: () => client.listWorkspaceDriveUsage(q),
+    retry: false,
+    staleTime: 60000,
+    refetchOnWindowFocus: false,
+  })
+}
+export type {
+  WorkspaceDriveActivity,
+  WorkspaceDriveEvent,
+  WorkspaceDriveUsageUser,
+} from '@/gen/neobox/v1/google_workspace_pb'
+
 export type {
   GetWorkspaceUserGmailSettingsResponse as GmailSettings,
   GmailVacation,

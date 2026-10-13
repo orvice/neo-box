@@ -30,6 +30,7 @@ const GroupScope = "https://www.googleapis.com/auth/admin.directory.group"
 const OrgUnitScope = "https://www.googleapis.com/auth/admin.directory.orgunit"
 const SecurityScope = "https://www.googleapis.com/auth/admin.directory.user.security"
 const AuditScope = "https://www.googleapis.com/auth/admin.reports.audit.readonly"
+const UsageScope = "https://www.googleapis.com/auth/admin.reports.usage.readonly"
 const reportsURL = "https://admin.googleapis.com/admin/reports/v1"
 const directoryURL = "https://admin.googleapis.com/admin/directory/v1"
 
@@ -163,7 +164,7 @@ func NewClient(ctx context.Context, identity ConnectionConfig, secret Connection
 	// Optional capabilities never expand the scopes of base user requests.
 	for _, scope := range extraScopes {
 		switch scope {
-		case GroupScope, OrgUnitScope, SecurityScope, AuditScope:
+		case GroupScope, OrgUnitScope, SecurityScope, AuditScope, UsageScope:
 			cfg.Scopes = append(cfg.Scopes, scope)
 		default:
 			return nil, errors.New("unsupported Workspace capability scope")

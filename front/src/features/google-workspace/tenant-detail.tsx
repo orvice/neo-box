@@ -1,6 +1,7 @@
 import type { WorkspaceTenant } from '@/api/google-workspace'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { WorkspaceAudit } from './audit'
+import { WorkspaceDrive } from './drive'
 import { WorkspaceGroups } from './groups'
 import { WorkspaceOperations } from './operations'
 import { WorkspaceOrgUnits } from './org-units'
@@ -28,6 +29,7 @@ export function WorkspaceTenantDetail({
           <TabsTrigger value='groups'>Groups</TabsTrigger>
           <TabsTrigger value='org-units'>Organization units</TabsTrigger>
           <TabsTrigger value='security'>Account security</TabsTrigger>
+          <TabsTrigger value='drive'>Drive</TabsTrigger>
           <TabsTrigger value='operations'>Neo Box operations</TabsTrigger>
           <TabsTrigger value='audit'>Google audit</TabsTrigger>
         </TabsList>
@@ -46,6 +48,9 @@ export function WorkspaceTenantDetail({
             tenantId={tenant.id}
             securityOnly
           />
+        </TabsContent>
+        <TabsContent value='drive' className='pt-4'>
+          <WorkspaceDrive connectionId={connectionId} tenantId={tenant.id} />
         </TabsContent>
         <TabsContent value='operations' className='pt-4'>
           <WorkspaceOperations

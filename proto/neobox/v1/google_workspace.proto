@@ -46,6 +46,10 @@ service GoogleWorkspaceService {
   // (ADR 0008). Message content is never requested.
   rpc GetWorkspaceUserGmailSettings(GetWorkspaceUserGmailSettingsRequest) returns (GetWorkspaceUserGmailSettingsResponse);
   rpc UpdateWorkspaceUserGmailVacation(UpdateWorkspaceUserGmailVacationRequest) returns (UpdateWorkspaceUserGmailVacationResponse);
+  // Drive governance reads Google's Reports API only (ADR 0009); no file
+  // content is reachable with these scopes.
+  rpc ListWorkspaceDriveActivities(ListWorkspaceDriveActivitiesRequest) returns (ListWorkspaceDriveActivitiesResponse);
+  rpc ListWorkspaceDriveUsage(ListWorkspaceDriveUsageRequest) returns (ListWorkspaceDriveUsageResponse);
 }
 message WorkspaceTenant {
   string id = 1;
@@ -695,4 +699,108 @@ message UpdateWorkspaceUserGmailVacationRequest {
 
 message UpdateWorkspaceUserGmailVacationResponse {
   GmailVacation vacation = 1;
+}
+
+// A Drive audit event. A field Google did not report is empty.
+message WorkspaceDriveEvent {
+  string name = 1;
+  string doc_id = 2;
+  string doc_title = 3;
+  string doc_type = 4;
+  string owner = 5;
+  bool owner_is_shared_drive = 6;
+  string shared_drive_id = 7;
+  // Unset when Google did not say whether this is a user's direct action.
+  optional bool primary = 8;
+  // Google's visibility values, e.g. public_on_the_web, people_with_link,
+  // shared_externally, shared_internally, private.
+  string visibility = 9;
+  string old_visibility = 10;
+  // external, internal or none.
+  string visibility_change = 11;
+  string target_user = 12;
+  string target_domain = 13;
+  string target = 14;
+  string old_role = 15;
+  string new_role = 16;
+  string new_owner = 17;
+  string membership_change_type = 18;
+  string added_role = 19;
+  string removed_role = 20;
+  // All parameters as Google reported them, credentials redacted.
+  google.protobuf.Struct parameters = 21;
+}
+
+message WorkspaceDriveActivity {
+  string id = 1;
+  google.protobuf.Timestamp occurred_at = 2;
+  string actor_email = 3;
+  string actor_profile_id = 4;
+  string ip_address = 5;
+  repeated WorkspaceDriveEvent events = 6;
+}
+
+message ListWorkspaceDriveActivitiesRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  // all, public_web, link_sharing, external_share, ownership, downloads,
+  // deletions, trash, shared_drive_members or shared_drive_settings. Empty is all.
+  string preset = 3;
+  // Empty reads the customer; otherwise an existing tenant user ID or email.
+  string user_key = 4;
+  // RFC3339. Empty defaults to the last seven days through now.
+  string start_time = 5;
+  string end_time = 6;
+  string page_token = 7;
+  int32 page_size = 8;
+  // Show side-effect events too, not only a user's direct actions.
+  bool include_side_effects = 9;
+}
+
+message ListWorkspaceDriveActivitiesResponse {
+  repeated WorkspaceDriveActivity activities = 1;
+  string next_page_token = 2;
+  string start_time = 3;
+  string end_time = 4;
+  // Side-effect events left out of this page.
+  int32 hidden_event_count = 5;
+}
+
+// Figures Google did not report are unset, never zero.
+message WorkspaceDriveUsageUser {
+  string email = 1;
+  optional int64 used_mb = 2;
+  optional int64 total_mb = 3;
+  // Drive's share of the user's total quota; unset when either figure is
+  // unknown or the quota is unlimited.
+  optional double share_percent = 4;
+}
+
+message ListWorkspaceDriveUsageRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string query = 3;
+  // used (largest first, unknown last) or email. Empty is used.
+  string sort = 4;
+  int32 page = 5;
+  int32 page_size = 6;
+}
+
+message ListWorkspaceDriveUsageResponse {
+  // False when Google has no usage report for the last few days.
+  bool has_data = 1;
+  // The report day, YYYY-MM-DD. Usage lags by days; it is not today.
+  string date = 2;
+  repeated WorkspaceDriveUsageUser users = 3;
+  // Users matching the query.
+  int64 total_count = 4;
+  int32 page = 5;
+  int32 page_size = 6;
+  // Sum of the known used figures across every user read, in MB.
+  int64 total_used_mb = 7;
+  // Users read, and how many of them have no used figure.
+  int64 users_read = 8;
+  int64 unknown_used_count = 9;
+  bool partial = 10;
+  string partial_reason = 11;
 }

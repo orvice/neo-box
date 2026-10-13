@@ -277,6 +277,47 @@ it, read again before retrying.
 See Google's [Gmail settings API](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.settings)
 and [scopes](https://developers.google.com/workspace/gmail/api/auth/scopes).
 
+## Drive governance
+
+A Tenant's **Drive** tab shows Drive sharing activity and per-account storage
+use. It is built on Google's Reports API only. Neither scope below can read
+file content or change sharing, and Neo Box requests no Drive API scope.
+
+Authorize in **each Tenant** that needs it (the first is the same scope as the
+Google audit tab):
+
+```text
+https://www.googleapis.com/auth/admin.reports.audit.readonly
+https://www.googleapis.com/auth/admin.reports.usage.readonly
+```
+
+The delegated administrator also needs Google's report privileges. Each scope
+is requested only by its own view; a missing scope or privilege is reported
+beside that view and does not change the Tenant's health.
+
+**Sharing activity** reads Drive audit events and filters them at Google by
+preset: public on the web, anyone with the link, shared outside the domain,
+ownership transfers, downloads, deletions, moved to trash, shared drive
+members, shared drive settings, or all activity. A row shows who acted, the
+file title and owner as Google reports them, what changed (visibility, role,
+target user or domain) and an exposure badge. A value Google did not return is
+shown as not provided, and an unrecognised visibility is shown as unknown, never
+as private. One user action can emit several events; only the user's direct
+action (`primary_event`) is shown unless "Include side effects" is on, and the
+page says how many events it hid. Time range, user filter, cursor paging and the
+180-day window match the Google audit tab. Events arrive minutes to hours late.
+
+**Storage usage** reads Google's daily per-user usage report: Drive used, quota
+and share of quota, sortable and searchable. The report lags by a few days, so
+Neo Box uses the newest day that has data and shows its date. No data is shown
+as "no data", never as zero; an account without a figure shows Unknown, and an
+unlimited quota shows no percentage. At most 5,000 accounts and 20 seconds are
+read per Tenant, and a larger or slower read is marked incomplete.
+
+Both views read live from Google and store nothing; neither is written to the
+Neo Box operation log. Shared-drive inventory and per-user file listing need
+Drive API scopes and are not part of this version (see ADR 0009).
+
 ## Key rotation and removal
 
 Edit the Connection and upload another key for the **same** Service Account.
