@@ -279,9 +279,11 @@ and [scopes](https://developers.google.com/workspace/gmail/api/auth/scopes).
 
 ## Drive governance
 
-A Tenant's **Drive** tab shows Drive sharing activity and per-account storage
-use. It is built on Google's Reports API only. Neither scope below can read
-file content or change sharing, and Neo Box requests no Drive API scope.
+A Tenant's **Drive** tab shows Drive sharing activity, per-account storage use
+and the domain's shared drives; a user's **Drive** tab lists that user's
+exposed files. Sharing activity and storage use are built on Google's Reports
+API only; the shared drive list and exposed files use Drive API scopes and are
+described under "Drive API reads" below.
 
 Authorize in **each Tenant** that needs it (the first is the same scope as the
 Google audit tab):
@@ -315,8 +317,53 @@ unlimited quota shows no percentage. At most 5,000 accounts and 20 seconds are
 read per Tenant, and a larger or slower read is marked incomplete.
 
 Both views read live from Google and store nothing; neither is written to the
-Neo Box operation log. Shared-drive inventory and per-user file listing need
-Drive API scopes and are not part of this version (see ADR 0009).
+Neo Box operation log.
+
+### Drive API reads
+
+Two further reads use Drive API scopes. They are separate opt-ins, each
+requested only for its own request, never together in one token, and neither is
+needed for anything above. Neo Box never requests the full `drive` scope and
+never downloads, exports or opens a file.
+
+| Read | Scope | Subject of the token | Can the scope read content? |
+| --- | --- | --- | --- |
+| Shared drive list (Tenant → Drive → Shared drives) | `https://www.googleapis.com/auth/drive.readonly` | the Tenant's delegated administrator | **Yes** |
+| A user's exposed files (User → Drive) | `https://www.googleapis.com/auth/drive.metadata.readonly` | that user | No |
+
+`drive.readonly` is the only scope Google accepts for listing shared drives
+(`drives.list`). It could read file content, and domain-wide delegation lets the
+Service Account act as any user of the Tenant once it is authorized, so Neo
+Box's own behaviour is the control: it calls only `drives.list`, always with a
+field mask for the drive's name, creation time, organizational unit and
+restrictions, and keeps no copy. If you do not want a content-capable scope on
+the Service Account, do not authorize it; the other Drive views keep working.
+
+Both reads follow the Gmail settings rules (ADR 0008): each request carries an
+access reason (1-200 characters, one line), a user's files also need that
+user's primary email typed again, the read is recorded in the Neo Box operation
+history **before** it is sent (and refused if it cannot be recorded), and the
+log keeps counts and flags only, never drive or file names, links or domains.
+The dashboard remembers a confirmation for ten minutes in page memory; the
+backend checks the reason on every request and keeps no session. Paging or
+changing a filter is another read and another record. Missing authorization is
+shown beside the view and does not change the Tenant's health.
+
+**Shared drives** lists name, creation date, organizational unit ID and the
+restrictions Google reports as set (domain users only, members only,
+admin-managed restrictions, no copy for readers, only organizers share
+folders). It can filter by name prefix, "no organizer", "at most N members" and
+organizational unit ID; Google evaluates those filters, so Neo Box does not
+read members. The organizational unit appears as the ID Google returns. A
+restriction that is not listed is not claimed to be off.
+
+**Exposed files** lists the user's own, untrashed files that are visible beyond
+named people: anyone can find, anyone with the link, domain can find, domain
+with the link. Each row shows the exposure from the file's permissions; a
+domain exposure is marked "outside the tenant" only when the Tenant's verified
+domains could be read, otherwise "not checked". A file for which Google
+returned no permissions says so. Files in shared drives have no owner and are
+not listed; Neo Box lists one page at a time and never scans every user.
 
 ## Key rotation and removal
 

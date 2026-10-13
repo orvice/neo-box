@@ -25,6 +25,7 @@ import { useGmailConfirmation } from './gmail-access'
 import { UserGmailSettings } from './gmail-settings'
 import { triState, lastLoginText } from './observability-format'
 import { OrgUnitPicker } from './org-units'
+import { UserExposedFiles } from './user-files'
 import { UserAliases, UserGroups, UserSecurity } from './user-tools'
 
 type UserAction =
@@ -272,6 +273,7 @@ export function WorkspaceUserDetail({
 }) {
   const detail = useWorkspaceUser(connectionId, tenantId, userId)
   const gmail = useGmailConfirmation()
+  const driveFiles = useGmailConfirmation()
   if (detail.error)
     return (
       <p role='alert' className='text-destructive'>
@@ -288,6 +290,7 @@ export function WorkspaceUserDetail({
         <TabsTrigger value='groups'>Groups</TabsTrigger>
         <TabsTrigger value='security'>Security</TabsTrigger>
         <TabsTrigger value='gmail'>Gmail</TabsTrigger>
+        <TabsTrigger value='drive'>Drive</TabsTrigger>
       </TabsList>
       <TabsContent value='profile' className='pt-4'>
         {' '}
@@ -347,6 +350,16 @@ export function WorkspaceUserDetail({
           userEmail={u.primaryEmail}
           confirmation={gmail.confirmation}
           onConfirmation={gmail.setConfirmation}
+        />
+      </TabsContent>
+      <TabsContent value='drive' className='pt-4'>
+        <UserExposedFiles
+          connectionId={connectionId}
+          tenantId={tenantId}
+          userId={userId}
+          userEmail={u.primaryEmail}
+          confirmation={driveFiles.confirmation}
+          onConfirmation={driveFiles.setConfirmation}
         />
       </TabsContent>
     </Tabs>

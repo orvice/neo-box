@@ -50,6 +50,15 @@ service GoogleWorkspaceService {
   // content is reachable with these scopes.
   rpc ListWorkspaceDriveActivities(ListWorkspaceDriveActivitiesRequest) returns (ListWorkspaceDriveActivitiesResponse);
   rpc ListWorkspaceDriveUsage(ListWorkspaceDriveUsageRequest) returns (ListWorkspaceDriveUsageResponse);
+  // Shared drive inventory (drives.list as the tenant's administrator).
+  // Needs drive.readonly, a scope that could read file content; Neo Box
+  // calls only drives.list and records each read with its reason first. See
+  // docs/adr/0009.
+  rpc ListWorkspaceSharedDrives(ListWorkspaceSharedDrivesRequest) returns (ListWorkspaceSharedDrivesResponse);
+  // One user's files that are visible beyond named people (files.list as that
+  // user, drive.metadata.readonly: metadata only). Reason and typed primary
+  // email on every request, recorded first. See docs/adr/0009.
+  rpc ListWorkspaceUserExposedFiles(ListWorkspaceUserExposedFilesRequest) returns (ListWorkspaceUserExposedFilesResponse);
 }
 message WorkspaceTenant {
   string id = 1;
@@ -803,4 +812,103 @@ message ListWorkspaceDriveUsageResponse {
   int64 unknown_used_count = 9;
   bool partial = 10;
   string partial_reason = 11;
+}
+
+message ListWorkspaceSharedDrivesRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  // Why the inventory is being read, 1-200 characters, single line. Stored on
+  // the operation.
+  string reason = 3;
+  // Shared drives whose name starts with this text (optional, 100 characters).
+  string name_prefix = 4;
+  // Only drives with no organizer.
+  bool no_organizer = 5;
+  // Only drives with at most this many members (users and groups). Unset is
+  // no limit.
+  optional int32 max_members = 6;
+  // Only drives in this organizational unit ID (optional).
+  string org_unit_id = 7;
+  string page_token = 8;
+  // 1-100. Empty is 50.
+  int32 page_size = 9;
+}
+
+// Restrictions Google reported as set. A restriction Google did not return is
+// not listed as off.
+message WorkspaceSharedDriveRestrictions {
+  bool domain_users_only = 1;
+  bool drive_members_only = 2;
+  bool admin_managed_restrictions = 3;
+  bool copy_requires_writer_permission = 4;
+  bool sharing_folders_requires_organizer_permission = 5;
+}
+
+message WorkspaceSharedDrive {
+  string id = 1;
+  string name = 2;
+  google.protobuf.Timestamp created_time = 3;
+  // An opaque ID, not a path; Google returns it only to administrators.
+  string org_unit_id = 4;
+  WorkspaceSharedDriveRestrictions restrictions = 5;
+}
+
+message ListWorkspaceSharedDrivesResponse {
+  repeated WorkspaceSharedDrive drives = 1;
+  string next_page_token = 2;
+  google.protobuf.Timestamp read_at = 3;
+}
+
+// Required on every request that reads one user's Drive files. The backend
+// checks it each time; it is accountability, not authorization.
+message DriveAccessConfirmation {
+  // Why this user's files are being listed, 1-200 characters.
+  string reason = 1;
+  // The target's primary email, typed again. Must equal the resolved user.
+  string target_email = 2;
+}
+
+message ListWorkspaceUserExposedFilesRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string user_id = 3;
+  DriveAccessConfirmation confirmation = 4;
+  // Any of anyone_can_find, anyone_with_link, domain_can_find,
+  // domain_with_link. Empty is all four.
+  repeated string exposures = 5;
+  string page_token = 6;
+  // 1-100. Empty is 50.
+  int32 page_size = 7;
+}
+
+// One way a file is open beyond named people, from its permissions.
+message WorkspaceFileExposure {
+  // anyone_can_find, anyone_with_link, domain_can_find or domain_with_link.
+  string kind = 1;
+  // reader, commenter or writer, as Google reports it.
+  string role = 2;
+  // The domain of a domain exposure.
+  string domain = 3;
+  // Whether a domain exposure is outside the tenant's verified domains. Unset
+  // when the domains could not be read; never guessed.
+  optional bool external = 4;
+}
+
+message WorkspaceExposedFile {
+  string id = 1;
+  string name = 2;
+  string mime_type = 3;
+  google.protobuf.Timestamp modified_time = 4;
+  string web_view_link = 5;
+  // Empty when Google returned no permissions for this file.
+  repeated WorkspaceFileExposure exposures = 6;
+}
+
+message ListWorkspaceUserExposedFilesResponse {
+  string user_email = 1;
+  repeated WorkspaceExposedFile files = 2;
+  string next_page_token = 3;
+  // Google could not search everything; results may be missing.
+  bool incomplete_search = 4;
+  google.protobuf.Timestamp read_at = 5;
 }

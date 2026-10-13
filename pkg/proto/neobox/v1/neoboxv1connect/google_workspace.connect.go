@@ -144,6 +144,12 @@ const (
 	// GoogleWorkspaceServiceListWorkspaceDriveUsageProcedure is the fully-qualified name of the
 	// GoogleWorkspaceService's ListWorkspaceDriveUsage RPC.
 	GoogleWorkspaceServiceListWorkspaceDriveUsageProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceDriveUsage"
+	// GoogleWorkspaceServiceListWorkspaceSharedDrivesProcedure is the fully-qualified name of the
+	// GoogleWorkspaceService's ListWorkspaceSharedDrives RPC.
+	GoogleWorkspaceServiceListWorkspaceSharedDrivesProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceSharedDrives"
+	// GoogleWorkspaceServiceListWorkspaceUserExposedFilesProcedure is the fully-qualified name of the
+	// GoogleWorkspaceService's ListWorkspaceUserExposedFiles RPC.
+	GoogleWorkspaceServiceListWorkspaceUserExposedFilesProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceUserExposedFiles"
 )
 
 // GoogleWorkspaceServiceClient is a client for the neobox.v1.GoogleWorkspaceService service.
@@ -189,6 +195,15 @@ type GoogleWorkspaceServiceClient interface {
 	// content is reachable with these scopes.
 	ListWorkspaceDriveActivities(context.Context, *connect.Request[v1.ListWorkspaceDriveActivitiesRequest]) (*connect.Response[v1.ListWorkspaceDriveActivitiesResponse], error)
 	ListWorkspaceDriveUsage(context.Context, *connect.Request[v1.ListWorkspaceDriveUsageRequest]) (*connect.Response[v1.ListWorkspaceDriveUsageResponse], error)
+	// Shared drive inventory (drives.list as the tenant's administrator).
+	// Needs drive.readonly, a scope that could read file content; Neo Box
+	// calls only drives.list and records each read with its reason first. See
+	// docs/adr/0009.
+	ListWorkspaceSharedDrives(context.Context, *connect.Request[v1.ListWorkspaceSharedDrivesRequest]) (*connect.Response[v1.ListWorkspaceSharedDrivesResponse], error)
+	// One user's files that are visible beyond named people (files.list as that
+	// user, drive.metadata.readonly: metadata only). Reason and typed primary
+	// email on every request, recorded first. See docs/adr/0009.
+	ListWorkspaceUserExposedFiles(context.Context, *connect.Request[v1.ListWorkspaceUserExposedFilesRequest]) (*connect.Response[v1.ListWorkspaceUserExposedFilesResponse], error)
 }
 
 // NewGoogleWorkspaceServiceClient constructs a client for the neobox.v1.GoogleWorkspaceService
@@ -424,6 +439,18 @@ func NewGoogleWorkspaceServiceClient(httpClient connect.HTTPClient, baseURL stri
 			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceDriveUsage")),
 			connect.WithClientOptions(opts...),
 		),
+		listWorkspaceSharedDrives: connect.NewClient[v1.ListWorkspaceSharedDrivesRequest, v1.ListWorkspaceSharedDrivesResponse](
+			httpClient,
+			baseURL+GoogleWorkspaceServiceListWorkspaceSharedDrivesProcedure,
+			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceSharedDrives")),
+			connect.WithClientOptions(opts...),
+		),
+		listWorkspaceUserExposedFiles: connect.NewClient[v1.ListWorkspaceUserExposedFilesRequest, v1.ListWorkspaceUserExposedFilesResponse](
+			httpClient,
+			baseURL+GoogleWorkspaceServiceListWorkspaceUserExposedFilesProcedure,
+			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceUserExposedFiles")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -466,6 +493,8 @@ type googleWorkspaceServiceClient struct {
 	updateWorkspaceUserGmailVacation *connect.Client[v1.UpdateWorkspaceUserGmailVacationRequest, v1.UpdateWorkspaceUserGmailVacationResponse]
 	listWorkspaceDriveActivities     *connect.Client[v1.ListWorkspaceDriveActivitiesRequest, v1.ListWorkspaceDriveActivitiesResponse]
 	listWorkspaceDriveUsage          *connect.Client[v1.ListWorkspaceDriveUsageRequest, v1.ListWorkspaceDriveUsageResponse]
+	listWorkspaceSharedDrives        *connect.Client[v1.ListWorkspaceSharedDrivesRequest, v1.ListWorkspaceSharedDrivesResponse]
+	listWorkspaceUserExposedFiles    *connect.Client[v1.ListWorkspaceUserExposedFilesRequest, v1.ListWorkspaceUserExposedFilesResponse]
 }
 
 // ListWorkspaceTenants calls neobox.v1.GoogleWorkspaceService.ListWorkspaceTenants.
@@ -655,6 +684,17 @@ func (c *googleWorkspaceServiceClient) ListWorkspaceDriveUsage(ctx context.Conte
 	return c.listWorkspaceDriveUsage.CallUnary(ctx, req)
 }
 
+// ListWorkspaceSharedDrives calls neobox.v1.GoogleWorkspaceService.ListWorkspaceSharedDrives.
+func (c *googleWorkspaceServiceClient) ListWorkspaceSharedDrives(ctx context.Context, req *connect.Request[v1.ListWorkspaceSharedDrivesRequest]) (*connect.Response[v1.ListWorkspaceSharedDrivesResponse], error) {
+	return c.listWorkspaceSharedDrives.CallUnary(ctx, req)
+}
+
+// ListWorkspaceUserExposedFiles calls
+// neobox.v1.GoogleWorkspaceService.ListWorkspaceUserExposedFiles.
+func (c *googleWorkspaceServiceClient) ListWorkspaceUserExposedFiles(ctx context.Context, req *connect.Request[v1.ListWorkspaceUserExposedFilesRequest]) (*connect.Response[v1.ListWorkspaceUserExposedFilesResponse], error) {
+	return c.listWorkspaceUserExposedFiles.CallUnary(ctx, req)
+}
+
 // GoogleWorkspaceServiceHandler is an implementation of the neobox.v1.GoogleWorkspaceService
 // service.
 type GoogleWorkspaceServiceHandler interface {
@@ -699,6 +739,15 @@ type GoogleWorkspaceServiceHandler interface {
 	// content is reachable with these scopes.
 	ListWorkspaceDriveActivities(context.Context, *connect.Request[v1.ListWorkspaceDriveActivitiesRequest]) (*connect.Response[v1.ListWorkspaceDriveActivitiesResponse], error)
 	ListWorkspaceDriveUsage(context.Context, *connect.Request[v1.ListWorkspaceDriveUsageRequest]) (*connect.Response[v1.ListWorkspaceDriveUsageResponse], error)
+	// Shared drive inventory (drives.list as the tenant's administrator).
+	// Needs drive.readonly, a scope that could read file content; Neo Box
+	// calls only drives.list and records each read with its reason first. See
+	// docs/adr/0009.
+	ListWorkspaceSharedDrives(context.Context, *connect.Request[v1.ListWorkspaceSharedDrivesRequest]) (*connect.Response[v1.ListWorkspaceSharedDrivesResponse], error)
+	// One user's files that are visible beyond named people (files.list as that
+	// user, drive.metadata.readonly: metadata only). Reason and typed primary
+	// email on every request, recorded first. See docs/adr/0009.
+	ListWorkspaceUserExposedFiles(context.Context, *connect.Request[v1.ListWorkspaceUserExposedFilesRequest]) (*connect.Response[v1.ListWorkspaceUserExposedFilesResponse], error)
 }
 
 // NewGoogleWorkspaceServiceHandler builds an HTTP handler from the service implementation. It
@@ -930,6 +979,18 @@ func NewGoogleWorkspaceServiceHandler(svc GoogleWorkspaceServiceHandler, opts ..
 		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceDriveUsage")),
 		connect.WithHandlerOptions(opts...),
 	)
+	googleWorkspaceServiceListWorkspaceSharedDrivesHandler := connect.NewUnaryHandler(
+		GoogleWorkspaceServiceListWorkspaceSharedDrivesProcedure,
+		svc.ListWorkspaceSharedDrives,
+		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceSharedDrives")),
+		connect.WithHandlerOptions(opts...),
+	)
+	googleWorkspaceServiceListWorkspaceUserExposedFilesHandler := connect.NewUnaryHandler(
+		GoogleWorkspaceServiceListWorkspaceUserExposedFilesProcedure,
+		svc.ListWorkspaceUserExposedFiles,
+		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceUserExposedFiles")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/neobox.v1.GoogleWorkspaceService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case GoogleWorkspaceServiceListWorkspaceTenantsProcedure:
@@ -1006,6 +1067,10 @@ func NewGoogleWorkspaceServiceHandler(svc GoogleWorkspaceServiceHandler, opts ..
 			googleWorkspaceServiceListWorkspaceDriveActivitiesHandler.ServeHTTP(w, r)
 		case GoogleWorkspaceServiceListWorkspaceDriveUsageProcedure:
 			googleWorkspaceServiceListWorkspaceDriveUsageHandler.ServeHTTP(w, r)
+		case GoogleWorkspaceServiceListWorkspaceSharedDrivesProcedure:
+			googleWorkspaceServiceListWorkspaceSharedDrivesHandler.ServeHTTP(w, r)
+		case GoogleWorkspaceServiceListWorkspaceUserExposedFilesProcedure:
+			googleWorkspaceServiceListWorkspaceUserExposedFilesHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -1161,4 +1226,12 @@ func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceDriveActivities(c
 
 func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceDriveUsage(context.Context, *connect.Request[v1.ListWorkspaceDriveUsageRequest]) (*connect.Response[v1.ListWorkspaceDriveUsageResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceDriveUsage is not implemented"))
+}
+
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceSharedDrives(context.Context, *connect.Request[v1.ListWorkspaceSharedDrivesRequest]) (*connect.Response[v1.ListWorkspaceSharedDrivesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceSharedDrives is not implemented"))
+}
+
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceUserExposedFiles(context.Context, *connect.Request[v1.ListWorkspaceUserExposedFilesRequest]) (*connect.Response[v1.ListWorkspaceUserExposedFilesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceUserExposedFiles is not implemented"))
 }
