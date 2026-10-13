@@ -14,6 +14,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/cloudflare"
 	"go.orx.me/apps/neo-box/internal/ent/alert"
 	"go.orx.me/apps/neo-box/internal/ent/cloudflarednsoperation"
+	"go.orx.me/apps/neo-box/internal/ent/cloudflareresourceoperation"
 	"go.orx.me/apps/neo-box/internal/ent/connection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbfile"
@@ -43,24 +44,25 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeAlert                  = "Alert"
-	TypeCloudflareDNSOperation = "CloudflareDNSOperation"
-	TypeConnection             = "Connection"
-	TypeNocoDBBackupPolicy     = "NocoDBBackupPolicy"
-	TypeNocoDBFile             = "NocoDBFile"
-	TypeNocoDBFileSource       = "NocoDBFileSource"
-	TypeNocoDBRestore          = "NocoDBRestore"
-	TypeNocoDBSnapshot         = "NocoDBSnapshot"
-	TypeNocoDBSnapshotFile     = "NocoDBSnapshotFile"
-	TypeNotificationChannel    = "NotificationChannel"
-	TypeOAuthState             = "OAuthState"
-	TypeSession                = "Session"
-	TypeUser                   = "User"
-	TypeWasabiBucketConfig     = "WasabiBucketConfig"
-	TypeWasabiDailyUsage       = "WasabiDailyUsage"
-	TypeWasabiSyncState        = "WasabiSyncState"
-	TypeWorkspaceOperation     = "WorkspaceOperation"
-	TypeWorkspaceTenant        = "WorkspaceTenant"
+	TypeAlert                       = "Alert"
+	TypeCloudflareDNSOperation      = "CloudflareDNSOperation"
+	TypeCloudflareResourceOperation = "CloudflareResourceOperation"
+	TypeConnection                  = "Connection"
+	TypeNocoDBBackupPolicy          = "NocoDBBackupPolicy"
+	TypeNocoDBFile                  = "NocoDBFile"
+	TypeNocoDBFileSource            = "NocoDBFileSource"
+	TypeNocoDBRestore               = "NocoDBRestore"
+	TypeNocoDBSnapshot              = "NocoDBSnapshot"
+	TypeNocoDBSnapshotFile          = "NocoDBSnapshotFile"
+	TypeNotificationChannel         = "NotificationChannel"
+	TypeOAuthState                  = "OAuthState"
+	TypeSession                     = "Session"
+	TypeUser                        = "User"
+	TypeWasabiBucketConfig          = "WasabiBucketConfig"
+	TypeWasabiDailyUsage            = "WasabiDailyUsage"
+	TypeWasabiSyncState             = "WasabiSyncState"
+	TypeWorkspaceOperation          = "WorkspaceOperation"
+	TypeWorkspaceTenant             = "WorkspaceTenant"
 )
 
 // AlertMutation represents an operation that mutates the Alert nodes in the graph.
@@ -2338,6 +2340,1227 @@ func (m *CloudflareDNSOperationMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *CloudflareDNSOperationMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown CloudflareDNSOperation edge %s", name)
+}
+
+// CloudflareResourceOperationMutation represents an operation that mutates the CloudflareResourceOperation nodes in the graph.
+type CloudflareResourceOperationMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *string
+	user_id       *string
+	connection_id *string
+	account_id    *string
+	kind          *string
+	resource      *string
+	action        *string
+	target        *string
+	before        *map[string]interface{}
+	after         *map[string]interface{}
+	requested     *map[string]interface{}
+	status        *string
+	error         *string
+	actor_id      *string
+	actor_name    *string
+	created_at    *time.Time
+	finished_at   *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*CloudflareResourceOperation, error)
+	predicates    []predicate.CloudflareResourceOperation
+}
+
+var _ ent.Mutation = (*CloudflareResourceOperationMutation)(nil)
+
+// cloudflareresourceoperationOption allows management of the mutation configuration using functional options.
+type cloudflareresourceoperationOption func(*CloudflareResourceOperationMutation)
+
+// newCloudflareResourceOperationMutation creates new mutation for the CloudflareResourceOperation entity.
+func newCloudflareResourceOperationMutation(c config, op Op, opts ...cloudflareresourceoperationOption) *CloudflareResourceOperationMutation {
+	m := &CloudflareResourceOperationMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeCloudflareResourceOperation,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withCloudflareResourceOperationID sets the ID field of the mutation.
+func withCloudflareResourceOperationID(id string) cloudflareresourceoperationOption {
+	return func(m *CloudflareResourceOperationMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *CloudflareResourceOperation
+		)
+		m.oldValue = func(ctx context.Context) (*CloudflareResourceOperation, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().CloudflareResourceOperation.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withCloudflareResourceOperation sets the old CloudflareResourceOperation of the mutation.
+func withCloudflareResourceOperation(node *CloudflareResourceOperation) cloudflareresourceoperationOption {
+	return func(m *CloudflareResourceOperationMutation) {
+		m.oldValue = func(context.Context) (*CloudflareResourceOperation, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m CloudflareResourceOperationMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m CloudflareResourceOperationMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of CloudflareResourceOperation entities.
+func (m *CloudflareResourceOperationMutation) SetID(id string) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *CloudflareResourceOperationMutation) ID() (id string, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *CloudflareResourceOperationMutation) IDs(ctx context.Context) ([]string, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []string{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().CloudflareResourceOperation.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetUserID sets the "user_id" field.
+func (m *CloudflareResourceOperationMutation) SetUserID(s string) {
+	m.user_id = &s
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *CloudflareResourceOperationMutation) UserID() (r string, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the CloudflareResourceOperation entity.
+// If the CloudflareResourceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareResourceOperationMutation) OldUserID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *CloudflareResourceOperationMutation) ResetUserID() {
+	m.user_id = nil
+}
+
+// SetConnectionID sets the "connection_id" field.
+func (m *CloudflareResourceOperationMutation) SetConnectionID(s string) {
+	m.connection_id = &s
+}
+
+// ConnectionID returns the value of the "connection_id" field in the mutation.
+func (m *CloudflareResourceOperationMutation) ConnectionID() (r string, exists bool) {
+	v := m.connection_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConnectionID returns the old "connection_id" field's value of the CloudflareResourceOperation entity.
+// If the CloudflareResourceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareResourceOperationMutation) OldConnectionID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConnectionID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConnectionID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConnectionID: %w", err)
+	}
+	return oldValue.ConnectionID, nil
+}
+
+// ResetConnectionID resets all changes to the "connection_id" field.
+func (m *CloudflareResourceOperationMutation) ResetConnectionID() {
+	m.connection_id = nil
+}
+
+// SetAccountID sets the "account_id" field.
+func (m *CloudflareResourceOperationMutation) SetAccountID(s string) {
+	m.account_id = &s
+}
+
+// AccountID returns the value of the "account_id" field in the mutation.
+func (m *CloudflareResourceOperationMutation) AccountID() (r string, exists bool) {
+	v := m.account_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccountID returns the old "account_id" field's value of the CloudflareResourceOperation entity.
+// If the CloudflareResourceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareResourceOperationMutation) OldAccountID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAccountID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAccountID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccountID: %w", err)
+	}
+	return oldValue.AccountID, nil
+}
+
+// ResetAccountID resets all changes to the "account_id" field.
+func (m *CloudflareResourceOperationMutation) ResetAccountID() {
+	m.account_id = nil
+}
+
+// SetKind sets the "kind" field.
+func (m *CloudflareResourceOperationMutation) SetKind(s string) {
+	m.kind = &s
+}
+
+// Kind returns the value of the "kind" field in the mutation.
+func (m *CloudflareResourceOperationMutation) Kind() (r string, exists bool) {
+	v := m.kind
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKind returns the old "kind" field's value of the CloudflareResourceOperation entity.
+// If the CloudflareResourceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareResourceOperationMutation) OldKind(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKind is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKind requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKind: %w", err)
+	}
+	return oldValue.Kind, nil
+}
+
+// ResetKind resets all changes to the "kind" field.
+func (m *CloudflareResourceOperationMutation) ResetKind() {
+	m.kind = nil
+}
+
+// SetResource sets the "resource" field.
+func (m *CloudflareResourceOperationMutation) SetResource(s string) {
+	m.resource = &s
+}
+
+// Resource returns the value of the "resource" field in the mutation.
+func (m *CloudflareResourceOperationMutation) Resource() (r string, exists bool) {
+	v := m.resource
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldResource returns the old "resource" field's value of the CloudflareResourceOperation entity.
+// If the CloudflareResourceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareResourceOperationMutation) OldResource(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldResource is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldResource requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldResource: %w", err)
+	}
+	return oldValue.Resource, nil
+}
+
+// ResetResource resets all changes to the "resource" field.
+func (m *CloudflareResourceOperationMutation) ResetResource() {
+	m.resource = nil
+}
+
+// SetAction sets the "action" field.
+func (m *CloudflareResourceOperationMutation) SetAction(s string) {
+	m.action = &s
+}
+
+// Action returns the value of the "action" field in the mutation.
+func (m *CloudflareResourceOperationMutation) Action() (r string, exists bool) {
+	v := m.action
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAction returns the old "action" field's value of the CloudflareResourceOperation entity.
+// If the CloudflareResourceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareResourceOperationMutation) OldAction(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAction is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAction requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAction: %w", err)
+	}
+	return oldValue.Action, nil
+}
+
+// ResetAction resets all changes to the "action" field.
+func (m *CloudflareResourceOperationMutation) ResetAction() {
+	m.action = nil
+}
+
+// SetTarget sets the "target" field.
+func (m *CloudflareResourceOperationMutation) SetTarget(s string) {
+	m.target = &s
+}
+
+// Target returns the value of the "target" field in the mutation.
+func (m *CloudflareResourceOperationMutation) Target() (r string, exists bool) {
+	v := m.target
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTarget returns the old "target" field's value of the CloudflareResourceOperation entity.
+// If the CloudflareResourceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareResourceOperationMutation) OldTarget(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTarget is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTarget requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTarget: %w", err)
+	}
+	return oldValue.Target, nil
+}
+
+// ResetTarget resets all changes to the "target" field.
+func (m *CloudflareResourceOperationMutation) ResetTarget() {
+	m.target = nil
+}
+
+// SetBefore sets the "before" field.
+func (m *CloudflareResourceOperationMutation) SetBefore(value map[string]interface{}) {
+	m.before = &value
+}
+
+// Before returns the value of the "before" field in the mutation.
+func (m *CloudflareResourceOperationMutation) Before() (r map[string]interface{}, exists bool) {
+	v := m.before
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBefore returns the old "before" field's value of the CloudflareResourceOperation entity.
+// If the CloudflareResourceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareResourceOperationMutation) OldBefore(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBefore is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBefore requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBefore: %w", err)
+	}
+	return oldValue.Before, nil
+}
+
+// ClearBefore clears the value of the "before" field.
+func (m *CloudflareResourceOperationMutation) ClearBefore() {
+	m.before = nil
+	m.clearedFields[cloudflareresourceoperation.FieldBefore] = struct{}{}
+}
+
+// BeforeCleared returns if the "before" field was cleared in this mutation.
+func (m *CloudflareResourceOperationMutation) BeforeCleared() bool {
+	_, ok := m.clearedFields[cloudflareresourceoperation.FieldBefore]
+	return ok
+}
+
+// ResetBefore resets all changes to the "before" field.
+func (m *CloudflareResourceOperationMutation) ResetBefore() {
+	m.before = nil
+	delete(m.clearedFields, cloudflareresourceoperation.FieldBefore)
+}
+
+// SetAfter sets the "after" field.
+func (m *CloudflareResourceOperationMutation) SetAfter(value map[string]interface{}) {
+	m.after = &value
+}
+
+// After returns the value of the "after" field in the mutation.
+func (m *CloudflareResourceOperationMutation) After() (r map[string]interface{}, exists bool) {
+	v := m.after
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAfter returns the old "after" field's value of the CloudflareResourceOperation entity.
+// If the CloudflareResourceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareResourceOperationMutation) OldAfter(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAfter is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAfter requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAfter: %w", err)
+	}
+	return oldValue.After, nil
+}
+
+// ClearAfter clears the value of the "after" field.
+func (m *CloudflareResourceOperationMutation) ClearAfter() {
+	m.after = nil
+	m.clearedFields[cloudflareresourceoperation.FieldAfter] = struct{}{}
+}
+
+// AfterCleared returns if the "after" field was cleared in this mutation.
+func (m *CloudflareResourceOperationMutation) AfterCleared() bool {
+	_, ok := m.clearedFields[cloudflareresourceoperation.FieldAfter]
+	return ok
+}
+
+// ResetAfter resets all changes to the "after" field.
+func (m *CloudflareResourceOperationMutation) ResetAfter() {
+	m.after = nil
+	delete(m.clearedFields, cloudflareresourceoperation.FieldAfter)
+}
+
+// SetRequested sets the "requested" field.
+func (m *CloudflareResourceOperationMutation) SetRequested(value map[string]interface{}) {
+	m.requested = &value
+}
+
+// Requested returns the value of the "requested" field in the mutation.
+func (m *CloudflareResourceOperationMutation) Requested() (r map[string]interface{}, exists bool) {
+	v := m.requested
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequested returns the old "requested" field's value of the CloudflareResourceOperation entity.
+// If the CloudflareResourceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareResourceOperationMutation) OldRequested(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequested is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequested requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequested: %w", err)
+	}
+	return oldValue.Requested, nil
+}
+
+// ClearRequested clears the value of the "requested" field.
+func (m *CloudflareResourceOperationMutation) ClearRequested() {
+	m.requested = nil
+	m.clearedFields[cloudflareresourceoperation.FieldRequested] = struct{}{}
+}
+
+// RequestedCleared returns if the "requested" field was cleared in this mutation.
+func (m *CloudflareResourceOperationMutation) RequestedCleared() bool {
+	_, ok := m.clearedFields[cloudflareresourceoperation.FieldRequested]
+	return ok
+}
+
+// ResetRequested resets all changes to the "requested" field.
+func (m *CloudflareResourceOperationMutation) ResetRequested() {
+	m.requested = nil
+	delete(m.clearedFields, cloudflareresourceoperation.FieldRequested)
+}
+
+// SetStatus sets the "status" field.
+func (m *CloudflareResourceOperationMutation) SetStatus(s string) {
+	m.status = &s
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *CloudflareResourceOperationMutation) Status() (r string, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the CloudflareResourceOperation entity.
+// If the CloudflareResourceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareResourceOperationMutation) OldStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *CloudflareResourceOperationMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetError sets the "error" field.
+func (m *CloudflareResourceOperationMutation) SetError(s string) {
+	m.error = &s
+}
+
+// Error returns the value of the "error" field in the mutation.
+func (m *CloudflareResourceOperationMutation) Error() (r string, exists bool) {
+	v := m.error
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldError returns the old "error" field's value of the CloudflareResourceOperation entity.
+// If the CloudflareResourceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareResourceOperationMutation) OldError(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldError is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldError requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldError: %w", err)
+	}
+	return oldValue.Error, nil
+}
+
+// ResetError resets all changes to the "error" field.
+func (m *CloudflareResourceOperationMutation) ResetError() {
+	m.error = nil
+}
+
+// SetActorID sets the "actor_id" field.
+func (m *CloudflareResourceOperationMutation) SetActorID(s string) {
+	m.actor_id = &s
+}
+
+// ActorID returns the value of the "actor_id" field in the mutation.
+func (m *CloudflareResourceOperationMutation) ActorID() (r string, exists bool) {
+	v := m.actor_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldActorID returns the old "actor_id" field's value of the CloudflareResourceOperation entity.
+// If the CloudflareResourceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareResourceOperationMutation) OldActorID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldActorID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldActorID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldActorID: %w", err)
+	}
+	return oldValue.ActorID, nil
+}
+
+// ResetActorID resets all changes to the "actor_id" field.
+func (m *CloudflareResourceOperationMutation) ResetActorID() {
+	m.actor_id = nil
+}
+
+// SetActorName sets the "actor_name" field.
+func (m *CloudflareResourceOperationMutation) SetActorName(s string) {
+	m.actor_name = &s
+}
+
+// ActorName returns the value of the "actor_name" field in the mutation.
+func (m *CloudflareResourceOperationMutation) ActorName() (r string, exists bool) {
+	v := m.actor_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldActorName returns the old "actor_name" field's value of the CloudflareResourceOperation entity.
+// If the CloudflareResourceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareResourceOperationMutation) OldActorName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldActorName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldActorName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldActorName: %w", err)
+	}
+	return oldValue.ActorName, nil
+}
+
+// ResetActorName resets all changes to the "actor_name" field.
+func (m *CloudflareResourceOperationMutation) ResetActorName() {
+	m.actor_name = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *CloudflareResourceOperationMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *CloudflareResourceOperationMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the CloudflareResourceOperation entity.
+// If the CloudflareResourceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareResourceOperationMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *CloudflareResourceOperationMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetFinishedAt sets the "finished_at" field.
+func (m *CloudflareResourceOperationMutation) SetFinishedAt(t time.Time) {
+	m.finished_at = &t
+}
+
+// FinishedAt returns the value of the "finished_at" field in the mutation.
+func (m *CloudflareResourceOperationMutation) FinishedAt() (r time.Time, exists bool) {
+	v := m.finished_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFinishedAt returns the old "finished_at" field's value of the CloudflareResourceOperation entity.
+// If the CloudflareResourceOperation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CloudflareResourceOperationMutation) OldFinishedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFinishedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFinishedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFinishedAt: %w", err)
+	}
+	return oldValue.FinishedAt, nil
+}
+
+// ClearFinishedAt clears the value of the "finished_at" field.
+func (m *CloudflareResourceOperationMutation) ClearFinishedAt() {
+	m.finished_at = nil
+	m.clearedFields[cloudflareresourceoperation.FieldFinishedAt] = struct{}{}
+}
+
+// FinishedAtCleared returns if the "finished_at" field was cleared in this mutation.
+func (m *CloudflareResourceOperationMutation) FinishedAtCleared() bool {
+	_, ok := m.clearedFields[cloudflareresourceoperation.FieldFinishedAt]
+	return ok
+}
+
+// ResetFinishedAt resets all changes to the "finished_at" field.
+func (m *CloudflareResourceOperationMutation) ResetFinishedAt() {
+	m.finished_at = nil
+	delete(m.clearedFields, cloudflareresourceoperation.FieldFinishedAt)
+}
+
+// Where appends a list predicates to the CloudflareResourceOperationMutation builder.
+func (m *CloudflareResourceOperationMutation) Where(ps ...predicate.CloudflareResourceOperation) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the CloudflareResourceOperationMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *CloudflareResourceOperationMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.CloudflareResourceOperation, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *CloudflareResourceOperationMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *CloudflareResourceOperationMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (CloudflareResourceOperation).
+func (m *CloudflareResourceOperationMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *CloudflareResourceOperationMutation) Fields() []string {
+	fields := make([]string, 0, 16)
+	if m.user_id != nil {
+		fields = append(fields, cloudflareresourceoperation.FieldUserID)
+	}
+	if m.connection_id != nil {
+		fields = append(fields, cloudflareresourceoperation.FieldConnectionID)
+	}
+	if m.account_id != nil {
+		fields = append(fields, cloudflareresourceoperation.FieldAccountID)
+	}
+	if m.kind != nil {
+		fields = append(fields, cloudflareresourceoperation.FieldKind)
+	}
+	if m.resource != nil {
+		fields = append(fields, cloudflareresourceoperation.FieldResource)
+	}
+	if m.action != nil {
+		fields = append(fields, cloudflareresourceoperation.FieldAction)
+	}
+	if m.target != nil {
+		fields = append(fields, cloudflareresourceoperation.FieldTarget)
+	}
+	if m.before != nil {
+		fields = append(fields, cloudflareresourceoperation.FieldBefore)
+	}
+	if m.after != nil {
+		fields = append(fields, cloudflareresourceoperation.FieldAfter)
+	}
+	if m.requested != nil {
+		fields = append(fields, cloudflareresourceoperation.FieldRequested)
+	}
+	if m.status != nil {
+		fields = append(fields, cloudflareresourceoperation.FieldStatus)
+	}
+	if m.error != nil {
+		fields = append(fields, cloudflareresourceoperation.FieldError)
+	}
+	if m.actor_id != nil {
+		fields = append(fields, cloudflareresourceoperation.FieldActorID)
+	}
+	if m.actor_name != nil {
+		fields = append(fields, cloudflareresourceoperation.FieldActorName)
+	}
+	if m.created_at != nil {
+		fields = append(fields, cloudflareresourceoperation.FieldCreatedAt)
+	}
+	if m.finished_at != nil {
+		fields = append(fields, cloudflareresourceoperation.FieldFinishedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *CloudflareResourceOperationMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case cloudflareresourceoperation.FieldUserID:
+		return m.UserID()
+	case cloudflareresourceoperation.FieldConnectionID:
+		return m.ConnectionID()
+	case cloudflareresourceoperation.FieldAccountID:
+		return m.AccountID()
+	case cloudflareresourceoperation.FieldKind:
+		return m.Kind()
+	case cloudflareresourceoperation.FieldResource:
+		return m.Resource()
+	case cloudflareresourceoperation.FieldAction:
+		return m.Action()
+	case cloudflareresourceoperation.FieldTarget:
+		return m.Target()
+	case cloudflareresourceoperation.FieldBefore:
+		return m.Before()
+	case cloudflareresourceoperation.FieldAfter:
+		return m.After()
+	case cloudflareresourceoperation.FieldRequested:
+		return m.Requested()
+	case cloudflareresourceoperation.FieldStatus:
+		return m.Status()
+	case cloudflareresourceoperation.FieldError:
+		return m.Error()
+	case cloudflareresourceoperation.FieldActorID:
+		return m.ActorID()
+	case cloudflareresourceoperation.FieldActorName:
+		return m.ActorName()
+	case cloudflareresourceoperation.FieldCreatedAt:
+		return m.CreatedAt()
+	case cloudflareresourceoperation.FieldFinishedAt:
+		return m.FinishedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *CloudflareResourceOperationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case cloudflareresourceoperation.FieldUserID:
+		return m.OldUserID(ctx)
+	case cloudflareresourceoperation.FieldConnectionID:
+		return m.OldConnectionID(ctx)
+	case cloudflareresourceoperation.FieldAccountID:
+		return m.OldAccountID(ctx)
+	case cloudflareresourceoperation.FieldKind:
+		return m.OldKind(ctx)
+	case cloudflareresourceoperation.FieldResource:
+		return m.OldResource(ctx)
+	case cloudflareresourceoperation.FieldAction:
+		return m.OldAction(ctx)
+	case cloudflareresourceoperation.FieldTarget:
+		return m.OldTarget(ctx)
+	case cloudflareresourceoperation.FieldBefore:
+		return m.OldBefore(ctx)
+	case cloudflareresourceoperation.FieldAfter:
+		return m.OldAfter(ctx)
+	case cloudflareresourceoperation.FieldRequested:
+		return m.OldRequested(ctx)
+	case cloudflareresourceoperation.FieldStatus:
+		return m.OldStatus(ctx)
+	case cloudflareresourceoperation.FieldError:
+		return m.OldError(ctx)
+	case cloudflareresourceoperation.FieldActorID:
+		return m.OldActorID(ctx)
+	case cloudflareresourceoperation.FieldActorName:
+		return m.OldActorName(ctx)
+	case cloudflareresourceoperation.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case cloudflareresourceoperation.FieldFinishedAt:
+		return m.OldFinishedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown CloudflareResourceOperation field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CloudflareResourceOperationMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case cloudflareresourceoperation.FieldUserID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case cloudflareresourceoperation.FieldConnectionID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConnectionID(v)
+		return nil
+	case cloudflareresourceoperation.FieldAccountID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccountID(v)
+		return nil
+	case cloudflareresourceoperation.FieldKind:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKind(v)
+		return nil
+	case cloudflareresourceoperation.FieldResource:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetResource(v)
+		return nil
+	case cloudflareresourceoperation.FieldAction:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAction(v)
+		return nil
+	case cloudflareresourceoperation.FieldTarget:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTarget(v)
+		return nil
+	case cloudflareresourceoperation.FieldBefore:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBefore(v)
+		return nil
+	case cloudflareresourceoperation.FieldAfter:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAfter(v)
+		return nil
+	case cloudflareresourceoperation.FieldRequested:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequested(v)
+		return nil
+	case cloudflareresourceoperation.FieldStatus:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case cloudflareresourceoperation.FieldError:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetError(v)
+		return nil
+	case cloudflareresourceoperation.FieldActorID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetActorID(v)
+		return nil
+	case cloudflareresourceoperation.FieldActorName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetActorName(v)
+		return nil
+	case cloudflareresourceoperation.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case cloudflareresourceoperation.FieldFinishedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFinishedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown CloudflareResourceOperation field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *CloudflareResourceOperationMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *CloudflareResourceOperationMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CloudflareResourceOperationMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown CloudflareResourceOperation numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *CloudflareResourceOperationMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(cloudflareresourceoperation.FieldBefore) {
+		fields = append(fields, cloudflareresourceoperation.FieldBefore)
+	}
+	if m.FieldCleared(cloudflareresourceoperation.FieldAfter) {
+		fields = append(fields, cloudflareresourceoperation.FieldAfter)
+	}
+	if m.FieldCleared(cloudflareresourceoperation.FieldRequested) {
+		fields = append(fields, cloudflareresourceoperation.FieldRequested)
+	}
+	if m.FieldCleared(cloudflareresourceoperation.FieldFinishedAt) {
+		fields = append(fields, cloudflareresourceoperation.FieldFinishedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *CloudflareResourceOperationMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *CloudflareResourceOperationMutation) ClearField(name string) error {
+	switch name {
+	case cloudflareresourceoperation.FieldBefore:
+		m.ClearBefore()
+		return nil
+	case cloudflareresourceoperation.FieldAfter:
+		m.ClearAfter()
+		return nil
+	case cloudflareresourceoperation.FieldRequested:
+		m.ClearRequested()
+		return nil
+	case cloudflareresourceoperation.FieldFinishedAt:
+		m.ClearFinishedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown CloudflareResourceOperation nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *CloudflareResourceOperationMutation) ResetField(name string) error {
+	switch name {
+	case cloudflareresourceoperation.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case cloudflareresourceoperation.FieldConnectionID:
+		m.ResetConnectionID()
+		return nil
+	case cloudflareresourceoperation.FieldAccountID:
+		m.ResetAccountID()
+		return nil
+	case cloudflareresourceoperation.FieldKind:
+		m.ResetKind()
+		return nil
+	case cloudflareresourceoperation.FieldResource:
+		m.ResetResource()
+		return nil
+	case cloudflareresourceoperation.FieldAction:
+		m.ResetAction()
+		return nil
+	case cloudflareresourceoperation.FieldTarget:
+		m.ResetTarget()
+		return nil
+	case cloudflareresourceoperation.FieldBefore:
+		m.ResetBefore()
+		return nil
+	case cloudflareresourceoperation.FieldAfter:
+		m.ResetAfter()
+		return nil
+	case cloudflareresourceoperation.FieldRequested:
+		m.ResetRequested()
+		return nil
+	case cloudflareresourceoperation.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case cloudflareresourceoperation.FieldError:
+		m.ResetError()
+		return nil
+	case cloudflareresourceoperation.FieldActorID:
+		m.ResetActorID()
+		return nil
+	case cloudflareresourceoperation.FieldActorName:
+		m.ResetActorName()
+		return nil
+	case cloudflareresourceoperation.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case cloudflareresourceoperation.FieldFinishedAt:
+		m.ResetFinishedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown CloudflareResourceOperation field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *CloudflareResourceOperationMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *CloudflareResourceOperationMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *CloudflareResourceOperationMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *CloudflareResourceOperationMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *CloudflareResourceOperationMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *CloudflareResourceOperationMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *CloudflareResourceOperationMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown CloudflareResourceOperation unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *CloudflareResourceOperationMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown CloudflareResourceOperation edge %s", name)
 }
 
 // ConnectionMutation represents an operation that mutates the Connection nodes in the graph.

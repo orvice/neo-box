@@ -8,7 +8,10 @@ import {
 import {
   CloudflareRecordAccess,
   CloudflareService,
+  type CloudflareChangeResult,
   type CloudflareDNSRecordInputSchema,
+  type CloudflarePagesEnvironment,
+  type CloudflareResourceKind,
   type CloudflareZone,
 } from '@/gen/neobox/v1/cloudflare_pb'
 import type { MessageInitShape } from '@bufbuild/protobuf'
@@ -35,6 +38,22 @@ export {
   type CloudflareTunnelHostname,
   type CloudflareTunnelRecordResult,
   type GetCloudflareTunnelResponse,
+  CloudflarePagesEnvironment,
+  CloudflarePagesEnvVarType,
+  CloudflareResourceKind,
+  type CloudflareChangeResult,
+  type CloudflarePagesBuildConfig,
+  type CloudflarePagesDeployment,
+  type CloudflarePagesDomain,
+  type CloudflarePagesEnvVar,
+  type CloudflareResourceOperation,
+  type CloudflareWorkerDeployment,
+  type CloudflareWorkerDomain,
+  type CloudflareWorkerRoute,
+  type CloudflareWorkerSecret,
+  type CloudflareWorkerVersion,
+  type GetCloudflarePagesProjectResponse,
+  type GetCloudflareWorkerResponse,
 } from '@/gen/neobox/v1/cloudflare_pb'
 
 /** A DNS record as sent on create and update. */
@@ -75,6 +94,42 @@ const keys = {
       : (['cloudflare', connectionId, 'tunnels'] as const),
   tunnel: (connectionId: string, tunnelId: string) =>
     ['cloudflare', connectionId, 'tunnel', tunnelId] as const,
+  worker: (connectionId: string, name: string) =>
+    ['cloudflare', connectionId, 'worker', name] as const,
+  project: (connectionId: string, name: string) =>
+    ['cloudflare', connectionId, 'project', name] as const,
+  deployments: (
+    connectionId: string,
+    name: string,
+    env?: CloudflarePagesEnvironment,
+    page?: number
+  ) =>
+    env === undefined
+      ? (['cloudflare', connectionId, 'deployments', name] as const)
+      : ([
+          'cloudflare',
+          connectionId,
+          'deployments',
+          name,
+          env,
+          page ?? 1,
+        ] as const),
+  resourceOps: (
+    connectionId: string,
+    kind?: CloudflareResourceKind,
+    resource?: string,
+    page?: number
+  ) =>
+    kind === undefined
+      ? (['cloudflare', connectionId, 'resource-ops'] as const)
+      : ([
+          'cloudflare',
+          connectionId,
+          'resource-ops',
+          kind,
+          resource ?? '',
+          page ?? 1,
+        ] as const),
 }
 
 // Everything is read live from Cloudflare when a page opens; there is no
@@ -263,6 +318,233 @@ export function useCloudflareTunnelHostnames(
       }) => await client.deleteCloudflareTunnelHostname({ ...base, ...v }),
       onSettled,
     }),
+  }
+}
+
+export function useCloudflareWorker(connectionId: string, name: string) {
+  return useQuery({
+    queryKey: keys.worker(connectionId, name),
+    queryFn: async () =>
+      await client.getCloudflareWorker({ connectionId, name }),
+    retry: false,
+  })
+}
+
+export function useCloudflarePagesProject(connectionId: string, name: string) {
+  return useQuery({
+    queryKey: keys.project(connectionId, name),
+    queryFn: async () =>
+      await client.getCloudflarePagesProject({ connectionId, name }),
+    retry: false,
+  })
+}
+
+export function useCloudflarePagesDeployments(
+  connectionId: string,
+  name: string,
+  environment: CloudflarePagesEnvironment,
+  page: number
+) {
+  return useQuery({
+    queryKey: keys.deployments(connectionId, name, environment, page),
+    queryFn: async () =>
+      await client.listCloudflarePagesDeployments({
+        connectionId,
+        name,
+        environment,
+        page,
+        pageSize: 20,
+      }),
+    placeholderData: keepPreviousData,
+    retry: false,
+  })
+}
+
+export function useCloudflareResourceOperations(
+  connectionId: string,
+  kind: CloudflareResourceKind,
+  resource: string,
+  page: number
+) {
+  return useQuery({
+    queryKey: keys.resourceOps(connectionId, kind, resource, page),
+    queryFn: async () =>
+      await client.listCloudflareResourceOperations({
+        connectionId,
+        kind,
+        resource,
+        page,
+        pageSize: 20,
+      }),
+    placeholderData: keepPreviousData,
+  })
+}
+
+/**
+ * Builds the mutations of one resource's changes. Whatever the outcome (a
+ * failed or unconfirmed change may still have been made and logged), what
+ * the resource shows and its log are read again. Callers show the error
+ * where the change was made, so the app-wide toast stays quiet.
+ */
+function useResourceChanges(
+  connectionId: string,
+  invalidate: readonly (readonly unknown[])[]
+) {
+  const qc = useQueryClient()
+  const onSettled = () =>
+    Promise.all([
+      ...invalidate.map((queryKey) => qc.invalidateQueries({ queryKey })),
+      qc.invalidateQueries({ queryKey: keys.resourceOps(connectionId) }),
+      qc.invalidateQueries({
+        queryKey: ['cloudflare', connectionId, 'workers'],
+      }),
+      qc.invalidateQueries({ queryKey: ['cloudflare', connectionId, 'pages'] }),
+    ])
+  return function change<V, R extends { result?: CloudflareChangeResult }>(
+    fn: (v: V) => Promise<R>
+  ) {
+    return {
+      mutationFn: fn,
+      onSettled,
+    }
+  }
+}
+
+/** Every change to a Worker. */
+export function useCloudflareWorkerChanges(connectionId: string, name: string) {
+  const change = useResourceChanges(connectionId, [
+    keys.worker(connectionId, name),
+  ])
+  const base = { connectionId, name }
+  return {
+    setWorkersDev: useMutation(
+      change((enabled: boolean) =>
+        client.setCloudflareWorkerWorkersDev({ ...base, enabled })
+      )
+    ),
+    attachDomain: useMutation(
+      change((hostname: string) =>
+        client.attachCloudflareWorkerDomain({ ...base, hostname })
+      )
+    ),
+    detachDomain: useMutation(
+      change((hostname: string) =>
+        client.detachCloudflareWorkerDomain({ ...base, hostname })
+      )
+    ),
+    addRoute: useMutation(
+      change((pattern: string) =>
+        client.addCloudflareWorkerRoute({ ...base, pattern })
+      )
+    ),
+    deleteRoute: useMutation(
+      change((v: { zoneId: string; routeId: string }) =>
+        client.deleteCloudflareWorkerRoute({ ...base, ...v })
+      )
+    ),
+    addCron: useMutation(
+      change((cron: string) =>
+        client.addCloudflareWorkerCron({ ...base, cron })
+      )
+    ),
+    deleteCron: useMutation(
+      change((cron: string) =>
+        client.deleteCloudflareWorkerCron({ ...base, cron })
+      )
+    ),
+    putSecret: useMutation(
+      change((v: { secretName: string; value: string }) =>
+        client.putCloudflareWorkerSecret({ ...base, ...v })
+      )
+    ),
+    deleteSecret: useMutation(
+      change((secretName: string) =>
+        client.deleteCloudflareWorkerSecret({ ...base, secretName })
+      )
+    ),
+    rollback: useMutation(
+      change((versionId: string) =>
+        client.rollbackCloudflareWorker({ ...base, versionId })
+      )
+    ),
+    remove: useMutation(
+      change(() => client.deleteCloudflareWorker({ ...base }))
+    ),
+  }
+}
+
+/** Creates a Pages project; the Pages list is read again after. */
+export function useCloudflarePagesProjectCreate(connectionId: string) {
+  const change = useResourceChanges(connectionId, [])
+  return useMutation(
+    change((v: { name: string; productionBranch: string }) =>
+      client.createCloudflarePagesProject({ connectionId, ...v })
+    )
+  )
+}
+
+/** Every change to a Pages project. */
+export function useCloudflarePagesChanges(connectionId: string, name: string) {
+  const change = useResourceChanges(connectionId, [
+    keys.project(connectionId, name),
+    keys.deployments(connectionId, name),
+  ])
+  const base = { connectionId, name }
+  return {
+    update: useMutation(
+      change(
+        (v: {
+          productionBranch?: string
+          buildCommand?: string
+          destinationDir?: string
+          rootDir?: string
+        }) => client.updateCloudflarePagesProject({ ...base, ...v })
+      )
+    ),
+    remove: useMutation(
+      change(() => client.deleteCloudflarePagesProject({ ...base }))
+    ),
+    retry: useMutation(
+      change((deploymentId: string) =>
+        client.retryCloudflarePagesDeployment({ ...base, deploymentId })
+      )
+    ),
+    rollback: useMutation(
+      change((deploymentId: string) =>
+        client.rollbackCloudflarePagesDeployment({ ...base, deploymentId })
+      )
+    ),
+    deleteDeployment: useMutation(
+      change((deploymentId: string) =>
+        client.deleteCloudflarePagesDeployment({ ...base, deploymentId })
+      )
+    ),
+    addDomain: useMutation(
+      change((v: { hostname: string; createDns: boolean }) =>
+        client.addCloudflarePagesDomain({ ...base, ...v })
+      )
+    ),
+    deleteDomain: useMutation(
+      change((hostname: string) =>
+        client.deleteCloudflarePagesDomain({ ...base, hostname })
+      )
+    ),
+    setEnvVar: useMutation(
+      change(
+        (v: {
+          environment: CloudflarePagesEnvironment
+          varName: string
+          value: string
+          secret: boolean
+        }) => client.setCloudflarePagesEnvVar({ ...base, ...v })
+      )
+    ),
+    deleteEnvVar: useMutation(
+      change(
+        (v: { environment: CloudflarePagesEnvironment; varName: string }) =>
+          client.deleteCloudflarePagesEnvVar({ ...base, ...v })
+      )
+    ),
   }
 }
 

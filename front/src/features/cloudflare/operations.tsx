@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { timestampDate, type Timestamp } from '@bufbuild/protobuf/wkt'
 import {
   CloudflareOperationStatus,
   CloudflareRecordAction,
@@ -12,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { DataTable, type Column } from '@/components/data-table'
 import { contentSummary, formatTTL, requestSummary } from './dns'
 import { Pager, ProblemAlert } from './list-parts'
+import { formatUTC, statusStyle } from './operation-status'
 
 const actionLabel: Record<CloudflareRecordAction, string> = {
   [CloudflareRecordAction.UNSPECIFIED]: '-',
@@ -19,40 +19,6 @@ const actionLabel: Record<CloudflareRecordAction, string> = {
   [CloudflareRecordAction.UPDATE]: 'Changed',
   [CloudflareRecordAction.DELETE]: 'Deleted',
   [CloudflareRecordAction.SET_PROXIED]: 'Proxy',
-}
-
-const statusStyle: Record<
-  CloudflareOperationStatus,
-  { label: string; className: string; hint?: string }
-> = {
-  [CloudflareOperationStatus.UNSPECIFIED]: {
-    label: '-',
-    className: 'bg-muted text-muted-foreground',
-  },
-  [CloudflareOperationStatus.PENDING]: {
-    label: 'Pending confirmation',
-    className: 'bg-warning-muted text-warning-foreground',
-    hint: 'Sent to Cloudflare, but its outcome was never recorded. Check the record.',
-  },
-  [CloudflareOperationStatus.SUCCEEDED]: {
-    label: 'Succeeded',
-    className: 'bg-success-muted text-success-foreground',
-  },
-  [CloudflareOperationStatus.FAILED]: {
-    label: 'Failed',
-    className: 'bg-danger-muted text-danger-foreground',
-  },
-  [CloudflareOperationStatus.UNKNOWN]: {
-    label: 'Result unknown',
-    className: 'bg-warning-muted text-warning-foreground',
-    hint: 'Cloudflare never answered; the change may or may not have been made.',
-  },
-}
-
-/** UTC, as the log is kept. */
-function formatUTC(ts: Timestamp | undefined) {
-  if (!ts) return '-'
-  return timestampDate(ts).toISOString().replace('T', ' ').slice(0, 19) + ' UTC'
 }
 
 function RecordState({ r }: { r: CloudflareDNSRecord | undefined }) {

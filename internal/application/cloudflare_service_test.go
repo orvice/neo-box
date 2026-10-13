@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
+	"golang.org/x/time/rate"
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"go.orx.me/apps/neo-box/internal/cloudflare/cftest"
@@ -33,7 +34,8 @@ const (
 //
 // Tokens: "full" reaches accounts A and B with every permission; "dns-read"
 // only reads Zones and DNS in A; "zones-only" reads Zones and edits DNS in
-// A but has no Workers or Pages permission; "acct-owned" is owned by A.
+// A but has no Workers or Pages permission; "manage-read" reads Zones, DNS,
+// Workers and Pages in A but changes none of them; "acct-owned" is owned by A.
 type cfFixture struct {
 	cf      *cftest.Server
 	ops     *cfmemory.Store
@@ -53,12 +55,16 @@ func newCFFixture(t *testing.T) *cfFixture {
 		cftest.PermAccountRead, cftest.PermZoneRead, cftest.PermDNSRead, cftest.PermDNSEdit,
 		cftest.PermWorkersRead, cftest.PermRoutesRead, cftest.PermPagesRead,
 		cftest.PermTunnelRead, cftest.PermTunnelEdit,
+		cftest.PermWorkersEdit, cftest.PermRoutesEdit, cftest.PermPagesEdit,
 	}
 	cf.AddToken("full", &cftest.Token{Accounts: []string{cfAccA, cfAccB}, Perms: all,
 		ZonePermissions: []string{"#zone:read", "#dns_records:read", "#dns_records:edit"}})
 	cf.AddToken("dns-read", &cftest.Token{Accounts: []string{cfAccA}, Perms: []string{cftest.PermZoneRead, cftest.PermDNSRead},
 		ZonePermissions: []string{"#zone:read", "#dns_records:read"}})
 	cf.AddToken("zones-only", &cftest.Token{Accounts: []string{cfAccA}, Perms: []string{cftest.PermZoneRead, cftest.PermDNSEdit}})
+	cf.AddToken("manage-read", &cftest.Token{Accounts: []string{cfAccA}, Perms: []string{
+		cftest.PermZoneRead, cftest.PermDNSRead, cftest.PermWorkersRead, cftest.PermRoutesRead, cftest.PermPagesRead,
+	}})
 	cf.AddToken("tunnel-read", &cftest.Token{Accounts: []string{cfAccA}, Perms: []string{cftest.PermZoneRead, cftest.PermTunnelRead}})
 	cf.AddToken("tunnel-no-dns", &cftest.Token{Accounts: []string{cfAccA},
 		Perms: []string{cftest.PermZoneRead, cftest.PermDNSRead, cftest.PermTunnelRead, cftest.PermTunnelEdit}})
@@ -71,7 +77,10 @@ func newCFFixture(t *testing.T) *cfFixture {
 	cipher, _ := secretbox.NewCipher("0123456789abcdef0123456789abcdef")
 	f := &cfFixture{cf: cf, ops: cfmemory.New(), conns: connmemory.New()}
 	f.svc = connection.NewService(f.conns, cipher)
-	m := cloudflareacct.New(cloudflareacct.Config{Endpoint: cf.URL, RetryDelay: time.Millisecond}, f.ops, f.svc)
+	m := cloudflareacct.New(cloudflareacct.Config{
+		Endpoint: cf.URL, RetryDelay: time.Millisecond,
+		Limiter: func() *rate.Limiter { return rate.NewLimiter(rate.Inf, 1) },
+	}, f.ops, f.svc)
 	f.svc.Register(m.ConnectionProvider())
 	f.connSrv = NewConnectionServiceServer()
 	f.connSrv.SetService(f.svc)

@@ -83,6 +83,44 @@ var (
 			},
 		},
 	}
+	// CloudflareResourceOperationsColumns holds the columns for the "cloudflare_resource_operations" table.
+	CloudflareResourceOperationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "connection_id", Type: field.TypeString},
+		{Name: "account_id", Type: field.TypeString},
+		{Name: "kind", Type: field.TypeString},
+		{Name: "resource", Type: field.TypeString},
+		{Name: "action", Type: field.TypeString},
+		{Name: "target", Type: field.TypeString, Default: ""},
+		{Name: "before", Type: field.TypeJSON, Nullable: true},
+		{Name: "after", Type: field.TypeJSON, Nullable: true},
+		{Name: "requested", Type: field.TypeJSON, Nullable: true},
+		{Name: "status", Type: field.TypeString},
+		{Name: "error", Type: field.TypeString, Default: ""},
+		{Name: "actor_id", Type: field.TypeString},
+		{Name: "actor_name", Type: field.TypeString, Default: ""},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "finished_at", Type: field.TypeTime, Nullable: true},
+	}
+	// CloudflareResourceOperationsTable holds the schema information for the "cloudflare_resource_operations" table.
+	CloudflareResourceOperationsTable = &schema.Table{
+		Name:       "cloudflare_resource_operations",
+		Columns:    CloudflareResourceOperationsColumns,
+		PrimaryKey: []*schema.Column{CloudflareResourceOperationsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "cloudflareresourceoperation_user_id_connection_id_kind_resource_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{CloudflareResourceOperationsColumns[1], CloudflareResourceOperationsColumns[2], CloudflareResourceOperationsColumns[4], CloudflareResourceOperationsColumns[5], CloudflareResourceOperationsColumns[15]},
+			},
+			{
+				Name:    "cloudflareresourceoperation_connection_id",
+				Unique:  false,
+				Columns: []*schema.Column{CloudflareResourceOperationsColumns[2]},
+			},
+		},
+	}
 	// ConnectionsColumns holds the columns for the "connections" table.
 	ConnectionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -563,6 +601,7 @@ var (
 	Tables = []*schema.Table{
 		AlertsTable,
 		CloudflareDNSOperationsTable,
+		CloudflareResourceOperationsTable,
 		ConnectionsTable,
 		NocodbBackupPoliciesTable,
 		NocodbFilesTable,
@@ -588,6 +627,9 @@ func init() {
 	}
 	CloudflareDNSOperationsTable.Annotation = &entsql.Annotation{
 		Table: "cloudflare_dns_operations",
+	}
+	CloudflareResourceOperationsTable.Annotation = &entsql.Annotation{
+		Table: "cloudflare_resource_operations",
 	}
 	ConnectionsTable.Annotation = &entsql.Annotation{
 		Table: "connections",

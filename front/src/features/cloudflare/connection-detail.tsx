@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { ChevronLeft, TriangleAlert } from 'lucide-react'
+import { ChevronLeft, Plus, TriangleAlert } from 'lucide-react'
 import {
   CloudflareRecordAccess,
+  useCloudflarePagesProjectCreate,
   useCloudflarePagesProjects,
   useCloudflareWorkers,
   useCloudflareZones,
@@ -15,10 +16,12 @@ import {
 import { type Connection } from '@/api/connections'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Page, PageHeader, PageScroll } from '@/components/common/page-parts'
 import { DataTable, type Column } from '@/components/data-table'
 import { AddressList } from './address-list'
+import { toastChange } from './changed'
 import { cloudflareConfig } from './format'
 import {
   ListFrame,
@@ -27,6 +30,8 @@ import {
   RefreshButton,
   SearchBox,
 } from './list-parts'
+import { branchProblem, projectNameProblem } from './manage'
+import { FormDialog } from './manage-dialogs'
 import { TunnelsTab } from './tunnels-tab'
 
 const PAGE_SIZE = 20
@@ -211,7 +216,15 @@ function WorkersTab({ connectionId }: { connectionId: string }) {
   const columns: Column<CloudflareWorker>[] = [
     {
       header: 'Worker',
-      cell: (w) => <span className='font-medium'>{w.name}</span>,
+      cell: (w) => (
+        <Link
+          to='/connections/$connectionId/workers/$name'
+          params={{ connectionId, name: w.name }}
+          className='font-medium hover:underline'
+        >
+          {w.name}
+        </Link>
+      ),
     },
     {
       header: 'Addresses',
@@ -266,11 +279,21 @@ function WorkersTab({ connectionId }: { connectionId: string }) {
 function PagesTab({ connectionId }: { connectionId: string }) {
   const { q, setQuery, setPage } = useListQuery()
   const projects = useCloudflarePagesProjects(connectionId, q)
+  const create = useCloudflarePagesProjectCreate(connectionId)
+  const [creating, setCreating] = useState(false)
 
   const columns: Column<CloudflarePagesProject>[] = [
     {
       header: 'Project',
-      cell: (p) => <span className='font-medium'>{p.name}</span>,
+      cell: (p) => (
+        <Link
+          to='/connections/$connectionId/pages/$name'
+          params={{ connectionId, name: p.name }}
+          className='font-medium hover:underline'
+        >
+          {p.name}
+        </Link>
+      ),
     },
     {
       header: 'Addresses',
@@ -284,42 +307,83 @@ function PagesTab({ connectionId }: { connectionId: string }) {
   ]
 
   return (
-    <ListFrame
-      search={
-        <SearchBox
-          value={q.query}
-          onChange={setQuery}
-          placeholder='Search projects'
-        />
-      }
-      pager={
-        <Pager
-          info={projects.data?.pageInfo}
-          onPage={setPage}
-          busy={projects.isFetching}
-        />
-      }
-    >
-      {projects.error ? (
-        <ProblemAlert
-          error={projects.error}
-          permission='Cloudflare Pages · Read'
-        />
-      ) : (
-        <>
-          <IssuesAlert issues={projects.data?.addressIssues} />
-          <DataTable
-            columns={columns}
-            data={projects.data?.projects}
-            isLoading={projects.isLoading}
-            emptyMessage={
-              q.query
-                ? 'No projects match'
-                : 'No Pages projects visible to this token'
-            }
+    <>
+      <ListFrame
+        notice={
+          <Button onClick={() => setCreating(true)}>
+            <Plus className='h-4 w-4' /> Create project
+          </Button>
+        }
+        search={
+          <SearchBox
+            value={q.query}
+            onChange={setQuery}
+            placeholder='Search projects'
           />
-        </>
+        }
+        pager={
+          <Pager
+            info={projects.data?.pageInfo}
+            onPage={setPage}
+            busy={projects.isFetching}
+          />
+        }
+      >
+        {projects.error ? (
+          <ProblemAlert
+            error={projects.error}
+            permission='Cloudflare Pages · Read'
+          />
+        ) : (
+          <>
+            <IssuesAlert issues={projects.data?.addressIssues} />
+            <DataTable
+              columns={columns}
+              data={projects.data?.projects}
+              isLoading={projects.isLoading}
+              emptyMessage={
+                q.query
+                  ? 'No projects match'
+                  : 'No Pages projects visible to this token'
+              }
+            />
+          </>
+        )}
+      </ListFrame>
+      {creating && (
+        <FormDialog
+          title='Create a Pages project'
+          description='Creates an empty project. Neo Box does not upload code; deploy to it with Wrangler (wrangler pages deploy) or connect a Git repository in the Cloudflare dashboard.'
+          submitLabel='Create project'
+          pendingLabel='Creating…'
+          what='Pages projects'
+          fields={[
+            {
+              name: 'name',
+              label: 'Project name',
+              hint: 'Also its address: <name>.pages.dev',
+              placeholder: 'my-site',
+              mono: true,
+              check: projectNameProblem,
+            },
+            {
+              name: 'productionBranch',
+              label: 'Production branch',
+              initial: 'main',
+              mono: true,
+              check: branchProblem,
+            },
+          ]}
+          run={async ({ text }) => {
+            const res = await create.mutateAsync({
+              name: text.name,
+              productionBranch: text.productionBranch,
+            })
+            toastChange(`Created ${text.name}`, res.result)
+          }}
+          onClose={() => setCreating(false)}
+        />
       )}
-    </ListFrame>
+    </>
   )
 }

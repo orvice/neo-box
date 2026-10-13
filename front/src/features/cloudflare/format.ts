@@ -28,14 +28,31 @@ export const TOKEN_PERMISSIONS: {
     unlocks: 'Workers tab',
   },
   {
+    scope: 'Account',
+    permission: 'Workers Scripts · Edit',
+    unlocks:
+      'managing Workers: workers.dev, custom domains, cron triggers, secrets, rollback, delete',
+  },
+  {
     scope: 'Zone',
     permission: 'Workers Routes · Read',
     unlocks: 'Worker routes',
   },
   {
+    scope: 'Zone',
+    permission: 'Workers Routes · Edit',
+    unlocks: 'adding and deleting Worker routes',
+  },
+  {
     scope: 'Account',
     permission: 'Cloudflare Pages · Read',
     unlocks: 'Pages tab',
+  },
+  {
+    scope: 'Account',
+    permission: 'Cloudflare Pages · Edit',
+    unlocks:
+      'managing Pages projects: settings, variables, deployments, domains, delete',
   },
   {
     scope: 'Account',

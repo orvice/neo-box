@@ -16,6 +16,8 @@ type Tx struct {
 	Alert *AlertClient
 	// CloudflareDNSOperation is the client for interacting with the CloudflareDNSOperation builders.
 	CloudflareDNSOperation *CloudflareDNSOperationClient
+	// CloudflareResourceOperation is the client for interacting with the CloudflareResourceOperation builders.
+	CloudflareResourceOperation *CloudflareResourceOperationClient
 	// Connection is the client for interacting with the Connection builders.
 	Connection *ConnectionClient
 	// NocoDBBackupPolicy is the client for interacting with the NocoDBBackupPolicy builders.
@@ -181,6 +183,7 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Alert = NewAlertClient(tx.config)
 	tx.CloudflareDNSOperation = NewCloudflareDNSOperationClient(tx.config)
+	tx.CloudflareResourceOperation = NewCloudflareResourceOperationClient(tx.config)
 	tx.Connection = NewConnectionClient(tx.config)
 	tx.NocoDBBackupPolicy = NewNocoDBBackupPolicyClient(tx.config)
 	tx.NocoDBFile = NewNocoDBFileClient(tx.config)

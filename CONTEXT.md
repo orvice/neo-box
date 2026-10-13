@@ -163,6 +163,21 @@ can't be deleted while a Restore of it is pending or running.
   record that is anything else is never replaced or deleted, and a DNS
   problem never undoes the route: it is reported next to it. Route changes
   are not logged; the DNS records they create are DNS operations.
+- **Worker** / **Pages project** — managed without touching code. A Worker's
+  workers.dev switch, custom domains, routes, cron triggers and secrets can
+  be changed, a version rolled back to (a new deployment of that version to
+  all traffic) and the Worker deleted. A Pages project can be created
+  (empty), its settings and variables changed, its deployments retried,
+  rolled back or deleted, its domains added or removed, and the project
+  deleted. Neo Box never uploads code and never changes a Git-connected
+  project's production branch. A hostname or route that belongs to another
+  Worker is never taken over. Secret values are write-only: never stored,
+  logged or shown.
+- **Resource operation** — one change to a Worker or Pages project made from
+  Neo Box, logged like a DNS operation (pending before it is sent, then
+  succeeded, failed or unknown; a change already in effect is not logged).
+  It names the resource, action and target, with the state before and after
+  and what was requested, never a secret value.
 
 ### Google Workspace
 

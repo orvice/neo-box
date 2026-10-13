@@ -1,6 +1,6 @@
-// Package cloudflare persists the DNS operations started from Neo Box on
-// Cloudflare connections. Every operation is owned by one user; reads are
-// scoped by UserID.
+// Package cloudflare persists the DNS operations and the Worker / Pages
+// operations started from Neo Box on Cloudflare connections. Every
+// operation is owned by one user; reads are scoped by UserID.
 package cloudflare
 
 import (
@@ -77,6 +77,56 @@ type Filter struct {
 	Limit        int
 }
 
+// ResourceKind says which kind of Cloudflare resource an operation changed.
+type ResourceKind string
+
+const (
+	KindWorker ResourceKind = "worker"
+	KindPages  ResourceKind = "pages"
+)
+
+// ResourceOperation is one change to a Worker or a Pages project started
+// from Neo Box: a custom domain, a route, a secret, a rollback, a delete.
+type ResourceOperation struct {
+	ID           string
+	UserID       string
+	ConnectionID string
+	AccountID    string
+	Kind         ResourceKind
+	// Resource is the Worker script or Pages project name.
+	Resource string
+	// Action names the change, e.g. "attach_domain". The set is owned by
+	// the cloudflareacct package.
+	Action string
+	// Target is what the action applies to: a hostname, route pattern,
+	// secret name, deployment or version ID. Empty when it applies to the
+	// resource itself.
+	Target string
+	// Before and After describe the affected state. They never hold secret
+	// values.
+	Before    map[string]any
+	After     map[string]any
+	Requested map[string]any
+	Status    Status
+	// Error says why it failed or is unknown. It never holds credentials.
+	Error      string
+	ActorID    string
+	ActorName  string
+	CreatedAt  time.Time
+	FinishedAt time.Time
+}
+
+// ResourceFilter narrows ListResourceOperations. UserID and ConnectionID are
+// required; an empty Kind or Resource lists everything.
+type ResourceFilter struct {
+	UserID       string
+	ConnectionID string
+	Kind         ResourceKind
+	Resource     string
+	Offset       int
+	Limit        int
+}
+
 type Repository interface {
 	// CreateDNSOperation stores a new operation, normally pending.
 	CreateDNSOperation(ctx context.Context, op *DNSOperation) error
@@ -86,6 +136,15 @@ type Repository interface {
 	// ListDNSOperations returns one page of matching operations, newest
 	// first, and how many match in all.
 	ListDNSOperations(ctx context.Context, f Filter) ([]*DNSOperation, int, error)
-	// DeleteConnectionData deletes every operation of the connection.
+	// CreateResourceOperation stores a new operation, normally pending.
+	CreateResourceOperation(ctx context.Context, op *ResourceOperation) error
+	// FinishResourceOperation records the outcome: status, after, error and
+	// finished time. Everything else is fixed at create.
+	FinishResourceOperation(ctx context.Context, op *ResourceOperation) error
+	// ListResourceOperations returns one page of matching operations,
+	// newest first, and how many match in all.
+	ListResourceOperations(ctx context.Context, f ResourceFilter) ([]*ResourceOperation, int, error)
+	// DeleteConnectionData deletes every operation of the connection, DNS
+	// and resource alike.
 	DeleteConnectionData(ctx context.Context, connectionID string) error
 }

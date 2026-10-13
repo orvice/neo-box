@@ -16,6 +16,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"go.orx.me/apps/neo-box/internal/ent/alert"
 	"go.orx.me/apps/neo-box/internal/ent/cloudflarednsoperation"
+	"go.orx.me/apps/neo-box/internal/ent/cloudflareresourceoperation"
 	"go.orx.me/apps/neo-box/internal/ent/connection"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbfile"
@@ -43,6 +44,8 @@ type Client struct {
 	Alert *AlertClient
 	// CloudflareDNSOperation is the client for interacting with the CloudflareDNSOperation builders.
 	CloudflareDNSOperation *CloudflareDNSOperationClient
+	// CloudflareResourceOperation is the client for interacting with the CloudflareResourceOperation builders.
+	CloudflareResourceOperation *CloudflareResourceOperationClient
 	// Connection is the client for interacting with the Connection builders.
 	Connection *ConnectionClient
 	// NocoDBBackupPolicy is the client for interacting with the NocoDBBackupPolicy builders.
@@ -88,6 +91,7 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Alert = NewAlertClient(c.config)
 	c.CloudflareDNSOperation = NewCloudflareDNSOperationClient(c.config)
+	c.CloudflareResourceOperation = NewCloudflareResourceOperationClient(c.config)
 	c.Connection = NewConnectionClient(c.config)
 	c.NocoDBBackupPolicy = NewNocoDBBackupPolicyClient(c.config)
 	c.NocoDBFile = NewNocoDBFileClient(c.config)
@@ -194,26 +198,27 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:                    ctx,
-		config:                 cfg,
-		Alert:                  NewAlertClient(cfg),
-		CloudflareDNSOperation: NewCloudflareDNSOperationClient(cfg),
-		Connection:             NewConnectionClient(cfg),
-		NocoDBBackupPolicy:     NewNocoDBBackupPolicyClient(cfg),
-		NocoDBFile:             NewNocoDBFileClient(cfg),
-		NocoDBFileSource:       NewNocoDBFileSourceClient(cfg),
-		NocoDBRestore:          NewNocoDBRestoreClient(cfg),
-		NocoDBSnapshot:         NewNocoDBSnapshotClient(cfg),
-		NocoDBSnapshotFile:     NewNocoDBSnapshotFileClient(cfg),
-		NotificationChannel:    NewNotificationChannelClient(cfg),
-		OAuthState:             NewOAuthStateClient(cfg),
-		Session:                NewSessionClient(cfg),
-		User:                   NewUserClient(cfg),
-		WasabiBucketConfig:     NewWasabiBucketConfigClient(cfg),
-		WasabiDailyUsage:       NewWasabiDailyUsageClient(cfg),
-		WasabiSyncState:        NewWasabiSyncStateClient(cfg),
-		WorkspaceOperation:     NewWorkspaceOperationClient(cfg),
-		WorkspaceTenant:        NewWorkspaceTenantClient(cfg),
+		ctx:                         ctx,
+		config:                      cfg,
+		Alert:                       NewAlertClient(cfg),
+		CloudflareDNSOperation:      NewCloudflareDNSOperationClient(cfg),
+		CloudflareResourceOperation: NewCloudflareResourceOperationClient(cfg),
+		Connection:                  NewConnectionClient(cfg),
+		NocoDBBackupPolicy:          NewNocoDBBackupPolicyClient(cfg),
+		NocoDBFile:                  NewNocoDBFileClient(cfg),
+		NocoDBFileSource:            NewNocoDBFileSourceClient(cfg),
+		NocoDBRestore:               NewNocoDBRestoreClient(cfg),
+		NocoDBSnapshot:              NewNocoDBSnapshotClient(cfg),
+		NocoDBSnapshotFile:          NewNocoDBSnapshotFileClient(cfg),
+		NotificationChannel:         NewNotificationChannelClient(cfg),
+		OAuthState:                  NewOAuthStateClient(cfg),
+		Session:                     NewSessionClient(cfg),
+		User:                        NewUserClient(cfg),
+		WasabiBucketConfig:          NewWasabiBucketConfigClient(cfg),
+		WasabiDailyUsage:            NewWasabiDailyUsageClient(cfg),
+		WasabiSyncState:             NewWasabiSyncStateClient(cfg),
+		WorkspaceOperation:          NewWorkspaceOperationClient(cfg),
+		WorkspaceTenant:             NewWorkspaceTenantClient(cfg),
 	}, nil
 }
 
@@ -231,26 +236,27 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:                    ctx,
-		config:                 cfg,
-		Alert:                  NewAlertClient(cfg),
-		CloudflareDNSOperation: NewCloudflareDNSOperationClient(cfg),
-		Connection:             NewConnectionClient(cfg),
-		NocoDBBackupPolicy:     NewNocoDBBackupPolicyClient(cfg),
-		NocoDBFile:             NewNocoDBFileClient(cfg),
-		NocoDBFileSource:       NewNocoDBFileSourceClient(cfg),
-		NocoDBRestore:          NewNocoDBRestoreClient(cfg),
-		NocoDBSnapshot:         NewNocoDBSnapshotClient(cfg),
-		NocoDBSnapshotFile:     NewNocoDBSnapshotFileClient(cfg),
-		NotificationChannel:    NewNotificationChannelClient(cfg),
-		OAuthState:             NewOAuthStateClient(cfg),
-		Session:                NewSessionClient(cfg),
-		User:                   NewUserClient(cfg),
-		WasabiBucketConfig:     NewWasabiBucketConfigClient(cfg),
-		WasabiDailyUsage:       NewWasabiDailyUsageClient(cfg),
-		WasabiSyncState:        NewWasabiSyncStateClient(cfg),
-		WorkspaceOperation:     NewWorkspaceOperationClient(cfg),
-		WorkspaceTenant:        NewWorkspaceTenantClient(cfg),
+		ctx:                         ctx,
+		config:                      cfg,
+		Alert:                       NewAlertClient(cfg),
+		CloudflareDNSOperation:      NewCloudflareDNSOperationClient(cfg),
+		CloudflareResourceOperation: NewCloudflareResourceOperationClient(cfg),
+		Connection:                  NewConnectionClient(cfg),
+		NocoDBBackupPolicy:          NewNocoDBBackupPolicyClient(cfg),
+		NocoDBFile:                  NewNocoDBFileClient(cfg),
+		NocoDBFileSource:            NewNocoDBFileSourceClient(cfg),
+		NocoDBRestore:               NewNocoDBRestoreClient(cfg),
+		NocoDBSnapshot:              NewNocoDBSnapshotClient(cfg),
+		NocoDBSnapshotFile:          NewNocoDBSnapshotFileClient(cfg),
+		NotificationChannel:         NewNotificationChannelClient(cfg),
+		OAuthState:                  NewOAuthStateClient(cfg),
+		Session:                     NewSessionClient(cfg),
+		User:                        NewUserClient(cfg),
+		WasabiBucketConfig:          NewWasabiBucketConfigClient(cfg),
+		WasabiDailyUsage:            NewWasabiDailyUsageClient(cfg),
+		WasabiSyncState:             NewWasabiSyncStateClient(cfg),
+		WorkspaceOperation:          NewWorkspaceOperationClient(cfg),
+		WorkspaceTenant:             NewWorkspaceTenantClient(cfg),
 	}, nil
 }
 
@@ -280,10 +286,10 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Alert, c.CloudflareDNSOperation, c.Connection, c.NocoDBBackupPolicy,
-		c.NocoDBFile, c.NocoDBFileSource, c.NocoDBRestore, c.NocoDBSnapshot,
-		c.NocoDBSnapshotFile, c.NotificationChannel, c.OAuthState, c.Session, c.User,
-		c.WasabiBucketConfig, c.WasabiDailyUsage, c.WasabiSyncState,
+		c.Alert, c.CloudflareDNSOperation, c.CloudflareResourceOperation, c.Connection,
+		c.NocoDBBackupPolicy, c.NocoDBFile, c.NocoDBFileSource, c.NocoDBRestore,
+		c.NocoDBSnapshot, c.NocoDBSnapshotFile, c.NotificationChannel, c.OAuthState,
+		c.Session, c.User, c.WasabiBucketConfig, c.WasabiDailyUsage, c.WasabiSyncState,
 		c.WorkspaceOperation, c.WorkspaceTenant,
 	} {
 		n.Use(hooks...)
@@ -294,10 +300,10 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Alert, c.CloudflareDNSOperation, c.Connection, c.NocoDBBackupPolicy,
-		c.NocoDBFile, c.NocoDBFileSource, c.NocoDBRestore, c.NocoDBSnapshot,
-		c.NocoDBSnapshotFile, c.NotificationChannel, c.OAuthState, c.Session, c.User,
-		c.WasabiBucketConfig, c.WasabiDailyUsage, c.WasabiSyncState,
+		c.Alert, c.CloudflareDNSOperation, c.CloudflareResourceOperation, c.Connection,
+		c.NocoDBBackupPolicy, c.NocoDBFile, c.NocoDBFileSource, c.NocoDBRestore,
+		c.NocoDBSnapshot, c.NocoDBSnapshotFile, c.NotificationChannel, c.OAuthState,
+		c.Session, c.User, c.WasabiBucketConfig, c.WasabiDailyUsage, c.WasabiSyncState,
 		c.WorkspaceOperation, c.WorkspaceTenant,
 	} {
 		n.Intercept(interceptors...)
@@ -311,6 +317,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Alert.mutate(ctx, m)
 	case *CloudflareDNSOperationMutation:
 		return c.CloudflareDNSOperation.mutate(ctx, m)
+	case *CloudflareResourceOperationMutation:
+		return c.CloudflareResourceOperation.mutate(ctx, m)
 	case *ConnectionMutation:
 		return c.Connection.mutate(ctx, m)
 	case *NocoDBBackupPolicyMutation:
@@ -611,6 +619,139 @@ func (c *CloudflareDNSOperationClient) mutate(ctx context.Context, m *Cloudflare
 		return (&CloudflareDNSOperationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown CloudflareDNSOperation mutation op: %q", m.Op())
+	}
+}
+
+// CloudflareResourceOperationClient is a client for the CloudflareResourceOperation schema.
+type CloudflareResourceOperationClient struct {
+	config
+}
+
+// NewCloudflareResourceOperationClient returns a client for the CloudflareResourceOperation from the given config.
+func NewCloudflareResourceOperationClient(c config) *CloudflareResourceOperationClient {
+	return &CloudflareResourceOperationClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `cloudflareresourceoperation.Hooks(f(g(h())))`.
+func (c *CloudflareResourceOperationClient) Use(hooks ...Hook) {
+	c.hooks.CloudflareResourceOperation = append(c.hooks.CloudflareResourceOperation, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `cloudflareresourceoperation.Intercept(f(g(h())))`.
+func (c *CloudflareResourceOperationClient) Intercept(interceptors ...Interceptor) {
+	c.inters.CloudflareResourceOperation = append(c.inters.CloudflareResourceOperation, interceptors...)
+}
+
+// Create returns a builder for creating a CloudflareResourceOperation entity.
+func (c *CloudflareResourceOperationClient) Create() *CloudflareResourceOperationCreate {
+	mutation := newCloudflareResourceOperationMutation(c.config, OpCreate)
+	return &CloudflareResourceOperationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of CloudflareResourceOperation entities.
+func (c *CloudflareResourceOperationClient) CreateBulk(builders ...*CloudflareResourceOperationCreate) *CloudflareResourceOperationCreateBulk {
+	return &CloudflareResourceOperationCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *CloudflareResourceOperationClient) MapCreateBulk(slice any, setFunc func(*CloudflareResourceOperationCreate, int)) *CloudflareResourceOperationCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &CloudflareResourceOperationCreateBulk{err: fmt.Errorf("calling to CloudflareResourceOperationClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*CloudflareResourceOperationCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &CloudflareResourceOperationCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for CloudflareResourceOperation.
+func (c *CloudflareResourceOperationClient) Update() *CloudflareResourceOperationUpdate {
+	mutation := newCloudflareResourceOperationMutation(c.config, OpUpdate)
+	return &CloudflareResourceOperationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CloudflareResourceOperationClient) UpdateOne(_m *CloudflareResourceOperation) *CloudflareResourceOperationUpdateOne {
+	mutation := newCloudflareResourceOperationMutation(c.config, OpUpdateOne, withCloudflareResourceOperation(_m))
+	return &CloudflareResourceOperationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CloudflareResourceOperationClient) UpdateOneID(id string) *CloudflareResourceOperationUpdateOne {
+	mutation := newCloudflareResourceOperationMutation(c.config, OpUpdateOne, withCloudflareResourceOperationID(id))
+	return &CloudflareResourceOperationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for CloudflareResourceOperation.
+func (c *CloudflareResourceOperationClient) Delete() *CloudflareResourceOperationDelete {
+	mutation := newCloudflareResourceOperationMutation(c.config, OpDelete)
+	return &CloudflareResourceOperationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *CloudflareResourceOperationClient) DeleteOne(_m *CloudflareResourceOperation) *CloudflareResourceOperationDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *CloudflareResourceOperationClient) DeleteOneID(id string) *CloudflareResourceOperationDeleteOne {
+	builder := c.Delete().Where(cloudflareresourceoperation.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CloudflareResourceOperationDeleteOne{builder}
+}
+
+// Query returns a query builder for CloudflareResourceOperation.
+func (c *CloudflareResourceOperationClient) Query() *CloudflareResourceOperationQuery {
+	return &CloudflareResourceOperationQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeCloudflareResourceOperation},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a CloudflareResourceOperation entity by its id.
+func (c *CloudflareResourceOperationClient) Get(ctx context.Context, id string) (*CloudflareResourceOperation, error) {
+	return c.Query().Where(cloudflareresourceoperation.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CloudflareResourceOperationClient) GetX(ctx context.Context, id string) *CloudflareResourceOperation {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *CloudflareResourceOperationClient) Hooks() []Hook {
+	return c.hooks.CloudflareResourceOperation
+}
+
+// Interceptors returns the client interceptors.
+func (c *CloudflareResourceOperationClient) Interceptors() []Interceptor {
+	return c.inters.CloudflareResourceOperation
+}
+
+func (c *CloudflareResourceOperationClient) mutate(ctx context.Context, m *CloudflareResourceOperationMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&CloudflareResourceOperationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&CloudflareResourceOperationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&CloudflareResourceOperationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&CloudflareResourceOperationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown CloudflareResourceOperation mutation op: %q", m.Op())
 	}
 }
 
@@ -2745,17 +2886,17 @@ func (c *WorkspaceTenantClient) mutate(ctx context.Context, m *WorkspaceTenantMu
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Alert, CloudflareDNSOperation, Connection, NocoDBBackupPolicy, NocoDBFile,
-		NocoDBFileSource, NocoDBRestore, NocoDBSnapshot, NocoDBSnapshotFile,
-		NotificationChannel, OAuthState, Session, User, WasabiBucketConfig,
-		WasabiDailyUsage, WasabiSyncState, WorkspaceOperation,
-		WorkspaceTenant []ent.Hook
+		Alert, CloudflareDNSOperation, CloudflareResourceOperation, Connection,
+		NocoDBBackupPolicy, NocoDBFile, NocoDBFileSource, NocoDBRestore,
+		NocoDBSnapshot, NocoDBSnapshotFile, NotificationChannel, OAuthState, Session,
+		User, WasabiBucketConfig, WasabiDailyUsage, WasabiSyncState,
+		WorkspaceOperation, WorkspaceTenant []ent.Hook
 	}
 	inters struct {
-		Alert, CloudflareDNSOperation, Connection, NocoDBBackupPolicy, NocoDBFile,
-		NocoDBFileSource, NocoDBRestore, NocoDBSnapshot, NocoDBSnapshotFile,
-		NotificationChannel, OAuthState, Session, User, WasabiBucketConfig,
-		WasabiDailyUsage, WasabiSyncState, WorkspaceOperation,
-		WorkspaceTenant []ent.Interceptor
+		Alert, CloudflareDNSOperation, CloudflareResourceOperation, Connection,
+		NocoDBBackupPolicy, NocoDBFile, NocoDBFileSource, NocoDBRestore,
+		NocoDBSnapshot, NocoDBSnapshotFile, NotificationChannel, OAuthState, Session,
+		User, WasabiBucketConfig, WasabiDailyUsage, WasabiSyncState,
+		WorkspaceOperation, WorkspaceTenant []ent.Interceptor
 	}
 )

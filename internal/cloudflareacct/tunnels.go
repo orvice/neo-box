@@ -395,17 +395,28 @@ func (a *Account) hostnameRecords(ctx context.Context, zoneID, hostname string) 
 	return out, nil
 }
 
+func pointsAt(r cloudflare.DNSRecord, target string) bool {
+	return r.Type == "CNAME" && strings.EqualFold(strings.TrimSuffix(r.Content, "."), target)
+}
+
 func pointsAtTunnel(r cloudflare.DNSRecord, tunnelID string) bool {
-	return r.Type == "CNAME" && strings.EqualFold(strings.TrimSuffix(r.Content, "."), cloudflare.TunnelCNAMETarget(tunnelID))
+	return pointsAt(r, cloudflare.TunnelCNAMETarget(tunnelID))
 }
 
 // pointHostnameAtTunnel makes sure hostname has a proxied CNAME to the
 // Tunnel. It never replaces a record that is something else.
 func (a *Account) pointHostnameAtTunnel(ctx context.Context, actor Actor, tunnelID, hostname string) RecordResult {
+	return a.pointHostnameAt(ctx, actor, hostname, cloudflare.TunnelCNAMETarget(tunnelID), "this tunnel")
+}
+
+// pointHostnameAt makes sure hostname has a proxied CNAME to target, in
+// whichever Zone of the Account holds it; subject says what target is, for
+// messages. It never replaces a record that is something else.
+func (a *Account) pointHostnameAt(ctx context.Context, actor Actor, hostname, target, subject string) RecordResult {
 	zone, err := a.zoneFor(ctx, hostname)
 	switch {
 	case errors.Is(err, ErrZoneNotFound):
-		return RecordResult{Status: RecordNoZone, Message: fmt.Sprintf("this account has no zone for %s; point it at %s with a CNAME where its DNS is managed", hostname, cloudflare.TunnelCNAMETarget(tunnelID))}
+		return RecordResult{Status: RecordNoZone, Message: fmt.Sprintf("this account has no zone for %s; point it at %s with a CNAME where its DNS is managed", hostname, target)}
 	case err != nil:
 		return RecordResult{Status: RecordFailed, Message: dnsProblem(a.classify(ctx, err, "read Zones", "Zone Read"))}
 	}
@@ -414,8 +425,8 @@ func (a *Account) pointHostnameAtTunnel(ctx context.Context, actor Actor, tunnel
 		return RecordResult{Status: RecordFailed, Message: dnsProblem(a.classify(ctx, err, "read DNS records", "DNS Read"))}
 	}
 	for _, r := range existing {
-		if pointsAtTunnel(r, tunnelID) {
-			return RecordResult{Status: RecordExists, RecordID: r.ID, Message: hostname + " already points at this tunnel"}
+		if pointsAt(r, target) {
+			return RecordResult{Status: RecordExists, RecordID: r.ID, Message: hostname + " already points at " + subject}
 		}
 	}
 	if len(existing) > 0 {
@@ -423,7 +434,7 @@ func (a *Account) pointHostnameAtTunnel(ctx context.Context, actor Actor, tunnel
 		return RecordResult{Status: RecordConflict, RecordID: r.ID, Message: fmt.Sprintf("%s already has a %s record (%s); it was left unchanged", hostname, r.Type, r.Content)}
 	}
 	ch, err := a.CreateRecord(ctx, actor, zone.ID, cloudflare.RecordInput{
-		Type: "CNAME", Name: hostname, Content: cloudflare.TunnelCNAMETarget(tunnelID), TTL: cloudflare.TTLAuto, Proxied: true,
+		Type: "CNAME", Name: hostname, Content: target, TTL: cloudflare.TTLAuto, Proxied: true,
 	})
 	if err != nil {
 		return RecordResult{Status: RecordFailed, Message: dnsProblem(err)}
@@ -468,7 +479,12 @@ func writeContext(ctx context.Context) (context.Context, context.CancelFunc) {
 // lockTunnel serializes changes to one Tunnel's configuration, which a
 // write replaces as a whole.
 func (m *Manager) lockTunnel(accountID, tunnelID string) (unlock func()) {
-	v, _ := m.tunnelLocks.LoadOrStore(accountID+"/"+tunnelID, &sync.Mutex{})
+	return m.lockResource(accountID + "/" + tunnelID)
+}
+
+// lockResource serializes read-modify-write changes to one resource.
+func (m *Manager) lockResource(key string) (unlock func()) {
+	v, _ := m.tunnelLocks.LoadOrStore(key, &sync.Mutex{})
 	mu := v.(*sync.Mutex)
 	mu.Lock()
 	return mu.Unlock
