@@ -13,9 +13,12 @@ export type GmailConfirmation = {
   confirmedAt: number
 }
 
-export function reasonError(reason: string): string {
+export function reasonError(
+  reason: string,
+  subject = 'this mailbox’s settings'
+): string {
   const trimmed = reason.trim()
-  if (!trimmed) return 'Say why you are accessing this mailbox’s settings'
+  if (!trimmed) return `Say why you are accessing ${subject}`
   if ([...trimmed].length > MAX_REASON)
     return `Keep the reason within ${MAX_REASON} characters`
   // eslint-disable-next-line no-control-regex

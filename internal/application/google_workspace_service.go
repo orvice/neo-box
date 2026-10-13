@@ -58,12 +58,13 @@ type GoogleWorkspaceServiceServer struct {
 	repo      repo.Repository
 	newClient workspaceClientFactory
 	newGmail  gmailClientFactory
+	newDrive  driveClientFactory
 }
 
 func NewGoogleWorkspaceServiceServer() *GoogleWorkspaceServiceServer {
 	return &GoogleWorkspaceServiceServer{newClient: func(ctx context.Context, c googleworkspace.ConnectionConfig, s googleworkspace.ConnectionSecret, customer, admin string, scopes ...string) (workspaceAPI, error) {
 		return googleworkspace.NewClient(ctx, c, s, customer, admin, scopes...)
-	}, newGmail: defaultGmailClient}
+	}, newGmail: defaultGmailClient, newDrive: defaultDriveClient}
 }
 func (s *GoogleWorkspaceServiceServer) SetDeps(r repo.Repository, c *connection.Service) {
 	s.mu.Lock()
@@ -78,6 +79,7 @@ type workspaceDeps struct {
 	c         *connrepo.Connection
 	factory   workspaceClientFactory
 	gmail     gmailClientFactory
+	drive     driveClientFactory
 	actorName string
 }
 
@@ -87,7 +89,7 @@ func (s *GoogleWorkspaceServiceServer) deps(ctx context.Context, id string) (*wo
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
 	}
 	s.mu.RLock()
-	r, c, f, gm := s.repo, s.conns, s.newClient, s.newGmail
+	r, c, f, gm, dr := s.repo, s.conns, s.newClient, s.newGmail, s.newDrive
 	s.mu.RUnlock()
 	if r == nil || c == nil {
 		return nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("Google Workspace is not available"))
@@ -103,7 +105,7 @@ func (s *GoogleWorkspaceServiceServer) deps(ctx context.Context, id string) (*wo
 	if actorName == "" {
 		actorName = user.GetUsername()
 	}
-	return &workspaceDeps{repo: r, conns: c, c: conn, factory: f, gmail: gm, actorName: actorName}, nil
+	return &workspaceDeps{repo: r, conns: c, c: conn, factory: f, gmail: gm, drive: dr, actorName: actorName}, nil
 }
 func (d *workspaceDeps) tenant(ctx context.Context, id string) (*repo.Tenant, error) {
 	if strings.TrimSpace(id) == "" {

@@ -184,18 +184,25 @@ func sectionError(err error) string {
 	}
 }
 
-// record logs a Gmail request before sending it and its outcome after. The
-// outcome is written with a context that survives request cancellation.
-func (g *GmailClient) record(ctx context.Context, w Write, run func() (map[string]any, error)) (resultErr error) {
-	if g.Recorder == nil {
+// record logs a Gmail request before sending it and its outcome after.
+func (g *GmailClient) record(ctx context.Context, w Write, run func() (map[string]any, error)) error {
+	return recordAccess(ctx, g.Recorder, g.User, g.Reason, w, run)
+}
+
+// recordAccess logs an impersonated or privileged request before it is sent
+// and its outcome after, with a context that survives request cancellation.
+// Without a recorder, or when the first record cannot be stored, nothing is
+// sent. Shared by the Gmail and Drive clients (docs/adr/0008, 0009).
+func recordAccess(ctx context.Context, rec WriteRecorder, email, reason string, w Write, run func() (map[string]any, error)) (resultErr error) {
+	if rec == nil {
 		return ErrLogUnavailable
 	}
 	if w.Requested == nil {
 		w.Requested = map[string]any{}
 	}
-	w.Requested["email"] = g.User
-	w.Requested["reason"] = g.Reason
-	finish, err := g.Recorder.Begin(ctx, w)
+	w.Requested["email"] = email
+	w.Requested["reason"] = reason
+	finish, err := rec.Begin(ctx, w)
 	if err != nil {
 		return ErrLogUnavailable
 	}

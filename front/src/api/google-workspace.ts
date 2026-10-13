@@ -435,6 +435,101 @@ export type {
   WorkspaceDriveUsageUser,
 } from '@/gen/neobox/v1/google_workspace_pb'
 
+// Drive API reads (docs/adr/0009) are recorded by the backend each time they
+// are sent, so nothing here refetches on its own. Results stay cached for a few
+// minutes so paging back or switching tabs doesn't send (and log) another read;
+// "Read again" does.
+const driveReadOptions = {
+  retry: false,
+  staleTime: Infinity,
+  gcTime: 5 * 60_000,
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: false,
+  refetchOnMount: false,
+} as const
+
+export type SharedDriveFilters = {
+  namePrefix: string
+  noOrganizer: boolean
+  maxMembers?: number
+  orgUnitId: string
+  pageToken: string
+}
+
+export function useWorkspaceSharedDrives(
+  connectionId: string,
+  tenantId: string,
+  reason: string | null,
+  nonce: number,
+  f: SharedDriveFilters
+) {
+  return useQuery({
+    queryKey: [
+      'google-workspace-drive',
+      'shared-drives',
+      connectionId,
+      tenantId,
+      nonce,
+      f,
+      reason,
+    ],
+    queryFn: () =>
+      client.listWorkspaceSharedDrives({
+        connectionId,
+        tenantId,
+        reason: reason ?? '',
+        pageSize: 50,
+        ...f,
+      }),
+    enabled: reason !== null,
+    ...driveReadOptions,
+  })
+}
+
+export type ExposedFilesFilters = {
+  exposures: string[]
+  pageToken: string
+}
+
+export function useWorkspaceExposedFiles(
+  connectionId: string,
+  tenantId: string,
+  userId: string,
+  access: GmailAccess | null,
+  nonce: number,
+  f: ExposedFilesFilters
+) {
+  return useQuery({
+    queryKey: [
+      'google-workspace-drive',
+      'exposed-files',
+      connectionId,
+      tenantId,
+      userId,
+      nonce,
+      f,
+      access,
+    ],
+    queryFn: () =>
+      client.listWorkspaceUserExposedFiles({
+        connectionId,
+        tenantId,
+        userId,
+        confirmation: access ?? undefined,
+        pageSize: 50,
+        ...f,
+      }),
+    enabled: access !== null,
+    ...driveReadOptions,
+  })
+}
+
+export type {
+  WorkspaceSharedDrive,
+  WorkspaceExposedFile,
+  WorkspaceFileExposure,
+} from '@/gen/neobox/v1/google_workspace_pb'
+
 export type {
   GetWorkspaceUserGmailSettingsResponse as GmailSettings,
   GmailVacation,

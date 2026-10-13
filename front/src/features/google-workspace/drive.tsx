@@ -34,7 +34,9 @@ import {
   usageShareTone,
   type ExposureTone,
 } from './drive-governance'
+import { useGmailConfirmation } from './gmail-access'
 import { formatWorkspaceTime } from './observability-format'
+import { WorkspaceSharedDrives } from './shared-drives'
 
 type Ids = { connectionId: string; tenantId: string }
 
@@ -52,24 +54,34 @@ function localTime(date: Date) {
 }
 
 export function WorkspaceDrive(props: Ids) {
+  const drives = useGmailConfirmation()
   return (
     <section className='space-y-4'>
       <h2 className='text-xl font-semibold'>Drive governance</h2>
       <p className='text-sm text-muted-foreground'>
-        Read live from Google's Reports API. Neo Box sees who shared, moved or
-        deleted a file and how much storage accounts use. It never reads file
-        content and does not change sharing.
+        Sharing activity and storage usage come live from Google's Reports API:
+        who shared, moved or deleted a file and how much storage accounts use,
+        never file content. The shared drive list uses a Drive scope, so it asks
+        for a reason first and is recorded. Nothing here changes sharing.
       </p>
       <Tabs defaultValue='activity'>
         <TabsList>
           <TabsTrigger value='activity'>Sharing activity</TabsTrigger>
           <TabsTrigger value='usage'>Storage usage</TabsTrigger>
+          <TabsTrigger value='shared-drives'>Shared drives</TabsTrigger>
         </TabsList>
         <TabsContent value='activity' className='pt-4'>
           <DriveActivity {...props} />
         </TabsContent>
         <TabsContent value='usage' className='pt-4'>
           <DriveUsage {...props} />
+        </TabsContent>
+        <TabsContent value='shared-drives' className='pt-4'>
+          <WorkspaceSharedDrives
+            {...props}
+            confirmation={drives.confirmation}
+            onConfirmation={drives.setConfirmation}
+          />
         </TabsContent>
       </Tabs>
     </section>
