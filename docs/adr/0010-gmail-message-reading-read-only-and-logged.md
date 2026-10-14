@@ -45,8 +45,8 @@ target user, reason, and an allowlisted summary:
   operator values, not label names.
 - message read: the message ID, the number of attachments, and whether an HTML
   part was present.
-- attachment download: the message ID, the attachment's MIME type and size.
-  Not its file name.
+- attachment download: the message ID, the part ID, the attachment's MIME type
+  and size. Not its file name.
 - labels list: the number of labels.
 
 Never stored: subjects, bodies, snippets, addresses (from / to / cc), file
@@ -62,9 +62,12 @@ from Gmail on each request and not kept in PostgreSQL or blob storage.
   IDs, so Neo Box then reads each message's headers with a bounded number of
   concurrent requests and shows a result whose headers could not be read as
   unavailable rather than dropping it.
-- An attachment is streamed from Gmail to the browser, not buffered whole or
-  persisted. Neo Box refuses an attachment over **25 MB**; that limit is Neo
-  Box's own, so a larger file must be taken from Gmail directly.
+- Gmail returns an attachment as base64url inside a JSON response, so it cannot
+  be streamed: it is held in memory for that one response, bounded at **25 MB**,
+  and never persisted. Neo Box refuses an attachment declared larger than that
+  before fetching any bytes; the limit is Neo Box's own, so a larger file must be
+  taken from Gmail directly. Gmail's attachment IDs change between reads, so a
+  download reads the message again and finds the part by its part ID.
 - This feature has no writes; reads retry transient errors like other reads.
 
 **Showing a message safely.** The detail view shows headers and the plain-text

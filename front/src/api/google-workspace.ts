@@ -615,3 +615,148 @@ export function useWorkspaceGmailVacation(
     gcTime: 0,
   })
 }
+
+export type {
+  GmailMailLabel,
+  GmailMessageSummary,
+  GmailMessage,
+  GmailAttachment,
+  SearchWorkspaceUserGmailMessagesResponse as GmailSearchPage,
+} from '@/gen/neobox/v1/google_workspace_pb'
+
+// Gmail mail (docs/adr/0010). Like the settings read, every call here is
+// recorded by the backend, so nothing refetches on its own and results are
+// dropped as soon as nothing shows them. `nonce` ties a result to one
+// confirmation.
+const mailReadOptions = {
+  retry: false,
+  gcTime: 0,
+  staleTime: Infinity,
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: false,
+  refetchOnMount: false,
+} as const
+
+export function useWorkspaceGmailLabels(
+  connectionId: string,
+  tenantId: string,
+  userId: string,
+  access: GmailAccess | null,
+  nonce: number
+) {
+  return useQuery({
+    queryKey: [
+      'google-workspace-gmail-mail',
+      'labels',
+      connectionId,
+      tenantId,
+      userId,
+      nonce,
+      access,
+    ],
+    queryFn: () =>
+      client.listWorkspaceUserGmailLabels({
+        connectionId,
+        tenantId,
+        userId,
+        confirmation: access ?? undefined,
+      }),
+    enabled: access !== null,
+    ...mailReadOptions,
+  })
+}
+
+export type GmailSearchParams = {
+  query: string
+  labelIds: string[]
+  includeSpamTrash: boolean
+  pageToken: string
+}
+
+// `params` is null until the user presses Search, so opening the tab alone
+// never sends (and records) a search.
+export function useWorkspaceGmailSearch(
+  connectionId: string,
+  tenantId: string,
+  userId: string,
+  access: GmailAccess | null,
+  nonce: number,
+  params: GmailSearchParams | null
+) {
+  return useQuery({
+    queryKey: [
+      'google-workspace-gmail-mail',
+      'search',
+      connectionId,
+      tenantId,
+      userId,
+      nonce,
+      params,
+      access,
+    ],
+    queryFn: () =>
+      client.searchWorkspaceUserGmailMessages({
+        connectionId,
+        tenantId,
+        userId,
+        confirmation: access ?? undefined,
+        pageSize: 25,
+        ...params,
+      }),
+    enabled: access !== null && params !== null,
+    ...mailReadOptions,
+  })
+}
+
+export function useWorkspaceGmailMessage(
+  connectionId: string,
+  tenantId: string,
+  userId: string,
+  access: GmailAccess | null,
+  nonce: number,
+  messageId: string | null
+) {
+  return useQuery({
+    queryKey: [
+      'google-workspace-gmail-mail',
+      'message',
+      connectionId,
+      tenantId,
+      userId,
+      nonce,
+      messageId,
+      access,
+    ],
+    queryFn: () =>
+      client.getWorkspaceUserGmailMessage({
+        connectionId,
+        tenantId,
+        userId,
+        confirmation: access ?? undefined,
+        messageId: messageId ?? '',
+      }),
+    enabled: access !== null && messageId !== null,
+    ...mailReadOptions,
+  })
+}
+
+export function useWorkspaceGmailAttachment(
+  connectionId: string,
+  tenantId: string,
+  userId: string,
+  access: GmailAccess | null,
+  messageId: string
+) {
+  return useMutation({
+    mutationFn: (partId: string) =>
+      client.downloadWorkspaceUserGmailAttachment({
+        connectionId,
+        tenantId,
+        userId,
+        confirmation: access ?? undefined,
+        messageId,
+        partId,
+      }),
+    gcTime: 0,
+  })
+}

@@ -17,7 +17,7 @@
 3. 作为管理员，我希望只能访问当前 Tenant 的用户；别名、其他组织的用户和找不到的地址不会换 token。
 4. 作为管理员，我希望看到该用户的标签（系统与自定义）及其邮件数，以便按标签浏览。
 5. 作为管理员，我希望用 Gmail 查询语法搜索，并按标签过滤，以便定位邮件。
-6. 作为管理员，我希望结果按页显示（每页最多 50 封），带发件人、主题、日期、摘要、标签和是否有附件，并能翻页。
+6. 作为管理员，我希望结果按页显示（每页最多 50 封（默认 25）），带发件人、主题、日期、摘要、标签和是否有附件，并能翻页。
 7. 作为管理员，我希望某封邮件的头信息读取失败时它显示为不可用，而不是从列表中消失。
 8. 作为管理员，我希望打开一封邮件看到完整邮件头和纯文本正文，且打开它不会把它标成已读。
 9. 作为管理员，我希望 HTML 正文在沙箱里显示，不执行脚本、不加载远程图片，以免被追踪或被注入。
@@ -52,12 +52,12 @@
 - 标签：`labels.list` 加每个标签的 `labels.get` 取邮件数；单个标签失败只让该项计数未知。
 - 搜索：`messages.list`（`q`、`labelIds`、`maxResults` ≤ 50、`pageToken`，默认不含垃圾邮件和已删除；提供“包含垃圾邮件和已删除”开关），再对每个结果用 `messages.get`（`format=metadata`，只取 `From`、`To`、`Subject`、`Date` 头）读取，并发有上限；`resultSizeEstimate` 标为估计值。`q` 长度设上限，不透传多余字段。
 - 邮件详情：`messages.get`（`format=full`），解析 MIME：多部分、嵌套、`base64url`、字符集、内联图片（只在附件列表里列出，不内联渲染），取出头信息、纯文本部分、HTML 部分和附件。只有纯文本时不显示 HTML 视图，只有 HTML 时给出由 HTML 转出的纯文本回退。
-- 附件下载：`messages.attachments.get` 返回 base64url 数据，后端解码后输出；大小超过 25 MB 时在发送前（依据邮件里的 `size`）拒绝；响应头带 `Content-Disposition: attachment`、`X-Content-Type-Options: nosniff`，类型用邮件里声明的类型，不作内容探测。附件不写入磁盘或 blob 存储。
+- 附件下载：重新读取邮件，按 `part_id` 找到该部分；大小超过 25 MB 时在取字节之前（依据邮件里的 `size`）拒绝；再用 `messages.attachments.get` 取数据（Gmail 以 base64url 包在 JSON 里返回，所以在这一次响应期间整个文件在内存里，最大约 25 MB），解码后返回。前端用 `application/octet-stream` 的 Blob 保存，类型用邮件里声明的类型记录但不据此渲染。附件不写入磁盘或 blob 存储。
 - 每个请求读取最新数据，不缓存，不存正文。
 
 ### API 与前端
 
-- Workspace 专属 RPC：`ListWorkspaceUserGmailLabels`、`SearchWorkspaceUserGmailMessages`、`GetWorkspaceUserGmailMessage`；附件下载走 `GET /api/google-workspace/gmail/attachment`（Bearer 鉴权，参数含连接、Tenant、用户、邮件、附件、原因和目标邮箱）。遵循 buf lint 与现有 Connect 错误约定：缺 `gmail.readonly` 为 PermissionDenied，凭据被拒为 FailedPrecondition（不返回 Unauthenticated），邮件或附件不存在为 NotFound，附件超限为 FailedPrecondition 并带明确原因。
+- Workspace 专属 RPC：`ListWorkspaceUserGmailLabels`、`SearchWorkspaceUserGmailMessages`、`GetWorkspaceUserGmailMessage`；附件下载也是 Connect RPC `DownloadWorkspaceUserGmailAttachment`（返回文件名、类型和字节），不另开 HTTP 端点，这样鉴权、确认、错误映射和记录都走同一条路径。附件用 `part_id` 标识，而不是 Gmail 的 `attachmentId`：后者在两次读取之间会变，所以下载时重新读取邮件并按 `part_id` 找到该部分。遵循 buf lint 与现有 Connect 错误约定：缺 `gmail.readonly` 为 PermissionDenied，凭据被拒为 FailedPrecondition（不返回 Unauthenticated），邮件或附件不存在为 NotFound，附件超限为 FailedPrecondition 并带明确原因。
 - 前端新增 `gmail-mail.tsx`（子页与列表）、`gmail-message.tsx`（详情与 HTML 沙箱）、`gmail-query.ts`（搜索输入处理、操作符提取用于展示，不用于日志）、沿用 `front/src/api/google-workspace.ts` 的 hooks 和现有确认对话框。
 - 沙箱：`<iframe sandbox="" srcdoc=...>`，正文加 `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">`。因 `sandbox` 为空（无 `allow-popups`、无 `allow-top-navigation`），正文里的链接点击无效；需要时管理员自行复制地址。
 
@@ -78,7 +78,7 @@
 - [ ] 请求只申请 `gmail.readonly`（邮件）或 `gmail.settings.basic`（设置），不含修改、发送或 Drive scope。
 - [ ] 搜索每页至多 50 封，头信息读取失败的结果显示为不可用；打开邮件不改变其已读状态。
 - [ ] HTML 正文只在无脚本、无外部请求的沙箱里显示；无正文时回退到纯文本。
-- [ ] 附件流式下载，不落盘；超过 25 MB 的在发送前被拒并有明确提示。
+- [ ] 附件只在该次响应的内存里经过，不落盘；超过 25 MB 的在取字节前被拒并有明确提示。
 - [ ] 缺 `gmail.readonly` 只在邮件页显示，不改变 Tenant 健康。
 - [ ] 适用的后端、PostgreSQL 仓库、前端测试、构建和生成检查通过；跳过项明确报告；真实 Gmail 行为未验证时明确说明。
 
@@ -92,6 +92,7 @@
 
 ## Further Notes
 
-- 本文档是 spec；ADR 0010 记录了边界决策。实施完成后更新 `docs/google-workspace.md`（新增授权说明与风险提示）、`CONTEXT.md` 与 `AGENTS.md` / `CLAUDE.md` 的架构段。
+- 本文档是 spec；ADR 0010 记录了边界决策。`docs/google-workspace.md` 的 “Gmail mail” 一节面向管理员说明授权和风险。
+- 实施中与最初设计的偏差：附件用 RPC 返回字节而不是 HTTP 流式端点，并以 `part_id` 标识（见上）；默认页大小为 25（上限 50）；搜索结果的“有附件”只是依据邮件结构的提示。
 - Google 把 `gmail.readonly` 列为受限（restricted）scope；因为凭据是管理员自己拥有的 Service Account，不走公开应用的验证流程，但文档需向管理员说明授权后的覆盖范围。
 - 后续顺序建议：修改邮件与标签（`gmail.modify`，新 ADR）→ 有范围限制的跨用户搜索（需要选定用户集合并另行决策）。

@@ -43,9 +43,17 @@ service GoogleWorkspaceService {
   rpc GetWorkspaceOverview(GetWorkspaceOverviewRequest) returns (GetWorkspaceOverviewResponse);
   rpc ListWorkspaceAuditActivities(ListWorkspaceAuditActivitiesRequest) returns (ListWorkspaceAuditActivitiesResponse);
   // Gmail settings are read and changed by impersonating one tenant user
-  // (ADR 0008). Message content is never requested.
+  // (ADR 0008). Settings requests never read message content.
   rpc GetWorkspaceUserGmailSettings(GetWorkspaceUserGmailSettingsRequest) returns (GetWorkspaceUserGmailSettingsResponse);
   rpc UpdateWorkspaceUserGmailVacation(UpdateWorkspaceUserGmailVacationRequest) returns (UpdateWorkspaceUserGmailVacationResponse);
+  // Gmail mail is read-only (ADR 0010): labels, search, one message and one
+  // attachment, read live by impersonating the user with gmail.readonly. Each
+  // call carries the same access confirmation and is logged before it is sent;
+  // nothing changes the mailbox.
+  rpc ListWorkspaceUserGmailLabels(ListWorkspaceUserGmailLabelsRequest) returns (ListWorkspaceUserGmailLabelsResponse);
+  rpc SearchWorkspaceUserGmailMessages(SearchWorkspaceUserGmailMessagesRequest) returns (SearchWorkspaceUserGmailMessagesResponse);
+  rpc GetWorkspaceUserGmailMessage(GetWorkspaceUserGmailMessageRequest) returns (GetWorkspaceUserGmailMessageResponse);
+  rpc DownloadWorkspaceUserGmailAttachment(DownloadWorkspaceUserGmailAttachmentRequest) returns (DownloadWorkspaceUserGmailAttachmentResponse);
   // Drive governance reads Google's Reports API only (ADR 0009); no file
   // content is reachable with these scopes.
   rpc ListWorkspaceDriveActivities(ListWorkspaceDriveActivitiesRequest) returns (ListWorkspaceDriveActivitiesResponse);
@@ -708,6 +716,142 @@ message UpdateWorkspaceUserGmailVacationRequest {
 
 message UpdateWorkspaceUserGmailVacationResponse {
   GmailVacation vacation = 1;
+}
+
+// ---- Gmail mail (ADR 0010) ----
+
+message GmailMailLabel {
+  string id = 1;
+  string name = 2;
+  // system or user.
+  string type = 3;
+  // False when Gmail would not give this label's counts; they are then
+  // unknown, not zero.
+  bool counts_known = 4;
+  int32 messages_total = 5;
+  int32 messages_unread = 6;
+}
+
+message ListWorkspaceUserGmailLabelsRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  // Google user ID or primary email; resolved inside the tenant first.
+  string user_id = 3;
+  GmailAccessConfirmation confirmation = 4;
+}
+
+message ListWorkspaceUserGmailLabelsResponse {
+  string user_email = 1;
+  repeated GmailMailLabel labels = 2;
+  google.protobuf.Timestamp read_at = 3;
+}
+
+// One search result. When unavailable is set, Gmail would not give this
+// message's headers and the other fields (except ids) are empty.
+message GmailMessageSummary {
+  string id = 1;
+  string thread_id = 2;
+  string from = 3;
+  string to = 4;
+  string subject = 5;
+  string snippet = 6;
+  google.protobuf.Timestamp date = 7;
+  repeated string label_ids = 8;
+  // A hint from the message's structure; use has:attachment to search.
+  bool has_attachment = 9;
+  bool unavailable = 10;
+}
+
+message SearchWorkspaceUserGmailMessagesRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string user_id = 3;
+  GmailAccessConfirmation confirmation = 4;
+  // Gmail search syntax; empty lists recent mail. At most 1000 characters.
+  string query = 5;
+  // Only messages with all of these labels. At most 10.
+  repeated string label_ids = 6;
+  bool include_spam_trash = 7;
+  string page_token = 8;
+  // 1-50; 0 means 25.
+  int32 page_size = 9;
+}
+
+message SearchWorkspaceUserGmailMessagesResponse {
+  string user_email = 1;
+  repeated GmailMessageSummary messages = 2;
+  string next_page_token = 3;
+  // Gmail's estimate of all matches, not a count.
+  int32 result_size_estimate = 4;
+  google.protobuf.Timestamp read_at = 5;
+}
+
+message GmailAttachment {
+  // Names the attachment for a download; Gmail's own attachment IDs change.
+  string part_id = 1;
+  string filename = 2;
+  string mime_type = 3;
+  int64 size = 4;
+  // Images and other parts the HTML refers to; listed, not rendered.
+  bool inline = 5;
+  // False when Gmail gave the part no attachment ID.
+  bool downloadable = 6;
+  // Larger than Neo Box's 25 MB limit; a download is refused.
+  bool too_large = 7;
+}
+
+message GmailMessage {
+  string id = 1;
+  string thread_id = 2;
+  string from = 3;
+  string to = 4;
+  string cc = 5;
+  string bcc = 6;
+  string reply_to = 7;
+  string subject = 8;
+  google.protobuf.Timestamp date = 9;
+  repeated string label_ids = 10;
+  string snippet = 11;
+  string plain_text = 12;
+  // Untrusted markup. It must only be shown inside a sandbox that blocks
+  // scripts and every external request.
+  string html = 13;
+  // plain_text was made from html because the message has no text part.
+  bool plain_text_from_html = 14;
+  // A body was cut at 2 MiB.
+  bool body_truncated = 15;
+  repeated GmailAttachment attachments = 16;
+}
+
+message GetWorkspaceUserGmailMessageRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string user_id = 3;
+  GmailAccessConfirmation confirmation = 4;
+  string message_id = 5;
+}
+
+message GetWorkspaceUserGmailMessageResponse {
+  string user_email = 1;
+  GmailMessage message = 2;
+  google.protobuf.Timestamp read_at = 3;
+}
+
+message DownloadWorkspaceUserGmailAttachmentRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  string user_id = 3;
+  GmailAccessConfirmation confirmation = 4;
+  string message_id = 5;
+  // GmailAttachment.part_id.
+  string part_id = 6;
+}
+
+// The file is held in memory for this response only and never stored.
+message DownloadWorkspaceUserGmailAttachmentResponse {
+  string filename = 1;
+  string mime_type = 2;
+  bytes data = 3;
 }
 
 // A Drive audit event. A field Google did not report is empty.

@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import { timestampDate } from '@bufbuild/protobuf/wkt'
 import { toast } from 'sonner'
 import {
@@ -20,31 +20,17 @@ import { DataTable, type Column } from '@/components/data-table'
 import { DirectoryError, Field } from './directory-parts'
 import { GMAIL_SCOPE } from './directory-state'
 import {
-  MAX_REASON,
-  confirmationRemainingMs,
-  confirmationUsable,
   exposure,
   filterCriteria,
   filterRisks,
   fromLocalInput,
-  reasonError,
-  targetError,
   toLocalInput,
   vacationError,
   type GmailConfirmation,
 } from './gmail-access'
 import { formatWorkspaceTime } from './observability-format'
 
-function useNow(intervalMs: number) {
-  const [now, setNow] = useState(() => Date.now())
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), intervalMs)
-    return () => clearInterval(id)
-  }, [intervalMs])
-  return now
-}
-
-type Props = {
+export type Props = {
   connectionId: string
   tenantId: string
   userId: string
@@ -53,104 +39,10 @@ type Props = {
   onConfirmation: (c: GmailConfirmation | null) => void
 }
 
-export function UserGmailSettings(props: Props) {
-  const now = useNow(15_000)
-  const { confirmation } = props
-  if (!confirmationUsable(confirmation, props.userEmail, now)) {
-    return (
-      <AccessForm
-        userEmail={props.userEmail}
-        expired={confirmation !== null}
-        onConfirm={props.onConfirmation}
-      />
-    )
-  }
-  return <SettingsView {...props} confirmation={confirmation} now={now} />
-}
-
-function AccessForm({
-  userEmail,
-  expired,
-  onConfirm,
-}: {
-  userEmail: string
-  expired: boolean
-  onConfirm: (c: GmailConfirmation) => void
-}) {
-  const [reason, setReason] = useState('')
-  const [target, setTarget] = useState('')
-  const [touched, setTouched] = useState(false)
-  const rError = reasonError(reason)
-  const tError = targetError(target, userEmail)
-  function submit(e: FormEvent) {
-    e.preventDefault()
-    setTouched(true)
-    if (rError || tError) return
-    onConfirm({
-      reason: reason.trim(),
-      targetEmail: target.trim(),
-      confirmedAt: Date.now(),
-    })
-  }
-  return (
-    <form onSubmit={submit} className='max-w-xl space-y-4'>
-      <Alert>
-        <AlertDescription>
-          <p>
-            Neo Box reads this mailbox’s <strong>settings</strong> as{' '}
-            <span className='break-all'>{userEmail}</span>: auto-reply,
-            forwarding, delegates, filters and send-as addresses. It never reads
-            messages. Each access is recorded under Neo Box operations with your
-            reason.
-          </p>
-          {expired && (
-            <p className='mt-2'>
-              The previous confirmation expired. Confirm again to continue.
-            </p>
-          )}
-        </AlertDescription>
-      </Alert>
-      <div className='space-y-2'>
-        <Label htmlFor='gmail-reason'>
-          Why are you accessing this mailbox?
-        </Label>
-        <Textarea
-          id='gmail-reason'
-          value={reason}
-          maxLength={MAX_REASON}
-          rows={2}
-          onChange={(e) => setReason(e.target.value.replace(/[\r\n]+/g, ' '))}
-        />
-        <p className='text-xs text-muted-foreground'>
-          {[...reason].length}/{MAX_REASON}
-        </p>
-        {touched && rError && (
-          <p role='alert' className='text-sm text-destructive'>
-            {rError}
-          </p>
-        )}
-      </div>
-      <Field
-        id='gmail-target'
-        label={`Type ${userEmail} to confirm`}
-        value={target}
-        onChange={setTarget}
-        type='email'
-      />
-      {touched && tError && (
-        <p role='alert' className='text-sm text-destructive'>
-          {tError}
-        </p>
-      )}
-      <Button>Access Gmail settings</Button>
-    </form>
-  )
-}
-
-function SettingsView(
-  props: Props & { confirmation: GmailConfirmation; now: number }
+export function SettingsView(
+  props: Props & { confirmation: GmailConfirmation }
 ) {
-  const { connectionId, tenantId, userId, confirmation, now } = props
+  const { connectionId, tenantId, userId, confirmation } = props
   const access = {
     reason: confirmation.reason,
     targetEmail: confirmation.targetEmail,
@@ -162,32 +54,18 @@ function SettingsView(
     access,
     confirmation.confirmedAt
   )
-  const minutes = Math.ceil(confirmationRemainingMs(confirmation, now) / 60000)
   return (
     <div className='space-y-4'>
-      <div className='flex flex-wrap items-center justify-between gap-3 text-sm'>
-        <p className='text-muted-foreground'>
-          Reason: <em>{confirmation.reason}</em> · access ends in about{' '}
-          {minutes} min
-        </p>
-        <div className='flex gap-2'>
-          <Button
-            variant='outline'
-            size='sm'
-            disabled={q.isFetching}
-            onClick={() => q.refetch()}
-            title='Reads the settings again; each read is recorded'
-          >
-            {q.isFetching ? 'Reading…' : 'Read again'}
-          </Button>
-          <Button
-            variant='outline'
-            size='sm'
-            onClick={() => props.onConfirmation(null)}
-          >
-            End access
-          </Button>
-        </div>
+      <div className='flex justify-end'>
+        <Button
+          variant='outline'
+          size='sm'
+          disabled={q.isFetching}
+          onClick={() => q.refetch()}
+          title='Reads the settings again; each read is recorded'
+        >
+          {q.isFetching ? 'Reading…' : 'Read again'}
+        </Button>
       </div>
       <DirectoryError error={q.error} scope={GMAIL_SCOPE} />
       {q.isLoading && <p>Reading settings…</p>}

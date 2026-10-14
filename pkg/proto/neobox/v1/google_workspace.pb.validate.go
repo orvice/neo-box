@@ -12921,6 +12921,1766 @@ var _ interface {
 	ErrorName() string
 } = UpdateWorkspaceUserGmailVacationResponseValidationError{}
 
+// Validate checks the field values on GmailMailLabel with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *GmailMailLabel) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GmailMailLabel with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in GmailMailLabelMultiError,
+// or nil if none found.
+func (m *GmailMailLabel) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GmailMailLabel) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Name
+
+	// no validation rules for Type
+
+	// no validation rules for CountsKnown
+
+	// no validation rules for MessagesTotal
+
+	// no validation rules for MessagesUnread
+
+	if len(errors) > 0 {
+		return GmailMailLabelMultiError(errors)
+	}
+
+	return nil
+}
+
+// GmailMailLabelMultiError is an error wrapping multiple validation errors
+// returned by GmailMailLabel.ValidateAll() if the designated constraints
+// aren't met.
+type GmailMailLabelMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GmailMailLabelMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GmailMailLabelMultiError) AllErrors() []error { return m }
+
+// GmailMailLabelValidationError is the validation error returned by
+// GmailMailLabel.Validate if the designated constraints aren't met.
+type GmailMailLabelValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GmailMailLabelValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GmailMailLabelValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GmailMailLabelValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GmailMailLabelValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GmailMailLabelValidationError) ErrorName() string { return "GmailMailLabelValidationError" }
+
+// Error satisfies the builtin error interface
+func (e GmailMailLabelValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGmailMailLabel.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GmailMailLabelValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GmailMailLabelValidationError{}
+
+// Validate checks the field values on ListWorkspaceUserGmailLabelsRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *ListWorkspaceUserGmailLabelsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListWorkspaceUserGmailLabelsRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// ListWorkspaceUserGmailLabelsRequestMultiError, or nil if none found.
+func (m *ListWorkspaceUserGmailLabelsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListWorkspaceUserGmailLabelsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ConnectionId
+
+	// no validation rules for TenantId
+
+	// no validation rules for UserId
+
+	if all {
+		switch v := interface{}(m.GetConfirmation()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ListWorkspaceUserGmailLabelsRequestValidationError{
+					field:  "Confirmation",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ListWorkspaceUserGmailLabelsRequestValidationError{
+					field:  "Confirmation",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetConfirmation()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ListWorkspaceUserGmailLabelsRequestValidationError{
+				field:  "Confirmation",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return ListWorkspaceUserGmailLabelsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListWorkspaceUserGmailLabelsRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// ListWorkspaceUserGmailLabelsRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ListWorkspaceUserGmailLabelsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListWorkspaceUserGmailLabelsRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListWorkspaceUserGmailLabelsRequestMultiError) AllErrors() []error { return m }
+
+// ListWorkspaceUserGmailLabelsRequestValidationError is the validation error
+// returned by ListWorkspaceUserGmailLabelsRequest.Validate if the designated
+// constraints aren't met.
+type ListWorkspaceUserGmailLabelsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListWorkspaceUserGmailLabelsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListWorkspaceUserGmailLabelsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListWorkspaceUserGmailLabelsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListWorkspaceUserGmailLabelsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListWorkspaceUserGmailLabelsRequestValidationError) ErrorName() string {
+	return "ListWorkspaceUserGmailLabelsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListWorkspaceUserGmailLabelsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListWorkspaceUserGmailLabelsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListWorkspaceUserGmailLabelsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListWorkspaceUserGmailLabelsRequestValidationError{}
+
+// Validate checks the field values on ListWorkspaceUserGmailLabelsResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *ListWorkspaceUserGmailLabelsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListWorkspaceUserGmailLabelsResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// ListWorkspaceUserGmailLabelsResponseMultiError, or nil if none found.
+func (m *ListWorkspaceUserGmailLabelsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListWorkspaceUserGmailLabelsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for UserEmail
+
+	for idx, item := range m.GetLabels() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListWorkspaceUserGmailLabelsResponseValidationError{
+						field:  fmt.Sprintf("Labels[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListWorkspaceUserGmailLabelsResponseValidationError{
+						field:  fmt.Sprintf("Labels[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListWorkspaceUserGmailLabelsResponseValidationError{
+					field:  fmt.Sprintf("Labels[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if all {
+		switch v := interface{}(m.GetReadAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ListWorkspaceUserGmailLabelsResponseValidationError{
+					field:  "ReadAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ListWorkspaceUserGmailLabelsResponseValidationError{
+					field:  "ReadAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetReadAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ListWorkspaceUserGmailLabelsResponseValidationError{
+				field:  "ReadAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return ListWorkspaceUserGmailLabelsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListWorkspaceUserGmailLabelsResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// ListWorkspaceUserGmailLabelsResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ListWorkspaceUserGmailLabelsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListWorkspaceUserGmailLabelsResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListWorkspaceUserGmailLabelsResponseMultiError) AllErrors() []error { return m }
+
+// ListWorkspaceUserGmailLabelsResponseValidationError is the validation error
+// returned by ListWorkspaceUserGmailLabelsResponse.Validate if the designated
+// constraints aren't met.
+type ListWorkspaceUserGmailLabelsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListWorkspaceUserGmailLabelsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListWorkspaceUserGmailLabelsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListWorkspaceUserGmailLabelsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListWorkspaceUserGmailLabelsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListWorkspaceUserGmailLabelsResponseValidationError) ErrorName() string {
+	return "ListWorkspaceUserGmailLabelsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListWorkspaceUserGmailLabelsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListWorkspaceUserGmailLabelsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListWorkspaceUserGmailLabelsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListWorkspaceUserGmailLabelsResponseValidationError{}
+
+// Validate checks the field values on GmailMessageSummary with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GmailMessageSummary) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GmailMessageSummary with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GmailMessageSummaryMultiError, or nil if none found.
+func (m *GmailMessageSummary) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GmailMessageSummary) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for ThreadId
+
+	// no validation rules for From
+
+	// no validation rules for To
+
+	// no validation rules for Subject
+
+	// no validation rules for Snippet
+
+	if all {
+		switch v := interface{}(m.GetDate()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GmailMessageSummaryValidationError{
+					field:  "Date",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GmailMessageSummaryValidationError{
+					field:  "Date",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDate()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GmailMessageSummaryValidationError{
+				field:  "Date",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for HasAttachment
+
+	// no validation rules for Unavailable
+
+	if len(errors) > 0 {
+		return GmailMessageSummaryMultiError(errors)
+	}
+
+	return nil
+}
+
+// GmailMessageSummaryMultiError is an error wrapping multiple validation
+// errors returned by GmailMessageSummary.ValidateAll() if the designated
+// constraints aren't met.
+type GmailMessageSummaryMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GmailMessageSummaryMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GmailMessageSummaryMultiError) AllErrors() []error { return m }
+
+// GmailMessageSummaryValidationError is the validation error returned by
+// GmailMessageSummary.Validate if the designated constraints aren't met.
+type GmailMessageSummaryValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GmailMessageSummaryValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GmailMessageSummaryValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GmailMessageSummaryValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GmailMessageSummaryValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GmailMessageSummaryValidationError) ErrorName() string {
+	return "GmailMessageSummaryValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GmailMessageSummaryValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGmailMessageSummary.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GmailMessageSummaryValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GmailMessageSummaryValidationError{}
+
+// Validate checks the field values on SearchWorkspaceUserGmailMessagesRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *SearchWorkspaceUserGmailMessagesRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on
+// SearchWorkspaceUserGmailMessagesRequest with the rules defined in the proto
+// definition for this message. If any rules are violated, the result is a
+// list of violation errors wrapped in
+// SearchWorkspaceUserGmailMessagesRequestMultiError, or nil if none found.
+func (m *SearchWorkspaceUserGmailMessagesRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SearchWorkspaceUserGmailMessagesRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ConnectionId
+
+	// no validation rules for TenantId
+
+	// no validation rules for UserId
+
+	if all {
+		switch v := interface{}(m.GetConfirmation()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, SearchWorkspaceUserGmailMessagesRequestValidationError{
+					field:  "Confirmation",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, SearchWorkspaceUserGmailMessagesRequestValidationError{
+					field:  "Confirmation",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetConfirmation()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return SearchWorkspaceUserGmailMessagesRequestValidationError{
+				field:  "Confirmation",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for Query
+
+	// no validation rules for IncludeSpamTrash
+
+	// no validation rules for PageToken
+
+	// no validation rules for PageSize
+
+	if len(errors) > 0 {
+		return SearchWorkspaceUserGmailMessagesRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// SearchWorkspaceUserGmailMessagesRequestMultiError is an error wrapping
+// multiple validation errors returned by
+// SearchWorkspaceUserGmailMessagesRequest.ValidateAll() if the designated
+// constraints aren't met.
+type SearchWorkspaceUserGmailMessagesRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SearchWorkspaceUserGmailMessagesRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SearchWorkspaceUserGmailMessagesRequestMultiError) AllErrors() []error { return m }
+
+// SearchWorkspaceUserGmailMessagesRequestValidationError is the validation
+// error returned by SearchWorkspaceUserGmailMessagesRequest.Validate if the
+// designated constraints aren't met.
+type SearchWorkspaceUserGmailMessagesRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SearchWorkspaceUserGmailMessagesRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SearchWorkspaceUserGmailMessagesRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SearchWorkspaceUserGmailMessagesRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SearchWorkspaceUserGmailMessagesRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SearchWorkspaceUserGmailMessagesRequestValidationError) ErrorName() string {
+	return "SearchWorkspaceUserGmailMessagesRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SearchWorkspaceUserGmailMessagesRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSearchWorkspaceUserGmailMessagesRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SearchWorkspaceUserGmailMessagesRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SearchWorkspaceUserGmailMessagesRequestValidationError{}
+
+// Validate checks the field values on SearchWorkspaceUserGmailMessagesResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *SearchWorkspaceUserGmailMessagesResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on
+// SearchWorkspaceUserGmailMessagesResponse with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in
+// SearchWorkspaceUserGmailMessagesResponseMultiError, or nil if none found.
+func (m *SearchWorkspaceUserGmailMessagesResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SearchWorkspaceUserGmailMessagesResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for UserEmail
+
+	for idx, item := range m.GetMessages() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, SearchWorkspaceUserGmailMessagesResponseValidationError{
+						field:  fmt.Sprintf("Messages[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, SearchWorkspaceUserGmailMessagesResponseValidationError{
+						field:  fmt.Sprintf("Messages[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return SearchWorkspaceUserGmailMessagesResponseValidationError{
+					field:  fmt.Sprintf("Messages[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for NextPageToken
+
+	// no validation rules for ResultSizeEstimate
+
+	if all {
+		switch v := interface{}(m.GetReadAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, SearchWorkspaceUserGmailMessagesResponseValidationError{
+					field:  "ReadAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, SearchWorkspaceUserGmailMessagesResponseValidationError{
+					field:  "ReadAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetReadAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return SearchWorkspaceUserGmailMessagesResponseValidationError{
+				field:  "ReadAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return SearchWorkspaceUserGmailMessagesResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// SearchWorkspaceUserGmailMessagesResponseMultiError is an error wrapping
+// multiple validation errors returned by
+// SearchWorkspaceUserGmailMessagesResponse.ValidateAll() if the designated
+// constraints aren't met.
+type SearchWorkspaceUserGmailMessagesResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SearchWorkspaceUserGmailMessagesResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SearchWorkspaceUserGmailMessagesResponseMultiError) AllErrors() []error { return m }
+
+// SearchWorkspaceUserGmailMessagesResponseValidationError is the validation
+// error returned by SearchWorkspaceUserGmailMessagesResponse.Validate if the
+// designated constraints aren't met.
+type SearchWorkspaceUserGmailMessagesResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SearchWorkspaceUserGmailMessagesResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SearchWorkspaceUserGmailMessagesResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SearchWorkspaceUserGmailMessagesResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SearchWorkspaceUserGmailMessagesResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SearchWorkspaceUserGmailMessagesResponseValidationError) ErrorName() string {
+	return "SearchWorkspaceUserGmailMessagesResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SearchWorkspaceUserGmailMessagesResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSearchWorkspaceUserGmailMessagesResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SearchWorkspaceUserGmailMessagesResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SearchWorkspaceUserGmailMessagesResponseValidationError{}
+
+// Validate checks the field values on GmailAttachment with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *GmailAttachment) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GmailAttachment with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GmailAttachmentMultiError, or nil if none found.
+func (m *GmailAttachment) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GmailAttachment) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for PartId
+
+	// no validation rules for Filename
+
+	// no validation rules for MimeType
+
+	// no validation rules for Size
+
+	// no validation rules for Inline
+
+	// no validation rules for Downloadable
+
+	// no validation rules for TooLarge
+
+	if len(errors) > 0 {
+		return GmailAttachmentMultiError(errors)
+	}
+
+	return nil
+}
+
+// GmailAttachmentMultiError is an error wrapping multiple validation errors
+// returned by GmailAttachment.ValidateAll() if the designated constraints
+// aren't met.
+type GmailAttachmentMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GmailAttachmentMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GmailAttachmentMultiError) AllErrors() []error { return m }
+
+// GmailAttachmentValidationError is the validation error returned by
+// GmailAttachment.Validate if the designated constraints aren't met.
+type GmailAttachmentValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GmailAttachmentValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GmailAttachmentValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GmailAttachmentValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GmailAttachmentValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GmailAttachmentValidationError) ErrorName() string { return "GmailAttachmentValidationError" }
+
+// Error satisfies the builtin error interface
+func (e GmailAttachmentValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGmailAttachment.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GmailAttachmentValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GmailAttachmentValidationError{}
+
+// Validate checks the field values on GmailMessage with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *GmailMessage) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GmailMessage with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in GmailMessageMultiError, or
+// nil if none found.
+func (m *GmailMessage) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GmailMessage) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for ThreadId
+
+	// no validation rules for From
+
+	// no validation rules for To
+
+	// no validation rules for Cc
+
+	// no validation rules for Bcc
+
+	// no validation rules for ReplyTo
+
+	// no validation rules for Subject
+
+	if all {
+		switch v := interface{}(m.GetDate()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GmailMessageValidationError{
+					field:  "Date",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GmailMessageValidationError{
+					field:  "Date",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDate()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GmailMessageValidationError{
+				field:  "Date",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for Snippet
+
+	// no validation rules for PlainText
+
+	// no validation rules for Html
+
+	// no validation rules for PlainTextFromHtml
+
+	// no validation rules for BodyTruncated
+
+	for idx, item := range m.GetAttachments() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GmailMessageValidationError{
+						field:  fmt.Sprintf("Attachments[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GmailMessageValidationError{
+						field:  fmt.Sprintf("Attachments[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GmailMessageValidationError{
+					field:  fmt.Sprintf("Attachments[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return GmailMessageMultiError(errors)
+	}
+
+	return nil
+}
+
+// GmailMessageMultiError is an error wrapping multiple validation errors
+// returned by GmailMessage.ValidateAll() if the designated constraints aren't met.
+type GmailMessageMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GmailMessageMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GmailMessageMultiError) AllErrors() []error { return m }
+
+// GmailMessageValidationError is the validation error returned by
+// GmailMessage.Validate if the designated constraints aren't met.
+type GmailMessageValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GmailMessageValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GmailMessageValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GmailMessageValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GmailMessageValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GmailMessageValidationError) ErrorName() string { return "GmailMessageValidationError" }
+
+// Error satisfies the builtin error interface
+func (e GmailMessageValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGmailMessage.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GmailMessageValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GmailMessageValidationError{}
+
+// Validate checks the field values on GetWorkspaceUserGmailMessageRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *GetWorkspaceUserGmailMessageRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetWorkspaceUserGmailMessageRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// GetWorkspaceUserGmailMessageRequestMultiError, or nil if none found.
+func (m *GetWorkspaceUserGmailMessageRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetWorkspaceUserGmailMessageRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ConnectionId
+
+	// no validation rules for TenantId
+
+	// no validation rules for UserId
+
+	if all {
+		switch v := interface{}(m.GetConfirmation()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GetWorkspaceUserGmailMessageRequestValidationError{
+					field:  "Confirmation",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GetWorkspaceUserGmailMessageRequestValidationError{
+					field:  "Confirmation",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetConfirmation()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetWorkspaceUserGmailMessageRequestValidationError{
+				field:  "Confirmation",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for MessageId
+
+	if len(errors) > 0 {
+		return GetWorkspaceUserGmailMessageRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetWorkspaceUserGmailMessageRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// GetWorkspaceUserGmailMessageRequest.ValidateAll() if the designated
+// constraints aren't met.
+type GetWorkspaceUserGmailMessageRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetWorkspaceUserGmailMessageRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetWorkspaceUserGmailMessageRequestMultiError) AllErrors() []error { return m }
+
+// GetWorkspaceUserGmailMessageRequestValidationError is the validation error
+// returned by GetWorkspaceUserGmailMessageRequest.Validate if the designated
+// constraints aren't met.
+type GetWorkspaceUserGmailMessageRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetWorkspaceUserGmailMessageRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetWorkspaceUserGmailMessageRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetWorkspaceUserGmailMessageRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetWorkspaceUserGmailMessageRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetWorkspaceUserGmailMessageRequestValidationError) ErrorName() string {
+	return "GetWorkspaceUserGmailMessageRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetWorkspaceUserGmailMessageRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetWorkspaceUserGmailMessageRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetWorkspaceUserGmailMessageRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetWorkspaceUserGmailMessageRequestValidationError{}
+
+// Validate checks the field values on GetWorkspaceUserGmailMessageResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *GetWorkspaceUserGmailMessageResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetWorkspaceUserGmailMessageResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// GetWorkspaceUserGmailMessageResponseMultiError, or nil if none found.
+func (m *GetWorkspaceUserGmailMessageResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetWorkspaceUserGmailMessageResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for UserEmail
+
+	if all {
+		switch v := interface{}(m.GetMessage()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GetWorkspaceUserGmailMessageResponseValidationError{
+					field:  "Message",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GetWorkspaceUserGmailMessageResponseValidationError{
+					field:  "Message",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetMessage()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetWorkspaceUserGmailMessageResponseValidationError{
+				field:  "Message",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetReadAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GetWorkspaceUserGmailMessageResponseValidationError{
+					field:  "ReadAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GetWorkspaceUserGmailMessageResponseValidationError{
+					field:  "ReadAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetReadAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetWorkspaceUserGmailMessageResponseValidationError{
+				field:  "ReadAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return GetWorkspaceUserGmailMessageResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetWorkspaceUserGmailMessageResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// GetWorkspaceUserGmailMessageResponse.ValidateAll() if the designated
+// constraints aren't met.
+type GetWorkspaceUserGmailMessageResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetWorkspaceUserGmailMessageResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetWorkspaceUserGmailMessageResponseMultiError) AllErrors() []error { return m }
+
+// GetWorkspaceUserGmailMessageResponseValidationError is the validation error
+// returned by GetWorkspaceUserGmailMessageResponse.Validate if the designated
+// constraints aren't met.
+type GetWorkspaceUserGmailMessageResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetWorkspaceUserGmailMessageResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetWorkspaceUserGmailMessageResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetWorkspaceUserGmailMessageResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetWorkspaceUserGmailMessageResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetWorkspaceUserGmailMessageResponseValidationError) ErrorName() string {
+	return "GetWorkspaceUserGmailMessageResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetWorkspaceUserGmailMessageResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetWorkspaceUserGmailMessageResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetWorkspaceUserGmailMessageResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetWorkspaceUserGmailMessageResponseValidationError{}
+
+// Validate checks the field values on
+// DownloadWorkspaceUserGmailAttachmentRequest with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *DownloadWorkspaceUserGmailAttachmentRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on
+// DownloadWorkspaceUserGmailAttachmentRequest with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in
+// DownloadWorkspaceUserGmailAttachmentRequestMultiError, or nil if none found.
+func (m *DownloadWorkspaceUserGmailAttachmentRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DownloadWorkspaceUserGmailAttachmentRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ConnectionId
+
+	// no validation rules for TenantId
+
+	// no validation rules for UserId
+
+	if all {
+		switch v := interface{}(m.GetConfirmation()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, DownloadWorkspaceUserGmailAttachmentRequestValidationError{
+					field:  "Confirmation",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, DownloadWorkspaceUserGmailAttachmentRequestValidationError{
+					field:  "Confirmation",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetConfirmation()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return DownloadWorkspaceUserGmailAttachmentRequestValidationError{
+				field:  "Confirmation",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for MessageId
+
+	// no validation rules for PartId
+
+	if len(errors) > 0 {
+		return DownloadWorkspaceUserGmailAttachmentRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// DownloadWorkspaceUserGmailAttachmentRequestMultiError is an error wrapping
+// multiple validation errors returned by
+// DownloadWorkspaceUserGmailAttachmentRequest.ValidateAll() if the designated
+// constraints aren't met.
+type DownloadWorkspaceUserGmailAttachmentRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DownloadWorkspaceUserGmailAttachmentRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DownloadWorkspaceUserGmailAttachmentRequestMultiError) AllErrors() []error { return m }
+
+// DownloadWorkspaceUserGmailAttachmentRequestValidationError is the validation
+// error returned by DownloadWorkspaceUserGmailAttachmentRequest.Validate if
+// the designated constraints aren't met.
+type DownloadWorkspaceUserGmailAttachmentRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DownloadWorkspaceUserGmailAttachmentRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DownloadWorkspaceUserGmailAttachmentRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DownloadWorkspaceUserGmailAttachmentRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DownloadWorkspaceUserGmailAttachmentRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DownloadWorkspaceUserGmailAttachmentRequestValidationError) ErrorName() string {
+	return "DownloadWorkspaceUserGmailAttachmentRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DownloadWorkspaceUserGmailAttachmentRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDownloadWorkspaceUserGmailAttachmentRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DownloadWorkspaceUserGmailAttachmentRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DownloadWorkspaceUserGmailAttachmentRequestValidationError{}
+
+// Validate checks the field values on
+// DownloadWorkspaceUserGmailAttachmentResponse with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *DownloadWorkspaceUserGmailAttachmentResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on
+// DownloadWorkspaceUserGmailAttachmentResponse with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in
+// DownloadWorkspaceUserGmailAttachmentResponseMultiError, or nil if none found.
+func (m *DownloadWorkspaceUserGmailAttachmentResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DownloadWorkspaceUserGmailAttachmentResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Filename
+
+	// no validation rules for MimeType
+
+	// no validation rules for Data
+
+	if len(errors) > 0 {
+		return DownloadWorkspaceUserGmailAttachmentResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// DownloadWorkspaceUserGmailAttachmentResponseMultiError is an error wrapping
+// multiple validation errors returned by
+// DownloadWorkspaceUserGmailAttachmentResponse.ValidateAll() if the
+// designated constraints aren't met.
+type DownloadWorkspaceUserGmailAttachmentResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DownloadWorkspaceUserGmailAttachmentResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DownloadWorkspaceUserGmailAttachmentResponseMultiError) AllErrors() []error { return m }
+
+// DownloadWorkspaceUserGmailAttachmentResponseValidationError is the
+// validation error returned by
+// DownloadWorkspaceUserGmailAttachmentResponse.Validate if the designated
+// constraints aren't met.
+type DownloadWorkspaceUserGmailAttachmentResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DownloadWorkspaceUserGmailAttachmentResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DownloadWorkspaceUserGmailAttachmentResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DownloadWorkspaceUserGmailAttachmentResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DownloadWorkspaceUserGmailAttachmentResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DownloadWorkspaceUserGmailAttachmentResponseValidationError) ErrorName() string {
+	return "DownloadWorkspaceUserGmailAttachmentResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DownloadWorkspaceUserGmailAttachmentResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDownloadWorkspaceUserGmailAttachmentResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DownloadWorkspaceUserGmailAttachmentResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DownloadWorkspaceUserGmailAttachmentResponseValidationError{}
+
 // Validate checks the field values on WorkspaceDriveEvent with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.

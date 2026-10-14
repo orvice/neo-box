@@ -34,28 +34,37 @@ func defaultGmailClient(ctx context.Context, cfg googleworkspace.ConnectionConfi
 	return c, nil
 }
 
-// gmailAccess validates the confirmation, resolves the target inside the
-// tenant and only then opens a Gmail client whose token subject is that user.
-// Nothing reaches Google's token endpoint for a user who is not in the tenant
-// or whose primary email was not typed back.
-func (s *GoogleWorkspaceServiceServer) gmailAccess(ctx context.Context, connectionID, tenantID, userID string, confirmation *neoboxv1.GmailAccessConfirmation) (*workspaceDeps, *repo.Tenant, gmailAPI, string, error) {
+// gmailTarget validates the confirmation and resolves the target inside the
+// tenant. Nothing reaches Google's token endpoint for a user who is not in the
+// tenant or whose primary email was not typed back.
+func (s *GoogleWorkspaceServiceServer) gmailTarget(ctx context.Context, connectionID, tenantID, userID string, confirmation *neoboxv1.GmailAccessConfirmation) (*workspaceDeps, *repo.Tenant, workspaceAPI, *googleworkspace.User, string, error) {
 	reason, err := gmailReason(confirmation)
 	if err != nil {
-		return nil, nil, nil, "", err
+		return nil, nil, nil, nil, "", err
 	}
 	if strings.TrimSpace(userID) == "" {
-		return nil, nil, nil, "", connectx.RequiredArgument("user_id")
+		return nil, nil, nil, nil, "", connectx.RequiredArgument("user_id")
 	}
 	d, t, directory, err := s.open(ctx, connectionID, tenantID)
 	if err != nil {
-		return nil, nil, nil, "", err
+		return nil, nil, nil, nil, "", err
 	}
 	u, err := directory.GetUser(ctx, strings.TrimSpace(userID))
 	if err != nil {
-		return nil, nil, nil, "", mapWorkspaceErr(err)
+		return nil, nil, nil, nil, "", mapWorkspaceErr(err)
 	}
 	if !strings.EqualFold(strings.TrimSpace(confirmation.GetTargetEmail()), u.PrimaryEmail) {
-		return nil, nil, nil, "", connectx.InvalidArgument("confirmation.target_email", "must be this user's primary email")
+		return nil, nil, nil, nil, "", connectx.InvalidArgument("confirmation.target_email", "must be this user's primary email")
+	}
+	return d, t, directory, u, reason, nil
+}
+
+// gmailAccess opens a Gmail settings client whose token subject is the
+// resolved user.
+func (s *GoogleWorkspaceServiceServer) gmailAccess(ctx context.Context, connectionID, tenantID, userID string, confirmation *neoboxv1.GmailAccessConfirmation) (*workspaceDeps, *repo.Tenant, gmailAPI, string, error) {
+	d, t, directory, u, reason, err := s.gmailTarget(ctx, connectionID, tenantID, userID, confirmation)
+	if err != nil {
+		return nil, nil, nil, "", err
 	}
 	// Unknown domains leave "external" unknown rather than guessing.
 	domains, err := directory.VerifiedDomains(ctx)

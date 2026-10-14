@@ -147,6 +147,8 @@ type Client struct {
 	AdminEmail      string
 	ReportsEndpoint string
 	Recorder        WriteRecorder
+	// MaxResponseBytes caps one response body; zero means 8 MiB.
+	MaxResponseBytes int64
 }
 
 func NewClient(ctx context.Context, identity ConnectionConfig, secret ConnectionSecret, customer, admin string, extraScopes ...string) (*Client, error) {
@@ -236,7 +238,11 @@ func (c *Client) doAt(ctx context.Context, endpoint, method, path string, query 
 		resp, err := client.Do(req)
 		var apiErr *APIError
 		if err == nil {
-			raw, readErr := io.ReadAll(io.LimitReader(resp.Body, 8<<20))
+			limit := c.MaxResponseBytes
+			if limit <= 0 {
+				limit = 8 << 20
+			}
+			raw, readErr := io.ReadAll(io.LimitReader(resp.Body, limit))
 			resp.Body.Close()
 			if readErr != nil {
 				err = readErr

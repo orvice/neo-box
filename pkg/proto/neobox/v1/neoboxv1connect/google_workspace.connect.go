@@ -138,6 +138,18 @@ const (
 	// GoogleWorkspaceServiceUpdateWorkspaceUserGmailVacationProcedure is the fully-qualified name of
 	// the GoogleWorkspaceService's UpdateWorkspaceUserGmailVacation RPC.
 	GoogleWorkspaceServiceUpdateWorkspaceUserGmailVacationProcedure = "/neobox.v1.GoogleWorkspaceService/UpdateWorkspaceUserGmailVacation"
+	// GoogleWorkspaceServiceListWorkspaceUserGmailLabelsProcedure is the fully-qualified name of the
+	// GoogleWorkspaceService's ListWorkspaceUserGmailLabels RPC.
+	GoogleWorkspaceServiceListWorkspaceUserGmailLabelsProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceUserGmailLabels"
+	// GoogleWorkspaceServiceSearchWorkspaceUserGmailMessagesProcedure is the fully-qualified name of
+	// the GoogleWorkspaceService's SearchWorkspaceUserGmailMessages RPC.
+	GoogleWorkspaceServiceSearchWorkspaceUserGmailMessagesProcedure = "/neobox.v1.GoogleWorkspaceService/SearchWorkspaceUserGmailMessages"
+	// GoogleWorkspaceServiceGetWorkspaceUserGmailMessageProcedure is the fully-qualified name of the
+	// GoogleWorkspaceService's GetWorkspaceUserGmailMessage RPC.
+	GoogleWorkspaceServiceGetWorkspaceUserGmailMessageProcedure = "/neobox.v1.GoogleWorkspaceService/GetWorkspaceUserGmailMessage"
+	// GoogleWorkspaceServiceDownloadWorkspaceUserGmailAttachmentProcedure is the fully-qualified name
+	// of the GoogleWorkspaceService's DownloadWorkspaceUserGmailAttachment RPC.
+	GoogleWorkspaceServiceDownloadWorkspaceUserGmailAttachmentProcedure = "/neobox.v1.GoogleWorkspaceService/DownloadWorkspaceUserGmailAttachment"
 	// GoogleWorkspaceServiceListWorkspaceDriveActivitiesProcedure is the fully-qualified name of the
 	// GoogleWorkspaceService's ListWorkspaceDriveActivities RPC.
 	GoogleWorkspaceServiceListWorkspaceDriveActivitiesProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceDriveActivities"
@@ -188,9 +200,17 @@ type GoogleWorkspaceServiceClient interface {
 	GetWorkspaceOverview(context.Context, *connect.Request[v1.GetWorkspaceOverviewRequest]) (*connect.Response[v1.GetWorkspaceOverviewResponse], error)
 	ListWorkspaceAuditActivities(context.Context, *connect.Request[v1.ListWorkspaceAuditActivitiesRequest]) (*connect.Response[v1.ListWorkspaceAuditActivitiesResponse], error)
 	// Gmail settings are read and changed by impersonating one tenant user
-	// (ADR 0008). Message content is never requested.
+	// (ADR 0008). Settings requests never read message content.
 	GetWorkspaceUserGmailSettings(context.Context, *connect.Request[v1.GetWorkspaceUserGmailSettingsRequest]) (*connect.Response[v1.GetWorkspaceUserGmailSettingsResponse], error)
 	UpdateWorkspaceUserGmailVacation(context.Context, *connect.Request[v1.UpdateWorkspaceUserGmailVacationRequest]) (*connect.Response[v1.UpdateWorkspaceUserGmailVacationResponse], error)
+	// Gmail mail is read-only (ADR 0010): labels, search, one message and one
+	// attachment, read live by impersonating the user with gmail.readonly. Each
+	// call carries the same access confirmation and is logged before it is sent;
+	// nothing changes the mailbox.
+	ListWorkspaceUserGmailLabels(context.Context, *connect.Request[v1.ListWorkspaceUserGmailLabelsRequest]) (*connect.Response[v1.ListWorkspaceUserGmailLabelsResponse], error)
+	SearchWorkspaceUserGmailMessages(context.Context, *connect.Request[v1.SearchWorkspaceUserGmailMessagesRequest]) (*connect.Response[v1.SearchWorkspaceUserGmailMessagesResponse], error)
+	GetWorkspaceUserGmailMessage(context.Context, *connect.Request[v1.GetWorkspaceUserGmailMessageRequest]) (*connect.Response[v1.GetWorkspaceUserGmailMessageResponse], error)
+	DownloadWorkspaceUserGmailAttachment(context.Context, *connect.Request[v1.DownloadWorkspaceUserGmailAttachmentRequest]) (*connect.Response[v1.DownloadWorkspaceUserGmailAttachmentResponse], error)
 	// Drive governance reads Google's Reports API only (ADR 0009); no file
 	// content is reachable with these scopes.
 	ListWorkspaceDriveActivities(context.Context, *connect.Request[v1.ListWorkspaceDriveActivitiesRequest]) (*connect.Response[v1.ListWorkspaceDriveActivitiesResponse], error)
@@ -427,6 +447,30 @@ func NewGoogleWorkspaceServiceClient(httpClient connect.HTTPClient, baseURL stri
 			connect.WithSchema(googleWorkspaceServiceMethods.ByName("UpdateWorkspaceUserGmailVacation")),
 			connect.WithClientOptions(opts...),
 		),
+		listWorkspaceUserGmailLabels: connect.NewClient[v1.ListWorkspaceUserGmailLabelsRequest, v1.ListWorkspaceUserGmailLabelsResponse](
+			httpClient,
+			baseURL+GoogleWorkspaceServiceListWorkspaceUserGmailLabelsProcedure,
+			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceUserGmailLabels")),
+			connect.WithClientOptions(opts...),
+		),
+		searchWorkspaceUserGmailMessages: connect.NewClient[v1.SearchWorkspaceUserGmailMessagesRequest, v1.SearchWorkspaceUserGmailMessagesResponse](
+			httpClient,
+			baseURL+GoogleWorkspaceServiceSearchWorkspaceUserGmailMessagesProcedure,
+			connect.WithSchema(googleWorkspaceServiceMethods.ByName("SearchWorkspaceUserGmailMessages")),
+			connect.WithClientOptions(opts...),
+		),
+		getWorkspaceUserGmailMessage: connect.NewClient[v1.GetWorkspaceUserGmailMessageRequest, v1.GetWorkspaceUserGmailMessageResponse](
+			httpClient,
+			baseURL+GoogleWorkspaceServiceGetWorkspaceUserGmailMessageProcedure,
+			connect.WithSchema(googleWorkspaceServiceMethods.ByName("GetWorkspaceUserGmailMessage")),
+			connect.WithClientOptions(opts...),
+		),
+		downloadWorkspaceUserGmailAttachment: connect.NewClient[v1.DownloadWorkspaceUserGmailAttachmentRequest, v1.DownloadWorkspaceUserGmailAttachmentResponse](
+			httpClient,
+			baseURL+GoogleWorkspaceServiceDownloadWorkspaceUserGmailAttachmentProcedure,
+			connect.WithSchema(googleWorkspaceServiceMethods.ByName("DownloadWorkspaceUserGmailAttachment")),
+			connect.WithClientOptions(opts...),
+		),
 		listWorkspaceDriveActivities: connect.NewClient[v1.ListWorkspaceDriveActivitiesRequest, v1.ListWorkspaceDriveActivitiesResponse](
 			httpClient,
 			baseURL+GoogleWorkspaceServiceListWorkspaceDriveActivitiesProcedure,
@@ -456,45 +500,49 @@ func NewGoogleWorkspaceServiceClient(httpClient connect.HTTPClient, baseURL stri
 
 // googleWorkspaceServiceClient implements GoogleWorkspaceServiceClient.
 type googleWorkspaceServiceClient struct {
-	listWorkspaceTenants             *connect.Client[v1.ListWorkspaceTenantsRequest, v1.ListWorkspaceTenantsResponse]
-	createWorkspaceTenant            *connect.Client[v1.CreateWorkspaceTenantRequest, v1.CreateWorkspaceTenantResponse]
-	updateWorkspaceTenant            *connect.Client[v1.UpdateWorkspaceTenantRequest, v1.UpdateWorkspaceTenantResponse]
-	deleteWorkspaceTenant            *connect.Client[v1.DeleteWorkspaceTenantRequest, v1.DeleteWorkspaceTenantResponse]
-	testWorkspaceTenant              *connect.Client[v1.TestWorkspaceTenantRequest, v1.TestWorkspaceTenantResponse]
-	listWorkspaceUsers               *connect.Client[v1.ListWorkspaceUsersRequest, v1.ListWorkspaceUsersResponse]
-	getWorkspaceUser                 *connect.Client[v1.GetWorkspaceUserRequest, v1.GetWorkspaceUserResponse]
-	createWorkspaceUser              *connect.Client[v1.CreateWorkspaceUserRequest, v1.CreateWorkspaceUserResponse]
-	updateWorkspaceUser              *connect.Client[v1.UpdateWorkspaceUserRequest, v1.UpdateWorkspaceUserResponse]
-	resetWorkspaceUserPassword       *connect.Client[v1.ResetWorkspaceUserPasswordRequest, v1.ResetWorkspaceUserPasswordResponse]
-	setWorkspaceUserSuspended        *connect.Client[v1.SetWorkspaceUserSuspendedRequest, v1.SetWorkspaceUserSuspendedResponse]
-	listWorkspaceUserAliases         *connect.Client[v1.ListWorkspaceUserAliasesRequest, v1.ListWorkspaceUserAliasesResponse]
-	addWorkspaceUserAlias            *connect.Client[v1.AddWorkspaceUserAliasRequest, v1.AddWorkspaceUserAliasResponse]
-	deleteWorkspaceUserAlias         *connect.Client[v1.DeleteWorkspaceUserAliasRequest, v1.DeleteWorkspaceUserAliasResponse]
-	listWorkspaceGroups              *connect.Client[v1.ListWorkspaceGroupsRequest, v1.ListWorkspaceGroupsResponse]
-	listWorkspaceUserGroups          *connect.Client[v1.ListWorkspaceUserGroupsRequest, v1.ListWorkspaceUserGroupsResponse]
-	createWorkspaceGroup             *connect.Client[v1.CreateWorkspaceGroupRequest, v1.CreateWorkspaceGroupResponse]
-	updateWorkspaceGroup             *connect.Client[v1.UpdateWorkspaceGroupRequest, v1.UpdateWorkspaceGroupResponse]
-	deleteWorkspaceGroup             *connect.Client[v1.DeleteWorkspaceGroupRequest, v1.DeleteWorkspaceGroupResponse]
-	listWorkspaceGroupMembers        *connect.Client[v1.ListWorkspaceGroupMembersRequest, v1.ListWorkspaceGroupMembersResponse]
-	addWorkspaceGroupMember          *connect.Client[v1.AddWorkspaceGroupMemberRequest, v1.AddWorkspaceGroupMemberResponse]
-	updateWorkspaceGroupMember       *connect.Client[v1.UpdateWorkspaceGroupMemberRequest, v1.UpdateWorkspaceGroupMemberResponse]
-	deleteWorkspaceGroupMember       *connect.Client[v1.DeleteWorkspaceGroupMemberRequest, v1.DeleteWorkspaceGroupMemberResponse]
-	listWorkspaceOrgUnits            *connect.Client[v1.ListWorkspaceOrgUnitsRequest, v1.ListWorkspaceOrgUnitsResponse]
-	createWorkspaceOrgUnit           *connect.Client[v1.CreateWorkspaceOrgUnitRequest, v1.CreateWorkspaceOrgUnitResponse]
-	updateWorkspaceOrgUnit           *connect.Client[v1.UpdateWorkspaceOrgUnitRequest, v1.UpdateWorkspaceOrgUnitResponse]
-	deleteWorkspaceOrgUnit           *connect.Client[v1.DeleteWorkspaceOrgUnitRequest, v1.DeleteWorkspaceOrgUnitResponse]
-	signOutWorkspaceUser             *connect.Client[v1.SignOutWorkspaceUserRequest, v1.SignOutWorkspaceUserResponse]
-	listWorkspaceUserTokens          *connect.Client[v1.ListWorkspaceUserTokensRequest, v1.ListWorkspaceUserTokensResponse]
-	revokeWorkspaceUserToken         *connect.Client[v1.RevokeWorkspaceUserTokenRequest, v1.RevokeWorkspaceUserTokenResponse]
-	listWorkspaceOperations          *connect.Client[v1.ListWorkspaceOperationsRequest, v1.ListWorkspaceOperationsResponse]
-	getWorkspaceOverview             *connect.Client[v1.GetWorkspaceOverviewRequest, v1.GetWorkspaceOverviewResponse]
-	listWorkspaceAuditActivities     *connect.Client[v1.ListWorkspaceAuditActivitiesRequest, v1.ListWorkspaceAuditActivitiesResponse]
-	getWorkspaceUserGmailSettings    *connect.Client[v1.GetWorkspaceUserGmailSettingsRequest, v1.GetWorkspaceUserGmailSettingsResponse]
-	updateWorkspaceUserGmailVacation *connect.Client[v1.UpdateWorkspaceUserGmailVacationRequest, v1.UpdateWorkspaceUserGmailVacationResponse]
-	listWorkspaceDriveActivities     *connect.Client[v1.ListWorkspaceDriveActivitiesRequest, v1.ListWorkspaceDriveActivitiesResponse]
-	listWorkspaceDriveUsage          *connect.Client[v1.ListWorkspaceDriveUsageRequest, v1.ListWorkspaceDriveUsageResponse]
-	listWorkspaceSharedDrives        *connect.Client[v1.ListWorkspaceSharedDrivesRequest, v1.ListWorkspaceSharedDrivesResponse]
-	listWorkspaceUserExposedFiles    *connect.Client[v1.ListWorkspaceUserExposedFilesRequest, v1.ListWorkspaceUserExposedFilesResponse]
+	listWorkspaceTenants                 *connect.Client[v1.ListWorkspaceTenantsRequest, v1.ListWorkspaceTenantsResponse]
+	createWorkspaceTenant                *connect.Client[v1.CreateWorkspaceTenantRequest, v1.CreateWorkspaceTenantResponse]
+	updateWorkspaceTenant                *connect.Client[v1.UpdateWorkspaceTenantRequest, v1.UpdateWorkspaceTenantResponse]
+	deleteWorkspaceTenant                *connect.Client[v1.DeleteWorkspaceTenantRequest, v1.DeleteWorkspaceTenantResponse]
+	testWorkspaceTenant                  *connect.Client[v1.TestWorkspaceTenantRequest, v1.TestWorkspaceTenantResponse]
+	listWorkspaceUsers                   *connect.Client[v1.ListWorkspaceUsersRequest, v1.ListWorkspaceUsersResponse]
+	getWorkspaceUser                     *connect.Client[v1.GetWorkspaceUserRequest, v1.GetWorkspaceUserResponse]
+	createWorkspaceUser                  *connect.Client[v1.CreateWorkspaceUserRequest, v1.CreateWorkspaceUserResponse]
+	updateWorkspaceUser                  *connect.Client[v1.UpdateWorkspaceUserRequest, v1.UpdateWorkspaceUserResponse]
+	resetWorkspaceUserPassword           *connect.Client[v1.ResetWorkspaceUserPasswordRequest, v1.ResetWorkspaceUserPasswordResponse]
+	setWorkspaceUserSuspended            *connect.Client[v1.SetWorkspaceUserSuspendedRequest, v1.SetWorkspaceUserSuspendedResponse]
+	listWorkspaceUserAliases             *connect.Client[v1.ListWorkspaceUserAliasesRequest, v1.ListWorkspaceUserAliasesResponse]
+	addWorkspaceUserAlias                *connect.Client[v1.AddWorkspaceUserAliasRequest, v1.AddWorkspaceUserAliasResponse]
+	deleteWorkspaceUserAlias             *connect.Client[v1.DeleteWorkspaceUserAliasRequest, v1.DeleteWorkspaceUserAliasResponse]
+	listWorkspaceGroups                  *connect.Client[v1.ListWorkspaceGroupsRequest, v1.ListWorkspaceGroupsResponse]
+	listWorkspaceUserGroups              *connect.Client[v1.ListWorkspaceUserGroupsRequest, v1.ListWorkspaceUserGroupsResponse]
+	createWorkspaceGroup                 *connect.Client[v1.CreateWorkspaceGroupRequest, v1.CreateWorkspaceGroupResponse]
+	updateWorkspaceGroup                 *connect.Client[v1.UpdateWorkspaceGroupRequest, v1.UpdateWorkspaceGroupResponse]
+	deleteWorkspaceGroup                 *connect.Client[v1.DeleteWorkspaceGroupRequest, v1.DeleteWorkspaceGroupResponse]
+	listWorkspaceGroupMembers            *connect.Client[v1.ListWorkspaceGroupMembersRequest, v1.ListWorkspaceGroupMembersResponse]
+	addWorkspaceGroupMember              *connect.Client[v1.AddWorkspaceGroupMemberRequest, v1.AddWorkspaceGroupMemberResponse]
+	updateWorkspaceGroupMember           *connect.Client[v1.UpdateWorkspaceGroupMemberRequest, v1.UpdateWorkspaceGroupMemberResponse]
+	deleteWorkspaceGroupMember           *connect.Client[v1.DeleteWorkspaceGroupMemberRequest, v1.DeleteWorkspaceGroupMemberResponse]
+	listWorkspaceOrgUnits                *connect.Client[v1.ListWorkspaceOrgUnitsRequest, v1.ListWorkspaceOrgUnitsResponse]
+	createWorkspaceOrgUnit               *connect.Client[v1.CreateWorkspaceOrgUnitRequest, v1.CreateWorkspaceOrgUnitResponse]
+	updateWorkspaceOrgUnit               *connect.Client[v1.UpdateWorkspaceOrgUnitRequest, v1.UpdateWorkspaceOrgUnitResponse]
+	deleteWorkspaceOrgUnit               *connect.Client[v1.DeleteWorkspaceOrgUnitRequest, v1.DeleteWorkspaceOrgUnitResponse]
+	signOutWorkspaceUser                 *connect.Client[v1.SignOutWorkspaceUserRequest, v1.SignOutWorkspaceUserResponse]
+	listWorkspaceUserTokens              *connect.Client[v1.ListWorkspaceUserTokensRequest, v1.ListWorkspaceUserTokensResponse]
+	revokeWorkspaceUserToken             *connect.Client[v1.RevokeWorkspaceUserTokenRequest, v1.RevokeWorkspaceUserTokenResponse]
+	listWorkspaceOperations              *connect.Client[v1.ListWorkspaceOperationsRequest, v1.ListWorkspaceOperationsResponse]
+	getWorkspaceOverview                 *connect.Client[v1.GetWorkspaceOverviewRequest, v1.GetWorkspaceOverviewResponse]
+	listWorkspaceAuditActivities         *connect.Client[v1.ListWorkspaceAuditActivitiesRequest, v1.ListWorkspaceAuditActivitiesResponse]
+	getWorkspaceUserGmailSettings        *connect.Client[v1.GetWorkspaceUserGmailSettingsRequest, v1.GetWorkspaceUserGmailSettingsResponse]
+	updateWorkspaceUserGmailVacation     *connect.Client[v1.UpdateWorkspaceUserGmailVacationRequest, v1.UpdateWorkspaceUserGmailVacationResponse]
+	listWorkspaceUserGmailLabels         *connect.Client[v1.ListWorkspaceUserGmailLabelsRequest, v1.ListWorkspaceUserGmailLabelsResponse]
+	searchWorkspaceUserGmailMessages     *connect.Client[v1.SearchWorkspaceUserGmailMessagesRequest, v1.SearchWorkspaceUserGmailMessagesResponse]
+	getWorkspaceUserGmailMessage         *connect.Client[v1.GetWorkspaceUserGmailMessageRequest, v1.GetWorkspaceUserGmailMessageResponse]
+	downloadWorkspaceUserGmailAttachment *connect.Client[v1.DownloadWorkspaceUserGmailAttachmentRequest, v1.DownloadWorkspaceUserGmailAttachmentResponse]
+	listWorkspaceDriveActivities         *connect.Client[v1.ListWorkspaceDriveActivitiesRequest, v1.ListWorkspaceDriveActivitiesResponse]
+	listWorkspaceDriveUsage              *connect.Client[v1.ListWorkspaceDriveUsageRequest, v1.ListWorkspaceDriveUsageResponse]
+	listWorkspaceSharedDrives            *connect.Client[v1.ListWorkspaceSharedDrivesRequest, v1.ListWorkspaceSharedDrivesResponse]
+	listWorkspaceUserExposedFiles        *connect.Client[v1.ListWorkspaceUserExposedFilesRequest, v1.ListWorkspaceUserExposedFilesResponse]
 }
 
 // ListWorkspaceTenants calls neobox.v1.GoogleWorkspaceService.ListWorkspaceTenants.
@@ -674,6 +722,28 @@ func (c *googleWorkspaceServiceClient) UpdateWorkspaceUserGmailVacation(ctx cont
 	return c.updateWorkspaceUserGmailVacation.CallUnary(ctx, req)
 }
 
+// ListWorkspaceUserGmailLabels calls neobox.v1.GoogleWorkspaceService.ListWorkspaceUserGmailLabels.
+func (c *googleWorkspaceServiceClient) ListWorkspaceUserGmailLabels(ctx context.Context, req *connect.Request[v1.ListWorkspaceUserGmailLabelsRequest]) (*connect.Response[v1.ListWorkspaceUserGmailLabelsResponse], error) {
+	return c.listWorkspaceUserGmailLabels.CallUnary(ctx, req)
+}
+
+// SearchWorkspaceUserGmailMessages calls
+// neobox.v1.GoogleWorkspaceService.SearchWorkspaceUserGmailMessages.
+func (c *googleWorkspaceServiceClient) SearchWorkspaceUserGmailMessages(ctx context.Context, req *connect.Request[v1.SearchWorkspaceUserGmailMessagesRequest]) (*connect.Response[v1.SearchWorkspaceUserGmailMessagesResponse], error) {
+	return c.searchWorkspaceUserGmailMessages.CallUnary(ctx, req)
+}
+
+// GetWorkspaceUserGmailMessage calls neobox.v1.GoogleWorkspaceService.GetWorkspaceUserGmailMessage.
+func (c *googleWorkspaceServiceClient) GetWorkspaceUserGmailMessage(ctx context.Context, req *connect.Request[v1.GetWorkspaceUserGmailMessageRequest]) (*connect.Response[v1.GetWorkspaceUserGmailMessageResponse], error) {
+	return c.getWorkspaceUserGmailMessage.CallUnary(ctx, req)
+}
+
+// DownloadWorkspaceUserGmailAttachment calls
+// neobox.v1.GoogleWorkspaceService.DownloadWorkspaceUserGmailAttachment.
+func (c *googleWorkspaceServiceClient) DownloadWorkspaceUserGmailAttachment(ctx context.Context, req *connect.Request[v1.DownloadWorkspaceUserGmailAttachmentRequest]) (*connect.Response[v1.DownloadWorkspaceUserGmailAttachmentResponse], error) {
+	return c.downloadWorkspaceUserGmailAttachment.CallUnary(ctx, req)
+}
+
 // ListWorkspaceDriveActivities calls neobox.v1.GoogleWorkspaceService.ListWorkspaceDriveActivities.
 func (c *googleWorkspaceServiceClient) ListWorkspaceDriveActivities(ctx context.Context, req *connect.Request[v1.ListWorkspaceDriveActivitiesRequest]) (*connect.Response[v1.ListWorkspaceDriveActivitiesResponse], error) {
 	return c.listWorkspaceDriveActivities.CallUnary(ctx, req)
@@ -732,9 +802,17 @@ type GoogleWorkspaceServiceHandler interface {
 	GetWorkspaceOverview(context.Context, *connect.Request[v1.GetWorkspaceOverviewRequest]) (*connect.Response[v1.GetWorkspaceOverviewResponse], error)
 	ListWorkspaceAuditActivities(context.Context, *connect.Request[v1.ListWorkspaceAuditActivitiesRequest]) (*connect.Response[v1.ListWorkspaceAuditActivitiesResponse], error)
 	// Gmail settings are read and changed by impersonating one tenant user
-	// (ADR 0008). Message content is never requested.
+	// (ADR 0008). Settings requests never read message content.
 	GetWorkspaceUserGmailSettings(context.Context, *connect.Request[v1.GetWorkspaceUserGmailSettingsRequest]) (*connect.Response[v1.GetWorkspaceUserGmailSettingsResponse], error)
 	UpdateWorkspaceUserGmailVacation(context.Context, *connect.Request[v1.UpdateWorkspaceUserGmailVacationRequest]) (*connect.Response[v1.UpdateWorkspaceUserGmailVacationResponse], error)
+	// Gmail mail is read-only (ADR 0010): labels, search, one message and one
+	// attachment, read live by impersonating the user with gmail.readonly. Each
+	// call carries the same access confirmation and is logged before it is sent;
+	// nothing changes the mailbox.
+	ListWorkspaceUserGmailLabels(context.Context, *connect.Request[v1.ListWorkspaceUserGmailLabelsRequest]) (*connect.Response[v1.ListWorkspaceUserGmailLabelsResponse], error)
+	SearchWorkspaceUserGmailMessages(context.Context, *connect.Request[v1.SearchWorkspaceUserGmailMessagesRequest]) (*connect.Response[v1.SearchWorkspaceUserGmailMessagesResponse], error)
+	GetWorkspaceUserGmailMessage(context.Context, *connect.Request[v1.GetWorkspaceUserGmailMessageRequest]) (*connect.Response[v1.GetWorkspaceUserGmailMessageResponse], error)
+	DownloadWorkspaceUserGmailAttachment(context.Context, *connect.Request[v1.DownloadWorkspaceUserGmailAttachmentRequest]) (*connect.Response[v1.DownloadWorkspaceUserGmailAttachmentResponse], error)
 	// Drive governance reads Google's Reports API only (ADR 0009); no file
 	// content is reachable with these scopes.
 	ListWorkspaceDriveActivities(context.Context, *connect.Request[v1.ListWorkspaceDriveActivitiesRequest]) (*connect.Response[v1.ListWorkspaceDriveActivitiesResponse], error)
@@ -967,6 +1045,30 @@ func NewGoogleWorkspaceServiceHandler(svc GoogleWorkspaceServiceHandler, opts ..
 		connect.WithSchema(googleWorkspaceServiceMethods.ByName("UpdateWorkspaceUserGmailVacation")),
 		connect.WithHandlerOptions(opts...),
 	)
+	googleWorkspaceServiceListWorkspaceUserGmailLabelsHandler := connect.NewUnaryHandler(
+		GoogleWorkspaceServiceListWorkspaceUserGmailLabelsProcedure,
+		svc.ListWorkspaceUserGmailLabels,
+		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceUserGmailLabels")),
+		connect.WithHandlerOptions(opts...),
+	)
+	googleWorkspaceServiceSearchWorkspaceUserGmailMessagesHandler := connect.NewUnaryHandler(
+		GoogleWorkspaceServiceSearchWorkspaceUserGmailMessagesProcedure,
+		svc.SearchWorkspaceUserGmailMessages,
+		connect.WithSchema(googleWorkspaceServiceMethods.ByName("SearchWorkspaceUserGmailMessages")),
+		connect.WithHandlerOptions(opts...),
+	)
+	googleWorkspaceServiceGetWorkspaceUserGmailMessageHandler := connect.NewUnaryHandler(
+		GoogleWorkspaceServiceGetWorkspaceUserGmailMessageProcedure,
+		svc.GetWorkspaceUserGmailMessage,
+		connect.WithSchema(googleWorkspaceServiceMethods.ByName("GetWorkspaceUserGmailMessage")),
+		connect.WithHandlerOptions(opts...),
+	)
+	googleWorkspaceServiceDownloadWorkspaceUserGmailAttachmentHandler := connect.NewUnaryHandler(
+		GoogleWorkspaceServiceDownloadWorkspaceUserGmailAttachmentProcedure,
+		svc.DownloadWorkspaceUserGmailAttachment,
+		connect.WithSchema(googleWorkspaceServiceMethods.ByName("DownloadWorkspaceUserGmailAttachment")),
+		connect.WithHandlerOptions(opts...),
+	)
 	googleWorkspaceServiceListWorkspaceDriveActivitiesHandler := connect.NewUnaryHandler(
 		GoogleWorkspaceServiceListWorkspaceDriveActivitiesProcedure,
 		svc.ListWorkspaceDriveActivities,
@@ -1063,6 +1165,14 @@ func NewGoogleWorkspaceServiceHandler(svc GoogleWorkspaceServiceHandler, opts ..
 			googleWorkspaceServiceGetWorkspaceUserGmailSettingsHandler.ServeHTTP(w, r)
 		case GoogleWorkspaceServiceUpdateWorkspaceUserGmailVacationProcedure:
 			googleWorkspaceServiceUpdateWorkspaceUserGmailVacationHandler.ServeHTTP(w, r)
+		case GoogleWorkspaceServiceListWorkspaceUserGmailLabelsProcedure:
+			googleWorkspaceServiceListWorkspaceUserGmailLabelsHandler.ServeHTTP(w, r)
+		case GoogleWorkspaceServiceSearchWorkspaceUserGmailMessagesProcedure:
+			googleWorkspaceServiceSearchWorkspaceUserGmailMessagesHandler.ServeHTTP(w, r)
+		case GoogleWorkspaceServiceGetWorkspaceUserGmailMessageProcedure:
+			googleWorkspaceServiceGetWorkspaceUserGmailMessageHandler.ServeHTTP(w, r)
+		case GoogleWorkspaceServiceDownloadWorkspaceUserGmailAttachmentProcedure:
+			googleWorkspaceServiceDownloadWorkspaceUserGmailAttachmentHandler.ServeHTTP(w, r)
 		case GoogleWorkspaceServiceListWorkspaceDriveActivitiesProcedure:
 			googleWorkspaceServiceListWorkspaceDriveActivitiesHandler.ServeHTTP(w, r)
 		case GoogleWorkspaceServiceListWorkspaceDriveUsageProcedure:
@@ -1218,6 +1328,22 @@ func (UnimplementedGoogleWorkspaceServiceHandler) GetWorkspaceUserGmailSettings(
 
 func (UnimplementedGoogleWorkspaceServiceHandler) UpdateWorkspaceUserGmailVacation(context.Context, *connect.Request[v1.UpdateWorkspaceUserGmailVacationRequest]) (*connect.Response[v1.UpdateWorkspaceUserGmailVacationResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.UpdateWorkspaceUserGmailVacation is not implemented"))
+}
+
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceUserGmailLabels(context.Context, *connect.Request[v1.ListWorkspaceUserGmailLabelsRequest]) (*connect.Response[v1.ListWorkspaceUserGmailLabelsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceUserGmailLabels is not implemented"))
+}
+
+func (UnimplementedGoogleWorkspaceServiceHandler) SearchWorkspaceUserGmailMessages(context.Context, *connect.Request[v1.SearchWorkspaceUserGmailMessagesRequest]) (*connect.Response[v1.SearchWorkspaceUserGmailMessagesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.SearchWorkspaceUserGmailMessages is not implemented"))
+}
+
+func (UnimplementedGoogleWorkspaceServiceHandler) GetWorkspaceUserGmailMessage(context.Context, *connect.Request[v1.GetWorkspaceUserGmailMessageRequest]) (*connect.Response[v1.GetWorkspaceUserGmailMessageResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.GetWorkspaceUserGmailMessage is not implemented"))
+}
+
+func (UnimplementedGoogleWorkspaceServiceHandler) DownloadWorkspaceUserGmailAttachment(context.Context, *connect.Request[v1.DownloadWorkspaceUserGmailAttachmentRequest]) (*connect.Response[v1.DownloadWorkspaceUserGmailAttachmentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.DownloadWorkspaceUserGmailAttachment is not implemented"))
 }
 
 func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceDriveActivities(context.Context, *connect.Request[v1.ListWorkspaceDriveActivitiesRequest]) (*connect.Response[v1.ListWorkspaceDriveActivitiesResponse], error) {

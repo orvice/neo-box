@@ -220,9 +220,12 @@ and [Directory user fields](https://developers.google.com/workspace/admin/direct
 
 ## Gmail settings
 
-A User's **Gmail** tab shows that mailbox's *settings* — auto-reply, automatic
-forwarding, forwarding addresses, delegates, filters and send-as addresses —
-and lets you change the auto-reply. It never reads or changes messages.
+A User's **Gmail** tab has two views, **Mail** and **Settings**, behind one
+confirmation. **Settings** shows that mailbox's *settings* — auto-reply,
+automatic forwarding, forwarding addresses, delegates, filters and send-as
+addresses — and lets you change the auto-reply; it never reads or changes
+messages. Reading mail is a separate feature with its own scope, described under
+[Gmail mail](#gmail-mail).
 
 Authorize this additional scope **per tenant**, keeping the base scopes:
 
@@ -276,6 +279,77 @@ it, read again before retrying.
 
 See Google's [Gmail settings API](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.settings)
 and [scopes](https://developers.google.com/workspace/gmail/api/auth/scopes).
+
+## Gmail mail
+
+The **Mail** view reads a user's labels, messages and attachments, read-only.
+It can search, open a message and download an attachment. It cannot change a
+message's read state or labels, move, delete or send anything, and opening a
+message does not mark it read.
+
+Authorize this additional scope **per tenant**, keeping the base scopes:
+
+```text
+https://www.googleapis.com/auth/gmail.readonly
+```
+
+Google lists `gmail.readonly` as a *restricted* scope. It reads every message in
+the mailbox and changes none. Neo Box requests no broader Gmail scope
+(`gmail.modify`, `gmail.compose`, `gmail.send`, `mail.google.com`), and requests
+`gmail.readonly` only for Mail requests; the Settings view keeps
+`gmail.settings.basic`. You can authorize one without the other.
+
+**Understand what you are authorizing.** Once this scope is authorized for the
+Service Account, the Service Account can read *any* user's mail in the
+organization; the delegated administrator's own privileges do not narrow it.
+Neo Box's checks are accountability, not authorization (ADR 0010), and they are
+the same as for Gmail settings:
+
+- The target is resolved inside the Tenant first (Customer ID checked); another
+  organization's user, an alias or an unknown address never gets a token. You
+  type the user's **primary** email.
+- Every request carries a one-line **access reason** and the typed email, checked
+  by the backend each time. One confirmation covers both views for ten minutes.
+- One user per request. There is no search across users.
+- Every label list, search, opened message and attachment download is recorded
+  *before* it is sent, with your reason, and refused if it cannot be recorded.
+  Find them under **Neo Box operations** by searching `gmail`
+  (`gmail.labels.list`, `gmail.messages.search`, `gmail.message.read`,
+  `gmail.attachment.download`).
+- The record holds structure, never content: for a search the **names** of the
+  Gmail operators used (such as `from`, `has`) and the page size and result
+  count, not what you searched for; for a message its ID and attachment count;
+  for an attachment its message ID, type and size. Never subjects, bodies,
+  snippets, addresses, file names or search text. The message ID lets Google, not
+  Neo Box's log, say which message it was.
+
+**What you can do.**
+
+- The view opens with the label list (counts, with unread). A label whose counts
+  Gmail would not give has no counts shown, not zero.
+- **Search** uses Gmail's search syntax, an optional label, and optionally spam
+  and trash. Nothing is searched until you press Search. A page holds up to 25
+  messages (the API allows up to 50), with Gmail's estimate of the total. A
+  message whose headers could not be read is listed as unavailable rather than
+  dropped. The attachment mark on a result is a hint from the message's
+  structure; use `has:attachment` to search for attachments.
+- **Open** shows the headers, the plain-text part and the attachment list. HTML
+  is shown only on request, in a sandboxed frame without scripts, images, links
+  or any network request, so opening a message cannot run code or tell the
+  sender it was read. A message with only HTML shows text made from it.
+- **Download** an attachment up to **25 MB** (Neo Box's own limit; larger ones are
+  refused before any bytes are fetched). The file passes through Neo Box's
+  memory for that one response and is never stored.
+
+Paging, searching again, opening and downloading each read from Gmail again and
+are each recorded; leaving the Mail view drops what it shows.
+
+A missing `gmail.readonly` authorization, an unlicensed or suspended mailbox, and
+similar Gmail refusals are shown in the Mail view only; the Tenant's health does
+not change.
+
+See Google's [Gmail API scopes](https://developers.google.com/workspace/gmail/api/auth/scopes)
+and [messages.list](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.messages/list).
 
 ## Drive governance
 
@@ -393,6 +467,12 @@ PostgreSQL repository tests use `NEOBOX_TEST_POSTGRES_DSN` and an isolated schem
 Gmail tests cover refusal before any token is requested (missing reason, wrong
 or alias target, other-tenant user, other owner), write-ahead logging of reads
 and writes, content-free logs, independent sections, unknown external status,
-missing authorization, validation and single-send vacation updates.
+missing authorization, validation and single-send vacation updates. Gmail mail
+tests cover refusal before any token (same cases as settings, for all four
+calls), write-ahead logging with the log holding no query text, subject, body,
+address or file name, MIME parsing (multipart nesting, charsets, base64url,
+HTML-only mail, inline and large attachments, malformed input), unavailable
+results, per-label unknown counts, the attachment size limit before any fetch,
+and the HTML sandbox rules in the dashboard.
 Real Google key exchange and operations need authorized test tenants and have
 not been exercised against real Workspace accounts in this implementation.
