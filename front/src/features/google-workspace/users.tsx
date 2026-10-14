@@ -22,7 +22,7 @@ import { ConfirmDialog } from '@/components/confirm-dialog'
 import { DataTable, type Column } from '@/components/data-table'
 import { PasswordInput } from '@/components/password-input'
 import { useGmailConfirmation } from './gmail-access'
-import { UserGmailSettings } from './gmail-settings'
+import { UserGmail } from './gmail-tab'
 import { triState, lastLoginText } from './observability-format'
 import { OrgUnitPicker } from './org-units'
 import { UserExposedFiles } from './user-files'
@@ -343,7 +343,7 @@ export function WorkspaceUserDetail({
         />
       </TabsContent>
       <TabsContent value='gmail' className='pt-4'>
-        <UserGmailSettings
+        <UserGmail
           connectionId={connectionId}
           tenantId={tenantId}
           userId={userId}

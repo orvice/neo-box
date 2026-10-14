@@ -53,6 +53,17 @@ type GmailClient struct {
 // only scope is GmailSettingsScope. The caller must already have resolved the
 // user inside the tenant.
 func NewGmailClient(ctx context.Context, identity ConnectionConfig, secret ConnectionSecret, customer, userEmail string) (*GmailClient, error) {
+	hc, err := impersonatedHTTPClient(ctx, identity, secret, customer, userEmail, GmailSettingsScope)
+	if err != nil {
+		return nil, err
+	}
+	return NewGmailClientForHTTP(hc, gmailURL, customer, userEmail), nil
+}
+
+// impersonatedHTTPClient exchanges a token whose subject is userEmail and whose
+// only scope is the given one. The token source lives only in the returned
+// client and its errors are sanitized.
+func impersonatedHTTPClient(ctx context.Context, identity ConnectionConfig, secret ConnectionSecret, customer, userEmail, scope string) (*http.Client, error) {
 	metadata, cfg, err := ParseKey(secret.ServiceAccountJSON)
 	if err != nil {
 		return nil, err
@@ -63,12 +74,12 @@ func NewGmailClient(ctx context.Context, identity ConnectionConfig, secret Conne
 	if !ValidCustomerID(customer) || !ValidEmail(userEmail) {
 		return nil, errors.New("invalid Workspace customer or Gmail user")
 	}
-	cfg.Scopes = []string{GmailSettingsScope}
+	cfg.Scopes = []string{scope}
 	cfg.Subject = userEmail
 	ctx = context.WithValue(ctx, oauth2.HTTPClient, &http.Client{Timeout: 30 * time.Second})
 	hc := oauth2.NewClient(ctx, safeTokenSource{cfg.TokenSource(ctx)})
 	hc.Timeout = 30 * time.Second
-	return NewGmailClientForHTTP(hc, gmailURL, customer, userEmail), nil
+	return hc, nil
 }
 
 // NewGmailClientForHTTP builds a client over an existing HTTP client and
