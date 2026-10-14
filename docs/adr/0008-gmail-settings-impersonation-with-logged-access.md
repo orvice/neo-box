@@ -1,6 +1,8 @@
 # ADR 0008: Gmail settings are read by impersonating one user, and every access is logged first
 
-Status: accepted (2026-10-13)
+Status: accepted (2026-10-13); reading message content is decided separately in
+[ADR 0010](0010-gmail-message-reading-read-only-and-logged.md), which keeps this
+ADR's impersonation, typed-target and logging rules
 
 Gmail settings (vacation responder, forwarding, delegates, filters, send-as)
 can only be reached as the mailbox owner: the Gmail API takes the user as the

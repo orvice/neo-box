@@ -216,8 +216,16 @@ can't be deleted while a Restore of it is pending or running.
   responder, forwarding, delegates, filters, send-as), never messages. Read
   and changed by impersonating that user; see ADR 0008.
 - **Access reason** — the text an administrator gives before Neo Box touches a
-  Workspace User's Gmail settings, stored with each operation it covers. It is
-  accountability, not authorization.
+  Workspace User's Gmail settings or mail, stored with each operation it covers.
+  It is accountability, not authorization.
+- **Gmail mail** — a Workspace User's labels, messages and attachments, read
+  live (never stored) by impersonating that user with `gmail.readonly`; see
+  ADR 0010. Neo Box only reads: it does not change a message's read state or
+  labels, and does not send. Opening a message does not mark it read.
+- **Mail access** — one search, message open, label list or attachment download,
+  each its own Workspace operation. It records the message ID, counts and
+  query operator names, never subjects, bodies, addresses, file names or query
+  values.
 
 ### Notifications
 
