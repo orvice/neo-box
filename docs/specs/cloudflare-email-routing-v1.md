@@ -1,6 +1,6 @@
 # Cloudflare Email Routing v1
 
-Status: design approved 2026-10-16.
+Status: design approved 2026-10-16; implemented per docs/superpowers/plans/2026-10-16-cloudflare-email-routing.md.
 
 ## Goal
 
@@ -23,8 +23,9 @@ Out (first version):
 
 - **Disabling** Email Routing. It deletes the MX records and stops inbound
   mail; there is no RPC for it.
-- Rules whose action is "send to Worker". They are shown read-only, with
-  their Worker name, and cannot be edited or created here.
+- Rules whose action is "send to Worker", or that a Worker's wrangler
+  configuration owns (`source` other than `api`). They are shown read-only and
+  cannot be edited or created here.
 - Sending mail, email logs, subaddressing settings.
 
 ## Decisions
@@ -38,6 +39,9 @@ Out (first version):
 - **Destination addresses are Account-level**, rules are Zone-level. Both
   appear in the Zone page's Email routing tab; the address list is labelled
   as shared by the Account's Zones.
+- Destination-address operations are logged with Resource "destination
+  addresses"; the tab's log lists all `email_routing` operations of the
+  connection.
 - **`Verify` is unchanged.** Email Routing permissions are optional; a
   missing one surfaces in the tab only.
 - Errors follow the Cloudflare conventions: missing permission is
@@ -73,12 +77,12 @@ Cloudflare's API docs when the plan is written.
 - `EnableEmailRouting`: no-op when already enabled.
 - Creating or updating a forward action requires every target address to be
   verified; otherwise `FailedPrecondition` with the offending address.
-- Deleting a destination address that a rule or catch-all in a listed Zone
-  still uses: refused with `FailedPrecondition` naming the rule. (Rules in
-  Zones the token cannot read are not checked; Cloudflare's own answer
-  applies.)
-- Worker-action rules are returned flagged read-only; update and delete of
-  them is refused here, not sent.
+- Deleting a destination address that a rule or the catch-all of the **Zone
+  named in the request** (`zone_id`) still forwards to is refused with
+  `FailedPrecondition` naming the rule. Rules of other Zones are not checked
+  (one rules read per Zone is too slow); Cloudflare's own answer applies.
+- Worker-action and wrangler-owned rules are returned flagged read-only;
+  update and delete of them is refused here, not sent.
 - Errors classified by `a.classify` with the permission name
   ("Email Routing Rules Write", "Email Routing Addresses Write", DNS Write
   for enabling).
@@ -92,7 +96,8 @@ One request and response per RPC (buf STANDARD).
 - Write: `EnableCloudflareEmailRouting`, `CreateCloudflareEmailRule`,
   `UpdateCloudflareEmailRule`, `DeleteCloudflareEmailRule`,
   `SetCloudflareEmailCatchAll`, `CreateCloudflareEmailAddress` (Cloudflare
-  mails the verification), `DeleteCloudflareEmailAddress`.
+  mails the verification), `DeleteCloudflareEmailAddress` (requires
+  `zone_id` to check that Zone's rules and catch-all).
 - Writes return `CloudflareChangeResult`.
 - `ListCloudflareResourceOperations` accepts the new kind.
 - Enums follow the no-acronym-run naming rule.
