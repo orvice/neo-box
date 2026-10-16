@@ -1,8 +1,8 @@
 import { useState, type FormEvent } from 'react'
+import { Link } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import {
   useWorkspaceUsers,
-  useWorkspaceUser,
   useWorkspaceUserChanges,
   type WorkspaceTenant,
   type WorkspaceUser,
@@ -17,16 +17,10 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { DataTable, type Column } from '@/components/data-table'
 import { PasswordInput } from '@/components/password-input'
-import { useGmailConfirmation } from './gmail-access'
-import { UserGmail } from './gmail-tab'
-import { triState, lastLoginText } from './observability-format'
 import { OrgUnitPicker } from './org-units'
-import { UserExposedFiles } from './user-files'
-import { UserAliases, UserGroups, UserSecurity } from './user-tools'
 
 type UserAction =
   { kind: 'edit' | 'password'; user: WorkspaceUser } | { kind: 'create' }
@@ -42,7 +36,6 @@ export function WorkspaceUsers({
   const [tokens, setTokens] = useState<string[]>([''])
   const [action, setAction] = useState<UserAction | null>(null)
   const [suspend, setSuspend] = useState<WorkspaceUser | null>(null)
-  const [detail, setDetail] = useState<WorkspaceUser | null>(null)
   const [error, setError] = useState('')
   const users = useWorkspaceUsers(
     connectionId,
@@ -55,8 +48,13 @@ export function WorkspaceUsers({
     {
       header: 'Email',
       cell: (u) => (
-        <Button variant='link' className='px-0' onClick={() => setDetail(u)}>
-          {u.primaryEmail}
+        <Button variant='link' className='px-0' asChild>
+          <Link
+            to='/connections/$connectionId/tenants/$tenantId/users/$userId'
+            params={{ connectionId, tenantId: tenant.id, userId: u.id }}
+          >
+            {u.primaryEmail}
+          </Link>
         </Button>
       ),
     },
@@ -201,25 +199,6 @@ export function WorkspaceUsers({
           </DialogContent>
         </Dialog>
       )}
-      {detail && (
-        <Dialog
-          open
-          onOpenChange={(open) => {
-            if (!open) setDetail(null)
-          }}
-        >
-          <DialogContent className='max-h-[85vh] overflow-y-auto sm:max-w-3xl'>
-            <DialogHeader>
-              <DialogTitle>User details</DialogTitle>
-            </DialogHeader>
-            <WorkspaceUserDetail
-              connectionId={connectionId}
-              tenantId={tenant.id}
-              userId={detail.id}
-            />
-          </DialogContent>
-        </Dialog>
-      )}
       <ConfirmDialog
         open={!!suspend}
         onOpenChange={(open) => {
@@ -260,109 +239,6 @@ export function WorkspaceUsers({
         }}
       />
     </section>
-  )
-}
-export function WorkspaceUserDetail({
-  connectionId,
-  tenantId,
-  userId,
-}: {
-  connectionId: string
-  tenantId: string
-  userId: string
-}) {
-  const detail = useWorkspaceUser(connectionId, tenantId, userId)
-  const gmail = useGmailConfirmation()
-  const driveFiles = useGmailConfirmation()
-  if (detail.error)
-    return (
-      <p role='alert' className='text-destructive'>
-        {String(detail.error)}
-      </p>
-    )
-  if (!detail.data) return <p>Loading…</p>
-  const u = detail.data
-  return (
-    <Tabs defaultValue='profile'>
-      <TabsList>
-        <TabsTrigger value='profile'>Profile</TabsTrigger>
-        <TabsTrigger value='aliases'>Aliases</TabsTrigger>
-        <TabsTrigger value='groups'>Groups</TabsTrigger>
-        <TabsTrigger value='security'>Security</TabsTrigger>
-        <TabsTrigger value='gmail'>Gmail</TabsTrigger>
-        <TabsTrigger value='drive'>Drive</TabsTrigger>
-      </TabsList>
-      <TabsContent value='profile' className='pt-4'>
-        {' '}
-        <dl className='grid grid-cols-2 gap-3 text-sm'>
-          <dt>Email</dt>
-          <dd className='break-all'>{u.primaryEmail}</dd>
-          <dt>Name</dt>
-          <dd>
-            {u.givenName} {u.familyName}
-          </dd>
-          <dt>Customer ID</dt>
-          <dd>{u.customerId}</dd>
-          <dt>Organization unit</dt>
-          <dd>{u.orgUnitPath}</dd>
-          <dt>Status</dt>
-          <dd>{u.suspended ? 'Suspended' : 'Active'}</dd>
-          <dt>Administrator</dt>
-          <dd>{triState(u.superAdmin)}</dd>
-          <dt>Delegated administrator</dt>
-          <dd>{triState(u.delegatedAdmin)}</dd>
-          <dt>2-step enrolled / enforced</dt>
-          <dd>
-            {triState(u.twoStepEnrolled)} / {triState(u.twoStepEnforced)}
-          </dd>
-          <dt>Last login</dt>
-          <dd>{lastLoginText(u.lastLoginTime)}</dd>
-          <dt>Password change required</dt>
-          <dd>{u.changePasswordAtNextLogin ? 'Yes' : 'No'}</dd>
-        </dl>
-      </TabsContent>
-      <TabsContent value='aliases' className='pt-4'>
-        <UserAliases
-          connectionId={connectionId}
-          tenantId={tenantId}
-          userId={userId}
-        />
-      </TabsContent>
-      <TabsContent value='groups' className='pt-4'>
-        <UserGroups
-          connectionId={connectionId}
-          tenantId={tenantId}
-          userId={userId}
-        />
-      </TabsContent>
-      <TabsContent value='security' className='pt-4'>
-        <UserSecurity
-          connectionId={connectionId}
-          tenantId={tenantId}
-          userId={userId}
-        />
-      </TabsContent>
-      <TabsContent value='gmail' className='pt-4'>
-        <UserGmail
-          connectionId={connectionId}
-          tenantId={tenantId}
-          userId={userId}
-          userEmail={u.primaryEmail}
-          confirmation={gmail.confirmation}
-          onConfirmation={gmail.setConfirmation}
-        />
-      </TabsContent>
-      <TabsContent value='drive' className='pt-4'>
-        <UserExposedFiles
-          connectionId={connectionId}
-          tenantId={tenantId}
-          userId={userId}
-          userEmail={u.primaryEmail}
-          confirmation={driveFiles.confirmation}
-          onConfirmation={driveFiles.setConfirmation}
-        />
-      </TabsContent>
-    </Tabs>
   )
 }
 function UserForm({

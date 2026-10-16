@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Link } from '@tanstack/react-router'
+import { getRouteApi, Link } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { ConnectionStatus, type Connection } from '@/api/connections'
 import {
@@ -25,6 +25,8 @@ import { WorkspaceOperations } from './operations'
 import { WorkspaceOverview } from './overview'
 import { WorkspaceTenantDetail } from './tenant-detail'
 
+const route = getRouteApi('/_authenticated/connections/$connectionId/')
+
 export function WorkspaceConnectionDetail({
   connection,
 }: {
@@ -32,7 +34,8 @@ export function WorkspaceConnectionDetail({
 }) {
   const tenants = useWorkspaceTenants(connection.id)
   const changes = useWorkspaceTenantChanges(connection.id)
-  const [selectedId, setSelectedId] = useState('')
+  // A user page links back with the tenant it came from.
+  const [selectedId, setSelectedId] = useState(route.useSearch().tenant ?? '')
   const [form, setForm] = useState<WorkspaceTenant | 'new' | null>(null)
   const [remove, setRemove] = useState<WorkspaceTenant | null>(null)
   const [error, setError] = useState('')

@@ -3,7 +3,6 @@ import { timestampDate } from '@bufbuild/protobuf/wkt'
 import { toast } from 'sonner'
 import {
   useWorkspaceGmailAttachment,
-  useWorkspaceGmailLabels,
   useWorkspaceGmailMessage,
   useWorkspaceGmailSearch,
   type GmailAttachment,
@@ -29,6 +28,7 @@ import {
   recipients,
 } from './gmail-mail'
 import type { Props } from './gmail-settings'
+import type { LabelsQuery } from './mailbox-stats'
 import { formatWorkspaceTime } from './observability-format'
 
 type MailProps = Props & { confirmation: GmailConfirmation }
@@ -36,23 +36,17 @@ type MailProps = Props & { confirmation: GmailConfirmation }
 const when = (t: GmailMessageSummary['date']) =>
   t ? timestampDate(t).toLocaleString() : '—'
 
-// The Mail view. Opening it reads the label list once; nothing else is sent
-// until you press Search or open a message, and each of those is recorded with
-// your reason. Switching to another tab drops what is shown.
-export function MailView(props: MailProps) {
-  const { connectionId, tenantId, userId, confirmation } = props
+// The Mail view. The label list comes from the Mailbox tab, which reads it
+// once for this and the overview; nothing else is sent until you press Search
+// or open a message, and each of those is recorded with your reason. Leaving
+// the Gmail tab drops what is shown.
+export function MailView(props: MailProps & { labels: LabelsQuery }) {
+  const { connectionId, tenantId, userId, confirmation, labels } = props
   const access = {
     reason: confirmation.reason,
     targetEmail: confirmation.targetEmail,
   }
   const nonce = confirmation.confirmedAt
-  const labels = useWorkspaceGmailLabels(
-    connectionId,
-    tenantId,
-    userId,
-    access,
-    nonce
-  )
   const [query, setQuery] = useState('')
   const [labelId, setLabelId] = useState('')
   const [includeSpamTrash, setIncludeSpamTrash] = useState(false)

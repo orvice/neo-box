@@ -637,12 +637,16 @@ const mailReadOptions = {
   refetchOnMount: false,
 } as const
 
+// `enabled` lets one component keep the label read alive while the user moves
+// between views that share it, without the key changing and the read (which
+// is recorded) being sent again.
 export function useWorkspaceGmailLabels(
   connectionId: string,
   tenantId: string,
   userId: string,
   access: GmailAccess | null,
-  nonce: number
+  nonce: number,
+  enabled = true
 ) {
   return useQuery({
     queryKey: [
@@ -661,7 +665,7 @@ export function useWorkspaceGmailLabels(
         userId,
         confirmation: access ?? undefined,
       }),
-    enabled: access !== null,
+    enabled: access !== null && enabled,
     ...mailReadOptions,
   })
 }
@@ -758,5 +762,26 @@ export function useWorkspaceGmailAttachment(
         partId,
       }),
     gcTime: 0,
+  })
+}
+
+export type { WorkspaceUserUsageDay } from '@/gen/neobox/v1/google_workspace_pb'
+
+// A user's storage and Gmail counts per day, from Google's usage reports.
+// Aggregates only (no mailbox read, nothing recorded), and the report lags by
+// days, so a few minutes of cache is plenty and focus never refetches it.
+export function useWorkspaceUserUsage(
+  connectionId: string,
+  tenantId: string,
+  userId: string,
+  days = 14
+) {
+  return useQuery({
+    queryKey: [...key(connectionId), tenantId, 'user-usage', userId, days],
+    queryFn: () =>
+      client.getWorkspaceUserUsage({ connectionId, tenantId, userId, days }),
+    retry: false,
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
   })
 }

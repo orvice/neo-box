@@ -67,6 +67,10 @@ service GoogleWorkspaceService {
   // user, drive.metadata.readonly: metadata only). Reason and typed primary
   // email on every request, recorded first. See docs/adr/0009.
   rpc ListWorkspaceUserExposedFiles(ListWorkspaceUserExposedFilesRequest) returns (ListWorkspaceUserExposedFilesResponse);
+  // One user's storage and Gmail activity per day, from Google's usage
+  // reports (admin.reports.usage.readonly). Aggregate figures only: it never
+  // reads the mailbox, so it needs no access reason and is not recorded.
+  rpc GetWorkspaceUserUsage(GetWorkspaceUserUsageRequest) returns (GetWorkspaceUserUsageResponse);
 }
 message WorkspaceTenant {
   string id = 1;
@@ -1055,4 +1059,40 @@ message ListWorkspaceUserExposedFilesResponse {
   // Google could not search everything; results may be missing.
   bool incomplete_search = 4;
   google.protobuf.Timestamp read_at = 5;
+}
+
+// One day of a user's usage report. A figure Google did not report is unset,
+// never zero.
+message WorkspaceUserUsageDay {
+  // The report day, YYYY-MM-DD.
+  string date = 1;
+  // Storage in MB.
+  optional int64 gmail_used_mb = 2;
+  optional int64 drive_used_mb = 3;
+  optional int64 photos_used_mb = 4;
+  optional int64 used_mb = 5;
+  // Unset or non-positive when the quota is unknown or unlimited.
+  optional int64 total_mb = 6;
+  // Gmail message counts for the day.
+  optional int64 emails_received = 7;
+  optional int64 emails_sent = 8;
+  optional int64 spam_received = 9;
+}
+
+message GetWorkspaceUserUsageRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  // Google user ID or primary email; resolved inside the tenant first.
+  string user_id = 3;
+  // How many days back from yesterday to look, 1-30. Empty is 14.
+  int32 days = 4;
+}
+
+message GetWorkspaceUserUsageResponse {
+  string user_email = 1;
+  // Days Google has a report for, oldest first. Usage lags by a few days, so
+  // the newest day is not today; days without a report are left out.
+  repeated WorkspaceUserUsageDay days = 2;
+  // Days asked for, including those with no report.
+  int32 days_requested = 3;
 }
