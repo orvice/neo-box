@@ -126,6 +126,8 @@ type Server struct {
 	tunnels    map[string][]*Tunnel // account → tunnels
 	requests   []Request
 	routeSeq   int
+	emailZones map[string]*emailZone      // zone ID → Email Routing state
+	emailAddrs map[string][]*EmailAddress // account → destination addresses
 
 	// Intercept, when set, sees every request first; returning true means
 	// it answered.
@@ -140,7 +142,7 @@ func New() *Server {
 	s := &Server{
 		tokens: map[string]*Token{}, accounts: map[string]string{}, records: map[string][]map[string]any{},
 		scripts: map[string][]*Script{}, subdomains: map[string]string{}, domains: map[string][]*WorkerDomain{},
-		projects: map[string][]*PagesProject{}, tunnels: map[string][]*Tunnel{},
+		projects: map[string][]*PagesProject{}, tunnels: map[string][]*Tunnel{}, emailZones: map[string]*emailZone{}, emailAddrs: map[string][]*EmailAddress{},
 	}
 	s.Server = httptest.NewServer(http.HandlerFunc(s.serve))
 	return s
@@ -367,6 +369,8 @@ func (s *Server) handle(w http.ResponseWriter, r *http.Request, path string, bod
 		s.zoneRoutes(w, r, tok, parts, path, body)
 	case len(parts) >= 3 && parts[0] == "accounts" && parts[2] == "cfd_tunnel":
 		s.tunnelRoutes(w, r, tok, parts, body)
+	case len(parts) >= 4 && parts[0] == "accounts" && parts[2] == "email" && parts[3] == "routing":
+		s.emailAccountRoutes(w, r, tok, parts, body)
 	case len(parts) >= 3 && parts[0] == "accounts" && parts[2] == "workers":
 		s.workers(w, r, tok, parts, path, body)
 	case len(parts) >= 4 && parts[0] == "accounts" && parts[2] == "pages" && parts[3] == "projects":
@@ -475,6 +479,8 @@ func (s *Server) zoneRoutes(w http.ResponseWriter, r *http.Request, tok *Token, 
 		ok(w, s.zoneJSON(tok, z), nil)
 	case len(parts) >= 4 && parts[2] == "workers" && parts[3] == "routes":
 		s.routesOfZone(w, r, tok, z, parts, body)
+	case len(parts) >= 4 && parts[2] == "email" && parts[3] == "routing":
+		s.emailRoutes(w, r, tok, z, parts[4:], body)
 	case len(parts) >= 3 && parts[2] == "dns_records":
 		s.dns(w, r, tok, z, parts, path, body)
 	default:

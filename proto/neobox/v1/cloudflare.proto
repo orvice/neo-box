@@ -112,9 +112,38 @@ service CloudflareService {
   // to Cloudflare only; it is never stored or logged.
   rpc SetCloudflarePagesEnvVar(SetCloudflarePagesEnvVarRequest) returns (SetCloudflarePagesEnvVarResponse);
   rpc DeleteCloudflarePagesEnvVar(DeleteCloudflarePagesEnvVarRequest) returns (DeleteCloudflarePagesEnvVarResponse);
-  // ListCloudflareResourceOperations lists the Worker and Pages changes
-  // started from Neo Box for a connection, newest first.
+  // ListCloudflareResourceOperations lists Worker, Pages, and Email Routing
+  // changes started from Neo Box for a connection, newest first.
   rpc ListCloudflareResourceOperations(ListCloudflareResourceOperationsRequest) returns (ListCloudflareResourceOperationsResponse);
+
+  // GetCloudflareEmailRouting reads a Zone's Email Routing status, its
+  // rules and its catch-all. Each part that cannot be read is empty and
+  // named in issues. required_dns_records is filled only while Email
+  // Routing is not enabled.
+  rpc GetCloudflareEmailRouting(GetCloudflareEmailRoutingRequest) returns (GetCloudflareEmailRoutingResponse);
+  // ListCloudflareEmailAddresses lists the Account's destination addresses
+  // (shared by all its Zones).
+  rpc ListCloudflareEmailAddresses(ListCloudflareEmailAddressesRequest) returns (ListCloudflareEmailAddressesResponse);
+  // EnableCloudflareEmailRouting enables Email Routing; Cloudflare adds and
+  // locks the MX and SPF records. There is no way to disable it here.
+  rpc EnableCloudflareEmailRouting(EnableCloudflareEmailRoutingRequest) returns (EnableCloudflareEmailRoutingResponse);
+  // CreateCloudflareEmailRule adds a rule for one address. A forward needs
+  // a verified destination address (FailedPrecondition otherwise).
+  rpc CreateCloudflareEmailRule(CreateCloudflareEmailRuleRequest) returns (CreateCloudflareEmailRuleResponse);
+  // UpdateCloudflareEmailRule replaces a rule's fields, which includes
+  // enabling and disabling it. A rule managed by a Worker's wrangler
+  // configuration, or sending to a Worker, is FailedPrecondition.
+  rpc UpdateCloudflareEmailRule(UpdateCloudflareEmailRuleRequest) returns (UpdateCloudflareEmailRuleResponse);
+  rpc DeleteCloudflareEmailRule(DeleteCloudflareEmailRuleRequest) returns (DeleteCloudflareEmailRuleResponse);
+  // SetCloudflareEmailCatchAll sets the catch-all: off keeps its current
+  // action, drop discards, forward needs a verified destination address.
+  rpc SetCloudflareEmailCatchAll(SetCloudflareEmailCatchAllRequest) returns (SetCloudflareEmailCatchAllResponse);
+  // CreateCloudflareEmailAddress adds a destination address; Cloudflare
+  // emails it a link that verifies it.
+  rpc CreateCloudflareEmailAddress(CreateCloudflareEmailAddressRequest) returns (CreateCloudflareEmailAddressResponse);
+  // DeleteCloudflareEmailAddress deletes a destination address, refused
+  // while a rule or the catch-all of zone_id still forwards to it.
+  rpc DeleteCloudflareEmailAddress(DeleteCloudflareEmailAddressRequest) returns (DeleteCloudflareEmailAddressResponse);
 }
 
 // CloudflarePageInfo describes one page of a list.
@@ -654,16 +683,18 @@ enum CloudflareResourceKind {
   CLOUDFLARE_RESOURCE_KIND_UNSPECIFIED = 0;
   CLOUDFLARE_RESOURCE_KIND_WORKER = 1;
   CLOUDFLARE_RESOURCE_KIND_PAGES = 2;
+  CLOUDFLARE_RESOURCE_KIND_EMAIL_ROUTING = 3;
 }
 
-// CloudflareResourceOperation is one change to a Worker or a Pages project
-// started from Neo Box. It never holds a secret value.
+// CloudflareResourceOperation is one change to a Worker, a Pages project,
+// or a Zone's Email Routing started from Neo Box. It never holds a secret
+// value.
 message CloudflareResourceOperation {
   string id = 1;
   string connection_id = 2;
   string account_id = 3;
   CloudflareResourceKind kind = 4;
-  // The Worker script or Pages project name.
+  // Worker script or Pages project name, or the Zone name for Email Routing.
   string resource = 5;
   // e.g. attach_domain, add_route, put_secret, rollback, delete.
   string action = 6;
@@ -682,7 +713,8 @@ message CloudflareResourceOperation {
   google.protobuf.Struct requested = 16;
 }
 
-// CloudflareChangeResult is what every Worker and Pages change returns.
+// CloudflareChangeResult is what every Worker, Pages, and Email Routing
+// change returns.
 message CloudflareChangeResult {
   // False when there was nothing to do (already so); no operation is
   // logged then.
@@ -1087,9 +1119,10 @@ message DeleteCloudflarePagesEnvVarResponse {
 
 message ListCloudflareResourceOperationsRequest {
   string connection_id = 1 [(validate.rules).string.min_len = 1];
-  // Only this kind; unspecified lists both.
+  // Only this kind; unspecified lists them all.
   CloudflareResourceKind kind = 2;
-  // Only this Worker or Pages project; empty lists them all.
+  // Only this Worker, Pages project, or Email Routing zone name; empty
+  // lists them all.
   string resource = 3;
   int32 page = 4;
   // 0 means 20; at most 100.
@@ -1099,4 +1132,173 @@ message ListCloudflareResourceOperationsRequest {
 message ListCloudflareResourceOperationsResponse {
   repeated CloudflareResourceOperation operations = 1;
   CloudflarePageInfo page_info = 2;
+}
+
+// --- Email Routing ---
+
+// CloudflareEmailAction is what a routing rule does with matching mail.
+enum CloudflareEmailAction {
+  CLOUDFLARE_EMAIL_ACTION_UNSPECIFIED = 0;
+  CLOUDFLARE_EMAIL_ACTION_FORWARD = 1;
+  CLOUDFLARE_EMAIL_ACTION_DROP = 2;
+  // Sends to a Worker. Shown, never created or changed here.
+  CLOUDFLARE_EMAIL_ACTION_WORKER = 3;
+}
+
+message CloudflareEmailRoutingSettings {
+  bool enabled = 1;
+  // ready, unconfigured, misconfigured, misconfigured/locked or unlocked.
+  string status = 2;
+  bool support_subaddress = 3;
+}
+
+// CloudflareEmailDNSRecord is a DNS record Email Routing needs.
+message CloudflareEmailDNSRecord {
+  string type = 1;
+  string name = 2;
+  string content = 3;
+  // MX preference; 0 for other types.
+  int32 priority = 4;
+}
+
+message CloudflareEmailRule {
+  string id = 1;
+  string name = 2;
+  bool enabled = 3;
+  int32 priority = 4;
+  // The one address the rule matches.
+  string address = 5;
+  CloudflareEmailAction action = 6;
+  // The forward address, or the Worker's name.
+  string target = 7;
+  // False when the rule is managed by a Worker's wrangler configuration,
+  // sends to a Worker, or does not match a single address.
+  bool editable = 8;
+  // Why it is not editable.
+  string readonly_reason = 9;
+}
+
+message CloudflareEmailCatchAll {
+  bool enabled = 1;
+  CloudflareEmailAction action = 2;
+  string target = 3;
+  bool editable = 4;
+  string readonly_reason = 5;
+}
+
+message CloudflareEmailAddress {
+  string id = 1;
+  string email = 2;
+  bool verified = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp verified_at = 5;
+}
+
+// CloudflareEmailRuleInput is every field of a rule the user sets. An
+// update replaces the rule with it.
+message CloudflareEmailRuleInput {
+  string name = 1;
+  // An address of the Zone, e.g. info@example.com.
+  string address = 2 [(validate.rules).string.min_len = 1];
+  // Forward or drop.
+  CloudflareEmailAction action = 3;
+  // The verified destination address of a forward.
+  string target = 4;
+  bool enabled = 5;
+}
+
+message GetCloudflareEmailRoutingRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string zone_id = 2 [(validate.rules).string.min_len = 1];
+}
+
+message GetCloudflareEmailRoutingResponse {
+  CloudflareEmailRoutingSettings settings = 1;
+  repeated CloudflareEmailRule rules = 2;
+  // Unset when it could not be read.
+  CloudflareEmailCatchAll catch_all = 3;
+  repeated CloudflareEmailDNSRecord required_dns_records = 4;
+  repeated CloudflareReadIssue issues = 5;
+}
+
+message ListCloudflareEmailAddressesRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message ListCloudflareEmailAddressesResponse {
+  repeated CloudflareEmailAddress addresses = 1;
+}
+
+message EnableCloudflareEmailRoutingRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string zone_id = 2 [(validate.rules).string.min_len = 1];
+}
+
+message EnableCloudflareEmailRoutingResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message CreateCloudflareEmailRuleRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string zone_id = 2 [(validate.rules).string.min_len = 1];
+  CloudflareEmailRuleInput rule = 3 [(validate.rules).message.required = true];
+}
+
+message CreateCloudflareEmailRuleResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message UpdateCloudflareEmailRuleRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string zone_id = 2 [(validate.rules).string.min_len = 1];
+  string rule_id = 3 [(validate.rules).string.min_len = 1];
+  CloudflareEmailRuleInput rule = 4 [(validate.rules).message.required = true];
+}
+
+message UpdateCloudflareEmailRuleResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message DeleteCloudflareEmailRuleRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string zone_id = 2 [(validate.rules).string.min_len = 1];
+  string rule_id = 3 [(validate.rules).string.min_len = 1];
+}
+
+message DeleteCloudflareEmailRuleResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message SetCloudflareEmailCatchAllRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string zone_id = 2 [(validate.rules).string.min_len = 1];
+  // False is off: the catch-all keeps its action and is switched off.
+  bool enabled = 3;
+  // Forward or drop; ignored when not enabled.
+  CloudflareEmailAction action = 4;
+  string target = 5;
+}
+
+message SetCloudflareEmailCatchAllResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message CreateCloudflareEmailAddressRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string email = 2 [(validate.rules).string.min_len = 1];
+}
+
+message CreateCloudflareEmailAddressResponse {
+  CloudflareChangeResult result = 1;
+}
+
+message DeleteCloudflareEmailAddressRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  // The Zone whose rules and catch-all are checked for use of the address.
+  string zone_id = 2 [(validate.rules).string.min_len = 1];
+  string address_id = 3 [(validate.rules).string.min_len = 1];
+}
+
+message DeleteCloudflareEmailAddressResponse {
+  CloudflareChangeResult result = 1;
 }

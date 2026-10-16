@@ -48,6 +48,7 @@ import {
 } from './access'
 import { toastChanged } from './changed'
 import { EDITABLE_TYPES, contentSummary, formatTTL } from './dns'
+import { EmailRoutingTab } from './email-routing-tab'
 import { SETUP_GUIDE } from './format'
 import {
   ListFrame,
@@ -125,6 +126,7 @@ export function CloudflareZonePage() {
             <Tabs defaultValue='records'>
               <TabsList>
                 <TabsTrigger value='records'>DNS records</TabsTrigger>
+                <TabsTrigger value='email'>Email routing</TabsTrigger>
                 <TabsTrigger value='operations'>Operation log</TabsTrigger>
               </TabsList>
               <TabsContent value='records' className='pt-2'>
@@ -133,6 +135,13 @@ export function CloudflareZonePage() {
                   zoneId={zoneId}
                   zoneName={zone.data?.name ?? ''}
                   edit={edit}
+                />
+              </TabsContent>
+              <TabsContent value='email' className='pt-2'>
+                <EmailRoutingTab
+                  connectionId={connectionId}
+                  zoneId={zoneId}
+                  zoneName={zone.data?.name ?? ''}
                 />
               </TabsContent>
               <TabsContent value='operations' className='pt-2'>

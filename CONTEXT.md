@@ -173,11 +173,30 @@ can't be deleted while a Restore of it is pending or running.
   project's production branch. A hostname or route that belongs to another
   Worker is never taken over. Secret values are write-only: never stored,
   logged or shown.
+- **Email Routing** — a Zone's inbound mail routing at Cloudflare, read live.
+  Neo Box can *enable* it (Cloudflare adds and locks the MX and SPF records,
+  which sends the Zone's mail to Cloudflare) but never disables it.
+- **Destination address** — an address of the Connection's account that mail
+  can be forwarded to. It belongs to the account, not to a Zone, and is
+  *verified* once its owner follows the link Cloudflare mails. A forward needs
+  a verified one. Deleting one is refused while a rule or the catch-all of the
+  Zone being managed still forwards to it; other Zones' rules are not checked.
+- **Routing rule** — a Zone's rule that matches mail to one custom address and
+  forwards it to a destination address or drops it. It can be switched on and
+  off. A rule that sends to a Worker, or is owned by a Worker's wrangler
+  configuration, is shown but not changed.
+- **Catch-all** — the Zone's rule for mail no routing rule matches: off, drop,
+  or forward. Switching it off keeps its action.
+- **Email Routing operation** — a change to Email Routing started from Neo Box
+  (enable, rule, catch-all, destination address), logged like a Worker or
+  Pages change before it is sent, as an `email_routing` resource operation
+  (Resource: the Zone's name, or "destination addresses").
 - **Resource operation** — one change to a Worker or Pages project made from
   Neo Box, logged like a DNS operation (pending before it is sent, then
   succeeded, failed or unknown; a change already in effect is not logged).
   It names the resource, action and target, with the state before and after
-  and what was requested, never a secret value.
+  and what was requested, never a secret value. Email Routing changes are
+  logged the same way as an **Email Routing operation**.
 
 ### Google Workspace
 

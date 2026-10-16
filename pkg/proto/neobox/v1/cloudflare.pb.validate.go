@@ -17055,3 +17055,3334 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ListCloudflareResourceOperationsResponseValidationError{}
+
+// Validate checks the field values on CloudflareEmailRoutingSettings with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CloudflareEmailRoutingSettings) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CloudflareEmailRoutingSettings with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// CloudflareEmailRoutingSettingsMultiError, or nil if none found.
+func (m *CloudflareEmailRoutingSettings) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CloudflareEmailRoutingSettings) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Enabled
+
+	// no validation rules for Status
+
+	// no validation rules for SupportSubaddress
+
+	if len(errors) > 0 {
+		return CloudflareEmailRoutingSettingsMultiError(errors)
+	}
+
+	return nil
+}
+
+// CloudflareEmailRoutingSettingsMultiError is an error wrapping multiple
+// validation errors returned by CloudflareEmailRoutingSettings.ValidateAll()
+// if the designated constraints aren't met.
+type CloudflareEmailRoutingSettingsMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CloudflareEmailRoutingSettingsMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CloudflareEmailRoutingSettingsMultiError) AllErrors() []error { return m }
+
+// CloudflareEmailRoutingSettingsValidationError is the validation error
+// returned by CloudflareEmailRoutingSettings.Validate if the designated
+// constraints aren't met.
+type CloudflareEmailRoutingSettingsValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CloudflareEmailRoutingSettingsValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CloudflareEmailRoutingSettingsValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CloudflareEmailRoutingSettingsValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CloudflareEmailRoutingSettingsValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CloudflareEmailRoutingSettingsValidationError) ErrorName() string {
+	return "CloudflareEmailRoutingSettingsValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CloudflareEmailRoutingSettingsValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCloudflareEmailRoutingSettings.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CloudflareEmailRoutingSettingsValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CloudflareEmailRoutingSettingsValidationError{}
+
+// Validate checks the field values on CloudflareEmailDNSRecord with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CloudflareEmailDNSRecord) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CloudflareEmailDNSRecord with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CloudflareEmailDNSRecordMultiError, or nil if none found.
+func (m *CloudflareEmailDNSRecord) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CloudflareEmailDNSRecord) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Type
+
+	// no validation rules for Name
+
+	// no validation rules for Content
+
+	// no validation rules for Priority
+
+	if len(errors) > 0 {
+		return CloudflareEmailDNSRecordMultiError(errors)
+	}
+
+	return nil
+}
+
+// CloudflareEmailDNSRecordMultiError is an error wrapping multiple validation
+// errors returned by CloudflareEmailDNSRecord.ValidateAll() if the designated
+// constraints aren't met.
+type CloudflareEmailDNSRecordMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CloudflareEmailDNSRecordMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CloudflareEmailDNSRecordMultiError) AllErrors() []error { return m }
+
+// CloudflareEmailDNSRecordValidationError is the validation error returned by
+// CloudflareEmailDNSRecord.Validate if the designated constraints aren't met.
+type CloudflareEmailDNSRecordValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CloudflareEmailDNSRecordValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CloudflareEmailDNSRecordValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CloudflareEmailDNSRecordValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CloudflareEmailDNSRecordValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CloudflareEmailDNSRecordValidationError) ErrorName() string {
+	return "CloudflareEmailDNSRecordValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CloudflareEmailDNSRecordValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCloudflareEmailDNSRecord.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CloudflareEmailDNSRecordValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CloudflareEmailDNSRecordValidationError{}
+
+// Validate checks the field values on CloudflareEmailRule with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CloudflareEmailRule) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CloudflareEmailRule with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CloudflareEmailRuleMultiError, or nil if none found.
+func (m *CloudflareEmailRule) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CloudflareEmailRule) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Name
+
+	// no validation rules for Enabled
+
+	// no validation rules for Priority
+
+	// no validation rules for Address
+
+	// no validation rules for Action
+
+	// no validation rules for Target
+
+	// no validation rules for Editable
+
+	// no validation rules for ReadonlyReason
+
+	if len(errors) > 0 {
+		return CloudflareEmailRuleMultiError(errors)
+	}
+
+	return nil
+}
+
+// CloudflareEmailRuleMultiError is an error wrapping multiple validation
+// errors returned by CloudflareEmailRule.ValidateAll() if the designated
+// constraints aren't met.
+type CloudflareEmailRuleMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CloudflareEmailRuleMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CloudflareEmailRuleMultiError) AllErrors() []error { return m }
+
+// CloudflareEmailRuleValidationError is the validation error returned by
+// CloudflareEmailRule.Validate if the designated constraints aren't met.
+type CloudflareEmailRuleValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CloudflareEmailRuleValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CloudflareEmailRuleValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CloudflareEmailRuleValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CloudflareEmailRuleValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CloudflareEmailRuleValidationError) ErrorName() string {
+	return "CloudflareEmailRuleValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CloudflareEmailRuleValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCloudflareEmailRule.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CloudflareEmailRuleValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CloudflareEmailRuleValidationError{}
+
+// Validate checks the field values on CloudflareEmailCatchAll with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CloudflareEmailCatchAll) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CloudflareEmailCatchAll with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CloudflareEmailCatchAllMultiError, or nil if none found.
+func (m *CloudflareEmailCatchAll) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CloudflareEmailCatchAll) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Enabled
+
+	// no validation rules for Action
+
+	// no validation rules for Target
+
+	// no validation rules for Editable
+
+	// no validation rules for ReadonlyReason
+
+	if len(errors) > 0 {
+		return CloudflareEmailCatchAllMultiError(errors)
+	}
+
+	return nil
+}
+
+// CloudflareEmailCatchAllMultiError is an error wrapping multiple validation
+// errors returned by CloudflareEmailCatchAll.ValidateAll() if the designated
+// constraints aren't met.
+type CloudflareEmailCatchAllMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CloudflareEmailCatchAllMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CloudflareEmailCatchAllMultiError) AllErrors() []error { return m }
+
+// CloudflareEmailCatchAllValidationError is the validation error returned by
+// CloudflareEmailCatchAll.Validate if the designated constraints aren't met.
+type CloudflareEmailCatchAllValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CloudflareEmailCatchAllValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CloudflareEmailCatchAllValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CloudflareEmailCatchAllValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CloudflareEmailCatchAllValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CloudflareEmailCatchAllValidationError) ErrorName() string {
+	return "CloudflareEmailCatchAllValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CloudflareEmailCatchAllValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCloudflareEmailCatchAll.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CloudflareEmailCatchAllValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CloudflareEmailCatchAllValidationError{}
+
+// Validate checks the field values on CloudflareEmailAddress with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CloudflareEmailAddress) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CloudflareEmailAddress with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CloudflareEmailAddressMultiError, or nil if none found.
+func (m *CloudflareEmailAddress) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CloudflareEmailAddress) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Email
+
+	// no validation rules for Verified
+
+	if all {
+		switch v := interface{}(m.GetCreatedAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CloudflareEmailAddressValidationError{
+					field:  "CreatedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CloudflareEmailAddressValidationError{
+					field:  "CreatedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetCreatedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CloudflareEmailAddressValidationError{
+				field:  "CreatedAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetVerifiedAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CloudflareEmailAddressValidationError{
+					field:  "VerifiedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CloudflareEmailAddressValidationError{
+					field:  "VerifiedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetVerifiedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CloudflareEmailAddressValidationError{
+				field:  "VerifiedAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return CloudflareEmailAddressMultiError(errors)
+	}
+
+	return nil
+}
+
+// CloudflareEmailAddressMultiError is an error wrapping multiple validation
+// errors returned by CloudflareEmailAddress.ValidateAll() if the designated
+// constraints aren't met.
+type CloudflareEmailAddressMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CloudflareEmailAddressMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CloudflareEmailAddressMultiError) AllErrors() []error { return m }
+
+// CloudflareEmailAddressValidationError is the validation error returned by
+// CloudflareEmailAddress.Validate if the designated constraints aren't met.
+type CloudflareEmailAddressValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CloudflareEmailAddressValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CloudflareEmailAddressValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CloudflareEmailAddressValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CloudflareEmailAddressValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CloudflareEmailAddressValidationError) ErrorName() string {
+	return "CloudflareEmailAddressValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CloudflareEmailAddressValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCloudflareEmailAddress.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CloudflareEmailAddressValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CloudflareEmailAddressValidationError{}
+
+// Validate checks the field values on CloudflareEmailRuleInput with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CloudflareEmailRuleInput) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CloudflareEmailRuleInput with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CloudflareEmailRuleInputMultiError, or nil if none found.
+func (m *CloudflareEmailRuleInput) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CloudflareEmailRuleInput) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Name
+
+	if utf8.RuneCountInString(m.GetAddress()) < 1 {
+		err := CloudflareEmailRuleInputValidationError{
+			field:  "Address",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Action
+
+	// no validation rules for Target
+
+	// no validation rules for Enabled
+
+	if len(errors) > 0 {
+		return CloudflareEmailRuleInputMultiError(errors)
+	}
+
+	return nil
+}
+
+// CloudflareEmailRuleInputMultiError is an error wrapping multiple validation
+// errors returned by CloudflareEmailRuleInput.ValidateAll() if the designated
+// constraints aren't met.
+type CloudflareEmailRuleInputMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CloudflareEmailRuleInputMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CloudflareEmailRuleInputMultiError) AllErrors() []error { return m }
+
+// CloudflareEmailRuleInputValidationError is the validation error returned by
+// CloudflareEmailRuleInput.Validate if the designated constraints aren't met.
+type CloudflareEmailRuleInputValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CloudflareEmailRuleInputValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CloudflareEmailRuleInputValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CloudflareEmailRuleInputValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CloudflareEmailRuleInputValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CloudflareEmailRuleInputValidationError) ErrorName() string {
+	return "CloudflareEmailRuleInputValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CloudflareEmailRuleInputValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCloudflareEmailRuleInput.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CloudflareEmailRuleInputValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CloudflareEmailRuleInputValidationError{}
+
+// Validate checks the field values on GetCloudflareEmailRoutingRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *GetCloudflareEmailRoutingRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetCloudflareEmailRoutingRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// GetCloudflareEmailRoutingRequestMultiError, or nil if none found.
+func (m *GetCloudflareEmailRoutingRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetCloudflareEmailRoutingRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := GetCloudflareEmailRoutingRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetZoneId()) < 1 {
+		err := GetCloudflareEmailRoutingRequestValidationError{
+			field:  "ZoneId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return GetCloudflareEmailRoutingRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetCloudflareEmailRoutingRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// GetCloudflareEmailRoutingRequest.ValidateAll() if the designated
+// constraints aren't met.
+type GetCloudflareEmailRoutingRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetCloudflareEmailRoutingRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetCloudflareEmailRoutingRequestMultiError) AllErrors() []error { return m }
+
+// GetCloudflareEmailRoutingRequestValidationError is the validation error
+// returned by GetCloudflareEmailRoutingRequest.Validate if the designated
+// constraints aren't met.
+type GetCloudflareEmailRoutingRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetCloudflareEmailRoutingRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetCloudflareEmailRoutingRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetCloudflareEmailRoutingRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetCloudflareEmailRoutingRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetCloudflareEmailRoutingRequestValidationError) ErrorName() string {
+	return "GetCloudflareEmailRoutingRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetCloudflareEmailRoutingRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetCloudflareEmailRoutingRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetCloudflareEmailRoutingRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetCloudflareEmailRoutingRequestValidationError{}
+
+// Validate checks the field values on GetCloudflareEmailRoutingResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *GetCloudflareEmailRoutingResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetCloudflareEmailRoutingResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// GetCloudflareEmailRoutingResponseMultiError, or nil if none found.
+func (m *GetCloudflareEmailRoutingResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetCloudflareEmailRoutingResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetSettings()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GetCloudflareEmailRoutingResponseValidationError{
+					field:  "Settings",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GetCloudflareEmailRoutingResponseValidationError{
+					field:  "Settings",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetSettings()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetCloudflareEmailRoutingResponseValidationError{
+				field:  "Settings",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	for idx, item := range m.GetRules() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetCloudflareEmailRoutingResponseValidationError{
+						field:  fmt.Sprintf("Rules[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetCloudflareEmailRoutingResponseValidationError{
+						field:  fmt.Sprintf("Rules[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetCloudflareEmailRoutingResponseValidationError{
+					field:  fmt.Sprintf("Rules[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if all {
+		switch v := interface{}(m.GetCatchAll()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GetCloudflareEmailRoutingResponseValidationError{
+					field:  "CatchAll",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GetCloudflareEmailRoutingResponseValidationError{
+					field:  "CatchAll",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetCatchAll()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetCloudflareEmailRoutingResponseValidationError{
+				field:  "CatchAll",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	for idx, item := range m.GetRequiredDnsRecords() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetCloudflareEmailRoutingResponseValidationError{
+						field:  fmt.Sprintf("RequiredDnsRecords[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetCloudflareEmailRoutingResponseValidationError{
+						field:  fmt.Sprintf("RequiredDnsRecords[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetCloudflareEmailRoutingResponseValidationError{
+					field:  fmt.Sprintf("RequiredDnsRecords[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	for idx, item := range m.GetIssues() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetCloudflareEmailRoutingResponseValidationError{
+						field:  fmt.Sprintf("Issues[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetCloudflareEmailRoutingResponseValidationError{
+						field:  fmt.Sprintf("Issues[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetCloudflareEmailRoutingResponseValidationError{
+					field:  fmt.Sprintf("Issues[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return GetCloudflareEmailRoutingResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetCloudflareEmailRoutingResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// GetCloudflareEmailRoutingResponse.ValidateAll() if the designated
+// constraints aren't met.
+type GetCloudflareEmailRoutingResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetCloudflareEmailRoutingResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetCloudflareEmailRoutingResponseMultiError) AllErrors() []error { return m }
+
+// GetCloudflareEmailRoutingResponseValidationError is the validation error
+// returned by GetCloudflareEmailRoutingResponse.Validate if the designated
+// constraints aren't met.
+type GetCloudflareEmailRoutingResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetCloudflareEmailRoutingResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetCloudflareEmailRoutingResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetCloudflareEmailRoutingResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetCloudflareEmailRoutingResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetCloudflareEmailRoutingResponseValidationError) ErrorName() string {
+	return "GetCloudflareEmailRoutingResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetCloudflareEmailRoutingResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetCloudflareEmailRoutingResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetCloudflareEmailRoutingResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetCloudflareEmailRoutingResponseValidationError{}
+
+// Validate checks the field values on ListCloudflareEmailAddressesRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *ListCloudflareEmailAddressesRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListCloudflareEmailAddressesRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// ListCloudflareEmailAddressesRequestMultiError, or nil if none found.
+func (m *ListCloudflareEmailAddressesRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListCloudflareEmailAddressesRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := ListCloudflareEmailAddressesRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return ListCloudflareEmailAddressesRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListCloudflareEmailAddressesRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// ListCloudflareEmailAddressesRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ListCloudflareEmailAddressesRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListCloudflareEmailAddressesRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListCloudflareEmailAddressesRequestMultiError) AllErrors() []error { return m }
+
+// ListCloudflareEmailAddressesRequestValidationError is the validation error
+// returned by ListCloudflareEmailAddressesRequest.Validate if the designated
+// constraints aren't met.
+type ListCloudflareEmailAddressesRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListCloudflareEmailAddressesRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListCloudflareEmailAddressesRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListCloudflareEmailAddressesRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListCloudflareEmailAddressesRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListCloudflareEmailAddressesRequestValidationError) ErrorName() string {
+	return "ListCloudflareEmailAddressesRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListCloudflareEmailAddressesRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListCloudflareEmailAddressesRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListCloudflareEmailAddressesRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListCloudflareEmailAddressesRequestValidationError{}
+
+// Validate checks the field values on ListCloudflareEmailAddressesResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *ListCloudflareEmailAddressesResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListCloudflareEmailAddressesResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// ListCloudflareEmailAddressesResponseMultiError, or nil if none found.
+func (m *ListCloudflareEmailAddressesResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListCloudflareEmailAddressesResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetAddresses() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListCloudflareEmailAddressesResponseValidationError{
+						field:  fmt.Sprintf("Addresses[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListCloudflareEmailAddressesResponseValidationError{
+						field:  fmt.Sprintf("Addresses[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListCloudflareEmailAddressesResponseValidationError{
+					field:  fmt.Sprintf("Addresses[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return ListCloudflareEmailAddressesResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListCloudflareEmailAddressesResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// ListCloudflareEmailAddressesResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ListCloudflareEmailAddressesResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListCloudflareEmailAddressesResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListCloudflareEmailAddressesResponseMultiError) AllErrors() []error { return m }
+
+// ListCloudflareEmailAddressesResponseValidationError is the validation error
+// returned by ListCloudflareEmailAddressesResponse.Validate if the designated
+// constraints aren't met.
+type ListCloudflareEmailAddressesResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListCloudflareEmailAddressesResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListCloudflareEmailAddressesResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListCloudflareEmailAddressesResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListCloudflareEmailAddressesResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListCloudflareEmailAddressesResponseValidationError) ErrorName() string {
+	return "ListCloudflareEmailAddressesResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListCloudflareEmailAddressesResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListCloudflareEmailAddressesResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListCloudflareEmailAddressesResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListCloudflareEmailAddressesResponseValidationError{}
+
+// Validate checks the field values on EnableCloudflareEmailRoutingRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *EnableCloudflareEmailRoutingRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on EnableCloudflareEmailRoutingRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// EnableCloudflareEmailRoutingRequestMultiError, or nil if none found.
+func (m *EnableCloudflareEmailRoutingRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *EnableCloudflareEmailRoutingRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := EnableCloudflareEmailRoutingRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetZoneId()) < 1 {
+		err := EnableCloudflareEmailRoutingRequestValidationError{
+			field:  "ZoneId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return EnableCloudflareEmailRoutingRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// EnableCloudflareEmailRoutingRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// EnableCloudflareEmailRoutingRequest.ValidateAll() if the designated
+// constraints aren't met.
+type EnableCloudflareEmailRoutingRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m EnableCloudflareEmailRoutingRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m EnableCloudflareEmailRoutingRequestMultiError) AllErrors() []error { return m }
+
+// EnableCloudflareEmailRoutingRequestValidationError is the validation error
+// returned by EnableCloudflareEmailRoutingRequest.Validate if the designated
+// constraints aren't met.
+type EnableCloudflareEmailRoutingRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e EnableCloudflareEmailRoutingRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e EnableCloudflareEmailRoutingRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e EnableCloudflareEmailRoutingRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e EnableCloudflareEmailRoutingRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e EnableCloudflareEmailRoutingRequestValidationError) ErrorName() string {
+	return "EnableCloudflareEmailRoutingRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e EnableCloudflareEmailRoutingRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sEnableCloudflareEmailRoutingRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = EnableCloudflareEmailRoutingRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = EnableCloudflareEmailRoutingRequestValidationError{}
+
+// Validate checks the field values on EnableCloudflareEmailRoutingResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *EnableCloudflareEmailRoutingResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on EnableCloudflareEmailRoutingResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// EnableCloudflareEmailRoutingResponseMultiError, or nil if none found.
+func (m *EnableCloudflareEmailRoutingResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *EnableCloudflareEmailRoutingResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetResult()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, EnableCloudflareEmailRoutingResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, EnableCloudflareEmailRoutingResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetResult()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return EnableCloudflareEmailRoutingResponseValidationError{
+				field:  "Result",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return EnableCloudflareEmailRoutingResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// EnableCloudflareEmailRoutingResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// EnableCloudflareEmailRoutingResponse.ValidateAll() if the designated
+// constraints aren't met.
+type EnableCloudflareEmailRoutingResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m EnableCloudflareEmailRoutingResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m EnableCloudflareEmailRoutingResponseMultiError) AllErrors() []error { return m }
+
+// EnableCloudflareEmailRoutingResponseValidationError is the validation error
+// returned by EnableCloudflareEmailRoutingResponse.Validate if the designated
+// constraints aren't met.
+type EnableCloudflareEmailRoutingResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e EnableCloudflareEmailRoutingResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e EnableCloudflareEmailRoutingResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e EnableCloudflareEmailRoutingResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e EnableCloudflareEmailRoutingResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e EnableCloudflareEmailRoutingResponseValidationError) ErrorName() string {
+	return "EnableCloudflareEmailRoutingResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e EnableCloudflareEmailRoutingResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sEnableCloudflareEmailRoutingResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = EnableCloudflareEmailRoutingResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = EnableCloudflareEmailRoutingResponseValidationError{}
+
+// Validate checks the field values on CreateCloudflareEmailRuleRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *CreateCloudflareEmailRuleRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreateCloudflareEmailRuleRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// CreateCloudflareEmailRuleRequestMultiError, or nil if none found.
+func (m *CreateCloudflareEmailRuleRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreateCloudflareEmailRuleRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := CreateCloudflareEmailRuleRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetZoneId()) < 1 {
+		err := CreateCloudflareEmailRuleRequestValidationError{
+			field:  "ZoneId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetRule() == nil {
+		err := CreateCloudflareEmailRuleRequestValidationError{
+			field:  "Rule",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetRule()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CreateCloudflareEmailRuleRequestValidationError{
+					field:  "Rule",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CreateCloudflareEmailRuleRequestValidationError{
+					field:  "Rule",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetRule()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreateCloudflareEmailRuleRequestValidationError{
+				field:  "Rule",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return CreateCloudflareEmailRuleRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreateCloudflareEmailRuleRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// CreateCloudflareEmailRuleRequest.ValidateAll() if the designated
+// constraints aren't met.
+type CreateCloudflareEmailRuleRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreateCloudflareEmailRuleRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreateCloudflareEmailRuleRequestMultiError) AllErrors() []error { return m }
+
+// CreateCloudflareEmailRuleRequestValidationError is the validation error
+// returned by CreateCloudflareEmailRuleRequest.Validate if the designated
+// constraints aren't met.
+type CreateCloudflareEmailRuleRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreateCloudflareEmailRuleRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreateCloudflareEmailRuleRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreateCloudflareEmailRuleRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreateCloudflareEmailRuleRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreateCloudflareEmailRuleRequestValidationError) ErrorName() string {
+	return "CreateCloudflareEmailRuleRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreateCloudflareEmailRuleRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreateCloudflareEmailRuleRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreateCloudflareEmailRuleRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreateCloudflareEmailRuleRequestValidationError{}
+
+// Validate checks the field values on CreateCloudflareEmailRuleResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *CreateCloudflareEmailRuleResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreateCloudflareEmailRuleResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// CreateCloudflareEmailRuleResponseMultiError, or nil if none found.
+func (m *CreateCloudflareEmailRuleResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreateCloudflareEmailRuleResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetResult()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CreateCloudflareEmailRuleResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CreateCloudflareEmailRuleResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetResult()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreateCloudflareEmailRuleResponseValidationError{
+				field:  "Result",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return CreateCloudflareEmailRuleResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreateCloudflareEmailRuleResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// CreateCloudflareEmailRuleResponse.ValidateAll() if the designated
+// constraints aren't met.
+type CreateCloudflareEmailRuleResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreateCloudflareEmailRuleResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreateCloudflareEmailRuleResponseMultiError) AllErrors() []error { return m }
+
+// CreateCloudflareEmailRuleResponseValidationError is the validation error
+// returned by CreateCloudflareEmailRuleResponse.Validate if the designated
+// constraints aren't met.
+type CreateCloudflareEmailRuleResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreateCloudflareEmailRuleResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreateCloudflareEmailRuleResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreateCloudflareEmailRuleResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreateCloudflareEmailRuleResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreateCloudflareEmailRuleResponseValidationError) ErrorName() string {
+	return "CreateCloudflareEmailRuleResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreateCloudflareEmailRuleResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreateCloudflareEmailRuleResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreateCloudflareEmailRuleResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreateCloudflareEmailRuleResponseValidationError{}
+
+// Validate checks the field values on UpdateCloudflareEmailRuleRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *UpdateCloudflareEmailRuleRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpdateCloudflareEmailRuleRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// UpdateCloudflareEmailRuleRequestMultiError, or nil if none found.
+func (m *UpdateCloudflareEmailRuleRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpdateCloudflareEmailRuleRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := UpdateCloudflareEmailRuleRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetZoneId()) < 1 {
+		err := UpdateCloudflareEmailRuleRequestValidationError{
+			field:  "ZoneId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetRuleId()) < 1 {
+		err := UpdateCloudflareEmailRuleRequestValidationError{
+			field:  "RuleId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetRule() == nil {
+		err := UpdateCloudflareEmailRuleRequestValidationError{
+			field:  "Rule",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetRule()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpdateCloudflareEmailRuleRequestValidationError{
+					field:  "Rule",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpdateCloudflareEmailRuleRequestValidationError{
+					field:  "Rule",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetRule()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpdateCloudflareEmailRuleRequestValidationError{
+				field:  "Rule",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return UpdateCloudflareEmailRuleRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpdateCloudflareEmailRuleRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// UpdateCloudflareEmailRuleRequest.ValidateAll() if the designated
+// constraints aren't met.
+type UpdateCloudflareEmailRuleRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpdateCloudflareEmailRuleRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpdateCloudflareEmailRuleRequestMultiError) AllErrors() []error { return m }
+
+// UpdateCloudflareEmailRuleRequestValidationError is the validation error
+// returned by UpdateCloudflareEmailRuleRequest.Validate if the designated
+// constraints aren't met.
+type UpdateCloudflareEmailRuleRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdateCloudflareEmailRuleRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdateCloudflareEmailRuleRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdateCloudflareEmailRuleRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdateCloudflareEmailRuleRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdateCloudflareEmailRuleRequestValidationError) ErrorName() string {
+	return "UpdateCloudflareEmailRuleRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdateCloudflareEmailRuleRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdateCloudflareEmailRuleRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdateCloudflareEmailRuleRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdateCloudflareEmailRuleRequestValidationError{}
+
+// Validate checks the field values on UpdateCloudflareEmailRuleResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *UpdateCloudflareEmailRuleResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpdateCloudflareEmailRuleResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// UpdateCloudflareEmailRuleResponseMultiError, or nil if none found.
+func (m *UpdateCloudflareEmailRuleResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpdateCloudflareEmailRuleResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetResult()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpdateCloudflareEmailRuleResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpdateCloudflareEmailRuleResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetResult()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpdateCloudflareEmailRuleResponseValidationError{
+				field:  "Result",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return UpdateCloudflareEmailRuleResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpdateCloudflareEmailRuleResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// UpdateCloudflareEmailRuleResponse.ValidateAll() if the designated
+// constraints aren't met.
+type UpdateCloudflareEmailRuleResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpdateCloudflareEmailRuleResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpdateCloudflareEmailRuleResponseMultiError) AllErrors() []error { return m }
+
+// UpdateCloudflareEmailRuleResponseValidationError is the validation error
+// returned by UpdateCloudflareEmailRuleResponse.Validate if the designated
+// constraints aren't met.
+type UpdateCloudflareEmailRuleResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdateCloudflareEmailRuleResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdateCloudflareEmailRuleResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdateCloudflareEmailRuleResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdateCloudflareEmailRuleResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdateCloudflareEmailRuleResponseValidationError) ErrorName() string {
+	return "UpdateCloudflareEmailRuleResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdateCloudflareEmailRuleResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdateCloudflareEmailRuleResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdateCloudflareEmailRuleResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdateCloudflareEmailRuleResponseValidationError{}
+
+// Validate checks the field values on DeleteCloudflareEmailRuleRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *DeleteCloudflareEmailRuleRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeleteCloudflareEmailRuleRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// DeleteCloudflareEmailRuleRequestMultiError, or nil if none found.
+func (m *DeleteCloudflareEmailRuleRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeleteCloudflareEmailRuleRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := DeleteCloudflareEmailRuleRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetZoneId()) < 1 {
+		err := DeleteCloudflareEmailRuleRequestValidationError{
+			field:  "ZoneId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetRuleId()) < 1 {
+		err := DeleteCloudflareEmailRuleRequestValidationError{
+			field:  "RuleId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return DeleteCloudflareEmailRuleRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeleteCloudflareEmailRuleRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// DeleteCloudflareEmailRuleRequest.ValidateAll() if the designated
+// constraints aren't met.
+type DeleteCloudflareEmailRuleRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeleteCloudflareEmailRuleRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeleteCloudflareEmailRuleRequestMultiError) AllErrors() []error { return m }
+
+// DeleteCloudflareEmailRuleRequestValidationError is the validation error
+// returned by DeleteCloudflareEmailRuleRequest.Validate if the designated
+// constraints aren't met.
+type DeleteCloudflareEmailRuleRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeleteCloudflareEmailRuleRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeleteCloudflareEmailRuleRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeleteCloudflareEmailRuleRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeleteCloudflareEmailRuleRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeleteCloudflareEmailRuleRequestValidationError) ErrorName() string {
+	return "DeleteCloudflareEmailRuleRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeleteCloudflareEmailRuleRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeleteCloudflareEmailRuleRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeleteCloudflareEmailRuleRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeleteCloudflareEmailRuleRequestValidationError{}
+
+// Validate checks the field values on DeleteCloudflareEmailRuleResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *DeleteCloudflareEmailRuleResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeleteCloudflareEmailRuleResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// DeleteCloudflareEmailRuleResponseMultiError, or nil if none found.
+func (m *DeleteCloudflareEmailRuleResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeleteCloudflareEmailRuleResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetResult()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, DeleteCloudflareEmailRuleResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, DeleteCloudflareEmailRuleResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetResult()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return DeleteCloudflareEmailRuleResponseValidationError{
+				field:  "Result",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return DeleteCloudflareEmailRuleResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeleteCloudflareEmailRuleResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// DeleteCloudflareEmailRuleResponse.ValidateAll() if the designated
+// constraints aren't met.
+type DeleteCloudflareEmailRuleResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeleteCloudflareEmailRuleResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeleteCloudflareEmailRuleResponseMultiError) AllErrors() []error { return m }
+
+// DeleteCloudflareEmailRuleResponseValidationError is the validation error
+// returned by DeleteCloudflareEmailRuleResponse.Validate if the designated
+// constraints aren't met.
+type DeleteCloudflareEmailRuleResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeleteCloudflareEmailRuleResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeleteCloudflareEmailRuleResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeleteCloudflareEmailRuleResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeleteCloudflareEmailRuleResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeleteCloudflareEmailRuleResponseValidationError) ErrorName() string {
+	return "DeleteCloudflareEmailRuleResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeleteCloudflareEmailRuleResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeleteCloudflareEmailRuleResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeleteCloudflareEmailRuleResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeleteCloudflareEmailRuleResponseValidationError{}
+
+// Validate checks the field values on SetCloudflareEmailCatchAllRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *SetCloudflareEmailCatchAllRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SetCloudflareEmailCatchAllRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// SetCloudflareEmailCatchAllRequestMultiError, or nil if none found.
+func (m *SetCloudflareEmailCatchAllRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SetCloudflareEmailCatchAllRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := SetCloudflareEmailCatchAllRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetZoneId()) < 1 {
+		err := SetCloudflareEmailCatchAllRequestValidationError{
+			field:  "ZoneId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Enabled
+
+	// no validation rules for Action
+
+	// no validation rules for Target
+
+	if len(errors) > 0 {
+		return SetCloudflareEmailCatchAllRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// SetCloudflareEmailCatchAllRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// SetCloudflareEmailCatchAllRequest.ValidateAll() if the designated
+// constraints aren't met.
+type SetCloudflareEmailCatchAllRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SetCloudflareEmailCatchAllRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SetCloudflareEmailCatchAllRequestMultiError) AllErrors() []error { return m }
+
+// SetCloudflareEmailCatchAllRequestValidationError is the validation error
+// returned by SetCloudflareEmailCatchAllRequest.Validate if the designated
+// constraints aren't met.
+type SetCloudflareEmailCatchAllRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SetCloudflareEmailCatchAllRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SetCloudflareEmailCatchAllRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SetCloudflareEmailCatchAllRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SetCloudflareEmailCatchAllRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SetCloudflareEmailCatchAllRequestValidationError) ErrorName() string {
+	return "SetCloudflareEmailCatchAllRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SetCloudflareEmailCatchAllRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSetCloudflareEmailCatchAllRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SetCloudflareEmailCatchAllRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SetCloudflareEmailCatchAllRequestValidationError{}
+
+// Validate checks the field values on SetCloudflareEmailCatchAllResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *SetCloudflareEmailCatchAllResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SetCloudflareEmailCatchAllResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// SetCloudflareEmailCatchAllResponseMultiError, or nil if none found.
+func (m *SetCloudflareEmailCatchAllResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SetCloudflareEmailCatchAllResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetResult()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, SetCloudflareEmailCatchAllResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, SetCloudflareEmailCatchAllResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetResult()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return SetCloudflareEmailCatchAllResponseValidationError{
+				field:  "Result",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return SetCloudflareEmailCatchAllResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// SetCloudflareEmailCatchAllResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// SetCloudflareEmailCatchAllResponse.ValidateAll() if the designated
+// constraints aren't met.
+type SetCloudflareEmailCatchAllResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SetCloudflareEmailCatchAllResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SetCloudflareEmailCatchAllResponseMultiError) AllErrors() []error { return m }
+
+// SetCloudflareEmailCatchAllResponseValidationError is the validation error
+// returned by SetCloudflareEmailCatchAllResponse.Validate if the designated
+// constraints aren't met.
+type SetCloudflareEmailCatchAllResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SetCloudflareEmailCatchAllResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SetCloudflareEmailCatchAllResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SetCloudflareEmailCatchAllResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SetCloudflareEmailCatchAllResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SetCloudflareEmailCatchAllResponseValidationError) ErrorName() string {
+	return "SetCloudflareEmailCatchAllResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SetCloudflareEmailCatchAllResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSetCloudflareEmailCatchAllResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SetCloudflareEmailCatchAllResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SetCloudflareEmailCatchAllResponseValidationError{}
+
+// Validate checks the field values on CreateCloudflareEmailAddressRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *CreateCloudflareEmailAddressRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreateCloudflareEmailAddressRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// CreateCloudflareEmailAddressRequestMultiError, or nil if none found.
+func (m *CreateCloudflareEmailAddressRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreateCloudflareEmailAddressRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := CreateCloudflareEmailAddressRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetEmail()) < 1 {
+		err := CreateCloudflareEmailAddressRequestValidationError{
+			field:  "Email",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return CreateCloudflareEmailAddressRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreateCloudflareEmailAddressRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// CreateCloudflareEmailAddressRequest.ValidateAll() if the designated
+// constraints aren't met.
+type CreateCloudflareEmailAddressRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreateCloudflareEmailAddressRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreateCloudflareEmailAddressRequestMultiError) AllErrors() []error { return m }
+
+// CreateCloudflareEmailAddressRequestValidationError is the validation error
+// returned by CreateCloudflareEmailAddressRequest.Validate if the designated
+// constraints aren't met.
+type CreateCloudflareEmailAddressRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreateCloudflareEmailAddressRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreateCloudflareEmailAddressRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreateCloudflareEmailAddressRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreateCloudflareEmailAddressRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreateCloudflareEmailAddressRequestValidationError) ErrorName() string {
+	return "CreateCloudflareEmailAddressRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreateCloudflareEmailAddressRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreateCloudflareEmailAddressRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreateCloudflareEmailAddressRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreateCloudflareEmailAddressRequestValidationError{}
+
+// Validate checks the field values on CreateCloudflareEmailAddressResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *CreateCloudflareEmailAddressResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreateCloudflareEmailAddressResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// CreateCloudflareEmailAddressResponseMultiError, or nil if none found.
+func (m *CreateCloudflareEmailAddressResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreateCloudflareEmailAddressResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetResult()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CreateCloudflareEmailAddressResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CreateCloudflareEmailAddressResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetResult()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreateCloudflareEmailAddressResponseValidationError{
+				field:  "Result",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return CreateCloudflareEmailAddressResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreateCloudflareEmailAddressResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// CreateCloudflareEmailAddressResponse.ValidateAll() if the designated
+// constraints aren't met.
+type CreateCloudflareEmailAddressResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreateCloudflareEmailAddressResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreateCloudflareEmailAddressResponseMultiError) AllErrors() []error { return m }
+
+// CreateCloudflareEmailAddressResponseValidationError is the validation error
+// returned by CreateCloudflareEmailAddressResponse.Validate if the designated
+// constraints aren't met.
+type CreateCloudflareEmailAddressResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreateCloudflareEmailAddressResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreateCloudflareEmailAddressResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreateCloudflareEmailAddressResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreateCloudflareEmailAddressResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreateCloudflareEmailAddressResponseValidationError) ErrorName() string {
+	return "CreateCloudflareEmailAddressResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreateCloudflareEmailAddressResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreateCloudflareEmailAddressResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreateCloudflareEmailAddressResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreateCloudflareEmailAddressResponseValidationError{}
+
+// Validate checks the field values on DeleteCloudflareEmailAddressRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *DeleteCloudflareEmailAddressRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeleteCloudflareEmailAddressRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// DeleteCloudflareEmailAddressRequestMultiError, or nil if none found.
+func (m *DeleteCloudflareEmailAddressRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeleteCloudflareEmailAddressRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := DeleteCloudflareEmailAddressRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetZoneId()) < 1 {
+		err := DeleteCloudflareEmailAddressRequestValidationError{
+			field:  "ZoneId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetAddressId()) < 1 {
+		err := DeleteCloudflareEmailAddressRequestValidationError{
+			field:  "AddressId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return DeleteCloudflareEmailAddressRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeleteCloudflareEmailAddressRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// DeleteCloudflareEmailAddressRequest.ValidateAll() if the designated
+// constraints aren't met.
+type DeleteCloudflareEmailAddressRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeleteCloudflareEmailAddressRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeleteCloudflareEmailAddressRequestMultiError) AllErrors() []error { return m }
+
+// DeleteCloudflareEmailAddressRequestValidationError is the validation error
+// returned by DeleteCloudflareEmailAddressRequest.Validate if the designated
+// constraints aren't met.
+type DeleteCloudflareEmailAddressRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeleteCloudflareEmailAddressRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeleteCloudflareEmailAddressRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeleteCloudflareEmailAddressRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeleteCloudflareEmailAddressRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeleteCloudflareEmailAddressRequestValidationError) ErrorName() string {
+	return "DeleteCloudflareEmailAddressRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeleteCloudflareEmailAddressRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeleteCloudflareEmailAddressRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeleteCloudflareEmailAddressRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeleteCloudflareEmailAddressRequestValidationError{}
+
+// Validate checks the field values on DeleteCloudflareEmailAddressResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *DeleteCloudflareEmailAddressResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeleteCloudflareEmailAddressResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// DeleteCloudflareEmailAddressResponseMultiError, or nil if none found.
+func (m *DeleteCloudflareEmailAddressResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeleteCloudflareEmailAddressResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetResult()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, DeleteCloudflareEmailAddressResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, DeleteCloudflareEmailAddressResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetResult()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return DeleteCloudflareEmailAddressResponseValidationError{
+				field:  "Result",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return DeleteCloudflareEmailAddressResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeleteCloudflareEmailAddressResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// DeleteCloudflareEmailAddressResponse.ValidateAll() if the designated
+// constraints aren't met.
+type DeleteCloudflareEmailAddressResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeleteCloudflareEmailAddressResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeleteCloudflareEmailAddressResponseMultiError) AllErrors() []error { return m }
+
+// DeleteCloudflareEmailAddressResponseValidationError is the validation error
+// returned by DeleteCloudflareEmailAddressResponse.Validate if the designated
+// constraints aren't met.
+type DeleteCloudflareEmailAddressResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeleteCloudflareEmailAddressResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeleteCloudflareEmailAddressResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeleteCloudflareEmailAddressResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeleteCloudflareEmailAddressResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeleteCloudflareEmailAddressResponseValidationError) ErrorName() string {
+	return "DeleteCloudflareEmailAddressResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeleteCloudflareEmailAddressResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeleteCloudflareEmailAddressResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeleteCloudflareEmailAddressResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeleteCloudflareEmailAddressResponseValidationError{}

@@ -165,6 +165,33 @@ const (
 	// CloudflareServiceListCloudflareResourceOperationsProcedure is the fully-qualified name of the
 	// CloudflareService's ListCloudflareResourceOperations RPC.
 	CloudflareServiceListCloudflareResourceOperationsProcedure = "/neobox.v1.CloudflareService/ListCloudflareResourceOperations"
+	// CloudflareServiceGetCloudflareEmailRoutingProcedure is the fully-qualified name of the
+	// CloudflareService's GetCloudflareEmailRouting RPC.
+	CloudflareServiceGetCloudflareEmailRoutingProcedure = "/neobox.v1.CloudflareService/GetCloudflareEmailRouting"
+	// CloudflareServiceListCloudflareEmailAddressesProcedure is the fully-qualified name of the
+	// CloudflareService's ListCloudflareEmailAddresses RPC.
+	CloudflareServiceListCloudflareEmailAddressesProcedure = "/neobox.v1.CloudflareService/ListCloudflareEmailAddresses"
+	// CloudflareServiceEnableCloudflareEmailRoutingProcedure is the fully-qualified name of the
+	// CloudflareService's EnableCloudflareEmailRouting RPC.
+	CloudflareServiceEnableCloudflareEmailRoutingProcedure = "/neobox.v1.CloudflareService/EnableCloudflareEmailRouting"
+	// CloudflareServiceCreateCloudflareEmailRuleProcedure is the fully-qualified name of the
+	// CloudflareService's CreateCloudflareEmailRule RPC.
+	CloudflareServiceCreateCloudflareEmailRuleProcedure = "/neobox.v1.CloudflareService/CreateCloudflareEmailRule"
+	// CloudflareServiceUpdateCloudflareEmailRuleProcedure is the fully-qualified name of the
+	// CloudflareService's UpdateCloudflareEmailRule RPC.
+	CloudflareServiceUpdateCloudflareEmailRuleProcedure = "/neobox.v1.CloudflareService/UpdateCloudflareEmailRule"
+	// CloudflareServiceDeleteCloudflareEmailRuleProcedure is the fully-qualified name of the
+	// CloudflareService's DeleteCloudflareEmailRule RPC.
+	CloudflareServiceDeleteCloudflareEmailRuleProcedure = "/neobox.v1.CloudflareService/DeleteCloudflareEmailRule"
+	// CloudflareServiceSetCloudflareEmailCatchAllProcedure is the fully-qualified name of the
+	// CloudflareService's SetCloudflareEmailCatchAll RPC.
+	CloudflareServiceSetCloudflareEmailCatchAllProcedure = "/neobox.v1.CloudflareService/SetCloudflareEmailCatchAll"
+	// CloudflareServiceCreateCloudflareEmailAddressProcedure is the fully-qualified name of the
+	// CloudflareService's CreateCloudflareEmailAddress RPC.
+	CloudflareServiceCreateCloudflareEmailAddressProcedure = "/neobox.v1.CloudflareService/CreateCloudflareEmailAddress"
+	// CloudflareServiceDeleteCloudflareEmailAddressProcedure is the fully-qualified name of the
+	// CloudflareService's DeleteCloudflareEmailAddress RPC.
+	CloudflareServiceDeleteCloudflareEmailAddressProcedure = "/neobox.v1.CloudflareService/DeleteCloudflareEmailAddress"
 )
 
 // CloudflareServiceClient is a client for the neobox.v1.CloudflareService service.
@@ -260,9 +287,37 @@ type CloudflareServiceClient interface {
 	// to Cloudflare only; it is never stored or logged.
 	SetCloudflarePagesEnvVar(context.Context, *connect.Request[v1.SetCloudflarePagesEnvVarRequest]) (*connect.Response[v1.SetCloudflarePagesEnvVarResponse], error)
 	DeleteCloudflarePagesEnvVar(context.Context, *connect.Request[v1.DeleteCloudflarePagesEnvVarRequest]) (*connect.Response[v1.DeleteCloudflarePagesEnvVarResponse], error)
-	// ListCloudflareResourceOperations lists the Worker and Pages changes
-	// started from Neo Box for a connection, newest first.
+	// ListCloudflareResourceOperations lists Worker, Pages, and Email Routing
+	// changes started from Neo Box for a connection, newest first.
 	ListCloudflareResourceOperations(context.Context, *connect.Request[v1.ListCloudflareResourceOperationsRequest]) (*connect.Response[v1.ListCloudflareResourceOperationsResponse], error)
+	// GetCloudflareEmailRouting reads a Zone's Email Routing status, its
+	// rules and its catch-all. Each part that cannot be read is empty and
+	// named in issues. required_dns_records is filled only while Email
+	// Routing is not enabled.
+	GetCloudflareEmailRouting(context.Context, *connect.Request[v1.GetCloudflareEmailRoutingRequest]) (*connect.Response[v1.GetCloudflareEmailRoutingResponse], error)
+	// ListCloudflareEmailAddresses lists the Account's destination addresses
+	// (shared by all its Zones).
+	ListCloudflareEmailAddresses(context.Context, *connect.Request[v1.ListCloudflareEmailAddressesRequest]) (*connect.Response[v1.ListCloudflareEmailAddressesResponse], error)
+	// EnableCloudflareEmailRouting enables Email Routing; Cloudflare adds and
+	// locks the MX and SPF records. There is no way to disable it here.
+	EnableCloudflareEmailRouting(context.Context, *connect.Request[v1.EnableCloudflareEmailRoutingRequest]) (*connect.Response[v1.EnableCloudflareEmailRoutingResponse], error)
+	// CreateCloudflareEmailRule adds a rule for one address. A forward needs
+	// a verified destination address (FailedPrecondition otherwise).
+	CreateCloudflareEmailRule(context.Context, *connect.Request[v1.CreateCloudflareEmailRuleRequest]) (*connect.Response[v1.CreateCloudflareEmailRuleResponse], error)
+	// UpdateCloudflareEmailRule replaces a rule's fields, which includes
+	// enabling and disabling it. A rule managed by a Worker's wrangler
+	// configuration, or sending to a Worker, is FailedPrecondition.
+	UpdateCloudflareEmailRule(context.Context, *connect.Request[v1.UpdateCloudflareEmailRuleRequest]) (*connect.Response[v1.UpdateCloudflareEmailRuleResponse], error)
+	DeleteCloudflareEmailRule(context.Context, *connect.Request[v1.DeleteCloudflareEmailRuleRequest]) (*connect.Response[v1.DeleteCloudflareEmailRuleResponse], error)
+	// SetCloudflareEmailCatchAll sets the catch-all: off keeps its current
+	// action, drop discards, forward needs a verified destination address.
+	SetCloudflareEmailCatchAll(context.Context, *connect.Request[v1.SetCloudflareEmailCatchAllRequest]) (*connect.Response[v1.SetCloudflareEmailCatchAllResponse], error)
+	// CreateCloudflareEmailAddress adds a destination address; Cloudflare
+	// emails it a link that verifies it.
+	CreateCloudflareEmailAddress(context.Context, *connect.Request[v1.CreateCloudflareEmailAddressRequest]) (*connect.Response[v1.CreateCloudflareEmailAddressResponse], error)
+	// DeleteCloudflareEmailAddress deletes a destination address, refused
+	// while a rule or the catch-all of zone_id still forwards to it.
+	DeleteCloudflareEmailAddress(context.Context, *connect.Request[v1.DeleteCloudflareEmailAddressRequest]) (*connect.Response[v1.DeleteCloudflareEmailAddressResponse], error)
 }
 
 // NewCloudflareServiceClient constructs a client for the neobox.v1.CloudflareService service. By
@@ -540,6 +595,60 @@ func NewCloudflareServiceClient(httpClient connect.HTTPClient, baseURL string, o
 			connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareResourceOperations")),
 			connect.WithClientOptions(opts...),
 		),
+		getCloudflareEmailRouting: connect.NewClient[v1.GetCloudflareEmailRoutingRequest, v1.GetCloudflareEmailRoutingResponse](
+			httpClient,
+			baseURL+CloudflareServiceGetCloudflareEmailRoutingProcedure,
+			connect.WithSchema(cloudflareServiceMethods.ByName("GetCloudflareEmailRouting")),
+			connect.WithClientOptions(opts...),
+		),
+		listCloudflareEmailAddresses: connect.NewClient[v1.ListCloudflareEmailAddressesRequest, v1.ListCloudflareEmailAddressesResponse](
+			httpClient,
+			baseURL+CloudflareServiceListCloudflareEmailAddressesProcedure,
+			connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareEmailAddresses")),
+			connect.WithClientOptions(opts...),
+		),
+		enableCloudflareEmailRouting: connect.NewClient[v1.EnableCloudflareEmailRoutingRequest, v1.EnableCloudflareEmailRoutingResponse](
+			httpClient,
+			baseURL+CloudflareServiceEnableCloudflareEmailRoutingProcedure,
+			connect.WithSchema(cloudflareServiceMethods.ByName("EnableCloudflareEmailRouting")),
+			connect.WithClientOptions(opts...),
+		),
+		createCloudflareEmailRule: connect.NewClient[v1.CreateCloudflareEmailRuleRequest, v1.CreateCloudflareEmailRuleResponse](
+			httpClient,
+			baseURL+CloudflareServiceCreateCloudflareEmailRuleProcedure,
+			connect.WithSchema(cloudflareServiceMethods.ByName("CreateCloudflareEmailRule")),
+			connect.WithClientOptions(opts...),
+		),
+		updateCloudflareEmailRule: connect.NewClient[v1.UpdateCloudflareEmailRuleRequest, v1.UpdateCloudflareEmailRuleResponse](
+			httpClient,
+			baseURL+CloudflareServiceUpdateCloudflareEmailRuleProcedure,
+			connect.WithSchema(cloudflareServiceMethods.ByName("UpdateCloudflareEmailRule")),
+			connect.WithClientOptions(opts...),
+		),
+		deleteCloudflareEmailRule: connect.NewClient[v1.DeleteCloudflareEmailRuleRequest, v1.DeleteCloudflareEmailRuleResponse](
+			httpClient,
+			baseURL+CloudflareServiceDeleteCloudflareEmailRuleProcedure,
+			connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareEmailRule")),
+			connect.WithClientOptions(opts...),
+		),
+		setCloudflareEmailCatchAll: connect.NewClient[v1.SetCloudflareEmailCatchAllRequest, v1.SetCloudflareEmailCatchAllResponse](
+			httpClient,
+			baseURL+CloudflareServiceSetCloudflareEmailCatchAllProcedure,
+			connect.WithSchema(cloudflareServiceMethods.ByName("SetCloudflareEmailCatchAll")),
+			connect.WithClientOptions(opts...),
+		),
+		createCloudflareEmailAddress: connect.NewClient[v1.CreateCloudflareEmailAddressRequest, v1.CreateCloudflareEmailAddressResponse](
+			httpClient,
+			baseURL+CloudflareServiceCreateCloudflareEmailAddressProcedure,
+			connect.WithSchema(cloudflareServiceMethods.ByName("CreateCloudflareEmailAddress")),
+			connect.WithClientOptions(opts...),
+		),
+		deleteCloudflareEmailAddress: connect.NewClient[v1.DeleteCloudflareEmailAddressRequest, v1.DeleteCloudflareEmailAddressResponse](
+			httpClient,
+			baseURL+CloudflareServiceDeleteCloudflareEmailAddressProcedure,
+			connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareEmailAddress")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -589,6 +698,15 @@ type cloudflareServiceClient struct {
 	setCloudflarePagesEnvVar           *connect.Client[v1.SetCloudflarePagesEnvVarRequest, v1.SetCloudflarePagesEnvVarResponse]
 	deleteCloudflarePagesEnvVar        *connect.Client[v1.DeleteCloudflarePagesEnvVarRequest, v1.DeleteCloudflarePagesEnvVarResponse]
 	listCloudflareResourceOperations   *connect.Client[v1.ListCloudflareResourceOperationsRequest, v1.ListCloudflareResourceOperationsResponse]
+	getCloudflareEmailRouting          *connect.Client[v1.GetCloudflareEmailRoutingRequest, v1.GetCloudflareEmailRoutingResponse]
+	listCloudflareEmailAddresses       *connect.Client[v1.ListCloudflareEmailAddressesRequest, v1.ListCloudflareEmailAddressesResponse]
+	enableCloudflareEmailRouting       *connect.Client[v1.EnableCloudflareEmailRoutingRequest, v1.EnableCloudflareEmailRoutingResponse]
+	createCloudflareEmailRule          *connect.Client[v1.CreateCloudflareEmailRuleRequest, v1.CreateCloudflareEmailRuleResponse]
+	updateCloudflareEmailRule          *connect.Client[v1.UpdateCloudflareEmailRuleRequest, v1.UpdateCloudflareEmailRuleResponse]
+	deleteCloudflareEmailRule          *connect.Client[v1.DeleteCloudflareEmailRuleRequest, v1.DeleteCloudflareEmailRuleResponse]
+	setCloudflareEmailCatchAll         *connect.Client[v1.SetCloudflareEmailCatchAllRequest, v1.SetCloudflareEmailCatchAllResponse]
+	createCloudflareEmailAddress       *connect.Client[v1.CreateCloudflareEmailAddressRequest, v1.CreateCloudflareEmailAddressResponse]
+	deleteCloudflareEmailAddress       *connect.Client[v1.DeleteCloudflareEmailAddressRequest, v1.DeleteCloudflareEmailAddressResponse]
 }
 
 // ListCloudflareZones calls neobox.v1.CloudflareService.ListCloudflareZones.
@@ -815,6 +933,51 @@ func (c *cloudflareServiceClient) ListCloudflareResourceOperations(ctx context.C
 	return c.listCloudflareResourceOperations.CallUnary(ctx, req)
 }
 
+// GetCloudflareEmailRouting calls neobox.v1.CloudflareService.GetCloudflareEmailRouting.
+func (c *cloudflareServiceClient) GetCloudflareEmailRouting(ctx context.Context, req *connect.Request[v1.GetCloudflareEmailRoutingRequest]) (*connect.Response[v1.GetCloudflareEmailRoutingResponse], error) {
+	return c.getCloudflareEmailRouting.CallUnary(ctx, req)
+}
+
+// ListCloudflareEmailAddresses calls neobox.v1.CloudflareService.ListCloudflareEmailAddresses.
+func (c *cloudflareServiceClient) ListCloudflareEmailAddresses(ctx context.Context, req *connect.Request[v1.ListCloudflareEmailAddressesRequest]) (*connect.Response[v1.ListCloudflareEmailAddressesResponse], error) {
+	return c.listCloudflareEmailAddresses.CallUnary(ctx, req)
+}
+
+// EnableCloudflareEmailRouting calls neobox.v1.CloudflareService.EnableCloudflareEmailRouting.
+func (c *cloudflareServiceClient) EnableCloudflareEmailRouting(ctx context.Context, req *connect.Request[v1.EnableCloudflareEmailRoutingRequest]) (*connect.Response[v1.EnableCloudflareEmailRoutingResponse], error) {
+	return c.enableCloudflareEmailRouting.CallUnary(ctx, req)
+}
+
+// CreateCloudflareEmailRule calls neobox.v1.CloudflareService.CreateCloudflareEmailRule.
+func (c *cloudflareServiceClient) CreateCloudflareEmailRule(ctx context.Context, req *connect.Request[v1.CreateCloudflareEmailRuleRequest]) (*connect.Response[v1.CreateCloudflareEmailRuleResponse], error) {
+	return c.createCloudflareEmailRule.CallUnary(ctx, req)
+}
+
+// UpdateCloudflareEmailRule calls neobox.v1.CloudflareService.UpdateCloudflareEmailRule.
+func (c *cloudflareServiceClient) UpdateCloudflareEmailRule(ctx context.Context, req *connect.Request[v1.UpdateCloudflareEmailRuleRequest]) (*connect.Response[v1.UpdateCloudflareEmailRuleResponse], error) {
+	return c.updateCloudflareEmailRule.CallUnary(ctx, req)
+}
+
+// DeleteCloudflareEmailRule calls neobox.v1.CloudflareService.DeleteCloudflareEmailRule.
+func (c *cloudflareServiceClient) DeleteCloudflareEmailRule(ctx context.Context, req *connect.Request[v1.DeleteCloudflareEmailRuleRequest]) (*connect.Response[v1.DeleteCloudflareEmailRuleResponse], error) {
+	return c.deleteCloudflareEmailRule.CallUnary(ctx, req)
+}
+
+// SetCloudflareEmailCatchAll calls neobox.v1.CloudflareService.SetCloudflareEmailCatchAll.
+func (c *cloudflareServiceClient) SetCloudflareEmailCatchAll(ctx context.Context, req *connect.Request[v1.SetCloudflareEmailCatchAllRequest]) (*connect.Response[v1.SetCloudflareEmailCatchAllResponse], error) {
+	return c.setCloudflareEmailCatchAll.CallUnary(ctx, req)
+}
+
+// CreateCloudflareEmailAddress calls neobox.v1.CloudflareService.CreateCloudflareEmailAddress.
+func (c *cloudflareServiceClient) CreateCloudflareEmailAddress(ctx context.Context, req *connect.Request[v1.CreateCloudflareEmailAddressRequest]) (*connect.Response[v1.CreateCloudflareEmailAddressResponse], error) {
+	return c.createCloudflareEmailAddress.CallUnary(ctx, req)
+}
+
+// DeleteCloudflareEmailAddress calls neobox.v1.CloudflareService.DeleteCloudflareEmailAddress.
+func (c *cloudflareServiceClient) DeleteCloudflareEmailAddress(ctx context.Context, req *connect.Request[v1.DeleteCloudflareEmailAddressRequest]) (*connect.Response[v1.DeleteCloudflareEmailAddressResponse], error) {
+	return c.deleteCloudflareEmailAddress.CallUnary(ctx, req)
+}
+
 // CloudflareServiceHandler is an implementation of the neobox.v1.CloudflareService service.
 type CloudflareServiceHandler interface {
 	// ListCloudflareZones pages through the Account's Zones, optionally those
@@ -908,9 +1071,37 @@ type CloudflareServiceHandler interface {
 	// to Cloudflare only; it is never stored or logged.
 	SetCloudflarePagesEnvVar(context.Context, *connect.Request[v1.SetCloudflarePagesEnvVarRequest]) (*connect.Response[v1.SetCloudflarePagesEnvVarResponse], error)
 	DeleteCloudflarePagesEnvVar(context.Context, *connect.Request[v1.DeleteCloudflarePagesEnvVarRequest]) (*connect.Response[v1.DeleteCloudflarePagesEnvVarResponse], error)
-	// ListCloudflareResourceOperations lists the Worker and Pages changes
-	// started from Neo Box for a connection, newest first.
+	// ListCloudflareResourceOperations lists Worker, Pages, and Email Routing
+	// changes started from Neo Box for a connection, newest first.
 	ListCloudflareResourceOperations(context.Context, *connect.Request[v1.ListCloudflareResourceOperationsRequest]) (*connect.Response[v1.ListCloudflareResourceOperationsResponse], error)
+	// GetCloudflareEmailRouting reads a Zone's Email Routing status, its
+	// rules and its catch-all. Each part that cannot be read is empty and
+	// named in issues. required_dns_records is filled only while Email
+	// Routing is not enabled.
+	GetCloudflareEmailRouting(context.Context, *connect.Request[v1.GetCloudflareEmailRoutingRequest]) (*connect.Response[v1.GetCloudflareEmailRoutingResponse], error)
+	// ListCloudflareEmailAddresses lists the Account's destination addresses
+	// (shared by all its Zones).
+	ListCloudflareEmailAddresses(context.Context, *connect.Request[v1.ListCloudflareEmailAddressesRequest]) (*connect.Response[v1.ListCloudflareEmailAddressesResponse], error)
+	// EnableCloudflareEmailRouting enables Email Routing; Cloudflare adds and
+	// locks the MX and SPF records. There is no way to disable it here.
+	EnableCloudflareEmailRouting(context.Context, *connect.Request[v1.EnableCloudflareEmailRoutingRequest]) (*connect.Response[v1.EnableCloudflareEmailRoutingResponse], error)
+	// CreateCloudflareEmailRule adds a rule for one address. A forward needs
+	// a verified destination address (FailedPrecondition otherwise).
+	CreateCloudflareEmailRule(context.Context, *connect.Request[v1.CreateCloudflareEmailRuleRequest]) (*connect.Response[v1.CreateCloudflareEmailRuleResponse], error)
+	// UpdateCloudflareEmailRule replaces a rule's fields, which includes
+	// enabling and disabling it. A rule managed by a Worker's wrangler
+	// configuration, or sending to a Worker, is FailedPrecondition.
+	UpdateCloudflareEmailRule(context.Context, *connect.Request[v1.UpdateCloudflareEmailRuleRequest]) (*connect.Response[v1.UpdateCloudflareEmailRuleResponse], error)
+	DeleteCloudflareEmailRule(context.Context, *connect.Request[v1.DeleteCloudflareEmailRuleRequest]) (*connect.Response[v1.DeleteCloudflareEmailRuleResponse], error)
+	// SetCloudflareEmailCatchAll sets the catch-all: off keeps its current
+	// action, drop discards, forward needs a verified destination address.
+	SetCloudflareEmailCatchAll(context.Context, *connect.Request[v1.SetCloudflareEmailCatchAllRequest]) (*connect.Response[v1.SetCloudflareEmailCatchAllResponse], error)
+	// CreateCloudflareEmailAddress adds a destination address; Cloudflare
+	// emails it a link that verifies it.
+	CreateCloudflareEmailAddress(context.Context, *connect.Request[v1.CreateCloudflareEmailAddressRequest]) (*connect.Response[v1.CreateCloudflareEmailAddressResponse], error)
+	// DeleteCloudflareEmailAddress deletes a destination address, refused
+	// while a rule or the catch-all of zone_id still forwards to it.
+	DeleteCloudflareEmailAddress(context.Context, *connect.Request[v1.DeleteCloudflareEmailAddressRequest]) (*connect.Response[v1.DeleteCloudflareEmailAddressResponse], error)
 }
 
 // NewCloudflareServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -1184,6 +1375,60 @@ func NewCloudflareServiceHandler(svc CloudflareServiceHandler, opts ...connect.H
 		connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareResourceOperations")),
 		connect.WithHandlerOptions(opts...),
 	)
+	cloudflareServiceGetCloudflareEmailRoutingHandler := connect.NewUnaryHandler(
+		CloudflareServiceGetCloudflareEmailRoutingProcedure,
+		svc.GetCloudflareEmailRouting,
+		connect.WithSchema(cloudflareServiceMethods.ByName("GetCloudflareEmailRouting")),
+		connect.WithHandlerOptions(opts...),
+	)
+	cloudflareServiceListCloudflareEmailAddressesHandler := connect.NewUnaryHandler(
+		CloudflareServiceListCloudflareEmailAddressesProcedure,
+		svc.ListCloudflareEmailAddresses,
+		connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareEmailAddresses")),
+		connect.WithHandlerOptions(opts...),
+	)
+	cloudflareServiceEnableCloudflareEmailRoutingHandler := connect.NewUnaryHandler(
+		CloudflareServiceEnableCloudflareEmailRoutingProcedure,
+		svc.EnableCloudflareEmailRouting,
+		connect.WithSchema(cloudflareServiceMethods.ByName("EnableCloudflareEmailRouting")),
+		connect.WithHandlerOptions(opts...),
+	)
+	cloudflareServiceCreateCloudflareEmailRuleHandler := connect.NewUnaryHandler(
+		CloudflareServiceCreateCloudflareEmailRuleProcedure,
+		svc.CreateCloudflareEmailRule,
+		connect.WithSchema(cloudflareServiceMethods.ByName("CreateCloudflareEmailRule")),
+		connect.WithHandlerOptions(opts...),
+	)
+	cloudflareServiceUpdateCloudflareEmailRuleHandler := connect.NewUnaryHandler(
+		CloudflareServiceUpdateCloudflareEmailRuleProcedure,
+		svc.UpdateCloudflareEmailRule,
+		connect.WithSchema(cloudflareServiceMethods.ByName("UpdateCloudflareEmailRule")),
+		connect.WithHandlerOptions(opts...),
+	)
+	cloudflareServiceDeleteCloudflareEmailRuleHandler := connect.NewUnaryHandler(
+		CloudflareServiceDeleteCloudflareEmailRuleProcedure,
+		svc.DeleteCloudflareEmailRule,
+		connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareEmailRule")),
+		connect.WithHandlerOptions(opts...),
+	)
+	cloudflareServiceSetCloudflareEmailCatchAllHandler := connect.NewUnaryHandler(
+		CloudflareServiceSetCloudflareEmailCatchAllProcedure,
+		svc.SetCloudflareEmailCatchAll,
+		connect.WithSchema(cloudflareServiceMethods.ByName("SetCloudflareEmailCatchAll")),
+		connect.WithHandlerOptions(opts...),
+	)
+	cloudflareServiceCreateCloudflareEmailAddressHandler := connect.NewUnaryHandler(
+		CloudflareServiceCreateCloudflareEmailAddressProcedure,
+		svc.CreateCloudflareEmailAddress,
+		connect.WithSchema(cloudflareServiceMethods.ByName("CreateCloudflareEmailAddress")),
+		connect.WithHandlerOptions(opts...),
+	)
+	cloudflareServiceDeleteCloudflareEmailAddressHandler := connect.NewUnaryHandler(
+		CloudflareServiceDeleteCloudflareEmailAddressProcedure,
+		svc.DeleteCloudflareEmailAddress,
+		connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareEmailAddress")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/neobox.v1.CloudflareService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case CloudflareServiceListCloudflareZonesProcedure:
@@ -1274,6 +1519,24 @@ func NewCloudflareServiceHandler(svc CloudflareServiceHandler, opts ...connect.H
 			cloudflareServiceDeleteCloudflarePagesEnvVarHandler.ServeHTTP(w, r)
 		case CloudflareServiceListCloudflareResourceOperationsProcedure:
 			cloudflareServiceListCloudflareResourceOperationsHandler.ServeHTTP(w, r)
+		case CloudflareServiceGetCloudflareEmailRoutingProcedure:
+			cloudflareServiceGetCloudflareEmailRoutingHandler.ServeHTTP(w, r)
+		case CloudflareServiceListCloudflareEmailAddressesProcedure:
+			cloudflareServiceListCloudflareEmailAddressesHandler.ServeHTTP(w, r)
+		case CloudflareServiceEnableCloudflareEmailRoutingProcedure:
+			cloudflareServiceEnableCloudflareEmailRoutingHandler.ServeHTTP(w, r)
+		case CloudflareServiceCreateCloudflareEmailRuleProcedure:
+			cloudflareServiceCreateCloudflareEmailRuleHandler.ServeHTTP(w, r)
+		case CloudflareServiceUpdateCloudflareEmailRuleProcedure:
+			cloudflareServiceUpdateCloudflareEmailRuleHandler.ServeHTTP(w, r)
+		case CloudflareServiceDeleteCloudflareEmailRuleProcedure:
+			cloudflareServiceDeleteCloudflareEmailRuleHandler.ServeHTTP(w, r)
+		case CloudflareServiceSetCloudflareEmailCatchAllProcedure:
+			cloudflareServiceSetCloudflareEmailCatchAllHandler.ServeHTTP(w, r)
+		case CloudflareServiceCreateCloudflareEmailAddressProcedure:
+			cloudflareServiceCreateCloudflareEmailAddressHandler.ServeHTTP(w, r)
+		case CloudflareServiceDeleteCloudflareEmailAddressProcedure:
+			cloudflareServiceDeleteCloudflareEmailAddressHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -1457,4 +1720,40 @@ func (UnimplementedCloudflareServiceHandler) DeleteCloudflarePagesEnvVar(context
 
 func (UnimplementedCloudflareServiceHandler) ListCloudflareResourceOperations(context.Context, *connect.Request[v1.ListCloudflareResourceOperationsRequest]) (*connect.Response[v1.ListCloudflareResourceOperationsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.ListCloudflareResourceOperations is not implemented"))
+}
+
+func (UnimplementedCloudflareServiceHandler) GetCloudflareEmailRouting(context.Context, *connect.Request[v1.GetCloudflareEmailRoutingRequest]) (*connect.Response[v1.GetCloudflareEmailRoutingResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.GetCloudflareEmailRouting is not implemented"))
+}
+
+func (UnimplementedCloudflareServiceHandler) ListCloudflareEmailAddresses(context.Context, *connect.Request[v1.ListCloudflareEmailAddressesRequest]) (*connect.Response[v1.ListCloudflareEmailAddressesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.ListCloudflareEmailAddresses is not implemented"))
+}
+
+func (UnimplementedCloudflareServiceHandler) EnableCloudflareEmailRouting(context.Context, *connect.Request[v1.EnableCloudflareEmailRoutingRequest]) (*connect.Response[v1.EnableCloudflareEmailRoutingResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.EnableCloudflareEmailRouting is not implemented"))
+}
+
+func (UnimplementedCloudflareServiceHandler) CreateCloudflareEmailRule(context.Context, *connect.Request[v1.CreateCloudflareEmailRuleRequest]) (*connect.Response[v1.CreateCloudflareEmailRuleResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.CreateCloudflareEmailRule is not implemented"))
+}
+
+func (UnimplementedCloudflareServiceHandler) UpdateCloudflareEmailRule(context.Context, *connect.Request[v1.UpdateCloudflareEmailRuleRequest]) (*connect.Response[v1.UpdateCloudflareEmailRuleResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.UpdateCloudflareEmailRule is not implemented"))
+}
+
+func (UnimplementedCloudflareServiceHandler) DeleteCloudflareEmailRule(context.Context, *connect.Request[v1.DeleteCloudflareEmailRuleRequest]) (*connect.Response[v1.DeleteCloudflareEmailRuleResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.DeleteCloudflareEmailRule is not implemented"))
+}
+
+func (UnimplementedCloudflareServiceHandler) SetCloudflareEmailCatchAll(context.Context, *connect.Request[v1.SetCloudflareEmailCatchAllRequest]) (*connect.Response[v1.SetCloudflareEmailCatchAllResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.SetCloudflareEmailCatchAll is not implemented"))
+}
+
+func (UnimplementedCloudflareServiceHandler) CreateCloudflareEmailAddress(context.Context, *connect.Request[v1.CreateCloudflareEmailAddressRequest]) (*connect.Response[v1.CreateCloudflareEmailAddressResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.CreateCloudflareEmailAddress is not implemented"))
+}
+
+func (UnimplementedCloudflareServiceHandler) DeleteCloudflareEmailAddress(context.Context, *connect.Request[v1.DeleteCloudflareEmailAddressRequest]) (*connect.Response[v1.DeleteCloudflareEmailAddressResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.DeleteCloudflareEmailAddress is not implemented"))
 }

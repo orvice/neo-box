@@ -56,6 +56,7 @@ func newCFFixture(t *testing.T) *cfFixture {
 		cftest.PermWorkersRead, cftest.PermRoutesRead, cftest.PermPagesRead,
 		cftest.PermTunnelRead, cftest.PermTunnelEdit,
 		cftest.PermWorkersEdit, cftest.PermRoutesEdit, cftest.PermPagesEdit,
+		cftest.PermEmailRulesRead, cftest.PermEmailRulesEdit, cftest.PermEmailAddrRead, cftest.PermEmailAddrEdit,
 	}
 	cf.AddToken("full", &cftest.Token{Accounts: []string{cfAccA, cfAccB}, Perms: all,
 		ZonePermissions: []string{"#zone:read", "#dns_records:read", "#dns_records:edit"}})
@@ -68,6 +69,9 @@ func newCFFixture(t *testing.T) *cfFixture {
 	cf.AddToken("tunnel-read", &cftest.Token{Accounts: []string{cfAccA}, Perms: []string{cftest.PermZoneRead, cftest.PermTunnelRead}})
 	cf.AddToken("tunnel-no-dns", &cftest.Token{Accounts: []string{cfAccA},
 		Perms: []string{cftest.PermZoneRead, cftest.PermDNSRead, cftest.PermTunnelRead, cftest.PermTunnelEdit}})
+	cf.AddToken("email-read", &cftest.Token{Accounts: []string{cfAccA}, Perms: []string{
+		cftest.PermZoneRead, cftest.PermEmailRulesRead, cftest.PermEmailAddrRead,
+	}})
 	cf.AddToken("acct-owned", &cftest.Token{OwnerAccount: cfAccA, Accounts: []string{cfAccA}, Perms: []string{cftest.PermPagesRead}})
 	cf.AddZone(&cftest.Zone{ID: "za1", Name: "alpha.com", Account: cfAccA})
 	cf.AddZone(&cftest.Zone{ID: "za2", Name: "bravo.com", Account: cfAccA})

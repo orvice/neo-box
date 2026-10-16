@@ -81,6 +81,8 @@ func resourceKindToProto(k cfrepo.ResourceKind) neoboxv1.CloudflareResourceKind 
 		return neoboxv1.CloudflareResourceKind_CLOUDFLARE_RESOURCE_KIND_WORKER
 	case cfrepo.KindPages:
 		return neoboxv1.CloudflareResourceKind_CLOUDFLARE_RESOURCE_KIND_PAGES
+	case cfrepo.KindEmailRouting:
+		return neoboxv1.CloudflareResourceKind_CLOUDFLARE_RESOURCE_KIND_EMAIL_ROUTING
 	}
 	return neoboxv1.CloudflareResourceKind_CLOUDFLARE_RESOURCE_KIND_UNSPECIFIED
 }
@@ -100,6 +102,8 @@ func (s *CloudflareServiceServer) ListCloudflareResourceOperations(ctx context.C
 		kind = cfrepo.KindWorker
 	case neoboxv1.CloudflareResourceKind_CLOUDFLARE_RESOURCE_KIND_PAGES:
 		kind = cfrepo.KindPages
+	case neoboxv1.CloudflareResourceKind_CLOUDFLARE_RESOURCE_KIND_EMAIL_ROUTING:
+		kind = cfrepo.KindEmailRouting
 	}
 	page, size := pageArgs(req.Msg.GetPage(), req.Msg.GetPageSize(), defaultOperationsSize, 1, maxOperationsSize)
 	ops, total, err := d.repo.ListResourceOperations(ctx, cfrepo.ResourceFilter{

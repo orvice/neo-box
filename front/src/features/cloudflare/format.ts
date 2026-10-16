@@ -64,4 +64,24 @@ export const TOKEN_PERMISSIONS: {
     permission: 'Cloudflare Tunnel · Edit',
     unlocks: 'creating Tunnels and changing their hostnames',
   },
+  {
+    scope: 'Zone',
+    permission: 'Email Routing Rules · Read',
+    unlocks: 'the Email routing tab',
+  },
+  {
+    scope: 'Zone',
+    permission: 'Email Routing Rules · Edit',
+    unlocks: 'enabling Email Routing, and changing rules and the catch-all',
+  },
+  {
+    scope: 'Account',
+    permission: 'Email Routing Addresses · Read',
+    unlocks: 'destination addresses',
+  },
+  {
+    scope: 'Account',
+    permission: 'Email Routing Addresses · Edit',
+    unlocks: 'adding and deleting destination addresses',
+  },
 ]

@@ -132,6 +132,18 @@ shadcn/ui + Connect-Web on the frontend.
   `pages/<acc>/<project>`). Secret values never reach the log.
   A Zone's `permissions` describe the token owner, not the token, so they
   can only rule DNS edits out.
+- `internal/cloudflare/email.go` — Email Routing client: Zone settings and the
+  DNS it needs, rules, catch-all, and the Account's destination addresses
+  (reads retry; writes never resent), plus the rule input checks
+  (`ValidateEmailRuleInput`), `ReadOnlyReason` and `Same`. The fake lives in
+  `cftest/email.go`.
+- `internal/cloudflareacct/email.go` — Email Routing in the Manager: the live
+  read (`EmailRouting`), enable (never disable), rule / catch-all / destination
+  address changes. Every write goes through `operate` as an `email_routing`
+  operation (`docs/adr/0011`); forwards need a verified address; rules sending
+  to a Worker or owned by wrangler are refused; deleting an address checks the
+  named Zone's rules and catch-all. Locks: `email/<acc>/<zone>` and
+  `email/<acc>/addresses`.
 - `internal/wasabisync/` — `Manager`: one sync at a time; 12-month backfill in
   30-day chunks that resumes after failures, daily run at 02:30 UTC from the
   last synced day, `Refresh` for the last 7 days, catch-up at startup. Also
@@ -182,6 +194,10 @@ routes, cron triggers, secrets, version rollback, delete) and Pages
 management (project get / create / update / delete, deployments list /
 retry / rollback / delete, domains, env vars) all return
 `CloudflareChangeResult` (`changed`, `operation`, `operation_log_error`),
+Email Routing (GetCloudflareEmailRouting, ListCloudflareEmailAddresses,
+EnableCloudflareEmailRouting, rule create / update / delete,
+SetCloudflareEmailCatchAll, destination address create / delete) also returns
+CloudflareChangeResult; there is no disable,
 and `ListCloudflareResourceOperations` lists their log. No code upload.
 `connection_id` must be the caller's Cloudflare connection. A missing
 permission is PermissionDenied, a rejected token FailedPrecondition (never
@@ -201,8 +217,10 @@ hooks. `src/stores/auth-store.ts` (Zustand) holds token + user. Routes under
 Provider registry: `provider-info.ts` (key, label, icon; used by the sidebar)
 and `providers.ts` (each Provider's form, card summary, and detail page from
 its feature folder). Cloudflare's logic lives in `src/features/cloudflare/`
-`addresses.ts`, `dns.ts`, `access.ts`, `tunnels.ts` and `manage.ts` (input
-checks, status and log wording), each with a Vitest test. `worker-page.tsx`
+`addresses.ts`, `dns.ts`, `access.ts`, `tunnels.ts`, `email.ts` and
+`manage.ts` (input checks, status and log wording), each with a Vitest test;
+Email Routing UI is in `email-routing-tab.tsx` (`email-rules.tsx`,
+`email-addresses.tsx`). `worker-page.tsx`
 and `pages-project-page.tsx` are the management pages; they share
 `manage-dialogs.tsx` (`FormDialog`, `ConfirmChangeDialog`).
 

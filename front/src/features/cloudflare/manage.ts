@@ -181,6 +181,15 @@ const actionLabels: Record<string, string> = {
   delete_domain: 'Deleted domain',
   set_env_var: 'Set variable',
   delete_env_var: 'Deleted variable',
+  enable_routing: 'Enabled Email Routing',
+  create_rule: 'Added routing rule',
+  update_rule: 'Changed routing rule',
+  enable_rule: 'Enabled routing rule',
+  disable_rule: 'Disabled routing rule',
+  delete_rule: 'Deleted routing rule',
+  set_catch_all: 'Changed catch-all',
+  create_address: 'Added destination address',
+  delete_address: 'Deleted destination address',
 }
 
 /** Words for a logged change's action; an unknown action is shown as is. */

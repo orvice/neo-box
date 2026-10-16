@@ -10,6 +10,7 @@ import {
   CloudflareService,
   type CloudflareChangeResult,
   type CloudflareDNSRecordInputSchema,
+  type CloudflareEmailRuleInputSchema,
   type CloudflarePagesEnvironment,
   type CloudflareResourceKind,
   type CloudflareZone,
@@ -54,11 +55,23 @@ export {
   type CloudflareWorkerVersion,
   type GetCloudflarePagesProjectResponse,
   type GetCloudflareWorkerResponse,
+  CloudflareEmailAction,
+  type CloudflareEmailAddress,
+  type CloudflareEmailCatchAll,
+  type CloudflareEmailDNSRecord,
+  type CloudflareEmailRoutingSettings,
+  type CloudflareEmailRule,
+  type GetCloudflareEmailRoutingResponse,
 } from '@/gen/neobox/v1/cloudflare_pb'
 
 /** A DNS record as sent on create and update. */
 export type CloudflareDNSRecordInit = MessageInitShape<
   typeof CloudflareDNSRecordInputSchema
+>
+
+/** A routing rule as sent on create and update. */
+export type CloudflareEmailRuleInit = MessageInitShape<
+  typeof CloudflareEmailRuleInputSchema
 >
 
 const client = makeClient(CloudflareService)
@@ -130,6 +143,10 @@ const keys = {
           resource ?? '',
           page ?? 1,
         ] as const),
+  emailRouting: (connectionId: string, zoneId: string) =>
+    ['cloudflare', connectionId, 'email-routing', zoneId] as const,
+  emailAddresses: (connectionId: string) =>
+    ['cloudflare', connectionId, 'email-addresses'] as const,
 }
 
 // Everything is read live from Cloudflare when a page opens; there is no
@@ -469,6 +486,76 @@ export function useCloudflareWorkerChanges(connectionId: string, name: string) {
     ),
     remove: useMutation(
       change(() => client.deleteCloudflareWorker({ ...base }))
+    ),
+  }
+}
+
+/** A Zone's Email Routing: status, rules and catch-all. */
+export function useCloudflareEmailRouting(
+  connectionId: string,
+  zoneId: string
+) {
+  return useQuery({
+    queryKey: keys.emailRouting(connectionId, zoneId),
+    queryFn: async () =>
+      await client.getCloudflareEmailRouting({ connectionId, zoneId }),
+    retry: false,
+  })
+}
+
+/** The Account's destination addresses. */
+export function useCloudflareEmailAddresses(connectionId: string) {
+  return useQuery({
+    queryKey: keys.emailAddresses(connectionId),
+    queryFn: async () =>
+      await client.listCloudflareEmailAddresses({ connectionId }),
+    retry: false,
+  })
+}
+
+/** Every Email Routing change made from a Zone's page. */
+export function useCloudflareEmailChanges(
+  connectionId: string,
+  zoneId: string
+) {
+  const change = useResourceChanges(connectionId, [
+    keys.emailRouting(connectionId, zoneId),
+    keys.emailAddresses(connectionId),
+  ])
+  const base = { connectionId, zoneId }
+  return {
+    enable: useMutation(
+      change(() => client.enableCloudflareEmailRouting({ ...base }))
+    ),
+    createRule: useMutation(
+      change((rule: CloudflareEmailRuleInit) =>
+        client.createCloudflareEmailRule({ ...base, rule })
+      )
+    ),
+    updateRule: useMutation(
+      change((v: { ruleId: string; rule: CloudflareEmailRuleInit }) =>
+        client.updateCloudflareEmailRule({ ...base, ...v })
+      )
+    ),
+    deleteRule: useMutation(
+      change((ruleId: string) =>
+        client.deleteCloudflareEmailRule({ ...base, ruleId })
+      )
+    ),
+    setCatchAll: useMutation(
+      change((v: { enabled: boolean; action: number; target: string }) =>
+        client.setCloudflareEmailCatchAll({ ...base, ...v })
+      )
+    ),
+    createAddress: useMutation(
+      change((email: string) =>
+        client.createCloudflareEmailAddress({ connectionId, email })
+      )
+    ),
+    deleteAddress: useMutation(
+      change((addressId: string) =>
+        client.deleteCloudflareEmailAddress({ ...base, addressId })
+      )
     ),
   }
 }
