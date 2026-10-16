@@ -6,6 +6,7 @@ import { WorkspaceGroups } from './groups'
 import { WorkspaceOperations } from './operations'
 import { WorkspaceOrgUnits } from './org-units'
 import { WorkspaceOverview } from './overview'
+import { WorkspaceStorage } from './storage-usage'
 import { WorkspaceUsers } from './users'
 
 export function WorkspaceTenantDetail({
@@ -29,6 +30,7 @@ export function WorkspaceTenantDetail({
           <TabsTrigger value='groups'>Groups</TabsTrigger>
           <TabsTrigger value='org-units'>Organization units</TabsTrigger>
           <TabsTrigger value='security'>Account security</TabsTrigger>
+          <TabsTrigger value='storage'>Storage</TabsTrigger>
           <TabsTrigger value='drive'>Drive</TabsTrigger>
           <TabsTrigger value='operations'>Neo Box operations</TabsTrigger>
           <TabsTrigger value='audit'>Google audit</TabsTrigger>
@@ -48,6 +50,9 @@ export function WorkspaceTenantDetail({
             tenantId={tenant.id}
             securityOnly
           />
+        </TabsContent>
+        <TabsContent value='storage' className='pt-4'>
+          <WorkspaceStorage connectionId={connectionId} tenantId={tenant.id} />
         </TabsContent>
         <TabsContent value='drive' className='pt-4'>
           <WorkspaceDrive connectionId={connectionId} tenantId={tenant.id} />

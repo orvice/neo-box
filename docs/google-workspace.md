@@ -416,6 +416,28 @@ the mailbox's own counts (inbox, unread, sent, drafts, spam, trash, starred and
 the largest user labels), taken from the label read that the Mail view already
 makes, so one confirmation sends and records that read once.
 
+### Storage
+
+A Tenant's **Storage** tab shows every user's storage against the limit Google
+reports for them: Gmail, Drive, Photos, total used, the limit, and a usage bar
+with near / over markers at a threshold you pick (70, 80, 90 or 95%). A summary
+per organizational unit (users counted in the unit they sit in directly) shows
+the unit's total, its largest user, the limit its users report (or Mixed), and
+how many are near or over; selecting a unit filters the user list.
+
+It reads the newest daily usage report (`accounts:*_quota_in_mb`) and the
+Directory for each user's unit, with the same `admin.reports.usage.readonly`
+scope, 5,000-user cap and 20-second reads as Drive storage usage, and writes
+nothing to the Neo Box operation log. If the Directory cannot be read the
+figures still show, marked incomplete, with no units.
+
+**Neo Box cannot set a storage limit.** Google has no API for the Admin
+console's User storage limit (Storage → Manage, per organizational unit or
+configuration group), so the tab links there. The limit shown is the
+`total_quota_in_mb` Google reports for each user; zero or none means no limit
+is reported, never a quota of zero. This was not checked against a live tenant,
+so how pooled storage reports its quota is unverified.
+
 ### Drive API reads
 
 Two further reads use Drive API scopes. They are separate opt-ins, each

@@ -210,13 +210,50 @@ type usageResponse struct {
 // usageLookbackDays back from `now`. A day Google answers with "not available"
 // is skipped; any other failure stops the read.
 func (c *Client) ListDriveUsage(ctx context.Context, now time.Time) (*DriveUsage, error) {
+	scan, err := c.newestUsageDay(ctx, now, []string{paramDriveUsed, paramTotalQuota})
+	if err != nil {
+		return nil, err
+	}
+	out := &DriveUsage{Date: scan.Date, Partial: scan.Partial, PartialReason: scan.PartialReason}
+	for _, r := range scan.Rows {
+		u := DriveUsageUser{Email: r.Email}
+		if v, ok := r.Values[paramDriveUsed]; ok {
+			u.UsedMB = &v
+		}
+		if v, ok := r.Values[paramTotalQuota]; ok {
+			u.TotalMB = &v
+		}
+		out.Users = append(out.Users, u)
+	}
+	return out, nil
+}
+
+// usageRow is one user's integer parameters from a usage report; a parameter
+// Google did not report is absent from Values.
+type usageRow struct {
+	Email  string
+	Values map[string]int64
+}
+
+type usageScan struct {
+	Date          string
+	Rows          []usageRow
+	Partial       bool
+	PartialReason string
+}
+
+// newestUsageDay finds the newest day, up to usageLookbackDays back, that has a
+// report for every user, and reads `params` for all of them. A day Google calls
+// "not available" is skipped; any other failure stops the read. No day with
+// data is ErrNoUsageData.
+func (c *Client) newestUsageDay(ctx context.Context, now time.Time, params []string) (*usageScan, error) {
 	endpoint := c.ReportsEndpoint
 	if endpoint == "" {
 		endpoint = reportsURL
 	}
 	for back := 1; back <= usageLookbackDays; back++ {
 		day := now.UTC().AddDate(0, 0, -back).Format("2006-01-02")
-		out, err := c.readUsageDay(ctx, endpoint, day)
+		out, err := c.readUsageDay(ctx, endpoint, day, params)
 		var api *APIError
 		switch {
 		case err == nil && out != nil:
@@ -232,24 +269,24 @@ func (c *Client) ListDriveUsage(ctx context.Context, now time.Time) (*DriveUsage
 	return nil, ErrNoUsageData
 }
 
-func (c *Client) readUsageDay(ctx context.Context, endpoint, day string) (*DriveUsage, error) {
-	out := &DriveUsage{Date: day}
+func (c *Client) readUsageDay(ctx context.Context, endpoint, day string, params []string) (*usageScan, error) {
+	out := &usageScan{Date: day}
 	token := ""
 	for {
-		values := url.Values{"customerId": {c.CustomerID}, "maxResults": {"1000"}, "parameters": {paramDriveUsed + "," + paramTotalQuota}}
+		values := url.Values{"customerId": {c.CustomerID}, "maxResults": {"1000"}, "parameters": {strings.Join(params, ",")}}
 		if token != "" {
 			values.Set("pageToken", token)
 		}
 		var page usageResponse
 		if err := c.doAt(ctx, endpoint, http.MethodGet, "/usage/users/all/dates/"+url.PathEscape(day), values, nil, &page); err != nil {
-			if len(out.Users) > 0 && (errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled)) {
+			if len(out.Rows) > 0 && (errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled)) {
 				out.Partial, out.PartialReason = true, "reading was cut short by a time limit"
 				return out, nil
 			}
 			return nil, err
 		}
 		for _, w := range page.Warnings {
-			if w.Code == "DATA_NOT_AVAILABLE" && len(page.UsageReports) == 0 && len(out.Users) == 0 {
+			if w.Code == "DATA_NOT_AVAILABLE" && len(page.UsageReports) == 0 && len(out.Rows) == 0 {
 				return nil, nil
 			}
 		}
@@ -260,21 +297,14 @@ func (c *Client) readUsageDay(ctx context.Context, endpoint, day string) (*Drive
 			if r.Entity.Type != "" && r.Entity.Type != "USER" {
 				continue
 			}
-			u := DriveUsageUser{Email: r.Entity.UserEmail}
+			row := usageRow{Email: r.Entity.UserEmail, Values: map[string]int64{}}
 			for _, p := range r.Parameters {
-				n, err := strconv.ParseInt(p.IntValue, 10, 64)
-				if err != nil {
-					continue
-				}
-				switch p.Name {
-				case paramDriveUsed:
-					u.UsedMB = &n
-				case paramTotalQuota:
-					u.TotalMB = &n
+				if n, err := strconv.ParseInt(p.IntValue, 10, 64); err == nil {
+					row.Values[p.Name] = n
 				}
 			}
-			out.Users = append(out.Users, u)
-			if len(out.Users) >= MaxUsageUsers {
+			out.Rows = append(out.Rows, row)
+			if len(out.Rows) >= MaxUsageUsers {
 				out.Partial, out.PartialReason = true, "stopped at "+strconv.Itoa(MaxUsageUsers)+" users"
 				return out, nil
 			}
@@ -284,7 +314,7 @@ func (c *Client) readUsageDay(ctx context.Context, endpoint, day string) (*Drive
 		}
 		token = page.NextPageToken
 	}
-	if len(out.Users) == 0 {
+	if len(out.Rows) == 0 {
 		return nil, nil
 	}
 	return out, nil

@@ -165,6 +165,9 @@ const (
 	// GoogleWorkspaceServiceGetWorkspaceUserUsageProcedure is the fully-qualified name of the
 	// GoogleWorkspaceService's GetWorkspaceUserUsage RPC.
 	GoogleWorkspaceServiceGetWorkspaceUserUsageProcedure = "/neobox.v1.GoogleWorkspaceService/GetWorkspaceUserUsage"
+	// GoogleWorkspaceServiceListWorkspaceStorageUsageProcedure is the fully-qualified name of the
+	// GoogleWorkspaceService's ListWorkspaceStorageUsage RPC.
+	GoogleWorkspaceServiceListWorkspaceStorageUsageProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceStorageUsage"
 )
 
 // GoogleWorkspaceServiceClient is a client for the neobox.v1.GoogleWorkspaceService service.
@@ -231,6 +234,12 @@ type GoogleWorkspaceServiceClient interface {
 	// reports (admin.reports.usage.readonly). Aggregate figures only: it never
 	// reads the mailbox, so it needs no access reason and is not recorded.
 	GetWorkspaceUserUsage(context.Context, *connect.Request[v1.GetWorkspaceUserUsageRequest]) (*connect.Response[v1.GetWorkspaceUserUsageResponse], error)
+	// Every user's storage (Gmail, Drive, Photos, total, quota) from the newest
+	// usage report, joined with the Directory for each user's organizational
+	// unit and summarised per unit. Read-only: the quota shown is what Google
+	// reports; Google has no API to set a user storage limit, which stays in the
+	// Admin console.
+	ListWorkspaceStorageUsage(context.Context, *connect.Request[v1.ListWorkspaceStorageUsageRequest]) (*connect.Response[v1.ListWorkspaceStorageUsageResponse], error)
 }
 
 // NewGoogleWorkspaceServiceClient constructs a client for the neobox.v1.GoogleWorkspaceService
@@ -508,6 +517,12 @@ func NewGoogleWorkspaceServiceClient(httpClient connect.HTTPClient, baseURL stri
 			connect.WithSchema(googleWorkspaceServiceMethods.ByName("GetWorkspaceUserUsage")),
 			connect.WithClientOptions(opts...),
 		),
+		listWorkspaceStorageUsage: connect.NewClient[v1.ListWorkspaceStorageUsageRequest, v1.ListWorkspaceStorageUsageResponse](
+			httpClient,
+			baseURL+GoogleWorkspaceServiceListWorkspaceStorageUsageProcedure,
+			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceStorageUsage")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -557,6 +572,7 @@ type googleWorkspaceServiceClient struct {
 	listWorkspaceSharedDrives            *connect.Client[v1.ListWorkspaceSharedDrivesRequest, v1.ListWorkspaceSharedDrivesResponse]
 	listWorkspaceUserExposedFiles        *connect.Client[v1.ListWorkspaceUserExposedFilesRequest, v1.ListWorkspaceUserExposedFilesResponse]
 	getWorkspaceUserUsage                *connect.Client[v1.GetWorkspaceUserUsageRequest, v1.GetWorkspaceUserUsageResponse]
+	listWorkspaceStorageUsage            *connect.Client[v1.ListWorkspaceStorageUsageRequest, v1.ListWorkspaceStorageUsageResponse]
 }
 
 // ListWorkspaceTenants calls neobox.v1.GoogleWorkspaceService.ListWorkspaceTenants.
@@ -784,6 +800,11 @@ func (c *googleWorkspaceServiceClient) GetWorkspaceUserUsage(ctx context.Context
 	return c.getWorkspaceUserUsage.CallUnary(ctx, req)
 }
 
+// ListWorkspaceStorageUsage calls neobox.v1.GoogleWorkspaceService.ListWorkspaceStorageUsage.
+func (c *googleWorkspaceServiceClient) ListWorkspaceStorageUsage(ctx context.Context, req *connect.Request[v1.ListWorkspaceStorageUsageRequest]) (*connect.Response[v1.ListWorkspaceStorageUsageResponse], error) {
+	return c.listWorkspaceStorageUsage.CallUnary(ctx, req)
+}
+
 // GoogleWorkspaceServiceHandler is an implementation of the neobox.v1.GoogleWorkspaceService
 // service.
 type GoogleWorkspaceServiceHandler interface {
@@ -849,6 +870,12 @@ type GoogleWorkspaceServiceHandler interface {
 	// reports (admin.reports.usage.readonly). Aggregate figures only: it never
 	// reads the mailbox, so it needs no access reason and is not recorded.
 	GetWorkspaceUserUsage(context.Context, *connect.Request[v1.GetWorkspaceUserUsageRequest]) (*connect.Response[v1.GetWorkspaceUserUsageResponse], error)
+	// Every user's storage (Gmail, Drive, Photos, total, quota) from the newest
+	// usage report, joined with the Directory for each user's organizational
+	// unit and summarised per unit. Read-only: the quota shown is what Google
+	// reports; Google has no API to set a user storage limit, which stays in the
+	// Admin console.
+	ListWorkspaceStorageUsage(context.Context, *connect.Request[v1.ListWorkspaceStorageUsageRequest]) (*connect.Response[v1.ListWorkspaceStorageUsageResponse], error)
 }
 
 // NewGoogleWorkspaceServiceHandler builds an HTTP handler from the service implementation. It
@@ -1122,6 +1149,12 @@ func NewGoogleWorkspaceServiceHandler(svc GoogleWorkspaceServiceHandler, opts ..
 		connect.WithSchema(googleWorkspaceServiceMethods.ByName("GetWorkspaceUserUsage")),
 		connect.WithHandlerOptions(opts...),
 	)
+	googleWorkspaceServiceListWorkspaceStorageUsageHandler := connect.NewUnaryHandler(
+		GoogleWorkspaceServiceListWorkspaceStorageUsageProcedure,
+		svc.ListWorkspaceStorageUsage,
+		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceStorageUsage")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/neobox.v1.GoogleWorkspaceService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case GoogleWorkspaceServiceListWorkspaceTenantsProcedure:
@@ -1212,6 +1245,8 @@ func NewGoogleWorkspaceServiceHandler(svc GoogleWorkspaceServiceHandler, opts ..
 			googleWorkspaceServiceListWorkspaceUserExposedFilesHandler.ServeHTTP(w, r)
 		case GoogleWorkspaceServiceGetWorkspaceUserUsageProcedure:
 			googleWorkspaceServiceGetWorkspaceUserUsageHandler.ServeHTTP(w, r)
+		case GoogleWorkspaceServiceListWorkspaceStorageUsageProcedure:
+			googleWorkspaceServiceListWorkspaceStorageUsageHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -1395,4 +1430,8 @@ func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceUserExposedFiles(
 
 func (UnimplementedGoogleWorkspaceServiceHandler) GetWorkspaceUserUsage(context.Context, *connect.Request[v1.GetWorkspaceUserUsageRequest]) (*connect.Response[v1.GetWorkspaceUserUsageResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.GetWorkspaceUserUsage is not implemented"))
+}
+
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceStorageUsage(context.Context, *connect.Request[v1.ListWorkspaceStorageUsageRequest]) (*connect.Response[v1.ListWorkspaceStorageUsageResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceStorageUsage is not implemented"))
 }

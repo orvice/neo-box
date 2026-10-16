@@ -785,3 +785,34 @@ export function useWorkspaceUserUsage(
     refetchOnWindowFocus: false,
   })
 }
+
+export type {
+  WorkspaceStorageUser,
+  WorkspaceStorageOrgUnit,
+} from '@/gen/neobox/v1/google_workspace_pb'
+
+export type WorkspaceStorageQuery = {
+  connectionId: string
+  tenantId: string
+  query: string
+  orgUnitPath: string
+  sort: string
+  thresholdPercent: number
+  onlyNearLimit: boolean
+  page: number
+  pageSize: number
+}
+
+// Every user's storage from the newest daily report, with units from the
+// Directory. A slow read over a large tenant, and the report only changes
+// daily, so it is cached for a few minutes and never refetched on focus.
+export function useWorkspaceStorageUsage(q: WorkspaceStorageQuery) {
+  return useQuery({
+    queryKey: [...key(q.connectionId), q.tenantId, 'storage-usage', q],
+    queryFn: () => client.listWorkspaceStorageUsage(q),
+    retry: false,
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
+    placeholderData: (prev) => prev,
+  })
+}
