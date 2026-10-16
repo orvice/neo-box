@@ -4489,8 +4489,9 @@ func (x *DeleteCloudflareTunnelHostnameResponse) GetRecord() *CloudflareTunnelRe
 	return nil
 }
 
-// CloudflareResourceOperation is one change to a Worker or a Pages project
-// started from Neo Box. It never holds a secret value.
+// CloudflareResourceOperation is one change to a Worker, a Pages project,
+// or a Zone's Email Routing started from Neo Box. It never holds a secret
+// value.
 type CloudflareResourceOperation struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -4500,7 +4501,7 @@ type CloudflareResourceOperation struct {
 	ConnectionId string                 `protobuf:"bytes,2,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
 	AccountId    string                 `protobuf:"bytes,3,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
 	Kind         CloudflareResourceKind `protobuf:"varint,4,opt,name=kind,proto3,enum=neobox.v1.CloudflareResourceKind" json:"kind,omitempty"`
-	// The Worker script or Pages project name.
+	// Worker script or Pages project name, or the Zone name for Email Routing.
 	Resource string `protobuf:"bytes,5,opt,name=resource,proto3" json:"resource,omitempty"`
 	// e.g. attach_domain, add_route, put_secret, rollback, delete.
 	Action string `protobuf:"bytes,6,opt,name=action,proto3" json:"action,omitempty"`
@@ -4663,7 +4664,8 @@ func (x *CloudflareResourceOperation) GetRequested() *structpb.Struct {
 	return nil
 }
 
-// CloudflareChangeResult is what every Worker and Pages change returns.
+// CloudflareChangeResult is what every Worker, Pages, and Email Routing
+// change returns.
 type CloudflareChangeResult struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -8469,7 +8471,8 @@ type ListCloudflareResourceOperationsRequest struct {
 	ConnectionId string `protobuf:"bytes,1,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
 	// Only this kind; unspecified lists them all.
 	Kind CloudflareResourceKind `protobuf:"varint,2,opt,name=kind,proto3,enum=neobox.v1.CloudflareResourceKind" json:"kind,omitempty"`
-	// Only this Worker or Pages project; empty lists them all.
+	// Only this Worker, Pages project, or Email Routing zone name; empty
+	// lists them all.
 	Resource string `protobuf:"bytes,3,opt,name=resource,proto3" json:"resource,omitempty"`
 	Page     int32  `protobuf:"varint,4,opt,name=page,proto3" json:"page,omitempty"`
 	// 0 means 20; at most 100.

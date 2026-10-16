@@ -112,8 +112,8 @@ service CloudflareService {
   // to Cloudflare only; it is never stored or logged.
   rpc SetCloudflarePagesEnvVar(SetCloudflarePagesEnvVarRequest) returns (SetCloudflarePagesEnvVarResponse);
   rpc DeleteCloudflarePagesEnvVar(DeleteCloudflarePagesEnvVarRequest) returns (DeleteCloudflarePagesEnvVarResponse);
-  // ListCloudflareResourceOperations lists the Worker and Pages changes
-  // started from Neo Box for a connection, newest first.
+  // ListCloudflareResourceOperations lists Worker, Pages, and Email Routing
+  // changes started from Neo Box for a connection, newest first.
   rpc ListCloudflareResourceOperations(ListCloudflareResourceOperationsRequest) returns (ListCloudflareResourceOperationsResponse);
 
   // GetCloudflareEmailRouting reads a Zone's Email Routing status, its
@@ -686,14 +686,15 @@ enum CloudflareResourceKind {
   CLOUDFLARE_RESOURCE_KIND_EMAIL_ROUTING = 3;
 }
 
-// CloudflareResourceOperation is one change to a Worker or a Pages project
-// started from Neo Box. It never holds a secret value.
+// CloudflareResourceOperation is one change to a Worker, a Pages project,
+// or a Zone's Email Routing started from Neo Box. It never holds a secret
+// value.
 message CloudflareResourceOperation {
   string id = 1;
   string connection_id = 2;
   string account_id = 3;
   CloudflareResourceKind kind = 4;
-  // The Worker script or Pages project name.
+  // Worker script or Pages project name, or the Zone name for Email Routing.
   string resource = 5;
   // e.g. attach_domain, add_route, put_secret, rollback, delete.
   string action = 6;
@@ -712,7 +713,8 @@ message CloudflareResourceOperation {
   google.protobuf.Struct requested = 16;
 }
 
-// CloudflareChangeResult is what every Worker and Pages change returns.
+// CloudflareChangeResult is what every Worker, Pages, and Email Routing
+// change returns.
 message CloudflareChangeResult {
   // False when there was nothing to do (already so); no operation is
   // logged then.
@@ -1119,7 +1121,8 @@ message ListCloudflareResourceOperationsRequest {
   string connection_id = 1 [(validate.rules).string.min_len = 1];
   // Only this kind; unspecified lists them all.
   CloudflareResourceKind kind = 2;
-  // Only this Worker or Pages project; empty lists them all.
+  // Only this Worker, Pages project, or Email Routing zone name; empty
+  // lists them all.
   string resource = 3;
   int32 page = 4;
   // 0 means 20; at most 100.

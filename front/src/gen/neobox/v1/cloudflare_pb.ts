@@ -1877,8 +1877,9 @@ export const DeleteCloudflareTunnelHostnameResponseSchema: GenMessage<DeleteClou
   messageDesc(file_neobox_v1_cloudflare, 54);
 
 /**
- * CloudflareResourceOperation is one change to a Worker or a Pages project
- * started from Neo Box. It never holds a secret value.
+ * CloudflareResourceOperation is one change to a Worker, a Pages project,
+ * or a Zone's Email Routing started from Neo Box. It never holds a secret
+ * value.
  *
  * @generated from message neobox.v1.CloudflareResourceOperation
  */
@@ -1904,7 +1905,7 @@ export type CloudflareResourceOperation = Message<"neobox.v1.CloudflareResourceO
   kind: CloudflareResourceKind;
 
   /**
-   * The Worker script or Pages project name.
+   * Worker script or Pages project name, or the Zone name for Email Routing.
    *
    * @generated from field: string resource = 5;
    */
@@ -1981,7 +1982,8 @@ export const CloudflareResourceOperationSchema: GenMessage<CloudflareResourceOpe
   messageDesc(file_neobox_v1_cloudflare, 55);
 
 /**
- * CloudflareChangeResult is what every Worker and Pages change returns.
+ * CloudflareChangeResult is what every Worker, Pages, and Email Routing
+ * change returns.
  *
  * @generated from message neobox.v1.CloudflareChangeResult
  */
@@ -3661,7 +3663,8 @@ export type ListCloudflareResourceOperationsRequest = Message<"neobox.v1.ListClo
   kind: CloudflareResourceKind;
 
   /**
-   * Only this Worker or Pages project; empty lists them all.
+   * Only this Worker, Pages project, or Email Routing zone name; empty
+   * lists them all.
    *
    * @generated from field: string resource = 3;
    */
@@ -5200,8 +5203,8 @@ export const CloudflareService: GenService<{
     output: typeof DeleteCloudflarePagesEnvVarResponseSchema;
   },
   /**
-   * ListCloudflareResourceOperations lists the Worker and Pages changes
-   * started from Neo Box for a connection, newest first.
+   * ListCloudflareResourceOperations lists Worker, Pages, and Email Routing
+   * changes started from Neo Box for a connection, newest first.
    *
    * @generated from rpc neobox.v1.CloudflareService.ListCloudflareResourceOperations
    */

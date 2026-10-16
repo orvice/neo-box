@@ -141,6 +141,7 @@ export function RulesSection({
       />
       {editing && (
         <RuleDialog
+          key={editing === 'new' ? 'new' : editing.id}
           connectionId={connectionId}
           zoneId={zoneId}
           zoneName={zoneName}

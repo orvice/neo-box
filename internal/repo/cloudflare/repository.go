@@ -86,15 +86,16 @@ const (
 	KindEmailRouting ResourceKind = "email_routing"
 )
 
-// ResourceOperation is one change to a Worker or a Pages project started
-// from Neo Box: a custom domain, a route, a secret, a rollback, a delete.
+// ResourceOperation is one change to a Worker, a Pages project, or a Zone's
+// Email Routing started from Neo Box.
 type ResourceOperation struct {
 	ID           string
 	UserID       string
 	ConnectionID string
 	AccountID    string
 	Kind         ResourceKind
-	// Resource is the Worker script or Pages project name.
+	// Resource is the Worker script or Pages project name, or the Zone name
+	// for Email Routing (destination-address changes use that name too).
 	Resource string
 	// Action names the change, e.g. "attach_domain". The set is owned by
 	// the cloudflareacct package.

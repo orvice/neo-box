@@ -204,6 +204,10 @@ func TestCloudflareEmailRules(t *testing.T) {
 	if res, err = api.updateRule(info.GetId(), off); err != nil || res.GetChanged() {
 		t.Fatalf("disable again = %+v, %v", res, err)
 	}
+	reenable := &neoboxv1.CloudflareEmailRuleInput{Name: info.GetName(), Address: info.GetAddress(), Action: info.GetAction(), Target: info.GetTarget(), Enabled: true}
+	if res, err = api.updateRule(info.GetId(), reenable); err != nil || !res.GetChanged() || res.GetOperation().GetAction() != "enable_rule" {
+		t.Fatalf("enable = %+v, %v", res, err)
+	}
 	on := &neoboxv1.CloudflareEmailRuleInput{Address: info.GetAddress(), Action: emailForward, Target: "new@gmail.com", Enabled: true}
 	_, err = api.updateRule(info.GetId(), on)
 	wantCode(t, "re-enable to unverified", err, connect.CodeFailedPrecondition)
@@ -232,7 +236,7 @@ func TestCloudflareEmailRules(t *testing.T) {
 		}
 	}
 	if worker == nil || worker.GetEditable() || worker.GetReadonlyReason() == "" || worker.GetAction() != neoboxv1.CloudflareEmailAction_CLOUDFLARE_EMAIL_ACTION_WORKER ||
-		wrangler == nil || wrangler.GetEditable() {
+		wrangler == nil || wrangler.GetEditable() || wrangler.GetReadonlyReason() == "" {
 		t.Fatalf("read-only rules = %+v, %+v", worker, wrangler)
 	}
 	writes = len(f.cf.Writes())

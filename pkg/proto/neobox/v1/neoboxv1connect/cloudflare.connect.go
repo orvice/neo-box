@@ -287,8 +287,8 @@ type CloudflareServiceClient interface {
 	// to Cloudflare only; it is never stored or logged.
 	SetCloudflarePagesEnvVar(context.Context, *connect.Request[v1.SetCloudflarePagesEnvVarRequest]) (*connect.Response[v1.SetCloudflarePagesEnvVarResponse], error)
 	DeleteCloudflarePagesEnvVar(context.Context, *connect.Request[v1.DeleteCloudflarePagesEnvVarRequest]) (*connect.Response[v1.DeleteCloudflarePagesEnvVarResponse], error)
-	// ListCloudflareResourceOperations lists the Worker and Pages changes
-	// started from Neo Box for a connection, newest first.
+	// ListCloudflareResourceOperations lists Worker, Pages, and Email Routing
+	// changes started from Neo Box for a connection, newest first.
 	ListCloudflareResourceOperations(context.Context, *connect.Request[v1.ListCloudflareResourceOperationsRequest]) (*connect.Response[v1.ListCloudflareResourceOperationsResponse], error)
 	// GetCloudflareEmailRouting reads a Zone's Email Routing status, its
 	// rules and its catch-all. Each part that cannot be read is empty and
@@ -1071,8 +1071,8 @@ type CloudflareServiceHandler interface {
 	// to Cloudflare only; it is never stored or logged.
 	SetCloudflarePagesEnvVar(context.Context, *connect.Request[v1.SetCloudflarePagesEnvVarRequest]) (*connect.Response[v1.SetCloudflarePagesEnvVarResponse], error)
 	DeleteCloudflarePagesEnvVar(context.Context, *connect.Request[v1.DeleteCloudflarePagesEnvVarRequest]) (*connect.Response[v1.DeleteCloudflarePagesEnvVarResponse], error)
-	// ListCloudflareResourceOperations lists the Worker and Pages changes
-	// started from Neo Box for a connection, newest first.
+	// ListCloudflareResourceOperations lists Worker, Pages, and Email Routing
+	// changes started from Neo Box for a connection, newest first.
 	ListCloudflareResourceOperations(context.Context, *connect.Request[v1.ListCloudflareResourceOperationsRequest]) (*connect.Response[v1.ListCloudflareResourceOperationsResponse], error)
 	// GetCloudflareEmailRouting reads a Zone's Email Routing status, its
 	// rules and its catch-all. Each part that cannot be read is empty and
