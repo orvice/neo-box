@@ -77,12 +77,13 @@ type Filter struct {
 	Limit        int
 }
 
-// ResourceKind says which kind of Cloudflare resource an operation changed.
+// ResourceKind says which kind of Cloudflare resource an operation changed: a Worker, a Pages project, or a Zone's Email Routing.
 type ResourceKind string
 
 const (
-	KindWorker ResourceKind = "worker"
-	KindPages  ResourceKind = "pages"
+	KindWorker       ResourceKind = "worker"
+	KindPages        ResourceKind = "pages"
+	KindEmailRouting ResourceKind = "email_routing"
 )
 
 // ResourceOperation is one change to a Worker or a Pages project started
