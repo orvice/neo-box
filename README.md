@@ -345,6 +345,10 @@ include the account in its resources, and grant only what you want to use:
 | Account → Cloudflare Pages → Edit | creating and deleting projects, settings, variables, retrying, rolling back and deleting deployments, custom domains |
 | Account → Cloudflare Tunnel → Read | Tunnels tab, a Tunnel's connectors and hostnames, its run token |
 | Account → Cloudflare Tunnel → Edit | creating and deleting Tunnels, changing their public hostnames |
+| Zone → Email Routing Rules → Read | a Zone's Email routing tab |
+| Zone → Email Routing Rules → Edit | enabling Email Routing, changing rules and the catch-all |
+| Account → Email Routing Addresses → Read | destination addresses |
+| Account → Email Routing Addresses → Edit | adding and deleting destination addresses |
 
 Saving checks, without changing anything, that Cloudflare accepts the token
 and that the token reaches the account through at least one of these. A tab
@@ -401,6 +405,21 @@ after, with the state before and after (secret values never). The
 **Operation log** tab of each page lists them. A change that is already in
 effect is reported as such and not logged; one whose answer never arrives
 is "result unknown" and never sent again.
+
+**Email Routing.** A Zone's page has an Email routing tab. It shows whether
+Email Routing is on and, if not, enables it (Cloudflare adds and locks the MX
+and SPF records, which sends the zone's mail to Cloudflare; the dialog lists
+them first). Rules forward mail for one address to a verified destination
+address, or drop it; the catch-all handles every other address and can be off,
+drop or forward. Destination addresses belong to the account, so one address
+serves all zones: a new one is mailed a link by Cloudflare and works once it is
+followed. Neo Box never turns Email Routing off, and it shows rules that send
+to a Worker, or that a Worker's wrangler configuration owns, read-only.
+Deleting a destination address is refused while a rule or the catch-all of the
+zone you are in still forwards to it; rules of other zones are not checked.
+Every change is in the tab's log. The token needs the four Email Routing
+permissions in the table above (Zone: Rules, Account: Addresses; Read and
+Edit).
 
 ### Environment variables
 
