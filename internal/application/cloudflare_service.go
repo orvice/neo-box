@@ -534,13 +534,16 @@ func mapCloudflareErr(err error) error {
 	case errors.Is(err, cloudflareacct.ErrZoneNotFound), errors.Is(err, cloudflareacct.ErrRecordNotFound),
 		errors.Is(err, cloudflareacct.ErrTunnelNotFound), errors.Is(err, cloudflare.ErrRuleNotFound),
 		errors.Is(err, cloudflareacct.ErrWorkerNotFound), errors.Is(err, cloudflareacct.ErrPagesProjectNotFound),
-		errors.Is(err, cloudflareacct.ErrDeploymentNotFound), errors.Is(err, cloudflareacct.ErrNotAttached):
+		errors.Is(err, cloudflareacct.ErrDeploymentNotFound), errors.Is(err, cloudflareacct.ErrNotAttached),
+		errors.Is(err, cloudflareacct.ErrEmailRuleNotFound), errors.Is(err, cloudflareacct.ErrEmailAddressNotFound):
 		return connectx.NotFound(err.Error())
 	case errors.Is(err, cloudflareacct.ErrInUse):
 		return connect.NewError(connect.CodeAlreadyExists, err)
 	case errors.Is(err, cloudflareacct.ErrNoWorkersSubdomain):
 		return connect.NewError(connect.CodeFailedPrecondition, err)
-	case errors.Is(err, cloudflareacct.ErrNotEditable), errors.Is(err, cloudflareacct.ErrNotRemotelyManaged):
+	case errors.Is(err, cloudflareacct.ErrNotEditable), errors.Is(err, cloudflareacct.ErrNotRemotelyManaged),
+		errors.Is(err, cloudflareacct.ErrAddressUnverified), errors.Is(err, cloudflareacct.ErrAddressInUse),
+		errors.Is(err, cloudflareacct.ErrRuleReadOnly):
 		return connect.NewError(connect.CodeFailedPrecondition, err)
 	case errors.Is(err, cloudflareacct.ErrLogUnavailable):
 		return connect.NewError(connect.CodeUnavailable, err)
