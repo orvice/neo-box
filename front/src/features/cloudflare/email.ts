@@ -72,6 +72,13 @@ export function catchAllMode(c: CloudflareEmailCatchAll): CatchAllMode {
   return c.action === Action.FORWARD ? 'forward' : 'drop'
 }
 
+/** Off/drop/forward controls apply only to catch-alls Neo Box can edit. */
+export function catchAllConfigurable(c: CloudflareEmailCatchAll): boolean {
+  if (!c.editable) return false
+  if (c.enabled && c.action === Action.WORKER) return false
+  return true
+}
+
 /** The change request a catch-all choice stands for. */
 export function catchAllRequest(
   mode: CatchAllMode,

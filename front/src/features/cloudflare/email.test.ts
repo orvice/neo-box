@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest'
 import { CloudflareEmailAction as Action } from '@/api/cloudflare'
 import {
   addressStatus,
+  catchAllConfigurable,
   catchAllMode,
   catchAllProblem,
   catchAllRequest,
@@ -182,5 +183,25 @@ describe('catch-all choice', () => {
     expect(catchAllProblem('forward', 'me@gmail.com')).toBeUndefined()
     expect(catchAllProblem('drop', '')).toBeUndefined()
     expect(catchAllProblem('off', '')).toBeUndefined()
+  })
+
+  it('does not treat a Worker catch-all as configurable', () => {
+    const c = (v: object) => create(CloudflareEmailCatchAllSchema, v)
+    expect(
+      catchAllConfigurable(
+        c({
+          enabled: true,
+          action: Action.WORKER,
+          target: 'mailer',
+          editable: true,
+        })
+      )
+    ).toBe(false)
+    expect(
+      catchAllConfigurable(
+        c({ enabled: true, action: Action.DROP, editable: true })
+      )
+    ).toBe(true)
+    expect(catchAllConfigurable(c({ editable: false }))).toBe(false)
   })
 })
