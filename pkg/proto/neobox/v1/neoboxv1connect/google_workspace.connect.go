@@ -162,6 +162,9 @@ const (
 	// GoogleWorkspaceServiceListWorkspaceUserExposedFilesProcedure is the fully-qualified name of the
 	// GoogleWorkspaceService's ListWorkspaceUserExposedFiles RPC.
 	GoogleWorkspaceServiceListWorkspaceUserExposedFilesProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceUserExposedFiles"
+	// GoogleWorkspaceServiceGetWorkspaceUserUsageProcedure is the fully-qualified name of the
+	// GoogleWorkspaceService's GetWorkspaceUserUsage RPC.
+	GoogleWorkspaceServiceGetWorkspaceUserUsageProcedure = "/neobox.v1.GoogleWorkspaceService/GetWorkspaceUserUsage"
 )
 
 // GoogleWorkspaceServiceClient is a client for the neobox.v1.GoogleWorkspaceService service.
@@ -224,6 +227,10 @@ type GoogleWorkspaceServiceClient interface {
 	// user, drive.metadata.readonly: metadata only). Reason and typed primary
 	// email on every request, recorded first. See docs/adr/0009.
 	ListWorkspaceUserExposedFiles(context.Context, *connect.Request[v1.ListWorkspaceUserExposedFilesRequest]) (*connect.Response[v1.ListWorkspaceUserExposedFilesResponse], error)
+	// One user's storage and Gmail activity per day, from Google's usage
+	// reports (admin.reports.usage.readonly). Aggregate figures only: it never
+	// reads the mailbox, so it needs no access reason and is not recorded.
+	GetWorkspaceUserUsage(context.Context, *connect.Request[v1.GetWorkspaceUserUsageRequest]) (*connect.Response[v1.GetWorkspaceUserUsageResponse], error)
 }
 
 // NewGoogleWorkspaceServiceClient constructs a client for the neobox.v1.GoogleWorkspaceService
@@ -495,6 +502,12 @@ func NewGoogleWorkspaceServiceClient(httpClient connect.HTTPClient, baseURL stri
 			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceUserExposedFiles")),
 			connect.WithClientOptions(opts...),
 		),
+		getWorkspaceUserUsage: connect.NewClient[v1.GetWorkspaceUserUsageRequest, v1.GetWorkspaceUserUsageResponse](
+			httpClient,
+			baseURL+GoogleWorkspaceServiceGetWorkspaceUserUsageProcedure,
+			connect.WithSchema(googleWorkspaceServiceMethods.ByName("GetWorkspaceUserUsage")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -543,6 +556,7 @@ type googleWorkspaceServiceClient struct {
 	listWorkspaceDriveUsage              *connect.Client[v1.ListWorkspaceDriveUsageRequest, v1.ListWorkspaceDriveUsageResponse]
 	listWorkspaceSharedDrives            *connect.Client[v1.ListWorkspaceSharedDrivesRequest, v1.ListWorkspaceSharedDrivesResponse]
 	listWorkspaceUserExposedFiles        *connect.Client[v1.ListWorkspaceUserExposedFilesRequest, v1.ListWorkspaceUserExposedFilesResponse]
+	getWorkspaceUserUsage                *connect.Client[v1.GetWorkspaceUserUsageRequest, v1.GetWorkspaceUserUsageResponse]
 }
 
 // ListWorkspaceTenants calls neobox.v1.GoogleWorkspaceService.ListWorkspaceTenants.
@@ -765,6 +779,11 @@ func (c *googleWorkspaceServiceClient) ListWorkspaceUserExposedFiles(ctx context
 	return c.listWorkspaceUserExposedFiles.CallUnary(ctx, req)
 }
 
+// GetWorkspaceUserUsage calls neobox.v1.GoogleWorkspaceService.GetWorkspaceUserUsage.
+func (c *googleWorkspaceServiceClient) GetWorkspaceUserUsage(ctx context.Context, req *connect.Request[v1.GetWorkspaceUserUsageRequest]) (*connect.Response[v1.GetWorkspaceUserUsageResponse], error) {
+	return c.getWorkspaceUserUsage.CallUnary(ctx, req)
+}
+
 // GoogleWorkspaceServiceHandler is an implementation of the neobox.v1.GoogleWorkspaceService
 // service.
 type GoogleWorkspaceServiceHandler interface {
@@ -826,6 +845,10 @@ type GoogleWorkspaceServiceHandler interface {
 	// user, drive.metadata.readonly: metadata only). Reason and typed primary
 	// email on every request, recorded first. See docs/adr/0009.
 	ListWorkspaceUserExposedFiles(context.Context, *connect.Request[v1.ListWorkspaceUserExposedFilesRequest]) (*connect.Response[v1.ListWorkspaceUserExposedFilesResponse], error)
+	// One user's storage and Gmail activity per day, from Google's usage
+	// reports (admin.reports.usage.readonly). Aggregate figures only: it never
+	// reads the mailbox, so it needs no access reason and is not recorded.
+	GetWorkspaceUserUsage(context.Context, *connect.Request[v1.GetWorkspaceUserUsageRequest]) (*connect.Response[v1.GetWorkspaceUserUsageResponse], error)
 }
 
 // NewGoogleWorkspaceServiceHandler builds an HTTP handler from the service implementation. It
@@ -1093,6 +1116,12 @@ func NewGoogleWorkspaceServiceHandler(svc GoogleWorkspaceServiceHandler, opts ..
 		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceUserExposedFiles")),
 		connect.WithHandlerOptions(opts...),
 	)
+	googleWorkspaceServiceGetWorkspaceUserUsageHandler := connect.NewUnaryHandler(
+		GoogleWorkspaceServiceGetWorkspaceUserUsageProcedure,
+		svc.GetWorkspaceUserUsage,
+		connect.WithSchema(googleWorkspaceServiceMethods.ByName("GetWorkspaceUserUsage")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/neobox.v1.GoogleWorkspaceService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case GoogleWorkspaceServiceListWorkspaceTenantsProcedure:
@@ -1181,6 +1210,8 @@ func NewGoogleWorkspaceServiceHandler(svc GoogleWorkspaceServiceHandler, opts ..
 			googleWorkspaceServiceListWorkspaceSharedDrivesHandler.ServeHTTP(w, r)
 		case GoogleWorkspaceServiceListWorkspaceUserExposedFilesProcedure:
 			googleWorkspaceServiceListWorkspaceUserExposedFilesHandler.ServeHTTP(w, r)
+		case GoogleWorkspaceServiceGetWorkspaceUserUsageProcedure:
+			googleWorkspaceServiceGetWorkspaceUserUsageHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -1360,4 +1391,8 @@ func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceSharedDrives(cont
 
 func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceUserExposedFiles(context.Context, *connect.Request[v1.ListWorkspaceUserExposedFilesRequest]) (*connect.Response[v1.ListWorkspaceUserExposedFilesResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceUserExposedFiles is not implemented"))
+}
+
+func (UnimplementedGoogleWorkspaceServiceHandler) GetWorkspaceUserUsage(context.Context, *connect.Request[v1.GetWorkspaceUserUsageRequest]) (*connect.Response[v1.GetWorkspaceUserUsageResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.GetWorkspaceUserUsage is not implemented"))
 }

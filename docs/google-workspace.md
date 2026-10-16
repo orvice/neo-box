@@ -393,6 +393,29 @@ read per Tenant, and a larger or slower read is marked incomplete.
 Both views read live from Google and store nothing; neither is written to the
 Neo Box operation log.
 
+### User page
+
+A user opens on a page of their own
+(`/connections/<id>/tenants/<tenant>/users/<user>`, with `?tab=` for the open
+tab), not a dialog. The top row shows storage, last sign-in, 2-step status and
+the organization unit; the tabs below are Profile, Aliases, Groups, Security,
+Gmail and Drive.
+
+The Gmail tab opens on **Storage & activity**: the user's storage split by
+Gmail / Drive / Photos against their quota, how Gmail storage grew over the
+last 14 days, and messages received, sent and spam per day. It uses the same
+`admin.reports.usage.readonly` scope as storage usage, reads Google's daily
+per-user usage report (`accounts:*_quota_in_mb`, `gmail:num_emails_*`) through
+`GetWorkspaceUserUsage`, and never opens the mailbox, so it needs no access
+reason and is not written to the operation log. The report lags by a few days;
+a figure Google leaves out is shown as unknown, never zero, and a quota of zero
+is shown as no limit.
+
+The **Mailbox** view stays behind the access confirmation. Its **Overview** adds
+the mailbox's own counts (inbox, unread, sent, drafts, spam, trash, starred and
+the largest user labels), taken from the label read that the Mail view already
+makes, so one confirmation sends and records that read once.
+
 ### Drive API reads
 
 Two further reads use Drive API scopes. They are separate opt-ins, each

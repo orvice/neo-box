@@ -34,6 +34,7 @@ import { Route as AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRouteIm
 import { Route as AuthenticatedConnectionsConnectionIdTunnelsTunnelIdRouteImport } from './routes/_authenticated/connections/$connectionId/tunnels/$tunnelId'
 import { Route as AuthenticatedConnectionsConnectionIdWorkersNameRouteImport } from './routes/_authenticated/connections/$connectionId/workers/$name'
 import { Route as AuthenticatedConnectionsConnectionIdZonesZoneIdRouteImport } from './routes/_authenticated/connections/$connectionId/zones/$zoneId'
+import { Route as AuthenticatedConnectionsConnectionIdTenantsTenantIdUsersUserIdRouteImport } from './routes/_authenticated/connections/$connectionId/tenants/$tenantId/users/$userId'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -173,6 +174,14 @@ const AuthenticatedConnectionsConnectionIdZonesZoneIdRoute =
     path: '/connections/$connectionId/zones/$zoneId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedConnectionsConnectionIdTenantsTenantIdUsersUserIdRoute =
+  AuthenticatedConnectionsConnectionIdTenantsTenantIdUsersUserIdRouteImport.update(
+    {
+      id: '/connections/$connectionId/tenants/$tenantId/users/$userId',
+      path: '/connections/$connectionId/tenants/$tenantId/users/$userId',
+      getParentRoute: () => AuthenticatedRouteRoute,
+    } as any,
+  )
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -199,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/connections/$connectionId/tunnels/$tunnelId': typeof AuthenticatedConnectionsConnectionIdTunnelsTunnelIdRoute
   '/connections/$connectionId/workers/$name': typeof AuthenticatedConnectionsConnectionIdWorkersNameRoute
   '/connections/$connectionId/zones/$zoneId': typeof AuthenticatedConnectionsConnectionIdZonesZoneIdRoute
+  '/connections/$connectionId/tenants/$tenantId/users/$userId': typeof AuthenticatedConnectionsConnectionIdTenantsTenantIdUsersUserIdRoute
 }
 export interface FileRoutesByTo {
   '/sign-in': typeof authSignInRoute
@@ -224,6 +234,7 @@ export interface FileRoutesByTo {
   '/connections/$connectionId/tunnels/$tunnelId': typeof AuthenticatedConnectionsConnectionIdTunnelsTunnelIdRoute
   '/connections/$connectionId/workers/$name': typeof AuthenticatedConnectionsConnectionIdWorkersNameRoute
   '/connections/$connectionId/zones/$zoneId': typeof AuthenticatedConnectionsConnectionIdZonesZoneIdRoute
+  '/connections/$connectionId/tenants/$tenantId/users/$userId': typeof AuthenticatedConnectionsConnectionIdTenantsTenantIdUsersUserIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -252,6 +263,7 @@ export interface FileRoutesById {
   '/_authenticated/connections/$connectionId/tunnels/$tunnelId': typeof AuthenticatedConnectionsConnectionIdTunnelsTunnelIdRoute
   '/_authenticated/connections/$connectionId/workers/$name': typeof AuthenticatedConnectionsConnectionIdWorkersNameRoute
   '/_authenticated/connections/$connectionId/zones/$zoneId': typeof AuthenticatedConnectionsConnectionIdZonesZoneIdRoute
+  '/_authenticated/connections/$connectionId/tenants/$tenantId/users/$userId': typeof AuthenticatedConnectionsConnectionIdTenantsTenantIdUsersUserIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -280,6 +292,7 @@ export interface FileRouteTypes {
     | '/connections/$connectionId/tunnels/$tunnelId'
     | '/connections/$connectionId/workers/$name'
     | '/connections/$connectionId/zones/$zoneId'
+    | '/connections/$connectionId/tenants/$tenantId/users/$userId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/sign-in'
@@ -305,6 +318,7 @@ export interface FileRouteTypes {
     | '/connections/$connectionId/tunnels/$tunnelId'
     | '/connections/$connectionId/workers/$name'
     | '/connections/$connectionId/zones/$zoneId'
+    | '/connections/$connectionId/tenants/$tenantId/users/$userId'
   id:
     | '__root__'
     | '/_authenticated'
@@ -332,6 +346,7 @@ export interface FileRouteTypes {
     | '/_authenticated/connections/$connectionId/tunnels/$tunnelId'
     | '/_authenticated/connections/$connectionId/workers/$name'
     | '/_authenticated/connections/$connectionId/zones/$zoneId'
+    | '/_authenticated/connections/$connectionId/tenants/$tenantId/users/$userId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -522,6 +537,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConnectionsConnectionIdZonesZoneIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/connections/$connectionId/tenants/$tenantId/users/$userId': {
+      id: '/_authenticated/connections/$connectionId/tenants/$tenantId/users/$userId'
+      path: '/connections/$connectionId/tenants/$tenantId/users/$userId'
+      fullPath: '/connections/$connectionId/tenants/$tenantId/users/$userId'
+      preLoaderRoute: typeof AuthenticatedConnectionsConnectionIdTenantsTenantIdUsersUserIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -560,6 +582,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedConnectionsConnectionIdTunnelsTunnelIdRoute: typeof AuthenticatedConnectionsConnectionIdTunnelsTunnelIdRoute
   AuthenticatedConnectionsConnectionIdWorkersNameRoute: typeof AuthenticatedConnectionsConnectionIdWorkersNameRoute
   AuthenticatedConnectionsConnectionIdZonesZoneIdRoute: typeof AuthenticatedConnectionsConnectionIdZonesZoneIdRoute
+  AuthenticatedConnectionsConnectionIdTenantsTenantIdUsersUserIdRoute: typeof AuthenticatedConnectionsConnectionIdTenantsTenantIdUsersUserIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -583,6 +606,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedConnectionsConnectionIdWorkersNameRoute,
   AuthenticatedConnectionsConnectionIdZonesZoneIdRoute:
     AuthenticatedConnectionsConnectionIdZonesZoneIdRoute,
+  AuthenticatedConnectionsConnectionIdTenantsTenantIdUsersUserIdRoute:
+    AuthenticatedConnectionsConnectionIdTenantsTenantIdUsersUserIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

@@ -50,6 +50,7 @@ type workspaceAPI interface {
 	VerifiedDomains(context.Context) ([]string, error)
 	ListAuditActivities(context.Context, googleworkspace.AuditQuery) (*googleworkspace.AuditPage, error)
 	ListDriveUsage(context.Context, time.Time) (*googleworkspace.DriveUsage, error)
+	ReadUserUsage(context.Context, string, time.Time, int) (*googleworkspace.UserUsage, error)
 }
 type workspaceClientFactory func(context.Context, googleworkspace.ConnectionConfig, googleworkspace.ConnectionSecret, string, string, ...string) (workspaceAPI, error)
 type GoogleWorkspaceServiceServer struct {

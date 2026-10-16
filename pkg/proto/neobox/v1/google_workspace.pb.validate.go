@@ -16969,3 +16969,391 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ListWorkspaceUserExposedFilesResponseValidationError{}
+
+// Validate checks the field values on WorkspaceUserUsageDay with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WorkspaceUserUsageDay) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WorkspaceUserUsageDay with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WorkspaceUserUsageDayMultiError, or nil if none found.
+func (m *WorkspaceUserUsageDay) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WorkspaceUserUsageDay) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Date
+
+	if m.GmailUsedMb != nil {
+		// no validation rules for GmailUsedMb
+	}
+
+	if m.DriveUsedMb != nil {
+		// no validation rules for DriveUsedMb
+	}
+
+	if m.PhotosUsedMb != nil {
+		// no validation rules for PhotosUsedMb
+	}
+
+	if m.UsedMb != nil {
+		// no validation rules for UsedMb
+	}
+
+	if m.TotalMb != nil {
+		// no validation rules for TotalMb
+	}
+
+	if m.EmailsReceived != nil {
+		// no validation rules for EmailsReceived
+	}
+
+	if m.EmailsSent != nil {
+		// no validation rules for EmailsSent
+	}
+
+	if m.SpamReceived != nil {
+		// no validation rules for SpamReceived
+	}
+
+	if len(errors) > 0 {
+		return WorkspaceUserUsageDayMultiError(errors)
+	}
+
+	return nil
+}
+
+// WorkspaceUserUsageDayMultiError is an error wrapping multiple validation
+// errors returned by WorkspaceUserUsageDay.ValidateAll() if the designated
+// constraints aren't met.
+type WorkspaceUserUsageDayMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WorkspaceUserUsageDayMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WorkspaceUserUsageDayMultiError) AllErrors() []error { return m }
+
+// WorkspaceUserUsageDayValidationError is the validation error returned by
+// WorkspaceUserUsageDay.Validate if the designated constraints aren't met.
+type WorkspaceUserUsageDayValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WorkspaceUserUsageDayValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WorkspaceUserUsageDayValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WorkspaceUserUsageDayValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WorkspaceUserUsageDayValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WorkspaceUserUsageDayValidationError) ErrorName() string {
+	return "WorkspaceUserUsageDayValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WorkspaceUserUsageDayValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWorkspaceUserUsageDay.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WorkspaceUserUsageDayValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WorkspaceUserUsageDayValidationError{}
+
+// Validate checks the field values on GetWorkspaceUserUsageRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetWorkspaceUserUsageRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetWorkspaceUserUsageRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetWorkspaceUserUsageRequestMultiError, or nil if none found.
+func (m *GetWorkspaceUserUsageRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetWorkspaceUserUsageRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ConnectionId
+
+	// no validation rules for TenantId
+
+	// no validation rules for UserId
+
+	// no validation rules for Days
+
+	if len(errors) > 0 {
+		return GetWorkspaceUserUsageRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetWorkspaceUserUsageRequestMultiError is an error wrapping multiple
+// validation errors returned by GetWorkspaceUserUsageRequest.ValidateAll() if
+// the designated constraints aren't met.
+type GetWorkspaceUserUsageRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetWorkspaceUserUsageRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetWorkspaceUserUsageRequestMultiError) AllErrors() []error { return m }
+
+// GetWorkspaceUserUsageRequestValidationError is the validation error returned
+// by GetWorkspaceUserUsageRequest.Validate if the designated constraints
+// aren't met.
+type GetWorkspaceUserUsageRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetWorkspaceUserUsageRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetWorkspaceUserUsageRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetWorkspaceUserUsageRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetWorkspaceUserUsageRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetWorkspaceUserUsageRequestValidationError) ErrorName() string {
+	return "GetWorkspaceUserUsageRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetWorkspaceUserUsageRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetWorkspaceUserUsageRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetWorkspaceUserUsageRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetWorkspaceUserUsageRequestValidationError{}
+
+// Validate checks the field values on GetWorkspaceUserUsageResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetWorkspaceUserUsageResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetWorkspaceUserUsageResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// GetWorkspaceUserUsageResponseMultiError, or nil if none found.
+func (m *GetWorkspaceUserUsageResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetWorkspaceUserUsageResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for UserEmail
+
+	for idx, item := range m.GetDays() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetWorkspaceUserUsageResponseValidationError{
+						field:  fmt.Sprintf("Days[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetWorkspaceUserUsageResponseValidationError{
+						field:  fmt.Sprintf("Days[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetWorkspaceUserUsageResponseValidationError{
+					field:  fmt.Sprintf("Days[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for DaysRequested
+
+	if len(errors) > 0 {
+		return GetWorkspaceUserUsageResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetWorkspaceUserUsageResponseMultiError is an error wrapping multiple
+// validation errors returned by GetWorkspaceUserUsageResponse.ValidateAll()
+// if the designated constraints aren't met.
+type GetWorkspaceUserUsageResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetWorkspaceUserUsageResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetWorkspaceUserUsageResponseMultiError) AllErrors() []error { return m }
+
+// GetWorkspaceUserUsageResponseValidationError is the validation error
+// returned by GetWorkspaceUserUsageResponse.Validate if the designated
+// constraints aren't met.
+type GetWorkspaceUserUsageResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetWorkspaceUserUsageResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetWorkspaceUserUsageResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetWorkspaceUserUsageResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetWorkspaceUserUsageResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetWorkspaceUserUsageResponseValidationError) ErrorName() string {
+	return "GetWorkspaceUserUsageResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetWorkspaceUserUsageResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetWorkspaceUserUsageResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetWorkspaceUserUsageResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetWorkspaceUserUsageResponseValidationError{}

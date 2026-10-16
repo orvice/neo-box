@@ -9,12 +9,6 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { DataTable, type Column } from '@/components/data-table'
@@ -24,7 +18,6 @@ import {
   lastLoginText,
   triState,
 } from './observability-format'
-import { WorkspaceUserDetail } from './users'
 
 const filters = [
   ['all', 'All accounts'],
@@ -50,7 +43,6 @@ export function WorkspaceOverview({
   const [days, setDays] = useState(90)
   const [groups, setGroups] = useState(false)
   const [page, setPage] = useState(1)
-  const [selected, setSelected] = useState<WorkspaceOverviewUser | null>(null)
   const data = useWorkspaceOverview({
     connectionId,
     tenantId,
@@ -130,8 +122,17 @@ export function WorkspaceOverview({
     {
       header: 'User',
       cell: (r) => (
-        <Button variant='link' className='px-0' onClick={() => setSelected(r)}>
-          {r.user?.primaryEmail}
+        <Button variant='link' className='px-0' asChild>
+          <Link
+            to='/connections/$connectionId/tenants/$tenantId/users/$userId'
+            params={{
+              connectionId: r.connectionId,
+              tenantId: r.tenantId,
+              userId: r.user?.id ?? '',
+            }}
+          >
+            {r.user?.primaryEmail}
+          </Link>
         </Button>
       ),
     },
@@ -337,27 +338,6 @@ export function WorkspaceOverview({
           Next
         </Button>
       </div>
-      {selected?.user && (
-        <Dialog
-          open
-          onOpenChange={(open) => {
-            if (!open) setSelected(null)
-          }}
-        >
-          <DialogContent className='max-h-[85vh] overflow-y-auto sm:max-w-3xl'>
-            <DialogHeader>
-              <DialogTitle>
-                {selected.user.primaryEmail} · {selected.tenantName}
-              </DialogTitle>
-            </DialogHeader>
-            <WorkspaceUserDetail
-              connectionId={selected.connectionId}
-              tenantId={selected.tenantId}
-              userId={selected.user.id}
-            />
-          </DialogContent>
-        </Dialog>
-      )}
     </section>
   )
 }
