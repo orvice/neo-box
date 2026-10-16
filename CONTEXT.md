@@ -195,7 +195,8 @@ can't be deleted while a Restore of it is pending or running.
   Neo Box, logged like a DNS operation (pending before it is sent, then
   succeeded, failed or unknown; a change already in effect is not logged).
   It names the resource, action and target, with the state before and after
-  and what was requested, never a secret value.
+  and what was requested, never a secret value. Email Routing changes are
+  logged the same way as an **Email Routing operation**.
 
 ### Google Workspace
 

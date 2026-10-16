@@ -1,5 +1,9 @@
 # ADR 0011: Email Routing reuses the resource operation log and never disables
 
+Status: accepted (2026-10-16); API behavior checked against Cloudflare's Email Routing API documentation on 2026-10-16
+
+## Decisions
+
 Email Routing changes are logged in `cloudflare_resource_operations` as a new
 `ResourceKind`, `email_routing`, instead of a new table. They need exactly what
 Worker and Pages changes need: a pending record stored before the change is

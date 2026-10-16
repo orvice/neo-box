@@ -34,7 +34,9 @@ Out (first version):
   `ResourceKind` `email_routing` (`Resource` = Zone name, `Target` = rule
   ID, `catch_all` or the address). `kind` is a plain string column, so
   there is no ent change. All writes go through `operate`, with
-  read-modify-write under `lockResource("email/<zone id>")`; no-op changes
+  read-modify-write under `lockResource("email/<acc>/<zone>")` for Zone-level
+  changes and `lockResource("email/<acc>/addresses")` for destination
+  addresses; no-op changes
   return `noChange()` unlogged.
 - **Destination addresses are Account-level**, rules are Zone-level. Both
   appear in the Zone page's Email routing tab; the address list is labelled
@@ -111,7 +113,8 @@ Run `make buf` and commit the generated output.
   - Status bar; when not enabled, an "Enable" button opening
     `ConfirmChangeDialog` that lists the MX / SPF records Cloudflare will
     add.
-  - Rules table: enable / disable, edit, delete; Worker rules marked
+  - Rules table: enable / disable, edit, delete; Worker-action rules and
+    rules owned by a wrangler configuration (`source` other than `api`) are
     read-only.
   - Catch-all card.
   - Destination addresses: pending / verified, add (notes that a
@@ -127,7 +130,8 @@ Run `make buf` and commit the generated output.
 - `cftest`: stateful fake Email Routing API (status, rules, catch-all,
   addresses with pending / verified, per-token permissions).
 - Client and `cloudflareacct` tests: unverified target refused, enable is a
-  no-op when enabled, address in use refused, Worker rule not editable,
+  no-op when enabled, address in use refused, Worker-action and
+  wrangler-source rules not editable,
   permission denied, uncertain write logged as unknown, Zone of another
   Account not found, secret-free log.
 - Vitest for `email.ts`.
