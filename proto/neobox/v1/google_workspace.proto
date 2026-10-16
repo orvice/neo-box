@@ -71,6 +71,12 @@ service GoogleWorkspaceService {
   // reports (admin.reports.usage.readonly). Aggregate figures only: it never
   // reads the mailbox, so it needs no access reason and is not recorded.
   rpc GetWorkspaceUserUsage(GetWorkspaceUserUsageRequest) returns (GetWorkspaceUserUsageResponse);
+  // Every user's storage (Gmail, Drive, Photos, total, quota) from the newest
+  // usage report, joined with the Directory for each user's organizational
+  // unit and summarised per unit. Read-only: the quota shown is what Google
+  // reports; Google has no API to set a user storage limit, which stays in the
+  // Admin console.
+  rpc ListWorkspaceStorageUsage(ListWorkspaceStorageUsageRequest) returns (ListWorkspaceStorageUsageResponse);
 }
 message WorkspaceTenant {
   string id = 1;
@@ -1095,4 +1101,87 @@ message GetWorkspaceUserUsageResponse {
   repeated WorkspaceUserUsageDay days = 2;
   // Days asked for, including those with no report.
   int32 days_requested = 3;
+}
+
+// A figure Google did not report is unset, never zero.
+message WorkspaceStorageUser {
+  string email = 1;
+  string name = 2;
+  // The user's organizational unit; empty when the Directory read did not
+  // include this user.
+  string org_unit_path = 3;
+  optional int64 gmail_mb = 4;
+  optional int64 drive_mb = 5;
+  optional int64 photos_mb = 6;
+  // Google's total, or the sum of the parts it gave when it gave no total.
+  optional int64 used_mb = 7;
+  // The quota Google reports for the user. Zero or unset: no limit reported.
+  optional int64 quota_mb = 8;
+  // used / quota, 0-100+. Unset when either figure is unknown or there is no
+  // limit.
+  optional double used_percent = 9;
+}
+
+// One organizational unit's users, counted where they sit directly.
+message WorkspaceStorageOrgUnit {
+  string path = 1;
+  int64 user_count = 2;
+  // Sum of the known used figures, in MB.
+  int64 used_mb = 3;
+  // Users with no used figure.
+  int64 unknown_count = 4;
+  // The largest single user's used figure, in MB.
+  int64 largest_used_mb = 5;
+  // The quota every user in the unit reports, when they all report the same
+  // one. Unset when quotas differ or none is reported.
+  optional int64 quota_mb = 6;
+  bool quota_mixed = 7;
+  // Users at or above the request's threshold but under their quota, and
+  // users at or over their quota.
+  int64 near_limit_count = 8;
+  int64 over_limit_count = 9;
+}
+
+message ListWorkspaceStorageUsageRequest {
+  string connection_id = 1;
+  string tenant_id = 2;
+  // Substring of the email or name.
+  string query = 3;
+  // Only users directly in this organizational unit. Empty: every unit.
+  string org_unit_path = 4;
+  // used (largest first), percent (fullest first, unknown last) or email.
+  // Empty is used.
+  string sort = 5;
+  // 1-100. Empty is 80.
+  int32 threshold_percent = 6;
+  // Only users at or above the threshold.
+  bool only_near_limit = 7;
+  int32 page = 8;
+  int32 page_size = 9;
+}
+
+message ListWorkspaceStorageUsageResponse {
+  // False when Google has no usage report for the last few days.
+  bool has_data = 1;
+  // The report day, YYYY-MM-DD. Usage lags by days.
+  string date = 2;
+  repeated WorkspaceStorageUser users = 3;
+  // Users matching the filters.
+  int64 total_count = 4;
+  int32 page = 5;
+  int32 page_size = 6;
+  // Across every user read, ignoring the filters:
+  int64 users_read = 7;
+  int64 total_used_mb = 8;
+  // Users with no used figure, no quota reported, and the threshold applied.
+  int64 unknown_used_count = 9;
+  int64 no_limit_count = 10;
+  int32 threshold_percent = 11;
+  int64 near_limit_count = 12;
+  int64 over_limit_count = 13;
+  repeated WorkspaceStorageOrgUnit org_units = 14;
+  // True when the usage read stopped early, or the Directory read did, so some
+  // users may be missing or have no organizational unit.
+  bool partial = 15;
+  string partial_reason = 16;
 }

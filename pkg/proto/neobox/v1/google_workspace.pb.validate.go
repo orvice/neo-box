@@ -17357,3 +17357,581 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GetWorkspaceUserUsageResponseValidationError{}
+
+// Validate checks the field values on WorkspaceStorageUser with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WorkspaceStorageUser) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WorkspaceStorageUser with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WorkspaceStorageUserMultiError, or nil if none found.
+func (m *WorkspaceStorageUser) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WorkspaceStorageUser) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Email
+
+	// no validation rules for Name
+
+	// no validation rules for OrgUnitPath
+
+	if m.GmailMb != nil {
+		// no validation rules for GmailMb
+	}
+
+	if m.DriveMb != nil {
+		// no validation rules for DriveMb
+	}
+
+	if m.PhotosMb != nil {
+		// no validation rules for PhotosMb
+	}
+
+	if m.UsedMb != nil {
+		// no validation rules for UsedMb
+	}
+
+	if m.QuotaMb != nil {
+		// no validation rules for QuotaMb
+	}
+
+	if m.UsedPercent != nil {
+		// no validation rules for UsedPercent
+	}
+
+	if len(errors) > 0 {
+		return WorkspaceStorageUserMultiError(errors)
+	}
+
+	return nil
+}
+
+// WorkspaceStorageUserMultiError is an error wrapping multiple validation
+// errors returned by WorkspaceStorageUser.ValidateAll() if the designated
+// constraints aren't met.
+type WorkspaceStorageUserMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WorkspaceStorageUserMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WorkspaceStorageUserMultiError) AllErrors() []error { return m }
+
+// WorkspaceStorageUserValidationError is the validation error returned by
+// WorkspaceStorageUser.Validate if the designated constraints aren't met.
+type WorkspaceStorageUserValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WorkspaceStorageUserValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WorkspaceStorageUserValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WorkspaceStorageUserValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WorkspaceStorageUserValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WorkspaceStorageUserValidationError) ErrorName() string {
+	return "WorkspaceStorageUserValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WorkspaceStorageUserValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWorkspaceStorageUser.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WorkspaceStorageUserValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WorkspaceStorageUserValidationError{}
+
+// Validate checks the field values on WorkspaceStorageOrgUnit with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WorkspaceStorageOrgUnit) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WorkspaceStorageOrgUnit with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WorkspaceStorageOrgUnitMultiError, or nil if none found.
+func (m *WorkspaceStorageOrgUnit) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WorkspaceStorageOrgUnit) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Path
+
+	// no validation rules for UserCount
+
+	// no validation rules for UsedMb
+
+	// no validation rules for UnknownCount
+
+	// no validation rules for LargestUsedMb
+
+	// no validation rules for QuotaMixed
+
+	// no validation rules for NearLimitCount
+
+	// no validation rules for OverLimitCount
+
+	if m.QuotaMb != nil {
+		// no validation rules for QuotaMb
+	}
+
+	if len(errors) > 0 {
+		return WorkspaceStorageOrgUnitMultiError(errors)
+	}
+
+	return nil
+}
+
+// WorkspaceStorageOrgUnitMultiError is an error wrapping multiple validation
+// errors returned by WorkspaceStorageOrgUnit.ValidateAll() if the designated
+// constraints aren't met.
+type WorkspaceStorageOrgUnitMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WorkspaceStorageOrgUnitMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WorkspaceStorageOrgUnitMultiError) AllErrors() []error { return m }
+
+// WorkspaceStorageOrgUnitValidationError is the validation error returned by
+// WorkspaceStorageOrgUnit.Validate if the designated constraints aren't met.
+type WorkspaceStorageOrgUnitValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WorkspaceStorageOrgUnitValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WorkspaceStorageOrgUnitValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WorkspaceStorageOrgUnitValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WorkspaceStorageOrgUnitValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WorkspaceStorageOrgUnitValidationError) ErrorName() string {
+	return "WorkspaceStorageOrgUnitValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WorkspaceStorageOrgUnitValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWorkspaceStorageOrgUnit.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WorkspaceStorageOrgUnitValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WorkspaceStorageOrgUnitValidationError{}
+
+// Validate checks the field values on ListWorkspaceStorageUsageRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *ListWorkspaceStorageUsageRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListWorkspaceStorageUsageRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// ListWorkspaceStorageUsageRequestMultiError, or nil if none found.
+func (m *ListWorkspaceStorageUsageRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListWorkspaceStorageUsageRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ConnectionId
+
+	// no validation rules for TenantId
+
+	// no validation rules for Query
+
+	// no validation rules for OrgUnitPath
+
+	// no validation rules for Sort
+
+	// no validation rules for ThresholdPercent
+
+	// no validation rules for OnlyNearLimit
+
+	// no validation rules for Page
+
+	// no validation rules for PageSize
+
+	if len(errors) > 0 {
+		return ListWorkspaceStorageUsageRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListWorkspaceStorageUsageRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// ListWorkspaceStorageUsageRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ListWorkspaceStorageUsageRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListWorkspaceStorageUsageRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListWorkspaceStorageUsageRequestMultiError) AllErrors() []error { return m }
+
+// ListWorkspaceStorageUsageRequestValidationError is the validation error
+// returned by ListWorkspaceStorageUsageRequest.Validate if the designated
+// constraints aren't met.
+type ListWorkspaceStorageUsageRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListWorkspaceStorageUsageRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListWorkspaceStorageUsageRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListWorkspaceStorageUsageRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListWorkspaceStorageUsageRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListWorkspaceStorageUsageRequestValidationError) ErrorName() string {
+	return "ListWorkspaceStorageUsageRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListWorkspaceStorageUsageRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListWorkspaceStorageUsageRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListWorkspaceStorageUsageRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListWorkspaceStorageUsageRequestValidationError{}
+
+// Validate checks the field values on ListWorkspaceStorageUsageResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *ListWorkspaceStorageUsageResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListWorkspaceStorageUsageResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// ListWorkspaceStorageUsageResponseMultiError, or nil if none found.
+func (m *ListWorkspaceStorageUsageResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListWorkspaceStorageUsageResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for HasData
+
+	// no validation rules for Date
+
+	for idx, item := range m.GetUsers() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListWorkspaceStorageUsageResponseValidationError{
+						field:  fmt.Sprintf("Users[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListWorkspaceStorageUsageResponseValidationError{
+						field:  fmt.Sprintf("Users[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListWorkspaceStorageUsageResponseValidationError{
+					field:  fmt.Sprintf("Users[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for TotalCount
+
+	// no validation rules for Page
+
+	// no validation rules for PageSize
+
+	// no validation rules for UsersRead
+
+	// no validation rules for TotalUsedMb
+
+	// no validation rules for UnknownUsedCount
+
+	// no validation rules for NoLimitCount
+
+	// no validation rules for ThresholdPercent
+
+	// no validation rules for NearLimitCount
+
+	// no validation rules for OverLimitCount
+
+	for idx, item := range m.GetOrgUnits() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListWorkspaceStorageUsageResponseValidationError{
+						field:  fmt.Sprintf("OrgUnits[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListWorkspaceStorageUsageResponseValidationError{
+						field:  fmt.Sprintf("OrgUnits[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListWorkspaceStorageUsageResponseValidationError{
+					field:  fmt.Sprintf("OrgUnits[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for Partial
+
+	// no validation rules for PartialReason
+
+	if len(errors) > 0 {
+		return ListWorkspaceStorageUsageResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListWorkspaceStorageUsageResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// ListWorkspaceStorageUsageResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ListWorkspaceStorageUsageResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListWorkspaceStorageUsageResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListWorkspaceStorageUsageResponseMultiError) AllErrors() []error { return m }
+
+// ListWorkspaceStorageUsageResponseValidationError is the validation error
+// returned by ListWorkspaceStorageUsageResponse.Validate if the designated
+// constraints aren't met.
+type ListWorkspaceStorageUsageResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListWorkspaceStorageUsageResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListWorkspaceStorageUsageResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListWorkspaceStorageUsageResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListWorkspaceStorageUsageResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListWorkspaceStorageUsageResponseValidationError) ErrorName() string {
+	return "ListWorkspaceStorageUsageResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListWorkspaceStorageUsageResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListWorkspaceStorageUsageResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListWorkspaceStorageUsageResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListWorkspaceStorageUsageResponseValidationError{}
