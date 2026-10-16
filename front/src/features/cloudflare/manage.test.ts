@@ -223,3 +223,19 @@ describe('outcomes', () => {
     expect(conflict).toEqual({ tone: 'warning', message: 'A record exists' })
   })
 })
+
+describe('email routing log wording', () => {
+  it('words the Email Routing actions', () => {
+    expect(actionLabel({ action: 'enable_routing' })).toBe(
+      'Enabled Email Routing'
+    )
+    expect(actionLabel({ action: 'create_rule' })).toBe('Added routing rule')
+    expect(actionLabel({ action: 'disable_rule' })).toBe(
+      'Disabled routing rule'
+    )
+    expect(actionLabel({ action: 'set_catch_all' })).toBe('Changed catch-all')
+    expect(actionLabel({ action: 'delete_address' })).toBe(
+      'Deleted destination address'
+    )
+  })
+})
