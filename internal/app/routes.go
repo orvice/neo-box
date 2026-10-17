@@ -9,11 +9,11 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"go.orx.me/apps/neo-box/internal/application"
+	"go.orx.me/apps/neo-box/internal/auth/logto"
 	"go.orx.me/apps/neo-box/internal/backup"
 	"go.orx.me/apps/neo-box/internal/config"
 	httpHandler "go.orx.me/apps/neo-box/internal/handler/http"
 	"go.orx.me/apps/neo-box/internal/notify"
-	"go.orx.me/apps/neo-box/internal/repo/auth"
 	nocodbrepo "go.orx.me/apps/neo-box/internal/repo/nocodb"
 	"go.orx.me/apps/neo-box/internal/transport/connectx"
 	"go.orx.me/apps/neo-box/internal/wasabisync"
@@ -25,14 +25,13 @@ import (
 // connected, so repositories are attached later by Bootstrap.
 type Handlers struct {
 	cfg                 *config.AppConfig
-	authSvcServer       *application.AuthServiceServer
 	connectionSvcServer *application.ConnectionServiceServer
 	nocodbSvcServer     *application.NocoDBServiceServer
 	wasabiSvcServer     *application.WasabiServiceServer
 	cloudflareSvcServer *application.CloudflareServiceServer
 	workspaceSvcServer  *application.GoogleWorkspaceServiceServer
 	notifySvcServer     *application.NotificationServiceServer
-	authRepo            atomic.Value // auth.Repository
+	authenticator       atomic.Pointer[logto.Authenticator]
 	snapshots           atomic.Value // *snapshotContent
 
 	stop     context.CancelFunc
@@ -41,9 +40,11 @@ type Handlers struct {
 	notifier *notify.Service
 }
 
-func (h *Handlers) authRepoFromHolder() auth.Repository {
-	repo, _ := h.authRepo.Load().(auth.Repository)
-	return repo
+func (h *Handlers) authenticatorFromHolder() httpHandler.TokenAuthenticator {
+	if a := h.authenticator.Load(); a != nil {
+		return a
+	}
+	return nil
 }
 
 func (h *Handlers) snapshotContentFromHolder() httpHandler.SnapshotContent {
@@ -73,8 +74,7 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 	// Every Connect handler shares the same option set (snake_case JSON).
 	connectOpts := connectx.HandlerOptions()
 
-	// Session TTL is read from cfg in Bootstrap, after YAML is loaded.
-	authSvcServer := application.NewAuthServiceServer(nil, 0)
+	authSvcServer := &application.LogtoAuthServiceServer{}
 	authConnectPath, authConnectHandler := neoboxv1connect.NewAuthServiceHandler(authSvcServer, connectOpts...)
 	connectionSvcServer := application.NewConnectionServiceServer()
 	connectionConnectPath, connectionConnectHandler := neoboxv1connect.NewConnectionServiceHandler(connectionSvcServer, connectOpts...)
@@ -93,7 +93,6 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 	handlers := &Handlers{
 		cfg:                 cfg,
 		workspaceSvcServer:  workspaceSvcServer,
-		authSvcServer:       authSvcServer,
 		connectionSvcServer: connectionSvcServer,
 		nocodbSvcServer:     nocodbSvcServer,
 		wasabiSvcServer:     wasabiSvcServer,
@@ -102,7 +101,8 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 	}
 
 	router := func(r *gin.Engine) {
-		r.Use(httpHandler.AuthMiddleware(cfg, handlers.authRepoFromHolder))
+		r.Use(httpHandler.LogtoMiddleware(handlers.authenticatorFromHolder))
+		httpHandler.RegisterLogtoConfig(r, cfg)
 		httpHandler.RegisterHealth(r)
 		httpHandler.RegisterSnapshotDownload(r, handlers.snapshotContentFromHolder)
 

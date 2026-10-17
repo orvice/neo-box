@@ -6,15 +6,15 @@ import {
   type Interceptor,
 } from '@connectrpc/connect'
 import { createConnectTransport } from '@connectrpc/connect-web'
-import { TOKEN_KEY } from '@/lib/constants'
+import { API_BASE_URL, getAccessToken } from '@/lib/logto'
 
-export const BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
+export const BASE_URL = API_BASE_URL
 
 // authInterceptor injects the Authorization header on every Connect RPC. It also rewrites 401 / Unauthenticated errors into a
 // hard redirect to /sign-in so existing React Query callers don't have to
 // special-case auth failures.
 const authInterceptor: Interceptor = (next) => async (req) => {
-  const token = localStorage.getItem(TOKEN_KEY)
+  const token = await getAccessToken()
   if (token) req.header.set('Authorization', `Bearer ${token}`)
 
   try {
@@ -24,7 +24,6 @@ const authInterceptor: Interceptor = (next) => async (req) => {
       // Don't trash the session when a deliberate "Me" check probes auth on
       // the login page — the sign-in page handles its own redirects.
       if (!isProbeRequest(req.url)) {
-        localStorage.removeItem(TOKEN_KEY)
         if (
           typeof window !== 'undefined' &&
           window.location.pathname !== '/sign-in'
@@ -37,13 +36,7 @@ const authInterceptor: Interceptor = (next) => async (req) => {
   }
 }
 
-const probeUrls = new Set<string>([
-  '/neobox.v1.AuthService/Me',
-  '/neobox.v1.AuthService/Login',
-  '/neobox.v1.AuthService/ListOAuthProviders',
-  '/neobox.v1.AuthService/BeginOAuthFlow',
-  '/neobox.v1.AuthService/CompleteOAuthFlow',
-])
+const probeUrls = new Set<string>(['/neobox.v1.AuthService/Me'])
 
 function isProbeRequest(url: string): boolean {
   for (const path of probeUrls) {

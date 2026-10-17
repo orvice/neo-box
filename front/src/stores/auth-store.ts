@@ -1,90 +1,90 @@
 import { create } from 'zustand'
-import {
-  isAdmin as checkAdmin,
-  login as loginRequest,
-  logout as logoutRequest,
-  me as meRequest,
-  type AuthUser,
-  type LoginResponse,
-} from '@/api/auth'
-import { TOKEN_KEY } from '@/lib/constants'
+import { me, type AuthUser } from '@/api/auth'
+import { getLogto, signIn, signOut } from '@/lib/logto'
 
 interface AuthState {
   auth: {
-    token: string | null
     user: AuthUser | null
-    /** Session restore (token present, user not yet fetched) in flight. */
+    authenticated: boolean
     restoring: boolean
-    setUser: (user: AuthUser | null) => void
-    applyLoginResponse: (res: LoginResponse) => void
-    login: (username: string, password: string) => Promise<boolean>
-    /** Fetch `Me` when a stored token exists but the user is unknown. */
+    checked: boolean
+    error: string | null
     restore: () => Promise<void>
-    logout: () => void
+    login: (redirectTo?: string) => Promise<void>
+    logout: () => Promise<void>
     reset: () => void
   }
 }
 
+let restoration: Promise<void> | undefined
+
 export const useAuthStore = create<AuthState>()((set, get) => ({
   auth: {
-    token: localStorage.getItem(TOKEN_KEY),
     user: null,
+    authenticated: false,
     restoring: false,
-    setUser: (user) => set((state) => ({ auth: { ...state.auth, user } })),
-    applyLoginResponse: (res) => {
-      if (!res.token) return
-      localStorage.setItem(TOKEN_KEY, res.token)
+    checked: false,
+    error: null,
+    restore: async () => {
+      if (restoration) return restoration
+      if (get().auth.checked) return
+      restoration = (async () => {
+        set((state) => ({
+          auth: { ...state.auth, restoring: true, error: null },
+        }))
+        try {
+          const { client } = await getLogto()
+          if (!(await client.isAuthenticated())) return
+          // Me verifies API access and resolves the stable business owner ID.
+          const response = await me()
+          if (!response.user) throw new Error('Unable to load your account.')
+          const claims = await client.getIdTokenClaims()
+          const user: AuthUser = {
+            ...response.user,
+            username: claims.username || claims.email || claims.sub,
+            displayName:
+              claims.name || claims.username || claims.email || claims.sub,
+            avatarUrl: claims.picture || '',
+          }
+          set((state) => ({
+            auth: { ...state.auth, user, authenticated: true },
+          }))
+        } catch (error) {
+          set((state) => ({
+            auth: {
+              ...state.auth,
+              user: null,
+              authenticated: false,
+              error:
+                error instanceof Error
+                  ? error.message
+                  : 'Unable to restore sign-in.',
+            },
+          }))
+        } finally {
+          set((state) => ({
+            auth: { ...state.auth, checked: true, restoring: false },
+          }))
+        }
+      })().finally(() => {
+        restoration = undefined
+      })
+      return restoration
+    },
+    login: signIn,
+    logout: async () => {
+      await signOut()
+      get().auth.reset()
+    },
+    reset: () =>
       set((state) => ({
         auth: {
           ...state.auth,
-          token: res.token,
-          user: res.user ?? null,
+          user: null,
+          authenticated: false,
+          checked: false,
+          error: null,
         },
-      }))
-    },
-    login: async (username, password) => {
-      try {
-        const res = await loginRequest(username, password)
-        if (!res.token) return false
-        get().auth.applyLoginResponse(res)
-        return true
-      } catch {
-        get().auth.reset()
-        return false
-      }
-    },
-    restore: async () => {
-      const { token, user, restoring } = get().auth
-      if (!token || user || restoring) return
-      set((state) => ({ auth: { ...state.auth, restoring: true } }))
-      try {
-        const res = await meRequest()
-        if (!res.user) {
-          get().auth.reset()
-          return
-        }
-        set((state) => ({
-          auth: { ...state.auth, user: res.user ?? null },
-        }))
-      } catch {
-        get().auth.reset()
-      } finally {
-        set((state) => ({ auth: { ...state.auth, restoring: false } }))
-      }
-    },
-    logout: () => {
-      void logoutRequest().catch(() => undefined)
-      get().auth.reset()
-    },
-    reset: () => {
-      localStorage.removeItem(TOKEN_KEY)
-      set((state) => ({
-        auth: { ...state.auth, token: null, user: null },
-      }))
-    },
+      })),
   },
 }))
-
-export function useIsAdmin() {
-  return useAuthStore((state) => checkAdmin(state.auth.user))
-}

@@ -11,8 +11,7 @@ import (
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/jackc/pgx/v5/stdlib"
 
-	"go.orx.me/apps/neo-box/internal/application"
-	"go.orx.me/apps/neo-box/internal/auth/provider"
+	"go.orx.me/apps/neo-box/internal/auth/logto"
 	"go.orx.me/apps/neo-box/internal/backup"
 	"go.orx.me/apps/neo-box/internal/blobstore"
 	"go.orx.me/apps/neo-box/internal/cloudflareacct"
@@ -21,38 +20,40 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	"go.orx.me/apps/neo-box/internal/notify"
-	authpg "go.orx.me/apps/neo-box/internal/repo/auth/postgres"
 	cloudflarepg "go.orx.me/apps/neo-box/internal/repo/cloudflare/postgres"
 	connectionpg "go.orx.me/apps/neo-box/internal/repo/connection/postgres"
 	workspacepg "go.orx.me/apps/neo-box/internal/repo/googleworkspace/postgres"
 	nocodbpg "go.orx.me/apps/neo-box/internal/repo/nocodb/postgres"
 	notifypg "go.orx.me/apps/neo-box/internal/repo/notify/postgres"
-	oauthstatepg "go.orx.me/apps/neo-box/internal/repo/oauthstate/postgres"
+	"go.orx.me/apps/neo-box/internal/repo/ownership"
 	wasabipg "go.orx.me/apps/neo-box/internal/repo/wasabi/postgres"
 	"go.orx.me/apps/neo-box/internal/secretbox"
 	"go.orx.me/apps/neo-box/internal/wasabisync"
 )
 
-// Bootstrap connects storage, migrates the schema, seeds the initial admin,
+// Bootstrap connects storage, migrates the schema, verifies Logto configuration,
 // and wires repositories into the handlers built by SetupRoutes.
 func (h *Handlers) Bootstrap(ctx context.Context) error {
 	cfg := h.cfg
+	authCtx, cancelAuth := context.WithTimeout(ctx, 15*time.Second)
+	authenticator, err := logto.New(authCtx, cfg.Auth.Logto)
+	cancelAuth()
+	if err != nil {
+		return err
+	}
 	client, err := openPostgres(ctx, cfg)
 	if err != nil {
 		return err
 	}
 
-	authRepo := authpg.New(client)
-	if err := application.BootstrapInitialAdmin(ctx, authRepo, cfg.Auth); err != nil {
+	blobs, err := setupBlobStore(ctx, cfg.Storage)
+	if err != nil {
 		return err
 	}
-	stateRepo := oauthstatepg.New(client)
-
-	h.authSvcServer.SetSessionTTL(cfg.Auth.EffectiveSessionTTL())
-	h.authSvcServer.SetRepo(authRepo)
-	h.authSvcServer.SetOAuthStateRepo(stateRepo)
-	h.authSvcServer.SetProviderRegistry(provider.BuildRegistry(cfg.Auth))
-	h.authRepo.Store(authRepo)
+	if err := ownership.Adopt(ctx, sqldb.GetDB(cfg.EffectiveDBStore()), blobs,
+		cfg.Auth.Logto.EffectiveDataOwnerID(), cfg.Auth.Logto.AdoptExistingData); err != nil {
+		return err
+	}
 
 	cipher, err := setupCipher(ctx, cfg.Crypto)
 	if err != nil {
@@ -72,7 +73,7 @@ func (h *Handlers) Bootstrap(ctx context.Context) error {
 	h.notifySvcServer.SetService(notifier)
 	conns.SetNotifier(notifier)
 
-	if err := h.bootstrapNocoDB(ctx, runCtx, client, conns); err != nil {
+	if err := h.bootstrapNocoDB(ctx, runCtx, client, conns, blobs); err != nil {
 		stop()
 		return err
 	}
@@ -85,7 +86,8 @@ func (h *Handlers) Bootstrap(ctx context.Context) error {
 	conns.Register(googleworkspace.Provider{Repo: workspaceRepo})
 	h.workspaceSvcServer.SetDeps(workspaceRepo, conns)
 	h.stop = stop
-	go purgeExpired(runCtx, authRepo, stateRepo)
+	// Publish authentication only after storage and all services are ready.
+	h.authenticator.Store(authenticator)
 	return nil
 }
 
@@ -99,13 +101,8 @@ func setupCipher(ctx context.Context, cfg config.CryptoConfig) (*secretbox.Ciphe
 	return secretbox.NewCipher(cfg.EncryptionKey)
 }
 
-func (h *Handlers) bootstrapNocoDB(ctx, runCtx context.Context, client *ent.Client, conns *connection.Service) error {
+func (h *Handlers) bootstrapNocoDB(ctx, runCtx context.Context, client *ent.Client, conns *connection.Service, blobs blobstore.Store) error {
 	cfg := h.cfg
-
-	blobs, err := setupBlobStore(ctx, cfg.Storage)
-	if err != nil {
-		return err
-	}
 
 	nocodbRepo := nocodbpg.New(client)
 	manager := backup.New(backup.Config{
@@ -125,32 +122,6 @@ func (h *Handlers) bootstrapNocoDB(ctx, runCtx context.Context, client *ent.Clie
 	h.nocodbSvcServer.SetDeps(nocodbRepo, manager, conns)
 	h.snapshots.Store(&snapshotContent{repo: nocodbRepo, manager: manager})
 	return nil
-}
-
-// purgeExpired deletes expired sessions and OAuth states every hour until ctx
-// is done. Lookups already ignore expired rows; this only keeps tables small.
-func purgeExpired(ctx context.Context, sessions *authpg.Store, states *oauthstatepg.Store) {
-	logger := log.FromContext(ctx)
-	ticker := time.NewTicker(time.Hour)
-	defer ticker.Stop()
-	for {
-		now := time.Now().UTC()
-		if n, err := sessions.DeleteExpiredSessions(ctx, now); err != nil {
-			logger.Warn("purge expired auth sessions failed", "err", err)
-		} else if n > 0 {
-			logger.Info("purged expired auth sessions", "count", n)
-		}
-		if n, err := states.DeleteExpired(ctx, now); err != nil {
-			logger.Warn("purge expired oauth states failed", "err", err)
-		} else if n > 0 {
-			logger.Info("purged expired oauth states", "count", n)
-		}
-		select {
-		case <-ctx.Done():
-			return
-		case <-ticker.C:
-		}
-	}
 }
 
 func (h *Handlers) bootstrapWasabi(runCtx context.Context, client *ent.Client, conns *connection.Service) error {

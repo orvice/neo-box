@@ -12,6 +12,7 @@ import '@fontsource-variable/inter'
 import '@fontsource-variable/manrope'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
+import { TOKEN_KEY } from '@/lib/constants'
 import { handleServerError } from '@/lib/handle-server-error'
 import { DirectionProvider } from './context/direction-provider'
 import { FontProvider } from './context/font-provider'
@@ -20,6 +21,9 @@ import { ThemeProvider } from './context/theme-provider'
 import { routeTree } from './routeTree.gen'
 // Styles
 import './styles/index.css'
+
+// Legacy Neo Box sessions no longer authenticate API calls.
+localStorage.removeItem(TOKEN_KEY)
 
 const queryClient = new QueryClient({
   defaultOptions: {

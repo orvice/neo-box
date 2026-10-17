@@ -19,15 +19,14 @@ import { Route as errors503RouteImport } from './routes/(errors)/503'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
-import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedWorkspaceRouteImport } from './routes/_authenticated/workspace'
+import { Route as authAuthCallbackRouteImport } from './routes/(auth)/auth.callback'
 import { Route as AuthenticatedConnectionsIndexRouteImport } from './routes/_authenticated/connections/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
 import { Route as AuthenticatedConnectionsConnectionIdIndexRouteImport } from './routes/_authenticated/connections/$connectionId/index'
-import { Route as authAuthOauthCallbackProviderRouteImport } from './routes/(auth)/auth.oauth.callback.$provider'
 import { Route as AuthenticatedConnectionsConnectionIdBucketsBucketRouteImport } from './routes/_authenticated/connections/$connectionId/buckets/$bucket'
 import { Route as AuthenticatedConnectionsConnectionIdPagesNameRouteImport } from './routes/_authenticated/connections/$connectionId/pages/$name'
 import { Route as AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRouteImport } from './routes/_authenticated/connections/$connectionId/snapshots/$snapshotId'
@@ -86,15 +85,15 @@ const AuthenticatedSettingsRouteRoute =
     path: '/settings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedWorkspaceRoute = AuthenticatedWorkspaceRouteImport.update({
   id: '/workspace',
   path: '/workspace',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const authAuthCallbackRoute = authAuthCallbackRouteImport.update({
+  id: '/(auth)/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedConnectionsIndexRoute =
   AuthenticatedConnectionsIndexRouteImport.update({
@@ -131,12 +130,6 @@ const AuthenticatedConnectionsConnectionIdIndexRoute =
     id: '/connections/$connectionId/',
     path: '/connections/$connectionId/',
     getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const authAuthOauthCallbackProviderRoute =
-  authAuthOauthCallbackProviderRouteImport.update({
-    id: '/(auth)/auth/oauth/callback/$provider',
-    path: '/auth/oauth/callback/$provider',
-    getParentRoute: () => rootRouteImport,
   } as any)
 const AuthenticatedConnectionsConnectionIdBucketsBucketRoute =
   AuthenticatedConnectionsConnectionIdBucketsBucketRouteImport.update({
@@ -193,15 +186,14 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/profile': typeof AuthenticatedProfileRoute
-  '/users': typeof AuthenticatedUsersRoute
   '/workspace': typeof AuthenticatedWorkspaceRoute
+  '/auth/callback': typeof authAuthCallbackRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/connections/': typeof AuthenticatedConnectionsIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/connections/$connectionId/': typeof AuthenticatedConnectionsConnectionIdIndexRoute
-  '/auth/oauth/callback/$provider': typeof authAuthOauthCallbackProviderRoute
   '/connections/$connectionId/buckets/$bucket': typeof AuthenticatedConnectionsConnectionIdBucketsBucketRoute
   '/connections/$connectionId/pages/$name': typeof AuthenticatedConnectionsConnectionIdPagesNameRoute
   '/connections/$connectionId/snapshots/$snapshotId': typeof AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRoute
@@ -218,16 +210,15 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/profile': typeof AuthenticatedProfileRoute
-  '/users': typeof AuthenticatedUsersRoute
   '/workspace': typeof AuthenticatedWorkspaceRoute
   '/': typeof AuthenticatedIndexRoute
+  '/auth/callback': typeof authAuthCallbackRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/connections': typeof AuthenticatedConnectionsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/connections/$connectionId': typeof AuthenticatedConnectionsConnectionIdIndexRoute
-  '/auth/oauth/callback/$provider': typeof authAuthOauthCallbackProviderRoute
   '/connections/$connectionId/buckets/$bucket': typeof AuthenticatedConnectionsConnectionIdBucketsBucketRoute
   '/connections/$connectionId/pages/$name': typeof AuthenticatedConnectionsConnectionIdPagesNameRoute
   '/connections/$connectionId/snapshots/$snapshotId': typeof AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRoute
@@ -247,16 +238,15 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
-  '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/workspace': typeof AuthenticatedWorkspaceRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/(auth)/auth/callback': typeof authAuthCallbackRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/_authenticated/connections/': typeof AuthenticatedConnectionsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/connections/$connectionId/': typeof AuthenticatedConnectionsConnectionIdIndexRoute
-  '/(auth)/auth/oauth/callback/$provider': typeof authAuthOauthCallbackProviderRoute
   '/_authenticated/connections/$connectionId/buckets/$bucket': typeof AuthenticatedConnectionsConnectionIdBucketsBucketRoute
   '/_authenticated/connections/$connectionId/pages/$name': typeof AuthenticatedConnectionsConnectionIdPagesNameRoute
   '/_authenticated/connections/$connectionId/snapshots/$snapshotId': typeof AuthenticatedConnectionsConnectionIdSnapshotsSnapshotIdRoute
@@ -277,15 +267,14 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/profile'
-    | '/users'
     | '/workspace'
+    | '/auth/callback'
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
     | '/connections/'
     | '/settings/'
     | '/connections/$connectionId/'
-    | '/auth/oauth/callback/$provider'
     | '/connections/$connectionId/buckets/$bucket'
     | '/connections/$connectionId/pages/$name'
     | '/connections/$connectionId/snapshots/$snapshotId'
@@ -302,16 +291,15 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/profile'
-    | '/users'
     | '/workspace'
     | '/'
+    | '/auth/callback'
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
     | '/connections'
     | '/settings'
     | '/connections/$connectionId'
-    | '/auth/oauth/callback/$provider'
     | '/connections/$connectionId/buckets/$bucket'
     | '/connections/$connectionId/pages/$name'
     | '/connections/$connectionId/snapshots/$snapshotId'
@@ -330,16 +318,15 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_authenticated/profile'
-    | '/_authenticated/users'
     | '/_authenticated/workspace'
     | '/_authenticated/'
+    | '/(auth)/auth/callback'
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
     | '/_authenticated/settings/notifications'
     | '/_authenticated/connections/'
     | '/_authenticated/settings/'
     | '/_authenticated/connections/$connectionId/'
-    | '/(auth)/auth/oauth/callback/$provider'
     | '/_authenticated/connections/$connectionId/buckets/$bucket'
     | '/_authenticated/connections/$connectionId/pages/$name'
     | '/_authenticated/connections/$connectionId/snapshots/$snapshotId'
@@ -357,7 +344,7 @@ export interface RootRouteChildren {
   errors404Route: typeof errors404Route
   errors500Route: typeof errors500Route
   errors503Route: typeof errors503Route
-  authAuthOauthCallbackProviderRoute: typeof authAuthOauthCallbackProviderRoute
+  authAuthCallbackRoute: typeof authAuthCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -432,19 +419,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/users': {
-      id: '/_authenticated/users'
-      path: '/users'
-      fullPath: '/users'
-      preLoaderRoute: typeof AuthenticatedUsersRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/workspace': {
       id: '/_authenticated/workspace'
       path: '/workspace'
       fullPath: '/workspace'
       preLoaderRoute: typeof AuthenticatedWorkspaceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/(auth)/auth/callback': {
+      id: '/(auth)/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof authAuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/connections/': {
       id: '/_authenticated/connections/'
@@ -487,13 +474,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/connections/$connectionId/'
       preLoaderRoute: typeof AuthenticatedConnectionsConnectionIdIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/(auth)/auth/oauth/callback/$provider': {
-      id: '/(auth)/auth/oauth/callback/$provider'
-      path: '/auth/oauth/callback/$provider'
-      fullPath: '/auth/oauth/callback/$provider'
-      preLoaderRoute: typeof authAuthOauthCallbackProviderRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/connections/$connectionId/buckets/$bucket': {
       id: '/_authenticated/connections/$connectionId/buckets/$bucket'
@@ -571,7 +551,6 @@ const AuthenticatedSettingsRouteRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
-  AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedWorkspaceRoute: typeof AuthenticatedWorkspaceRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedConnectionsIndexRoute: typeof AuthenticatedConnectionsIndexRoute
@@ -588,7 +567,6 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
-  AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedWorkspaceRoute: AuthenticatedWorkspaceRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedConnectionsIndexRoute: AuthenticatedConnectionsIndexRoute,
@@ -621,7 +599,7 @@ const rootRouteChildren: RootRouteChildren = {
   errors404Route: errors404Route,
   errors500Route: errors500Route,
   errors503Route: errors503Route,
-  authAuthOauthCallbackProviderRoute: authAuthOauthCallbackProviderRoute,
+  authAuthCallbackRoute: authAuthCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

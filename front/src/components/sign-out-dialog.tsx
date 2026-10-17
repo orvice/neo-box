@@ -1,4 +1,5 @@
-import { useNavigate, useLocation } from '@tanstack/react-router'
+import { useState } from 'react'
+import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 
@@ -8,19 +9,18 @@ interface SignOutDialogProps {
 }
 
 export function SignOutDialog({ open, onOpenChange }: SignOutDialogProps) {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { auth } = useAuthStore()
+  const logout = useAuthStore((state) => state.auth.logout)
+  const [pending, setPending] = useState(false)
 
-  const handleSignOut = () => {
-    auth.logout()
-    // Preserve current location for redirect after sign-in
-    const currentPath = location.href
-    navigate({
-      to: '/sign-in',
-      search: { redirect: currentPath },
-      replace: true,
-    })
+  async function handleSignOut() {
+    if (pending) return
+    setPending(true)
+    try {
+      await logout()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Unable to sign out.')
+      setPending(false)
+    }
   }
 
   return (
@@ -28,10 +28,10 @@ export function SignOutDialog({ open, onOpenChange }: SignOutDialogProps) {
       open={open}
       onOpenChange={onOpenChange}
       title='Sign out'
-      desc='Are you sure you want to sign out? You will need to sign in again to access your account.'
-      confirmText='Sign out'
+      desc='Sign out of your Logto session?'
+      confirmText={pending ? 'Signing out…' : 'Sign out'}
       destructive
-      handleConfirm={handleSignOut}
+      handleConfirm={() => void handleSignOut()}
       className='sm:max-w-sm'
     />
   )

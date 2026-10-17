@@ -1,7 +1,6 @@
 import React from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { ArrowRight, ChevronRight, Laptop, Moon, Sun } from 'lucide-react'
-import { useIsAdmin } from '@/stores/auth-store'
 import { useSearch } from '@/context/search-provider'
 import { useTheme } from '@/context/theme-provider'
 import {
@@ -15,7 +14,6 @@ import {
 } from '@/components/ui/command'
 import {
   accountNav,
-  adminNav,
   generalNav,
   resourcesNav,
 } from './layout/data/sidebar-data'
@@ -26,10 +24,7 @@ export function CommandMenu() {
   const navigate = useNavigate()
   const { setTheme } = useTheme()
   const { open, setOpen } = useSearch()
-  const isAdmin = useIsAdmin()
-  const navGroups = isAdmin
-    ? [generalNav, resourcesNav, adminNav, accountNav]
-    : [generalNav, resourcesNav, accountNav]
+  const navGroups = [generalNav, resourcesNav, accountNav]
 
   const runCommand = React.useCallback(
     (command: () => unknown) => {

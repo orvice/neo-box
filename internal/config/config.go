@@ -90,6 +90,9 @@ type NocoDBConfig struct {
 }
 
 type AuthConfig struct {
+	Logto LogtoConfig `yaml:"logto"`
+	// Legacy fields are retained for reading old configuration and tests. The
+	// application only authenticates through Logto; these no longer enable login.
 	InitialAdminUsername string        `yaml:"initial_admin_username"`
 	InitialAdminPassword string        `yaml:"initial_admin_password"`
 	SessionTTL           time.Duration `yaml:"session_ttl"`
@@ -99,6 +102,26 @@ type AuthConfig struct {
 	// bootstrap fails closed instead of silently exposing all data.
 	AllowUnauthenticated bool                           `yaml:"allow_unauthenticated"`
 	OAuthProviders       map[string]OAuthProviderConfig `yaml:"oauth_providers"`
+}
+
+// LogtoConfig configures a single-owner dashboard. OwnerSubject is a Logto
+// user ID, never an email or a first-login claim. DataOwnerID is independent
+// of the identity provider so replacing a login cannot orphan stored data.
+type LogtoConfig struct {
+	Endpoint          string   `yaml:"endpoint"`
+	AppID             string   `yaml:"app_id"`
+	Resource          string   `yaml:"resource"`
+	OwnerSubject      string   `yaml:"owner_subject"`
+	DataOwnerID       string   `yaml:"data_owner_id"`
+	Scopes            []string `yaml:"scopes"`
+	AdoptExistingData bool     `yaml:"adopt_existing_data"`
+}
+
+func (c LogtoConfig) EffectiveDataOwnerID() string {
+	if c.DataOwnerID == "" {
+		return "personal"
+	}
+	return c.DataOwnerID
 }
 
 // OAuthProviderConfig holds the client credentials and OAuth endpoints for a

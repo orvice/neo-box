@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { useAuthStore, useIsAdmin } from '@/stores/auth-store'
+import { useAuthStore } from '@/stores/auth-store'
 import { useLayout } from '@/context/layout-provider'
 import {
   Sidebar,
@@ -12,19 +12,13 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar'
 import { BrandMark } from '@/components/brand-mark'
-import {
-  accountNav,
-  adminNav,
-  generalNav,
-  resourcesNav,
-} from './data/sidebar-data'
+import { accountNav, generalNav, resourcesNav } from './data/sidebar-data'
 import { NavGroup } from './nav-group'
 import { NavUser } from './nav-user'
 
 export function AppSidebar() {
   const { collapsible, variant } = useLayout()
   const user = useAuthStore((state) => state.auth.user)
-  const isAdmin = useIsAdmin()
 
   const navUser = {
     name: user?.display_name || user?.displayName || user?.username || 'User',
@@ -54,7 +48,6 @@ export function AppSidebar() {
       <SidebarContent>
         <NavGroup {...generalNav} />
         <NavGroup {...resourcesNav} />
-        {isAdmin && <NavGroup {...adminNav} />}
         <NavGroup {...accountNav} />
       </SidebarContent>
       <SidebarFooter>
