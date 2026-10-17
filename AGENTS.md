@@ -42,11 +42,11 @@ shadcn/ui + Connect-Web on the frontend.
 - `internal/app/` — wiring. `routes.go` registers Connect handlers under
   `/api/<package>.<Service>/*`; `bootstrap.go` wraps the butterfly
   `store.db` connection named by `db_store` in an ent client, migrates the
-  schema, seeds the initial admin, attaches repositories to services, and
-  starts an hourly purge of expired sessions and OAuth states.
+  schema, adopts legacy business data when configured, then attaches repositories
+  and starts background workers. Logto authenticates the single configured owner.
   Routes are registered before config/DB exist, so services receive repos
-  through setters and the auth middleware reads the repo from an
-  `atomic.Value`.
+  through setters and the auth middleware reads the Logto authenticator from an
+  `atomic.Pointer` published after bootstrap.
 - `internal/config/` — `AppConfig`, the YAML startup config.
 - `internal/application/` — ConnectRPC service implementations. Methods use
   native Connect signatures and satisfy `neoboxv1connect.XxxServiceHandler`.
@@ -54,10 +54,10 @@ shadcn/ui + Connect-Web on the frontend.
   helpers.
 - `internal/transport/connectx/` — error helpers and the snake_case JSON
   codec every handler installs via `connectx.HandlerOptions()`.
-- `internal/handler/http/` — Gin handlers and middleware. `AuthMiddleware`
-  resolves `Authorization: Bearer <token>` to a session (sha256 of the token
-  is stored, never the token) and puts user + session on the context. Public
-  paths are listed in `isPublicPath`.
+- `internal/handler/http/` — Gin handlers and middleware. `LogtoMiddleware`
+  resolves HttpOnly session cookies and attaches the stable business owner to context.
+  Public login/callback routes are under `/api/auth/`; session-cookie APIs
+  enforce CSRF on writes and exact-Origin CORS. Unready auth returns 503.
 - `internal/ent/` — ent schemas in `schema/`; everything else is generated.
 - `internal/repo/` — repository interfaces with ent/PostgreSQL
   implementations in `postgres/` subpackages. Repositories return domain
@@ -67,8 +67,14 @@ shadcn/ui + Connect-Web on the frontend.
   Provider's `Cleanup` before delete. A Provider implements `Type`,
   `Verify`, `Cleanup` (NocoDB's lives in `internal/backup/provider.go`).
   Resources and scheduling stay per Provider (`docs/adr/0003`).
-- `internal/auth/provider/` — OAuth login providers (GitHub, Google) behind a
-  `Provider` interface and `Registry`. Unrelated to connection Providers.
+- `internal/auth/logto/` — server-side OIDC code flow with PKCE/state/nonce,
+  ID-token verification, encrypted PostgreSQL sessions, serialized token refresh,
+  and configured owner checks. For Logto setup or data adoption,
+  read `docs/logto.md`. Legacy `internal/auth/provider/` and local auth service
+  implementations remain unregistered.
+- `internal/repo/ownership/` — startup consolidation of all business owners:
+  copy and verify NocoDB attachments, then commit owner changes atomically.
+  Original blobs and snapshot object keys are retained.
 - `internal/secretbox/` — AES-GCM for stored credentials (key from
   `crypto.encryption_key`).
 - `internal/blobstore/` — object storage: S3 (butterfly `store.s3`, selected
@@ -149,13 +155,12 @@ shadcn/ui + Connect-Web on the frontend.
   last synced day, `Refresh` for the last 7 days, catch-up at startup. Also
   the "wasabi" connection Provider (`Activate` queues the first sync).
 
-**User center** (`proto/neobox/v1/auth.proto`, `AuthService`): password
-login, OAuth login (`BeginOAuthFlow` → provider → `CompleteOAuthFlow`, CSRF
-state single-use in `oauth_states`), `Me`, `Logout`, self-service
-`UpdateProfile` / `ChangePassword`, and admin-only `ListUsers` /
-`CreateUser` / `UpdateUserPassword` / `SetUserDisabled`. Roles are `admin`
-and `user`. Sessions live in the `auth_sessions` table; expired rows are
-ignored by lookups and purged hourly.
+**Authentication** (`proto/neobox/v1/auth.proto`, `AuthService`): production
+registers `LogtoAuthServiceServer`, which implements only `Me`; legacy auth and
+user-management RPCs return Unimplemented. The configured Logto user ID (`sub`)
+resolves to a stable business owner ID, without local user accounts. Server-side
+OIDC sessions are stored separately in `logto_sessions`. All
+existing business data can be adopted by that owner; old login data is unused.
 
 **Connections** (`proto/neobox/v1/connection.proto`, `ConnectionService`):
 list / get / create / update / delete / test for every Provider. Provider
@@ -208,11 +213,15 @@ Unauthenticated, which signs the user out), an unconfirmed write Unknown.
 (settings are a typed oneof, secrets write-only) and `ListAlerts`. Scoped
 to the calling user. The dashboard page is Settings → Notifications.
 
-**Frontend** (`front/`): `src/api/transport.ts` is the Connect transport
-(binary protobuf, Bearer interceptor, redirect to `/sign-in` on
-Unauthenticated). `src/api/*.ts` wrap generated clients with React Query
-hooks. `src/stores/auth-store.ts` (Zustand) holds token + user. Routes under
-`src/routes/_authenticated/` require a token. Connections live under
+**Frontend** (`front/`): `src/api/transport.ts` uses credentialed Connect requests
+(binary protobuf) with the session's `X-CSRF-Token` and redirects to `/sign-in`
+on Unauthenticated. `src/api/*.ts` wrap generated clients with React Query hooks.
+`src/lib/logto.ts` navigates to backend login and submits CSRF-protected logout;
+`GET /api/auth/session` supplies display info and CSRF. Logto tokens and callback
+handling remain on the backend. Snapshot downloads use the same cookie.
+`src/stores/auth-store.ts` holds verified sign-in state and display profile.
+Authenticated routes await session restore. Profile is read-only. Combined
+frontend/backend deployments use the `auth.logto.public_url` origin. Connections live under
 `/connections` (`?provider=` filters); `src/features/connections/` holds the
 Provider registry: `provider-info.ts` (key, label, icon; used by the sidebar)
 and `providers.ts` (each Provider's form, card summary, and detail page from

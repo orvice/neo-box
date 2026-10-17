@@ -2,34 +2,22 @@
 # a complete, annotated sample. ${VAR} placeholders are not expanded.
 # Copy to config/neobox.yaml and set BUTTERFLY_CONFIG_FILE_PATH=config/neobox.yaml
 
-# User authentication. On first startup with an empty users collection,
-# Neo Box creates this initial admin user. Change the password before deploying.
+# Logto is the only identity provider. Create a Traditional web application.
+# Register http://localhost:5173/api/auth/callback and the post-sign-out URI
+# http://localhost:5173/sign-in. See docs/logto.md for setup and migration.
 auth:
-  initial_admin_username: "admin"
-  initial_admin_password: "change-me"
-  session_ttl: 168h
-  # Local-dev only. When true, requests are admin-equivalent while no auth
-  # repo is wired. Production deployments must leave this false.
-  allow_unauthenticated: false
-  # Third-party OAuth login providers. Providers with empty credentials are
-  # skipped at startup and not exposed via ListOAuthProviders. redirect_url
-  # must match the callback URL registered with the provider's OAuth app.
-  oauth_providers: {}
-  #   github:
-  #     client_id: "<github client id>"
-  #     client_secret: "<github client secret>"
-  #     redirect_url: "http://localhost:5173/auth/oauth/callback/github"
-  #     scopes: ["read:user", "user:email"]
-  #     display_name: "GitHub"
-  #   google:
-  #     client_id: "<google client id>"
-  #     client_secret: "<google client secret>"
-  #     redirect_url: "http://localhost:5173/auth/oauth/callback/google"
-  #     scopes: ["openid", "email", "profile"]
-  #     display_name: "Google"
+  logto:
+    endpoint: ""             # e.g. https://identity.example.com
+    app_id: ""               # Traditional web App ID
+    app_secret: ""           # Backend only; never expose to frontend builds
+    public_url: "http://localhost:5173" # Dashboard origin; /api/ proxies to Go
+    owner_subject: ""        # Your Logto user ID (sub), never an email
+    data_owner_id: "personal" # Stable business owner; keep after migration
+    session_ttl: 168h         # Absolute server-side session lifetime
+    adopt_existing_data: false # Set true once to consolidate ALL legacy owners
 
-# PostgreSQL for users, sessions, and resource data. db_store names an entry
-# under store.db below (default "main"); the schema is migrated on startup.
+# PostgreSQL for resource data. db_store names an entry under store.db below
+# (default "main"); the schema is migrated on startup.
 db_store: "main"
 
 store:
