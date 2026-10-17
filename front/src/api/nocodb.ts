@@ -6,7 +6,6 @@ import {
   type Restore,
   type Snapshot,
 } from '@/gen/neobox/v1/nocodb_pb'
-import { getAccessToken } from '@/lib/logto'
 import { BASE_URL, makeClient } from './transport'
 
 export {
@@ -176,9 +175,8 @@ export function useRestores(filter: RestoreFilter, enabled = true) {
 
 /** Downloads the snapshot's gzip JSON through an authenticated fetch. */
 export async function downloadSnapshot(id: string) {
-  const token = await getAccessToken()
   const res = await fetch(`${BASE_URL}/api/nocodb/snapshots/${id}/download`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    credentials: 'include',
   })
   if (!res.ok) {
     const body = await res.json().catch(() => null)

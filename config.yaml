@@ -2,17 +2,18 @@
 # a complete, annotated sample. ${VAR} placeholders are not expanded.
 # Copy to config/neobox.yaml and set BUTTERFLY_CONFIG_FILE_PATH=config/neobox.yaml
 
-# Logto is the only sign-in provider. Create a SPA and an API resource in
-# Logto; register http://localhost:5173/auth/callback and the post-sign-out
-# URI http://localhost:5173/sign-in. See docs/logto.md for migration steps.
+# Logto is the only identity provider. Create a Traditional web application.
+# Register http://localhost:5173/api/auth/callback and the post-sign-out URI
+# http://localhost:5173/sign-in. See docs/logto.md for setup and migration.
 auth:
   logto:
     endpoint: ""             # e.g. https://identity.example.com
-    app_id: ""               # SPA app ID; no client secret
-    resource: ""             # API resource identifier, e.g. https://neobox.example.com/api
+    app_id: ""               # Traditional web App ID
+    app_secret: ""           # Backend only; never expose to frontend builds
+    public_url: "http://localhost:5173" # Dashboard origin; /api/ proxies to Go
     owner_subject: ""        # Your Logto user ID (sub), never an email
     data_owner_id: "personal" # Stable business owner; keep after migration
-    scopes: ["access"]       # API permission assigned to the owner's Logto role
+    session_ttl: 168h         # Absolute server-side session lifetime
     adopt_existing_data: false # Set true once to consolidate ALL legacy owners
 
 # PostgreSQL for resource data. db_store names an entry under store.db below

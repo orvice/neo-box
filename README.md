@@ -87,8 +87,9 @@ curl http://127.0.0.1:8080/ping
 # {"message":"pong"}
 ```
 
-Open http://localhost:5173 and sign in. API requests (everything under
-`/api/`) require `Authorization: Bearer <Logto API access token>`.
+Open http://localhost:5173 and sign in through Logto. Go handles the login
+callback and keeps tokens in encrypted server-side sessions. API requests use
+an HttpOnly session cookie; write requests also require the session CSRF token.
 
 ## Configuration
 
@@ -105,20 +106,22 @@ log:
   format: text         # text | json (json recommended in production)
   add_source: false    # include source file:line in each entry
 
-# ── Authentication (Logto only) ─────────────────────────────────────────
+# ── Authentication (Logto, server-side OIDC) ─────────────────────────────
 auth:
   logto:
     endpoint: "https://identity.example.com"
-    app_id: "<Logto SPA application ID>"
-    resource: "https://neobox.example.com/api"  # Logto API resource identifier
-    owner_subject: "<your Logto user ID>"      # sub; only this user gets access
-    data_owner_id: "personal"                  # stable across login changes
-    scopes: ["access"]                        # granted through a Logto role
-    adopt_existing_data: false                # enable once for legacy data
+    app_id: "<Traditional web App ID>"
+    app_secret: "<App Secret>"                # backend configuration only
+    public_url: "https://neobox.example.com"  # frontend + /api/ reverse proxy
+    owner_subject: "<your Logto user ID>"     # sub; only this user gets access
+    data_owner_id: "personal"                 # stable across login changes
+    session_ttl: 168h                         # absolute server session lifetime
+    adopt_existing_data: false               # enable once for legacy data
 
-# Register https://neobox.example.com/auth/callback as a Logto redirect URI,
+# Register https://neobox.example.com/api/auth/callback as a Logto redirect URI,
 # and https://neobox.example.com/sign-in as a post-sign-out redirect URI.
-# No local password, user-management service, or Neo Box session is used.
+# Tokens stay encrypted in PostgreSQL; browser JS receives no access/refresh token.
+# No local password or user-management service is used.
 # See docs/logto.md before migrating existing data.
 
 # ── PostgreSQL ─────────────────────────────────────────────────────────

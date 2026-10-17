@@ -31,7 +31,7 @@ type Handlers struct {
 	cloudflareSvcServer *application.CloudflareServiceServer
 	workspaceSvcServer  *application.GoogleWorkspaceServiceServer
 	notifySvcServer     *application.NotificationServiceServer
-	authenticator       atomic.Pointer[logto.Authenticator]
+	authenticator       atomic.Pointer[logto.Service]
 	snapshots           atomic.Value // *snapshotContent
 
 	stop     context.CancelFunc
@@ -40,7 +40,7 @@ type Handlers struct {
 	notifier *notify.Service
 }
 
-func (h *Handlers) authenticatorFromHolder() httpHandler.TokenAuthenticator {
+func (h *Handlers) authenticatorFromHolder() httpHandler.BrowserAuth {
 	if a := h.authenticator.Load(); a != nil {
 		return a
 	}
@@ -102,7 +102,7 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 
 	router := func(r *gin.Engine) {
 		r.Use(httpHandler.LogtoMiddleware(handlers.authenticatorFromHolder))
-		httpHandler.RegisterLogtoConfig(r, cfg)
+		httpHandler.RegisterLogto(r, handlers.authenticatorFromHolder)
 		httpHandler.RegisterHealth(r)
 		httpHandler.RegisterSnapshotDownload(r, handlers.snapshotContentFromHolder)
 

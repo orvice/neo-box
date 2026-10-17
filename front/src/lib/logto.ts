@@ -1,49 +1,45 @@
-import LogtoClient from '@logto/browser'
+import type { AuthUser } from '@/api/auth'
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
-export const CALLBACK_PATH = '/auth/callback'
-const returnPathKey = 'neobox_logto_return_path'
 
-interface LogtoSettings {
-  endpoint: string
-  appId: string
-  resource: string
-  scopes: string[] | null
+export interface BrowserSession {
+  user: AuthUser
+  csrfToken: string
 }
 
-let initialization:
-  | Promise<{
-      client: LogtoClient
-      settings: LogtoSettings
-    }>
-  | undefined
+let cachedSession: BrowserSession | null | undefined
+let loading: Promise<BrowserSession | null> | undefined
 
-// One SDK instance shares refreshes across RPCs and downloads. The SDK owns
-// its tokens, PKCE verifier and OAuth state; the app stores no bearer token.
-export function getLogto() {
-  initialization ??= (async () => {
-    const response = await fetch(`${API_BASE_URL}/api/auth/config`)
-    if (!response.ok)
-      throw new Error('Logto sign-in is not configured or is unavailable.')
-    const settings = (await response.json()) as LogtoSettings
-    const client = new LogtoClient({
-      endpoint: settings.endpoint,
-      appId: settings.appId,
-      resources: [settings.resource],
-      scopes: ['email', ...(settings.scopes ?? [])],
+// The browser receives only display information and a CSRF token. Logto
+// credentials, authorization codes and access/refresh tokens stay on the server.
+export function getBrowserSession(): Promise<BrowserSession | null> {
+  if (cachedSession !== undefined) return Promise.resolve(cachedSession)
+  loading ??= (async () => {
+    const response = await fetch(`${API_BASE_URL}/api/auth/session`, {
+      credentials: 'include',
+      cache: 'no-store',
     })
-    return { client, settings }
-  })().catch((error: unknown) => {
-    initialization = undefined
-    throw error
+    if (response.status === 401) {
+      cachedSession = null
+      return null
+    }
+    if (!response.ok)
+      throw new Error('Unable to load your sign-in session. Please try again.')
+    const session = (await response.json()) as BrowserSession
+    cachedSession = session
+    return session
+  })().finally(() => {
+    loading = undefined
   })
-  return initialization
+  return loading
 }
 
-export async function getAccessToken() {
-  const { client, settings } = await getLogto()
-  if (!(await client.isAuthenticated())) return undefined
-  return client.getAccessToken(settings.resource)
+export function clearBrowserSession() {
+  cachedSession = undefined
+}
+
+export async function getCSRFToken() {
+  return (await getBrowserSession())?.csrfToken
 }
 
 export function safeReturnPath(value?: string | null): string {
@@ -53,28 +49,36 @@ export function safeReturnPath(value?: string | null): string {
   const url = new URL(value, base)
   if (
     url.origin !== base ||
-    url.pathname === CALLBACK_PATH ||
+    url.pathname === '/auth/callback' ||
+    url.pathname.startsWith('/api/') ||
     url.pathname === '/sign-in'
   )
     return '/'
   return url.pathname + url.search + url.hash
 }
 
-export async function signIn(redirectTo?: string) {
-  sessionStorage.setItem(returnPathKey, safeReturnPath(redirectTo))
-  const { client } = await getLogto()
-  await client.signIn(`${window.location.origin}${CALLBACK_PATH}`)
-}
-
-export async function completeSignIn() {
-  const { client } = await getLogto()
-  await client.handleSignInCallback(window.location.href)
-  const path = safeReturnPath(sessionStorage.getItem(returnPathKey))
-  sessionStorage.removeItem(returnPathKey)
-  return path
+export async function signIn(redirectTo?: string, reauthenticate = false) {
+  const params = new URLSearchParams({ redirect: safeReturnPath(redirectTo) })
+  if (reauthenticate) params.set('reauth', '1')
+  window.location.assign(`${API_BASE_URL}/api/auth/login?${params}`)
 }
 
 export async function signOut() {
-  const { client } = await getLogto()
-  await client.signOut(`${window.location.origin}/sign-in`)
+  const session = await getBrowserSession()
+  if (!session) {
+    window.location.assign('/sign-in')
+    return
+  }
+  // A top-level POST lets the backend redirect directly to Logto's logout
+  // endpoint, including its protocol ID-token hint, without returning it to JS.
+  const form = document.createElement('form')
+  form.method = 'post'
+  form.action = `${API_BASE_URL}/api/auth/logout`
+  const csrf = document.createElement('input')
+  csrf.type = 'hidden'
+  csrf.name = 'csrf_token'
+  csrf.value = session.csrfToken
+  form.append(csrf)
+  document.body.append(form)
+  form.submit()
 }

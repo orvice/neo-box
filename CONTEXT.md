@@ -11,6 +11,8 @@ one place.
 - **Owner** — the stable owner of Neo Box's business data, independent of the
   User's login identity. Existing users' resources are consolidated under this
   Owner when adopting data; changing the login identity keeps those resources.
+- **Session** — a browser's authenticated access to the Owner's data, established
+  through Logto and maintained by Neo Box until expiry or sign-out.
 - **Provider** — a kind of third-party service Neo Box integrates with
   (today: NocoDB, Wasabi, Cloudflare and Google Workspace). Each Provider decides what it
   shows and does for a Connection; Neo Box has no provider-independent model

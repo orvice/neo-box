@@ -1,7 +1,7 @@
 # Logto sign-in and existing data
 
 Neo Box uses Logto as its only identity provider. It no longer registers the
-local password login, OAuth exchange, user-management or local-session handlers.
+local password login, direct-provider OAuth or user-management handlers.
 The existing `AuthService/Me` RPC returns the authenticated business owner; other
 authentication RPCs return Unimplemented after authentication. Legacy passwords,
 sessions and OAuth states cannot authenticate requests. They are not imported
@@ -16,42 +16,84 @@ changing `owner_subject`.
 
 ## Configure Logto
 
-1. Create a **Single-page application**, and record its App ID and Endpoint.
-2. Register the dashboard's exact redirect URI: `https://neobox.example.com/auth/callback`.
-3. Register its exact post-sign-out redirect URI: `https://neobox.example.com/sign-in`.
-   For local development use `http://localhost:5173` as the dashboard origin.
-   Configure allowed origins in Logto for the dashboard origin if required.
-4. Create an API resource, for example `https://neobox.example.com/api`, with
-   an `access` permission. Give your Logto user a role granting that permission.
-5. Copy your user's **User ID**, not their username or email, to `owner_subject`.
-
-Configure the backend (no SPA client secret or Management API credentials):
+1. Create a **Traditional web** application and record its Endpoint, App ID
+   and App Secret. The secret is used exclusively by the Go backend.
+2. Register `https://neobox.example.com/api/auth/callback` as the redirect URI.
+3. Register `https://neobox.example.com/sign-in` as the post-sign-out redirect URI.
+4. Copy your user's **User ID**, not their username or email, to `owner_subject`.
+   This BFF authenticates its single owner directly; it does not require a
+   separate API Resource or browser-issued API tokens.
 
 ```yaml
 auth:
   logto:
     endpoint: "https://identity.example.com"
-    app_id: "<SPA App ID>"
-    resource: "https://neobox.example.com/api"
+    app_id: "<Traditional web App ID>"
+    app_secret: "<App Secret>"
+    public_url: "https://neobox.example.com"
     owner_subject: "<Logto User ID>"
     data_owner_id: "personal"
-    scopes: ["access"]
+    session_ttl: 168h
     adopt_existing_data: false
 ```
 
-`endpoint` must be HTTPS; HTTP is accepted only for loopback development.
-Startup fails if configuration or OIDC discovery is invalid. The public
-`GET /api/auth/config` response contains only the SPA Endpoint, App ID, resource
-and scopes; owner and adoption settings remain on the backend. The frontend
-uses the official Logto Browser SDK to manage authorization code / PKCE,
-state, tokens and refresh. Both ConnectRPC and snapshot downloads request the
-API resource's access token through the SDK. ID tokens are not sent to the API.
+Serve the frontend and backend under the `public_url` origin: route `/api/`
+and `/ping` to Go, and other paths to the frontend. Keep `VITE_API_BASE_URL`
+empty. This is also the repository's existing nginx/reverse-proxy layout.
+For local development use `public_url: "http://localhost:5173"`; Vite proxies
+`/api/` to Go. Register `http://localhost:5173/api/auth/callback` and
+`http://localhost:5173/sign-in` in the Traditional web application.
 
-The backend checks signature, issuer, resource audience, expiry, configured
-permissions and the allowed user ID. Organization tokens are refused. A wrong
-identity or missing permission returns 403; an invalid token returns 401.
+`endpoint` and `public_url` require HTTPS; HTTP is accepted only on loopback.
+`public_url` is a fixed origin, without path, query or fragment. It controls
+callbacks, post-login navigation and the allowed browser Origin. Preserve the
+existing `crypto.encryption_key`; it is now also required to seal OIDC state
+and tokens. Put the App Secret in the deployment's private backend configuration.
+Startup fails closed if configuration, discovery or encrypted storage is invalid.
+
+## Server-side login and sessions
+
+The backend uses OIDC discovery, `go-oidc` and `oauth2` for the authorization
+code flow with PKCE. `GET /api/auth/login` stores the random state, nonce,
+PKCE verifier and confined return path on the server, then redirects to Logto.
+The `/api/auth/callback` handler atomically consumes the flow, checks its cookie
+and state, exchanges the code using the App Secret and PKCE verifier, and
+verifies the ID token's signature, issuer, application audience, expiry, nonce
+and allowed subject before creating a fresh session cookie.
+
+Authentication data lives in the new `logto_sessions` table, independently of
+legacy user/password/session records. Only SHA-256 hashes of random cookie
+values are stored as IDs. Flow payloads, access/refresh/ID tokens and the display
+profile are AES-GCM encrypted with `crypto.encryption_key`. Login flows expire
+after ten minutes; authenticated sessions have an absolute `session_ttl`, seven
+days by default. Expired rows are purged at startup and hourly.
+
+Production cookies are host-only `__Host-neobox_session` and
+`__Host-neobox_login`, with Path `/`, Secure, HttpOnly and SameSite=Lax.
+Loopback HTTP development uses unprefixed cookies without Secure. Every sign-in
+creates a fresh random authenticated cookie; pending cookies cannot access APIs.
+Legacy bearer tokens and direct Logto bearer tokens do not authenticate requests.
+
+`GET /api/auth/session` returns only display information and a per-session CSRF
+token. The frontend sends credentialed Connect requests with `X-CSRF-Token`;
+unsafe methods without the matching token are refused. Credentialed CORS permits
+only the configured dashboard Origin. Snapshot downloads authenticate with the
+same HttpOnly cookie. No Logto configuration or tokens are returned in frontend
+JSON, and the browser no longer uses a Logto SDK or processes authorization codes.
+
+The server refreshes tokens when their expiry is near. A PostgreSQL row lock
+serializes refreshes for each session, including across application instances.
+A revoked refresh grant deletes the session; a transient provider/storage failure
+returns 503 and preserves it for retry. `POST /api/auth/logout` checks CSRF,
+revokes the local session and clears its cookie without requiring a token refresh,
+then redirects the browser directly to Logto's discovered end-session endpoint.
+The OIDC redirect includes the protocol's ID-token hint; it is not exposed to
+frontend JavaScript. Access and refresh tokens stay exclusively on the server.
+
 Profiles and sign-in methods are managed in Logto. Neo Box's Profile page is
-read-only, and its old user-management page has been removed.
+read-only. `AuthService/Me` still returns the authenticated owner; legacy local
+login and user-management RPCs remain unimplemented. The frontend callback route
+and the old public `/api/auth/config` endpoint have been removed.
 
 ## Keep all existing business data under the owner
 
@@ -97,5 +139,5 @@ those legacy authentication rows can be removed separately. Rolling back the
 application after consolidation requires restoring the database backup; keep
 the original blobs until that rollback window has closed.
 
-References: [Logto Browser SDK](https://docs.logto.io/quick-starts/vanilla-js),
-[Logto Gin API protection](https://docs.logto.io/api-protection/go/gin).
+References: [Logto Go integration](https://docs.logto.io/quick-starts/go),
+[Logto core SDK convention](https://docs.logto.io/developers/sdk-conventions/core-sdk-convention).

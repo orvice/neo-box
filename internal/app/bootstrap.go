@@ -23,6 +23,7 @@ import (
 	cloudflarepg "go.orx.me/apps/neo-box/internal/repo/cloudflare/postgres"
 	connectionpg "go.orx.me/apps/neo-box/internal/repo/connection/postgres"
 	workspacepg "go.orx.me/apps/neo-box/internal/repo/googleworkspace/postgres"
+	logtosessionpg "go.orx.me/apps/neo-box/internal/repo/logtosession/postgres"
 	nocodbpg "go.orx.me/apps/neo-box/internal/repo/nocodb/postgres"
 	notifypg "go.orx.me/apps/neo-box/internal/repo/notify/postgres"
 	"go.orx.me/apps/neo-box/internal/repo/ownership"
@@ -35,12 +36,6 @@ import (
 // and wires repositories into the handlers built by SetupRoutes.
 func (h *Handlers) Bootstrap(ctx context.Context) error {
 	cfg := h.cfg
-	authCtx, cancelAuth := context.WithTimeout(ctx, 15*time.Second)
-	authenticator, err := logto.New(authCtx, cfg.Auth.Logto)
-	cancelAuth()
-	if err != nil {
-		return err
-	}
 	client, err := openPostgres(ctx, cfg)
 	if err != nil {
 		return err
@@ -50,15 +45,25 @@ func (h *Handlers) Bootstrap(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	cipher, err := setupCipher(ctx, cfg.Crypto)
+	if err != nil {
+		return err
+	}
+	sessionRepo := logtosessionpg.New(sqldb.GetDB(cfg.EffectiveDBStore()))
+	authCtx, cancelAuth := context.WithTimeout(ctx, 15*time.Second)
+	authenticator, err := logto.New(authCtx, cfg.Auth.Logto, sessionRepo, cipher)
+	cancelAuth()
+	if err != nil {
+		return err
+	}
+	if err := authenticator.Purge(ctx); err != nil {
+		return err
+	}
 	if err := ownership.Adopt(ctx, sqldb.GetDB(cfg.EffectiveDBStore()), blobs,
 		cfg.Auth.Logto.EffectiveDataOwnerID(), cfg.Auth.Logto.AdoptExistingData); err != nil {
 		return err
 	}
 
-	cipher, err := setupCipher(ctx, cfg.Crypto)
-	if err != nil {
-		return err
-	}
 	conns := connection.NewService(connectionpg.New(client), cipher)
 	h.connectionSvcServer.SetService(conns)
 
@@ -88,6 +93,7 @@ func (h *Handlers) Bootstrap(ctx context.Context) error {
 	h.stop = stop
 	// Publish authentication only after storage and all services are ready.
 	h.authenticator.Store(authenticator)
+	go purgeLogtoSessions(runCtx, authenticator)
 	return nil
 }
 
@@ -233,4 +239,20 @@ func openPostgres(ctx context.Context, cfg *config.AppConfig) (*ent.Client, erro
 	}
 	logger.Info("postgres connected", "store_key", key)
 	return client, nil
+}
+
+// Purge only server-side OIDC state; legacy authentication rows are unused.
+func purgeLogtoSessions(ctx context.Context, service *logto.Service) {
+	ticker := time.NewTicker(time.Hour)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			if err := service.Purge(ctx); err != nil {
+				log.FromContext(ctx).Warn("Logto session cleanup failed")
+			}
+		}
+	}
 }

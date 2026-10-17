@@ -1,17 +1,25 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { useAuthStore } from '@/stores/auth-store'
-import { safeReturnPath } from '@/lib/logto'
+import { safeReturnPath, signIn } from '@/lib/logto'
 import { Button } from '@/components/ui/button'
 import { AuthLayout } from '../auth-layout'
 
 export function SignIn() {
-  const { redirect } = useSearch({ from: '/(auth)/sign-in' })
+  const { redirect, error: callbackError } = useSearch({
+    from: '/(auth)/sign-in',
+  })
   const navigate = useNavigate()
   const auth = useAuthStore((state) => state.auth)
   const restore = auth.restore
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const callbackMessage =
+    callbackError === 'forbidden'
+      ? 'This Logto account does not have access to Neo Box.'
+      : callbackError === 'login_failed'
+        ? 'Sign-in failed or expired. Please try again.'
+        : null
 
   useEffect(() => {
     void restore()
@@ -35,7 +43,7 @@ export function SignIn() {
   async function changeAccount() {
     setPending(true)
     try {
-      await auth.logout()
+      await signIn(redirect, true)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unable to sign out.')
       setPending(false)
@@ -59,9 +67,9 @@ export function SignIn() {
             Continue with your Logto account.
           </p>
         </div>
-        {(error || auth.error) && (
+        {(error || auth.error || callbackMessage) && (
           <p role='alert' className='mb-4 text-sm text-destructive'>
-            {error || auth.error}
+            {error || auth.error || callbackMessage}
           </p>
         )}
         <Button
@@ -71,7 +79,7 @@ export function SignIn() {
         >
           {pending ? 'Redirecting…' : 'Continue with Logto'}
         </Button>
-        {auth.error && (
+        {(auth.error || callbackError === 'forbidden') && (
           <Button
             className='mt-3 w-full'
             variant='outline'

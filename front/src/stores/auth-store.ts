@@ -1,6 +1,11 @@
 import { create } from 'zustand'
-import { me, type AuthUser } from '@/api/auth'
-import { getLogto, signIn, signOut } from '@/lib/logto'
+import type { AuthUser } from '@/api/auth'
+import {
+  getBrowserSession,
+  clearBrowserSession,
+  signIn,
+  signOut,
+} from '@/lib/logto'
 
 interface AuthState {
   auth: {
@@ -33,19 +38,9 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
           auth: { ...state.auth, restoring: true, error: null },
         }))
         try {
-          const { client } = await getLogto()
-          if (!(await client.isAuthenticated())) return
-          // Me verifies API access and resolves the stable business owner ID.
-          const response = await me()
-          if (!response.user) throw new Error('Unable to load your account.')
-          const claims = await client.getIdTokenClaims()
-          const user: AuthUser = {
-            ...response.user,
-            username: claims.username || claims.email || claims.sub,
-            displayName:
-              claims.name || claims.username || claims.email || claims.sub,
-            avatarUrl: claims.picture || '',
-          }
+          const session = await getBrowserSession()
+          if (!session) return
+          const user = session.user
           set((state) => ({
             auth: { ...state.auth, user, authenticated: true },
           }))
@@ -76,7 +71,8 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       await signOut()
       get().auth.reset()
     },
-    reset: () =>
+    reset: () => {
+      clearBrowserSession()
       set((state) => ({
         auth: {
           ...state.auth,
@@ -85,6 +81,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
           checked: false,
           error: null,
         },
-      })),
+      }))
+    },
   },
 }))

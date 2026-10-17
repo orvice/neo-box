@@ -108,13 +108,21 @@ type AuthConfig struct {
 // user ID, never an email or a first-login claim. DataOwnerID is independent
 // of the identity provider so replacing a login cannot orphan stored data.
 type LogtoConfig struct {
-	Endpoint          string   `yaml:"endpoint"`
-	AppID             string   `yaml:"app_id"`
-	Resource          string   `yaml:"resource"`
-	OwnerSubject      string   `yaml:"owner_subject"`
-	DataOwnerID       string   `yaml:"data_owner_id"`
-	Scopes            []string `yaml:"scopes"`
-	AdoptExistingData bool     `yaml:"adopt_existing_data"`
+	Endpoint          string        `yaml:"endpoint"`
+	AppID             string        `yaml:"app_id"`
+	AppSecret         string        `yaml:"app_secret"`
+	PublicURL         string        `yaml:"public_url"`
+	OwnerSubject      string        `yaml:"owner_subject"`
+	DataOwnerID       string        `yaml:"data_owner_id"`
+	SessionTTL        time.Duration `yaml:"session_ttl"`
+	AdoptExistingData bool          `yaml:"adopt_existing_data"`
+}
+
+func (c LogtoConfig) EffectiveSessionTTL() time.Duration {
+	if c.SessionTTL <= 0 {
+		return 7 * 24 * time.Hour
+	}
+	return c.SessionTTL
 }
 
 func (c LogtoConfig) EffectiveDataOwnerID() string {

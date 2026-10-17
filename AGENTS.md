@@ -55,8 +55,9 @@ shadcn/ui + Connect-Web on the frontend.
 - `internal/transport/connectx/` — error helpers and the snake_case JSON
   codec every handler installs via `connectx.HandlerOptions()`.
 - `internal/handler/http/` — Gin handlers and middleware. `LogtoMiddleware`
-  validates API access tokens and attaches the stable business owner to context.
-  Only `/ping` and `/api/auth/config` are public; unready auth returns 503.
+  resolves HttpOnly session cookies and attaches the stable business owner to context.
+  Public login/callback routes are under `/api/auth/`; session-cookie APIs
+  enforce CSRF on writes and exact-Origin CORS. Unready auth returns 503.
 - `internal/ent/` — ent schemas in `schema/`; everything else is generated.
 - `internal/repo/` — repository interfaces with ent/PostgreSQL
   implementations in `postgres/` subpackages. Repositories return domain
@@ -66,8 +67,9 @@ shadcn/ui + Connect-Web on the frontend.
   Provider's `Cleanup` before delete. A Provider implements `Type`,
   `Verify`, `Cleanup` (NocoDB's lives in `internal/backup/provider.go`).
   Resources and scheduling stay per Provider (`docs/adr/0003`).
-- `internal/auth/logto/` — OIDC discovery, cached JWKS, API JWT validation,
-  configured owner and permission checks. For Logto setup or data adoption,
+- `internal/auth/logto/` — server-side OIDC code flow with PKCE/state/nonce,
+  ID-token verification, encrypted PostgreSQL sessions, serialized token refresh,
+  and configured owner checks. For Logto setup or data adoption,
   read `docs/logto.md`. Legacy `internal/auth/provider/` and local auth service
   implementations remain unregistered.
 - `internal/repo/ownership/` — startup consolidation of all business owners:
@@ -156,7 +158,8 @@ shadcn/ui + Connect-Web on the frontend.
 **Authentication** (`proto/neobox/v1/auth.proto`, `AuthService`): production
 registers `LogtoAuthServiceServer`, which implements only `Me`; legacy auth and
 user-management RPCs return Unimplemented. The configured Logto user ID (`sub`)
-resolves to a stable business owner ID, without local users or sessions. All
+resolves to a stable business owner ID, without local user accounts. Server-side
+OIDC sessions are stored separately in `logto_sessions`. All
 existing business data can be adopted by that owner; old login data is unused.
 
 **Connections** (`proto/neobox/v1/connection.proto`, `ConnectionService`):
@@ -210,14 +213,15 @@ Unauthenticated, which signs the user out), an unconfirmed write Unknown.
 (settings are a typed oneof, secrets write-only) and `ListAlerts`. Scoped
 to the calling user. The dashboard page is Settings → Notifications.
 
-**Frontend** (`front/`): `src/api/transport.ts` is the Connect transport
-(binary protobuf, Bearer interceptor, redirect to `/sign-in` on
-Unauthenticated). `src/api/*.ts` wrap generated clients with React Query
-hooks. `src/lib/logto.ts` uses the official Browser SDK for sign-in, callback,
-sign-out and token refresh; RPCs and snapshot downloads request resource access
-tokens from it. `src/stores/auth-store.ts` (Zustand) holds verified sign-in state
-and display profile. Routes under `src/routes/_authenticated/` await `Me` on
-restore. Local user management is removed; Profile is read-only. Connections live under
+**Frontend** (`front/`): `src/api/transport.ts` uses credentialed Connect requests
+(binary protobuf) with the session's `X-CSRF-Token` and redirects to `/sign-in`
+on Unauthenticated. `src/api/*.ts` wrap generated clients with React Query hooks.
+`src/lib/logto.ts` navigates to backend login and submits CSRF-protected logout;
+`GET /api/auth/session` supplies display info and CSRF. Logto tokens and callback
+handling remain on the backend. Snapshot downloads use the same cookie.
+`src/stores/auth-store.ts` holds verified sign-in state and display profile.
+Authenticated routes await session restore. Profile is read-only. Combined
+frontend/backend deployments use the `auth.logto.public_url` origin. Connections live under
 `/connections` (`?provider=` filters); `src/features/connections/` holds the
 Provider registry: `provider-info.ts` (key, label, icon; used by the sidebar)
 and `providers.ts` (each Provider's form, card summary, and detail page from

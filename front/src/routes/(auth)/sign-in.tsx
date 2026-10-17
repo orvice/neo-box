@@ -4,6 +4,7 @@ import { SignIn } from '@/features/auth/sign-in'
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
+  error: z.enum(['login_failed', 'forbidden']).optional(),
 })
 
 export const Route = createFileRoute('/(auth)/sign-in')({

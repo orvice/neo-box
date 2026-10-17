@@ -57,6 +57,18 @@ func (f ConnectionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ConnectionMutation", m)
 }
 
+// The LogtoSessionFunc type is an adapter to allow the use of ordinary
+// function as LogtoSession mutator.
+type LogtoSessionFunc func(context.Context, *ent.LogtoSessionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LogtoSessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LogtoSessionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LogtoSessionMutation", m)
+}
+
 // The NocoDBBackupPolicyFunc type is an adapter to allow the use of ordinary
 // function as NocoDBBackupPolicy mutator.
 type NocoDBBackupPolicyFunc func(context.Context, *ent.NocoDBBackupPolicyMutation) (ent.Value, error)

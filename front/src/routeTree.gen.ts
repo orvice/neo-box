@@ -20,7 +20,6 @@ import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
 import { Route as AuthenticatedWorkspaceRouteImport } from './routes/_authenticated/workspace'
-import { Route as authAuthCallbackRouteImport } from './routes/(auth)/auth.callback'
 import { Route as AuthenticatedConnectionsIndexRouteImport } from './routes/_authenticated/connections/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
@@ -89,11 +88,6 @@ const AuthenticatedWorkspaceRoute = AuthenticatedWorkspaceRouteImport.update({
   id: '/workspace',
   path: '/workspace',
   getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const authAuthCallbackRoute = authAuthCallbackRouteImport.update({
-  id: '/(auth)/auth/callback',
-  path: '/auth/callback',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedConnectionsIndexRoute =
   AuthenticatedConnectionsIndexRouteImport.update({
@@ -187,7 +181,6 @@ export interface FileRoutesByFullPath {
   '/503': typeof errors503Route
   '/profile': typeof AuthenticatedProfileRoute
   '/workspace': typeof AuthenticatedWorkspaceRoute
-  '/auth/callback': typeof authAuthCallbackRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
@@ -212,7 +205,6 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRoute
   '/workspace': typeof AuthenticatedWorkspaceRoute
   '/': typeof AuthenticatedIndexRoute
-  '/auth/callback': typeof authAuthCallbackRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
@@ -240,7 +232,6 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/workspace': typeof AuthenticatedWorkspaceRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
-  '/(auth)/auth/callback': typeof authAuthCallbackRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
@@ -268,7 +259,6 @@ export interface FileRouteTypes {
     | '/503'
     | '/profile'
     | '/workspace'
-    | '/auth/callback'
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
@@ -293,7 +283,6 @@ export interface FileRouteTypes {
     | '/profile'
     | '/workspace'
     | '/'
-    | '/auth/callback'
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
@@ -320,7 +309,6 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/workspace'
     | '/_authenticated/'
-    | '/(auth)/auth/callback'
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
     | '/_authenticated/settings/notifications'
@@ -344,7 +332,6 @@ export interface RootRouteChildren {
   errors404Route: typeof errors404Route
   errors500Route: typeof errors500Route
   errors503Route: typeof errors503Route
-  authAuthCallbackRoute: typeof authAuthCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -425,13 +412,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/workspace'
       preLoaderRoute: typeof AuthenticatedWorkspaceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/(auth)/auth/callback': {
-      id: '/(auth)/auth/callback'
-      path: '/auth/callback'
-      fullPath: '/auth/callback'
-      preLoaderRoute: typeof authAuthCallbackRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/connections/': {
       id: '/_authenticated/connections/'
@@ -599,7 +579,6 @@ const rootRouteChildren: RootRouteChildren = {
   errors404Route: errors404Route,
   errors500Route: errors500Route,
   errors503Route: errors503Route,
-  authAuthCallbackRoute: authAuthCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

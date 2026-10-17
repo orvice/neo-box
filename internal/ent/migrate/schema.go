@@ -148,6 +148,27 @@ var (
 			},
 		},
 	}
+	// LogtoSessionsColumns holds the columns for the "logto_sessions" table.
+	LogtoSessionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"flow", "session"}},
+		{Name: "ciphertext", Type: field.TypeString, Size: 2147483647},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "expires_at", Type: field.TypeTime},
+	}
+	// LogtoSessionsTable holds the schema information for the "logto_sessions" table.
+	LogtoSessionsTable = &schema.Table{
+		Name:       "logto_sessions",
+		Columns:    LogtoSessionsColumns,
+		PrimaryKey: []*schema.Column{LogtoSessionsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "logtosession_expires_at",
+				Unique:  false,
+				Columns: []*schema.Column{LogtoSessionsColumns[4]},
+			},
+		},
+	}
 	// NocodbBackupPoliciesColumns holds the columns for the "nocodb_backup_policies" table.
 	NocodbBackupPoliciesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -603,6 +624,7 @@ var (
 		CloudflareDNSOperationsTable,
 		CloudflareResourceOperationsTable,
 		ConnectionsTable,
+		LogtoSessionsTable,
 		NocodbBackupPoliciesTable,
 		NocodbFilesTable,
 		NocodbFileSourcesTable,
@@ -633,6 +655,9 @@ func init() {
 	}
 	ConnectionsTable.Annotation = &entsql.Annotation{
 		Table: "connections",
+	}
+	LogtoSessionsTable.Annotation = &entsql.Annotation{
+		Table: "logto_sessions",
 	}
 	NocodbBackupPoliciesTable.Annotation = &entsql.Annotation{
 		Table: "nocodb_backup_policies",
