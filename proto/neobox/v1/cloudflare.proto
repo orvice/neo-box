@@ -144,6 +144,12 @@ service CloudflareService {
   // DeleteCloudflareEmailAddress deletes a destination address, refused
   // while a rule or the catch-all of zone_id still forwards to it.
   rpc DeleteCloudflareEmailAddress(DeleteCloudflareEmailAddressRequest) returns (DeleteCloudflareEmailAddressResponse);
+  // ListCloudflareEmailLogs reads a Zone's Email Routing events (mail
+  // received, forwarded, dropped, rejected or failed), newest first, from
+  // Cloudflare's GraphQL Analytics API. Cloudflare keeps them 31 days. The
+  // token needs the Analytics Read permission (PermissionDenied otherwise).
+  // Nothing is stored.
+  rpc ListCloudflareEmailLogs(ListCloudflareEmailLogsRequest) returns (ListCloudflareEmailLogsResponse);
 }
 
 // CloudflarePageInfo describes one page of a list.
@@ -1301,4 +1307,54 @@ message DeleteCloudflareEmailAddressRequest {
 
 message DeleteCloudflareEmailAddressResponse {
   CloudflareChangeResult result = 1;
+}
+
+// CloudflareEmailLog is one Email Routing event. One email can have several
+// (received, then forwarded).
+message CloudflareEmailLog {
+  google.protobuf.Timestamp time = 1;
+  string from = 2;
+  string to = 3;
+  string subject = 4;
+  // Cloudflare's outcome, e.g. delivered, dropped, rejected, deliveryFailed.
+  string status = 5;
+  // incoming, forward, reply or newEmail.
+  string event_type = 6;
+  // What the matching rule did: forward, drop or worker.
+  string action = 7;
+  // ID of the routing rule that matched; empty when none did.
+  string rule_id = 8;
+  string message_id = 9;
+  string session_id = 10;
+  string error_detail = 11;
+  // Authentication results, e.g. pass, fail, none.
+  string spf = 12;
+  string dkim = 13;
+  string dmarc = 14;
+  string arc = 15;
+  bool spam = 16;
+  // A non-delivery report (a bounce).
+  bool ndr = 17;
+  // The last event of this email.
+  bool last_event = 18;
+}
+
+message ListCloudflareEmailLogsRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string zone_id = 2 [(validate.rules).string.min_len = 1];
+  // The range, inclusive. Not earlier than 31 days ago.
+  google.protobuf.Timestamp start_time = 3 [(validate.rules).timestamp.required = true];
+  google.protobuf.Timestamp end_time = 4 [(validate.rules).timestamp.required = true];
+  // At most 500; 0 means 100.
+  int32 limit = 5 [(validate.rules).int32 = {
+    gte: 0
+    lte: 500
+  }];
+}
+
+message ListCloudflareEmailLogsResponse {
+  // Newest first.
+  repeated CloudflareEmailLog logs = 1;
+  // The limit was reached, so older events in the range may exist.
+  bool truncated = 2;
 }

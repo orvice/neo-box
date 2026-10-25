@@ -144,6 +144,16 @@ shadcn/ui + Connect-Web on the frontend.
   to a Worker or owned by wrangler are refused; deleting an address checks the
   named Zone's rules and catch-all. Locks: `email/<acc>/<zone>` and
   `email/<acc>/addresses`.
+- `internal/cloudflare/graphql.go` and `email_logs.go` — Email Routing logs
+  through Cloudflare's GraphQL Analytics API (`POST /graphql`, dataset
+  `emailRoutingAdaptive`). GraphQL answers in `{data, errors}` not the REST
+  envelope, and reports a token without access as a 200 with an `authz`
+  error, which `readGraphQL` turns into a 403 `APIError` so the usual
+  classification applies; the query is a POST retried like a read.
+  `EmailLogQuery.Validate` enforces the 31-day retention and the 500 limit.
+  `Account.EmailLogs` (`cloudflareacct/email.go`) is a plain read: it needs
+  Analytics Read, stores nothing and logs nothing (`docs/adr/0012`). The fake
+  GraphQL lives in `cftest/graphql.go`.
 - `internal/wasabisync/` — `Manager`: one sync at a time; 12-month backfill in
   30-day chunks that resumes after failures, daily run at 02:30 UTC from the
   last synced day, `Refresh` for the last 7 days, catch-up at startup. Also
@@ -198,7 +208,9 @@ Email Routing (GetCloudflareEmailRouting, ListCloudflareEmailAddresses,
 EnableCloudflareEmailRouting, rule create / update / delete,
 SetCloudflareEmailCatchAll, destination address create / delete) also returns
 CloudflareChangeResult; there is no disable,
-and `ListCloudflareResourceOperations` lists their log. No code upload.
+and `ListCloudflareResourceOperations` lists their log. `ListCloudflareEmailLogs`
+reads a Zone's Email Routing events (31 days, needs Analytics Read) and
+changes nothing. No code upload.
 `connection_id` must be the caller's Cloudflare connection. A missing
 permission is PermissionDenied, a rejected token FailedPrecondition (never
 Unauthenticated, which signs the user out), an unconfirmed write Unknown.
@@ -217,10 +229,11 @@ hooks. `src/stores/auth-store.ts` (Zustand) holds token + user. Routes under
 Provider registry: `provider-info.ts` (key, label, icon; used by the sidebar)
 and `providers.ts` (each Provider's form, card summary, and detail page from
 its feature folder). Cloudflare's logic lives in `src/features/cloudflare/`
-`addresses.ts`, `dns.ts`, `access.ts`, `tunnels.ts`, `email.ts` and
-`manage.ts` (input checks, status and log wording), each with a Vitest test;
-Email Routing UI is in `email-routing-tab.tsx` (`email-rules.tsx`,
-`email-addresses.tsx`). `worker-page.tsx`
+`addresses.ts`, `dns.ts`, `access.ts`, `tunnels.ts`, `email.ts`,
+`email-logs.ts` and `manage.ts` (input checks, status and log wording), each
+with a Vitest test; Email Routing UI is in `email-routing-tab.tsx`
+(`email-rules.tsx`, `email-addresses.tsx`), and the zone page's Email logs tab
+is `email-logs-tab.tsx`. `worker-page.tsx`
 and `pages-project-page.tsx` are the management pages; they share
 `manage-dialogs.tsx` (`FormDialog`, `ConfirmChangeDialog`).
 

@@ -349,6 +349,7 @@ include the account in its resources, and grant only what you want to use:
 | Zone → Email Routing Rules → Edit | enabling Email Routing, changing rules and the catch-all |
 | Account → Email Routing Addresses → Read | destination addresses |
 | Account → Email Routing Addresses → Edit | adding and deleting destination addresses |
+| Zone → Analytics → Read (or Account → Account Analytics → Read) | a Zone's Email logs tab |
 
 Saving checks, without changing anything, that Cloudflare accepts the token
 and that the token reaches the account through at least one of these. A tab
@@ -420,6 +421,30 @@ zone you are in still forwards to it; rules of other zones are not checked.
 Every change is in the tab's log. The token needs the four Email Routing
 permissions in the table above (Zone: Rules, Account: Addresses; Read and
 Edit).
+
+**Email logs.** A Zone's page also has an Email logs tab: the mail Cloudflare
+received for the zone and what it did with each message (forwarded,
+dropped, rejected, failed), newest first, with sender, recipient, subject,
+the routing rule that matched, SPF / DKIM / DMARC results and any error
+Cloudflare gives. Pick a range (last hour to 30 days) and how many of the
+newest events to read (up to 500), then filter by result or search sender,
+recipient, subject and message ID. It reads the Email Routing events from
+Cloudflare's [GraphQL Analytics API](https://developers.cloudflare.com/email-service/observability/metrics-analytics/)
+(`emailRoutingAdaptive`), the same data as the dashboard's activity log. Limits
+that come from Cloudflare, not Neo Box:
+
+- Events are kept for **31 days**; older mail cannot be listed.
+- The data is per zone, so the log is opened from a zone.
+- The token needs **Analytics → Read** on the zone (or **Account Analytics →
+  Read**), a permission separate from Email Routing's. Without it only this
+  tab says so.
+- A query returns at most the newest N events (500 at most); when the limit is
+  reached the tab says older events exist, and a shorter range shows them.
+- One email can have several events (received, then forwarded), and
+  Cloudflare's API allows 300 GraphQL queries per 5 minutes per user.
+- Message bodies are not available; only the metadata above.
+
+Logs are read live and never stored by Neo Box; viewing them is not logged.
 
 ### Environment variables
 

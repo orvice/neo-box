@@ -112,22 +112,23 @@ type Request struct {
 type Server struct {
 	*httptest.Server
 
-	mu         sync.Mutex
-	tokens     map[string]*Token
-	accounts   map[string]string // id → name
-	zones      []*Zone
-	records    map[string][]map[string]any // zone ID → records
-	nextID     int
-	scripts    map[string][]*Script // account → scripts
-	subdomains map[string]string    // account → workers.dev subdomain
-	domains    map[string][]*WorkerDomain
-	routes     []*Route
-	projects   map[string][]*PagesProject
-	tunnels    map[string][]*Tunnel // account → tunnels
-	requests   []Request
-	routeSeq   int
-	emailZones map[string]*emailZone      // zone ID → Email Routing state
-	emailAddrs map[string][]*EmailAddress // account → destination addresses
+	mu          sync.Mutex
+	tokens      map[string]*Token
+	accounts    map[string]string // id → name
+	zones       []*Zone
+	records     map[string][]map[string]any // zone ID → records
+	nextID      int
+	scripts     map[string][]*Script // account → scripts
+	subdomains  map[string]string    // account → workers.dev subdomain
+	domains     map[string][]*WorkerDomain
+	routes      []*Route
+	projects    map[string][]*PagesProject
+	tunnels     map[string][]*Tunnel // account → tunnels
+	requests    []Request
+	routeSeq    int
+	emailZones  map[string]*emailZone      // zone ID → Email Routing state
+	emailAddrs  map[string][]*EmailAddress // account → destination addresses
+	emailEvents map[string][]EmailEvent    // zone ID → Email Routing log events
 
 	// Intercept, when set, sees every request first; returning true means
 	// it answered.
@@ -142,7 +143,7 @@ func New() *Server {
 	s := &Server{
 		tokens: map[string]*Token{}, accounts: map[string]string{}, records: map[string][]map[string]any{},
 		scripts: map[string][]*Script{}, subdomains: map[string]string{}, domains: map[string][]*WorkerDomain{},
-		projects: map[string][]*PagesProject{}, tunnels: map[string][]*Tunnel{}, emailZones: map[string]*emailZone{}, emailAddrs: map[string][]*EmailAddress{},
+		projects: map[string][]*PagesProject{}, tunnels: map[string][]*Tunnel{}, emailZones: map[string]*emailZone{}, emailAddrs: map[string][]*EmailAddress{}, emailEvents: map[string][]EmailEvent{},
 	}
 	s.Server = httptest.NewServer(http.HandlerFunc(s.serve))
 	return s
@@ -261,11 +262,12 @@ func (s *Server) Requests() []Request {
 	return append([]Request(nil), s.requests...)
 }
 
-// Writes returns the non-GET requests the fake received.
+// Writes returns the non-GET requests the fake received, except GraphQL
+// queries, which read.
 func (s *Server) Writes() []Request {
 	var out []Request
 	for _, r := range s.Requests() {
-		if r.Method != http.MethodGet {
+		if r.Method != http.MethodGet && r.Path != "/graphql" {
 			out = append(out, r)
 		}
 	}
@@ -363,6 +365,8 @@ func (s *Server) handle(w http.ResponseWriter, r *http.Request, path string, bod
 		ok(w, map[string]any{"id": "tok", "status": "active"}, nil)
 	case len(parts) == 2 && parts[0] == "accounts":
 		s.getAccount(w, tok, parts[1])
+	case path == "/graphql":
+		s.graphql(w, r, tok, body)
 	case path == "/zones":
 		s.listZones(w, r, tok)
 	case len(parts) >= 2 && parts[0] == "zones":

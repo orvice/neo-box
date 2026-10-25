@@ -243,11 +243,16 @@ func (c *Client) send(ctx context.Context, method, path string, body, out any) e
 // errors; writes retry only 429, and report anything else without a clear
 // answer as an UncertainError.
 func (c *Client) do(ctx context.Context, method, path string, q url.Values, payload []byte) (*envelope, error) {
+	return c.doWith(ctx, method, path, q, payload, method != http.MethodGet, c.read)
+}
+
+// doWith is do with an explicit write flag and response reader. A GraphQL
+// query is a POST that changes nothing, so it is retried like a read.
+func (c *Client) doWith(ctx context.Context, method, path string, q url.Values, payload []byte, write bool, read func(*http.Response, string, string) (*envelope, error)) (*envelope, error) {
 	target := c.endpoint + path
 	if len(q) > 0 {
 		target += "?" + q.Encode()
 	}
-	write := method != http.MethodGet
 	var lastErr error
 	for attempt := 0; ; attempt++ {
 		if c.limiter != nil {
@@ -282,7 +287,7 @@ func (c *Client) do(ctx context.Context, method, path string, q url.Values, payl
 				return nil, ctx.Err()
 			}
 		} else {
-			env, err := c.read(resp, method, path)
+			env, err := read(resp, method, path)
 			if err == nil {
 				return env, nil
 			}

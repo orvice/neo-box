@@ -197,6 +197,14 @@ can't be deleted while a Restore of it is pending or running.
   It names the resource, action and target, with the state before and after
   and what was requested, never a secret value. Email Routing changes are
   logged the same way as an **Email Routing operation**.
+- **Email log** — one Email Routing event of a Zone, as Cloudflare's GraphQL
+  Analytics API reports it (`emailRoutingAdaptive`): when, sender, recipient,
+  subject, Cloudflare's outcome (forwarded, dropped, rejected, failed…), the
+  rule that matched, and SPF / DKIM / DMARC results. One email can have
+  several. Cloudflare keeps them 31 days and they need the token's Analytics
+  Read permission. Neo Box reads them live, newest first, never stores them,
+  and does not log reading them (unlike changes, which are Resource
+  operations); message bodies are not available.
 
 ### Google Workspace
 

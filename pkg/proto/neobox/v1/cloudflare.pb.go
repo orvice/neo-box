@@ -10106,6 +10106,336 @@ func (x *DeleteCloudflareEmailAddressResponse) GetResult() *CloudflareChangeResu
 	return nil
 }
 
+// CloudflareEmailLog is one Email Routing event. One email can have several
+// (received, then forwarded).
+type CloudflareEmailLog struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Time    *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=time,proto3" json:"time,omitempty"`
+	From    string                 `protobuf:"bytes,2,opt,name=from,proto3" json:"from,omitempty"`
+	To      string                 `protobuf:"bytes,3,opt,name=to,proto3" json:"to,omitempty"`
+	Subject string                 `protobuf:"bytes,4,opt,name=subject,proto3" json:"subject,omitempty"`
+	// Cloudflare's outcome, e.g. delivered, dropped, rejected, deliveryFailed.
+	Status string `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`
+	// incoming, forward, reply or newEmail.
+	EventType string `protobuf:"bytes,6,opt,name=event_type,json=eventType,proto3" json:"event_type,omitempty"`
+	// What the matching rule did: forward, drop or worker.
+	Action string `protobuf:"bytes,7,opt,name=action,proto3" json:"action,omitempty"`
+	// ID of the routing rule that matched; empty when none did.
+	RuleId      string `protobuf:"bytes,8,opt,name=rule_id,json=ruleId,proto3" json:"rule_id,omitempty"`
+	MessageId   string `protobuf:"bytes,9,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
+	SessionId   string `protobuf:"bytes,10,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	ErrorDetail string `protobuf:"bytes,11,opt,name=error_detail,json=errorDetail,proto3" json:"error_detail,omitempty"`
+	// Authentication results, e.g. pass, fail, none.
+	Spf   string `protobuf:"bytes,12,opt,name=spf,proto3" json:"spf,omitempty"`
+	Dkim  string `protobuf:"bytes,13,opt,name=dkim,proto3" json:"dkim,omitempty"`
+	Dmarc string `protobuf:"bytes,14,opt,name=dmarc,proto3" json:"dmarc,omitempty"`
+	Arc   string `protobuf:"bytes,15,opt,name=arc,proto3" json:"arc,omitempty"`
+	Spam  bool   `protobuf:"varint,16,opt,name=spam,proto3" json:"spam,omitempty"`
+	// A non-delivery report (a bounce).
+	Ndr bool `protobuf:"varint,17,opt,name=ndr,proto3" json:"ndr,omitempty"`
+	// The last event of this email.
+	LastEvent bool `protobuf:"varint,18,opt,name=last_event,json=lastEvent,proto3" json:"last_event,omitempty"`
+}
+
+func (x *CloudflareEmailLog) Reset() {
+	*x = CloudflareEmailLog{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_neobox_v1_cloudflare_proto_msgTypes[142]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CloudflareEmailLog) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CloudflareEmailLog) ProtoMessage() {}
+
+func (x *CloudflareEmailLog) ProtoReflect() protoreflect.Message {
+	mi := &file_neobox_v1_cloudflare_proto_msgTypes[142]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CloudflareEmailLog.ProtoReflect.Descriptor instead.
+func (*CloudflareEmailLog) Descriptor() ([]byte, []int) {
+	return file_neobox_v1_cloudflare_proto_rawDescGZIP(), []int{142}
+}
+
+func (x *CloudflareEmailLog) GetTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Time
+	}
+	return nil
+}
+
+func (x *CloudflareEmailLog) GetFrom() string {
+	if x != nil {
+		return x.From
+	}
+	return ""
+}
+
+func (x *CloudflareEmailLog) GetTo() string {
+	if x != nil {
+		return x.To
+	}
+	return ""
+}
+
+func (x *CloudflareEmailLog) GetSubject() string {
+	if x != nil {
+		return x.Subject
+	}
+	return ""
+}
+
+func (x *CloudflareEmailLog) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *CloudflareEmailLog) GetEventType() string {
+	if x != nil {
+		return x.EventType
+	}
+	return ""
+}
+
+func (x *CloudflareEmailLog) GetAction() string {
+	if x != nil {
+		return x.Action
+	}
+	return ""
+}
+
+func (x *CloudflareEmailLog) GetRuleId() string {
+	if x != nil {
+		return x.RuleId
+	}
+	return ""
+}
+
+func (x *CloudflareEmailLog) GetMessageId() string {
+	if x != nil {
+		return x.MessageId
+	}
+	return ""
+}
+
+func (x *CloudflareEmailLog) GetSessionId() string {
+	if x != nil {
+		return x.SessionId
+	}
+	return ""
+}
+
+func (x *CloudflareEmailLog) GetErrorDetail() string {
+	if x != nil {
+		return x.ErrorDetail
+	}
+	return ""
+}
+
+func (x *CloudflareEmailLog) GetSpf() string {
+	if x != nil {
+		return x.Spf
+	}
+	return ""
+}
+
+func (x *CloudflareEmailLog) GetDkim() string {
+	if x != nil {
+		return x.Dkim
+	}
+	return ""
+}
+
+func (x *CloudflareEmailLog) GetDmarc() string {
+	if x != nil {
+		return x.Dmarc
+	}
+	return ""
+}
+
+func (x *CloudflareEmailLog) GetArc() string {
+	if x != nil {
+		return x.Arc
+	}
+	return ""
+}
+
+func (x *CloudflareEmailLog) GetSpam() bool {
+	if x != nil {
+		return x.Spam
+	}
+	return false
+}
+
+func (x *CloudflareEmailLog) GetNdr() bool {
+	if x != nil {
+		return x.Ndr
+	}
+	return false
+}
+
+func (x *CloudflareEmailLog) GetLastEvent() bool {
+	if x != nil {
+		return x.LastEvent
+	}
+	return false
+}
+
+type ListCloudflareEmailLogsRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ConnectionId string `protobuf:"bytes,1,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
+	ZoneId       string `protobuf:"bytes,2,opt,name=zone_id,json=zoneId,proto3" json:"zone_id,omitempty"`
+	// The range, inclusive. Not earlier than 31 days ago.
+	StartTime *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
+	EndTime   *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
+	// At most 500; 0 means 100.
+	Limit int32 `protobuf:"varint,5,opt,name=limit,proto3" json:"limit,omitempty"`
+}
+
+func (x *ListCloudflareEmailLogsRequest) Reset() {
+	*x = ListCloudflareEmailLogsRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_neobox_v1_cloudflare_proto_msgTypes[143]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListCloudflareEmailLogsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListCloudflareEmailLogsRequest) ProtoMessage() {}
+
+func (x *ListCloudflareEmailLogsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_neobox_v1_cloudflare_proto_msgTypes[143]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListCloudflareEmailLogsRequest.ProtoReflect.Descriptor instead.
+func (*ListCloudflareEmailLogsRequest) Descriptor() ([]byte, []int) {
+	return file_neobox_v1_cloudflare_proto_rawDescGZIP(), []int{143}
+}
+
+func (x *ListCloudflareEmailLogsRequest) GetConnectionId() string {
+	if x != nil {
+		return x.ConnectionId
+	}
+	return ""
+}
+
+func (x *ListCloudflareEmailLogsRequest) GetZoneId() string {
+	if x != nil {
+		return x.ZoneId
+	}
+	return ""
+}
+
+func (x *ListCloudflareEmailLogsRequest) GetStartTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.StartTime
+	}
+	return nil
+}
+
+func (x *ListCloudflareEmailLogsRequest) GetEndTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.EndTime
+	}
+	return nil
+}
+
+func (x *ListCloudflareEmailLogsRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+type ListCloudflareEmailLogsResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Newest first.
+	Logs []*CloudflareEmailLog `protobuf:"bytes,1,rep,name=logs,proto3" json:"logs,omitempty"`
+	// The limit was reached, so older events in the range may exist.
+	Truncated bool `protobuf:"varint,2,opt,name=truncated,proto3" json:"truncated,omitempty"`
+}
+
+func (x *ListCloudflareEmailLogsResponse) Reset() {
+	*x = ListCloudflareEmailLogsResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_neobox_v1_cloudflare_proto_msgTypes[144]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListCloudflareEmailLogsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListCloudflareEmailLogsResponse) ProtoMessage() {}
+
+func (x *ListCloudflareEmailLogsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_neobox_v1_cloudflare_proto_msgTypes[144]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListCloudflareEmailLogsResponse.ProtoReflect.Descriptor instead.
+func (*ListCloudflareEmailLogsResponse) Descriptor() ([]byte, []int) {
+	return file_neobox_v1_cloudflare_proto_rawDescGZIP(), []int{144}
+}
+
+func (x *ListCloudflareEmailLogsResponse) GetLogs() []*CloudflareEmailLog {
+	if x != nil {
+		return x.Logs
+	}
+	return nil
+}
+
+func (x *ListCloudflareEmailLogsResponse) GetTruncated() bool {
+	if x != nil {
+		return x.Truncated
+	}
+	return false
+}
+
 var File_neobox_v1_cloudflare_proto protoreflect.FileDescriptor
 
 var file_neobox_v1_cloudflare_proto_rawDesc = []byte{
@@ -11648,7 +11978,62 @@ var file_neobox_v1_cloudflare_proto_rawDesc = []byte{
 	0x65, 0x73, 0x75, 0x6c, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x6e, 0x65,
 	0x6f, 0x62, 0x6f, 0x78, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6c, 0x6f, 0x75, 0x64, 0x66, 0x6c, 0x61,
 	0x72, 0x65, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x52, 0x06,
-	0x72, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x2a, 0x8b, 0x01, 0x0a, 0x16, 0x43, 0x6c, 0x6f, 0x75, 0x64,
+	0x72, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x22, 0xde, 0x03, 0x0a, 0x12, 0x43, 0x6c, 0x6f, 0x75, 0x64,
+	0x66, 0x6c, 0x61, 0x72, 0x65, 0x45, 0x6d, 0x61, 0x69, 0x6c, 0x4c, 0x6f, 0x67, 0x12, 0x2e, 0x0a,
+	0x04, 0x74, 0x69, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f,
+	0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69,
+	0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x04, 0x74, 0x69, 0x6d, 0x65, 0x12, 0x12, 0x0a,
+	0x04, 0x66, 0x72, 0x6f, 0x6d, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x66, 0x72, 0x6f,
+	0x6d, 0x12, 0x0e, 0x0a, 0x02, 0x74, 0x6f, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x74,
+	0x6f, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x75, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x18, 0x04, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x07, 0x73, 0x75, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x73,
+	0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x74, 0x61,
+	0x74, 0x75, 0x73, 0x12, 0x1d, 0x0a, 0x0a, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x5f, 0x74, 0x79, 0x70,
+	0x65, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x79,
+	0x70, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x07, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x06, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x17, 0x0a, 0x07, 0x72, 0x75,
+	0x6c, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x72, 0x75, 0x6c,
+	0x65, 0x49, 0x64, 0x12, 0x1d, 0x0a, 0x0a, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x5f, 0x69,
+	0x64, 0x18, 0x09, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x49, 0x64, 0x12, 0x1d, 0x0a, 0x0a, 0x73, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64,
+	0x18, 0x0a, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x73, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x49,
+	0x64, 0x12, 0x21, 0x0a, 0x0c, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x5f, 0x64, 0x65, 0x74, 0x61, 0x69,
+	0x6c, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x44, 0x65,
+	0x74, 0x61, 0x69, 0x6c, 0x12, 0x10, 0x0a, 0x03, 0x73, 0x70, 0x66, 0x18, 0x0c, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x03, 0x73, 0x70, 0x66, 0x12, 0x12, 0x0a, 0x04, 0x64, 0x6b, 0x69, 0x6d, 0x18, 0x0d,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x64, 0x6b, 0x69, 0x6d, 0x12, 0x14, 0x0a, 0x05, 0x64, 0x6d,
+	0x61, 0x72, 0x63, 0x18, 0x0e, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x64, 0x6d, 0x61, 0x72, 0x63,
+	0x12, 0x10, 0x0a, 0x03, 0x61, 0x72, 0x63, 0x18, 0x0f, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x61,
+	0x72, 0x63, 0x12, 0x12, 0x0a, 0x04, 0x73, 0x70, 0x61, 0x6d, 0x18, 0x10, 0x20, 0x01, 0x28, 0x08,
+	0x52, 0x04, 0x73, 0x70, 0x61, 0x6d, 0x12, 0x10, 0x0a, 0x03, 0x6e, 0x64, 0x72, 0x18, 0x11, 0x20,
+	0x01, 0x28, 0x08, 0x52, 0x03, 0x6e, 0x64, 0x72, 0x12, 0x1d, 0x0a, 0x0a, 0x6c, 0x61, 0x73, 0x74,
+	0x5f, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x18, 0x12, 0x20, 0x01, 0x28, 0x08, 0x52, 0x09, 0x6c, 0x61,
+	0x73, 0x74, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x22, 0x98, 0x02, 0x0a, 0x1e, 0x4c, 0x69, 0x73, 0x74,
+	0x43, 0x6c, 0x6f, 0x75, 0x64, 0x66, 0x6c, 0x61, 0x72, 0x65, 0x45, 0x6d, 0x61, 0x69, 0x6c, 0x4c,
+	0x6f, 0x67, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x2c, 0x0a, 0x0d, 0x63, 0x6f,
+	0x6e, 0x6e, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x42, 0x07, 0xfa, 0x42, 0x04, 0x72, 0x02, 0x10, 0x01, 0x52, 0x0c, 0x63, 0x6f, 0x6e, 0x6e,
+	0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x20, 0x0a, 0x07, 0x7a, 0x6f, 0x6e, 0x65,
+	0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x07, 0xfa, 0x42, 0x04, 0x72, 0x02,
+	0x10, 0x01, 0x52, 0x06, 0x7a, 0x6f, 0x6e, 0x65, 0x49, 0x64, 0x12, 0x43, 0x0a, 0x0a, 0x73, 0x74,
+	0x61, 0x72, 0x74, 0x5f, 0x74, 0x69, 0x6d, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a,
+	0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
+	0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x42, 0x08, 0xfa, 0x42, 0x05, 0xb2,
+	0x01, 0x02, 0x08, 0x01, 0x52, 0x09, 0x73, 0x74, 0x61, 0x72, 0x74, 0x54, 0x69, 0x6d, 0x65, 0x12,
+	0x3f, 0x0a, 0x08, 0x65, 0x6e, 0x64, 0x5f, 0x74, 0x69, 0x6d, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x42, 0x08, 0xfa,
+	0x42, 0x05, 0xb2, 0x01, 0x02, 0x08, 0x01, 0x52, 0x07, 0x65, 0x6e, 0x64, 0x54, 0x69, 0x6d, 0x65,
+	0x12, 0x20, 0x0a, 0x05, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x18, 0x05, 0x20, 0x01, 0x28, 0x05, 0x42,
+	0x0a, 0xfa, 0x42, 0x07, 0x1a, 0x05, 0x18, 0xf4, 0x03, 0x28, 0x00, 0x52, 0x05, 0x6c, 0x69, 0x6d,
+	0x69, 0x74, 0x22, 0x72, 0x0a, 0x1f, 0x4c, 0x69, 0x73, 0x74, 0x43, 0x6c, 0x6f, 0x75, 0x64, 0x66,
+	0x6c, 0x61, 0x72, 0x65, 0x45, 0x6d, 0x61, 0x69, 0x6c, 0x4c, 0x6f, 0x67, 0x73, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x31, 0x0a, 0x04, 0x6c, 0x6f, 0x67, 0x73, 0x18, 0x01, 0x20,
+	0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x6e, 0x65, 0x6f, 0x62, 0x6f, 0x78, 0x2e, 0x76, 0x31, 0x2e,
+	0x43, 0x6c, 0x6f, 0x75, 0x64, 0x66, 0x6c, 0x61, 0x72, 0x65, 0x45, 0x6d, 0x61, 0x69, 0x6c, 0x4c,
+	0x6f, 0x67, 0x52, 0x04, 0x6c, 0x6f, 0x67, 0x73, 0x12, 0x1c, 0x0a, 0x09, 0x74, 0x72, 0x75, 0x6e,
+	0x63, 0x61, 0x74, 0x65, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x09, 0x74, 0x72, 0x75,
+	0x6e, 0x63, 0x61, 0x74, 0x65, 0x64, 0x2a, 0x8b, 0x01, 0x0a, 0x16, 0x43, 0x6c, 0x6f, 0x75, 0x64,
 	0x66, 0x6c, 0x61, 0x72, 0x65, 0x52, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x41, 0x63, 0x63, 0x65, 0x73,
 	0x73, 0x12, 0x28, 0x0a, 0x24, 0x43, 0x4c, 0x4f, 0x55, 0x44, 0x46, 0x4c, 0x41, 0x52, 0x45, 0x5f,
 	0x52, 0x45, 0x43, 0x4f, 0x52, 0x44, 0x5f, 0x41, 0x43, 0x43, 0x45, 0x53, 0x53, 0x5f, 0x55, 0x4e,
@@ -11787,7 +12172,7 @@ var file_neobox_v1_cloudflare_proto_rawDesc = []byte{
 	0x49, 0x4c, 0x5f, 0x41, 0x43, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x44, 0x52, 0x4f, 0x50, 0x10, 0x02,
 	0x12, 0x22, 0x0a, 0x1e, 0x43, 0x4c, 0x4f, 0x55, 0x44, 0x46, 0x4c, 0x41, 0x52, 0x45, 0x5f, 0x45,
 	0x4d, 0x41, 0x49, 0x4c, 0x5f, 0x41, 0x43, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x57, 0x4f, 0x52, 0x4b,
-	0x45, 0x52, 0x10, 0x03, 0x32, 0x8e, 0x33, 0x0a, 0x11, 0x43, 0x6c, 0x6f, 0x75, 0x64, 0x66, 0x6c,
+	0x45, 0x52, 0x10, 0x03, 0x32, 0x80, 0x34, 0x0a, 0x11, 0x43, 0x6c, 0x6f, 0x75, 0x64, 0x66, 0x6c,
 	0x61, 0x72, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x64, 0x0a, 0x13, 0x4c, 0x69,
 	0x73, 0x74, 0x43, 0x6c, 0x6f, 0x75, 0x64, 0x66, 0x6c, 0x61, 0x72, 0x65, 0x5a, 0x6f, 0x6e, 0x65,
 	0x73, 0x12, 0x25, 0x2e, 0x6e, 0x65, 0x6f, 0x62, 0x6f, 0x78, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x69,
@@ -12196,11 +12581,18 @@ var file_neobox_v1_cloudflare_proto_rawDesc = []byte{
 	0x75, 0x65, 0x73, 0x74, 0x1a, 0x2f, 0x2e, 0x6e, 0x65, 0x6f, 0x62, 0x6f, 0x78, 0x2e, 0x76, 0x31,
 	0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x43, 0x6c, 0x6f, 0x75, 0x64, 0x66, 0x6c, 0x61, 0x72,
 	0x65, 0x45, 0x6d, 0x61, 0x69, 0x6c, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x35, 0x5a, 0x33, 0x67, 0x6f, 0x2e, 0x6f, 0x72, 0x78, 0x2e,
-	0x6d, 0x65, 0x2f, 0x61, 0x70, 0x70, 0x73, 0x2f, 0x6e, 0x65, 0x6f, 0x2d, 0x62, 0x6f, 0x78, 0x2f,
-	0x70, 0x6b, 0x67, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x6e, 0x65, 0x6f, 0x62, 0x6f, 0x78,
-	0x2f, 0x76, 0x31, 0x3b, 0x6e, 0x65, 0x6f, 0x62, 0x6f, 0x78, 0x76, 0x31, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x70, 0x0a, 0x17, 0x4c, 0x69, 0x73, 0x74, 0x43, 0x6c, 0x6f,
+	0x75, 0x64, 0x66, 0x6c, 0x61, 0x72, 0x65, 0x45, 0x6d, 0x61, 0x69, 0x6c, 0x4c, 0x6f, 0x67, 0x73,
+	0x12, 0x29, 0x2e, 0x6e, 0x65, 0x6f, 0x62, 0x6f, 0x78, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x69, 0x73,
+	0x74, 0x43, 0x6c, 0x6f, 0x75, 0x64, 0x66, 0x6c, 0x61, 0x72, 0x65, 0x45, 0x6d, 0x61, 0x69, 0x6c,
+	0x4c, 0x6f, 0x67, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x2a, 0x2e, 0x6e, 0x65,
+	0x6f, 0x62, 0x6f, 0x78, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x43, 0x6c, 0x6f, 0x75,
+	0x64, 0x66, 0x6c, 0x61, 0x72, 0x65, 0x45, 0x6d, 0x61, 0x69, 0x6c, 0x4c, 0x6f, 0x67, 0x73, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x35, 0x5a, 0x33, 0x67, 0x6f, 0x2e, 0x6f, 0x72,
+	0x78, 0x2e, 0x6d, 0x65, 0x2f, 0x61, 0x70, 0x70, 0x73, 0x2f, 0x6e, 0x65, 0x6f, 0x2d, 0x62, 0x6f,
+	0x78, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x6e, 0x65, 0x6f, 0x62,
+	0x6f, 0x78, 0x2f, 0x76, 0x31, 0x3b, 0x6e, 0x65, 0x6f, 0x62, 0x6f, 0x78, 0x76, 0x31, 0x62, 0x06,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -12216,7 +12608,7 @@ func file_neobox_v1_cloudflare_proto_rawDescGZIP() []byte {
 }
 
 var file_neobox_v1_cloudflare_proto_enumTypes = make([]protoimpl.EnumInfo, 10)
-var file_neobox_v1_cloudflare_proto_msgTypes = make([]protoimpl.MessageInfo, 142)
+var file_neobox_v1_cloudflare_proto_msgTypes = make([]protoimpl.MessageInfo, 145)
 var file_neobox_v1_cloudflare_proto_goTypes = []interface{}{
 	(CloudflareRecordAccess)(0),                        // 0: neobox.v1.CloudflareRecordAccess
 	(CloudflareRecordAction)(0),                        // 1: neobox.v1.CloudflareRecordAction
@@ -12370,24 +12762,27 @@ var file_neobox_v1_cloudflare_proto_goTypes = []interface{}{
 	(*CreateCloudflareEmailAddressResponse)(nil),       // 149: neobox.v1.CreateCloudflareEmailAddressResponse
 	(*DeleteCloudflareEmailAddressRequest)(nil),        // 150: neobox.v1.DeleteCloudflareEmailAddressRequest
 	(*DeleteCloudflareEmailAddressResponse)(nil),       // 151: neobox.v1.DeleteCloudflareEmailAddressResponse
-	(*timestamppb.Timestamp)(nil),                      // 152: google.protobuf.Timestamp
-	(*structpb.Struct)(nil),                            // 153: google.protobuf.Struct
+	(*CloudflareEmailLog)(nil),                         // 152: neobox.v1.CloudflareEmailLog
+	(*ListCloudflareEmailLogsRequest)(nil),             // 153: neobox.v1.ListCloudflareEmailLogsRequest
+	(*ListCloudflareEmailLogsResponse)(nil),            // 154: neobox.v1.ListCloudflareEmailLogsResponse
+	(*timestamppb.Timestamp)(nil),                      // 155: google.protobuf.Timestamp
+	(*structpb.Struct)(nil),                            // 156: google.protobuf.Struct
 }
 var file_neobox_v1_cloudflare_proto_depIdxs = []int32{
 	0,   // 0: neobox.v1.CloudflareZone.dns_access:type_name -> neobox.v1.CloudflareRecordAccess
 	12,  // 1: neobox.v1.CloudflareDNSRecord.srv:type_name -> neobox.v1.CloudflareSRVData
 	13,  // 2: neobox.v1.CloudflareDNSRecord.caa:type_name -> neobox.v1.CloudflareCAAData
-	152, // 3: neobox.v1.CloudflareDNSRecord.created_on:type_name -> google.protobuf.Timestamp
-	152, // 4: neobox.v1.CloudflareDNSRecord.modified_on:type_name -> google.protobuf.Timestamp
+	155, // 3: neobox.v1.CloudflareDNSRecord.created_on:type_name -> google.protobuf.Timestamp
+	155, // 4: neobox.v1.CloudflareDNSRecord.modified_on:type_name -> google.protobuf.Timestamp
 	12,  // 5: neobox.v1.CloudflareDNSRecordInput.srv:type_name -> neobox.v1.CloudflareSRVData
 	13,  // 6: neobox.v1.CloudflareDNSRecordInput.caa:type_name -> neobox.v1.CloudflareCAAData
 	1,   // 7: neobox.v1.CloudflareDNSOperation.action:type_name -> neobox.v1.CloudflareRecordAction
 	14,  // 8: neobox.v1.CloudflareDNSOperation.before:type_name -> neobox.v1.CloudflareDNSRecord
 	14,  // 9: neobox.v1.CloudflareDNSOperation.after:type_name -> neobox.v1.CloudflareDNSRecord
 	2,   // 10: neobox.v1.CloudflareDNSOperation.status:type_name -> neobox.v1.CloudflareOperationStatus
-	152, // 11: neobox.v1.CloudflareDNSOperation.created_at:type_name -> google.protobuf.Timestamp
-	152, // 12: neobox.v1.CloudflareDNSOperation.finished_at:type_name -> google.protobuf.Timestamp
-	153, // 13: neobox.v1.CloudflareDNSOperation.requested:type_name -> google.protobuf.Struct
+	155, // 11: neobox.v1.CloudflareDNSOperation.created_at:type_name -> google.protobuf.Timestamp
+	155, // 12: neobox.v1.CloudflareDNSOperation.finished_at:type_name -> google.protobuf.Timestamp
+	156, // 13: neobox.v1.CloudflareDNSOperation.requested:type_name -> google.protobuf.Struct
 	3,   // 14: neobox.v1.CloudflareAddress.kind:type_name -> neobox.v1.CloudflareAddressKind
 	17,  // 15: neobox.v1.CloudflareWorker.addresses:type_name -> neobox.v1.CloudflareAddress
 	17,  // 16: neobox.v1.CloudflarePagesProject.addresses:type_name -> neobox.v1.CloudflareAddress
@@ -12414,10 +12809,10 @@ var file_neobox_v1_cloudflare_proto_depIdxs = []int32{
 	10,  // 37: neobox.v1.ListCloudflarePagesProjectsResponse.page_info:type_name -> neobox.v1.CloudflarePageInfo
 	18,  // 38: neobox.v1.ListCloudflarePagesProjectsResponse.address_issues:type_name -> neobox.v1.CloudflareAddressIssue
 	4,   // 39: neobox.v1.CloudflareTunnel.status:type_name -> neobox.v1.CloudflareTunnelStatus
-	152, // 40: neobox.v1.CloudflareTunnel.created_at:type_name -> google.protobuf.Timestamp
-	152, // 41: neobox.v1.CloudflareTunnel.inactive_since:type_name -> google.protobuf.Timestamp
-	152, // 42: neobox.v1.CloudflareTunnelConnection.opened_at:type_name -> google.protobuf.Timestamp
-	152, // 43: neobox.v1.CloudflareTunnelConnector.run_at:type_name -> google.protobuf.Timestamp
+	155, // 40: neobox.v1.CloudflareTunnel.created_at:type_name -> google.protobuf.Timestamp
+	155, // 41: neobox.v1.CloudflareTunnel.inactive_since:type_name -> google.protobuf.Timestamp
+	155, // 42: neobox.v1.CloudflareTunnelConnection.opened_at:type_name -> google.protobuf.Timestamp
+	155, // 43: neobox.v1.CloudflareTunnelConnector.run_at:type_name -> google.protobuf.Timestamp
 	42,  // 44: neobox.v1.CloudflareTunnelConnector.connections:type_name -> neobox.v1.CloudflareTunnelConnection
 	5,   // 45: neobox.v1.CloudflareTunnelRecordResult.status:type_name -> neobox.v1.CloudflareTunnelRecordStatus
 	41,  // 46: neobox.v1.ListCloudflareTunnelsResponse.tunnels:type_name -> neobox.v1.CloudflareTunnel
@@ -12432,18 +12827,18 @@ var file_neobox_v1_cloudflare_proto_depIdxs = []int32{
 	44,  // 55: neobox.v1.UpdateCloudflareTunnelHostnameResponse.hostname:type_name -> neobox.v1.CloudflareTunnelHostname
 	46,  // 56: neobox.v1.DeleteCloudflareTunnelHostnameResponse.record:type_name -> neobox.v1.CloudflareTunnelRecordResult
 	6,   // 57: neobox.v1.CloudflareResourceOperation.kind:type_name -> neobox.v1.CloudflareResourceKind
-	153, // 58: neobox.v1.CloudflareResourceOperation.before:type_name -> google.protobuf.Struct
-	153, // 59: neobox.v1.CloudflareResourceOperation.after:type_name -> google.protobuf.Struct
+	156, // 58: neobox.v1.CloudflareResourceOperation.before:type_name -> google.protobuf.Struct
+	156, // 59: neobox.v1.CloudflareResourceOperation.after:type_name -> google.protobuf.Struct
 	2,   // 60: neobox.v1.CloudflareResourceOperation.status:type_name -> neobox.v1.CloudflareOperationStatus
-	152, // 61: neobox.v1.CloudflareResourceOperation.created_at:type_name -> google.protobuf.Timestamp
-	152, // 62: neobox.v1.CloudflareResourceOperation.finished_at:type_name -> google.protobuf.Timestamp
-	153, // 63: neobox.v1.CloudflareResourceOperation.requested:type_name -> google.protobuf.Struct
+	155, // 61: neobox.v1.CloudflareResourceOperation.created_at:type_name -> google.protobuf.Timestamp
+	155, // 62: neobox.v1.CloudflareResourceOperation.finished_at:type_name -> google.protobuf.Timestamp
+	156, // 63: neobox.v1.CloudflareResourceOperation.requested:type_name -> google.protobuf.Struct
 	65,  // 64: neobox.v1.CloudflareChangeResult.operation:type_name -> neobox.v1.CloudflareResourceOperation
-	152, // 65: neobox.v1.CloudflareWorkerVersion.created_at:type_name -> google.protobuf.Timestamp
-	152, // 66: neobox.v1.CloudflareWorkerDeployment.created_at:type_name -> google.protobuf.Timestamp
+	155, // 65: neobox.v1.CloudflareWorkerVersion.created_at:type_name -> google.protobuf.Timestamp
+	155, // 66: neobox.v1.CloudflareWorkerDeployment.created_at:type_name -> google.protobuf.Timestamp
 	72,  // 67: neobox.v1.CloudflareWorkerDeployment.versions:type_name -> neobox.v1.CloudflareWorkerDeploymentVersion
-	152, // 68: neobox.v1.GetCloudflareWorkerResponse.created_at:type_name -> google.protobuf.Timestamp
-	152, // 69: neobox.v1.GetCloudflareWorkerResponse.modified_at:type_name -> google.protobuf.Timestamp
+	155, // 68: neobox.v1.GetCloudflareWorkerResponse.created_at:type_name -> google.protobuf.Timestamp
+	155, // 69: neobox.v1.GetCloudflareWorkerResponse.modified_at:type_name -> google.protobuf.Timestamp
 	67,  // 70: neobox.v1.GetCloudflareWorkerResponse.domains:type_name -> neobox.v1.CloudflareWorkerDomain
 	68,  // 71: neobox.v1.GetCloudflareWorkerResponse.routes:type_name -> neobox.v1.CloudflareWorkerRoute
 	69,  // 72: neobox.v1.GetCloudflareWorkerResponse.secrets:type_name -> neobox.v1.CloudflareWorkerSecret
@@ -12464,8 +12859,8 @@ var file_neobox_v1_cloudflare_proto_depIdxs = []int32{
 	66,  // 87: neobox.v1.DeleteCloudflareWorkerResponse.result:type_name -> neobox.v1.CloudflareChangeResult
 	8,   // 88: neobox.v1.CloudflarePagesEnvVar.type:type_name -> neobox.v1.CloudflarePagesEnvVarType
 	7,   // 89: neobox.v1.CloudflarePagesDeployment.environment:type_name -> neobox.v1.CloudflarePagesEnvironment
-	152, // 90: neobox.v1.CloudflarePagesDeployment.created_at:type_name -> google.protobuf.Timestamp
-	152, // 91: neobox.v1.GetCloudflarePagesProjectResponse.created_at:type_name -> google.protobuf.Timestamp
+	155, // 90: neobox.v1.CloudflarePagesDeployment.created_at:type_name -> google.protobuf.Timestamp
+	155, // 91: neobox.v1.GetCloudflarePagesProjectResponse.created_at:type_name -> google.protobuf.Timestamp
 	100, // 92: neobox.v1.GetCloudflarePagesProjectResponse.build_config:type_name -> neobox.v1.CloudflarePagesBuildConfig
 	98,  // 93: neobox.v1.GetCloudflarePagesProjectResponse.production_env_vars:type_name -> neobox.v1.CloudflarePagesEnvVar
 	98,  // 94: neobox.v1.GetCloudflarePagesProjectResponse.preview_env_vars:type_name -> neobox.v1.CloudflarePagesEnvVar
@@ -12492,8 +12887,8 @@ var file_neobox_v1_cloudflare_proto_depIdxs = []int32{
 	10,  // 115: neobox.v1.ListCloudflareResourceOperationsResponse.page_info:type_name -> neobox.v1.CloudflarePageInfo
 	9,   // 116: neobox.v1.CloudflareEmailRule.action:type_name -> neobox.v1.CloudflareEmailAction
 	9,   // 117: neobox.v1.CloudflareEmailCatchAll.action:type_name -> neobox.v1.CloudflareEmailAction
-	152, // 118: neobox.v1.CloudflareEmailAddress.created_at:type_name -> google.protobuf.Timestamp
-	152, // 119: neobox.v1.CloudflareEmailAddress.verified_at:type_name -> google.protobuf.Timestamp
+	155, // 118: neobox.v1.CloudflareEmailAddress.created_at:type_name -> google.protobuf.Timestamp
+	155, // 119: neobox.v1.CloudflareEmailAddress.verified_at:type_name -> google.protobuf.Timestamp
 	9,   // 120: neobox.v1.CloudflareEmailRuleInput.action:type_name -> neobox.v1.CloudflareEmailAction
 	128, // 121: neobox.v1.GetCloudflareEmailRoutingResponse.settings:type_name -> neobox.v1.CloudflareEmailRoutingSettings
 	130, // 122: neobox.v1.GetCloudflareEmailRoutingResponse.rules:type_name -> neobox.v1.CloudflareEmailRule
@@ -12511,117 +12906,123 @@ var file_neobox_v1_cloudflare_proto_depIdxs = []int32{
 	66,  // 134: neobox.v1.SetCloudflareEmailCatchAllResponse.result:type_name -> neobox.v1.CloudflareChangeResult
 	66,  // 135: neobox.v1.CreateCloudflareEmailAddressResponse.result:type_name -> neobox.v1.CloudflareChangeResult
 	66,  // 136: neobox.v1.DeleteCloudflareEmailAddressResponse.result:type_name -> neobox.v1.CloudflareChangeResult
-	21,  // 137: neobox.v1.CloudflareService.ListCloudflareZones:input_type -> neobox.v1.ListCloudflareZonesRequest
-	23,  // 138: neobox.v1.CloudflareService.GetCloudflareZone:input_type -> neobox.v1.GetCloudflareZoneRequest
-	25,  // 139: neobox.v1.CloudflareService.ListCloudflareDNSRecords:input_type -> neobox.v1.ListCloudflareDNSRecordsRequest
-	27,  // 140: neobox.v1.CloudflareService.CreateCloudflareDNSRecord:input_type -> neobox.v1.CreateCloudflareDNSRecordRequest
-	29,  // 141: neobox.v1.CloudflareService.UpdateCloudflareDNSRecord:input_type -> neobox.v1.UpdateCloudflareDNSRecordRequest
-	31,  // 142: neobox.v1.CloudflareService.SetCloudflareDNSRecordProxied:input_type -> neobox.v1.SetCloudflareDNSRecordProxiedRequest
-	33,  // 143: neobox.v1.CloudflareService.DeleteCloudflareDNSRecord:input_type -> neobox.v1.DeleteCloudflareDNSRecordRequest
-	35,  // 144: neobox.v1.CloudflareService.ListCloudflareDNSOperations:input_type -> neobox.v1.ListCloudflareDNSOperationsRequest
-	37,  // 145: neobox.v1.CloudflareService.ListCloudflareWorkers:input_type -> neobox.v1.ListCloudflareWorkersRequest
-	39,  // 146: neobox.v1.CloudflareService.ListCloudflarePagesProjects:input_type -> neobox.v1.ListCloudflarePagesProjectsRequest
-	47,  // 147: neobox.v1.CloudflareService.ListCloudflareTunnels:input_type -> neobox.v1.ListCloudflareTunnelsRequest
-	49,  // 148: neobox.v1.CloudflareService.GetCloudflareTunnel:input_type -> neobox.v1.GetCloudflareTunnelRequest
-	51,  // 149: neobox.v1.CloudflareService.CreateCloudflareTunnel:input_type -> neobox.v1.CreateCloudflareTunnelRequest
-	53,  // 150: neobox.v1.CloudflareService.DeleteCloudflareTunnel:input_type -> neobox.v1.DeleteCloudflareTunnelRequest
-	55,  // 151: neobox.v1.CloudflareService.GetCloudflareTunnelToken:input_type -> neobox.v1.GetCloudflareTunnelTokenRequest
-	57,  // 152: neobox.v1.CloudflareService.CleanupCloudflareTunnelConnections:input_type -> neobox.v1.CleanupCloudflareTunnelConnectionsRequest
-	59,  // 153: neobox.v1.CloudflareService.AddCloudflareTunnelHostname:input_type -> neobox.v1.AddCloudflareTunnelHostnameRequest
-	61,  // 154: neobox.v1.CloudflareService.UpdateCloudflareTunnelHostname:input_type -> neobox.v1.UpdateCloudflareTunnelHostnameRequest
-	63,  // 155: neobox.v1.CloudflareService.DeleteCloudflareTunnelHostname:input_type -> neobox.v1.DeleteCloudflareTunnelHostnameRequest
-	74,  // 156: neobox.v1.CloudflareService.GetCloudflareWorker:input_type -> neobox.v1.GetCloudflareWorkerRequest
-	76,  // 157: neobox.v1.CloudflareService.SetCloudflareWorkerWorkersDev:input_type -> neobox.v1.SetCloudflareWorkerWorkersDevRequest
-	78,  // 158: neobox.v1.CloudflareService.AttachCloudflareWorkerDomain:input_type -> neobox.v1.AttachCloudflareWorkerDomainRequest
-	80,  // 159: neobox.v1.CloudflareService.DetachCloudflareWorkerDomain:input_type -> neobox.v1.DetachCloudflareWorkerDomainRequest
-	82,  // 160: neobox.v1.CloudflareService.AddCloudflareWorkerRoute:input_type -> neobox.v1.AddCloudflareWorkerRouteRequest
-	84,  // 161: neobox.v1.CloudflareService.DeleteCloudflareWorkerRoute:input_type -> neobox.v1.DeleteCloudflareWorkerRouteRequest
-	86,  // 162: neobox.v1.CloudflareService.AddCloudflareWorkerCron:input_type -> neobox.v1.AddCloudflareWorkerCronRequest
-	88,  // 163: neobox.v1.CloudflareService.DeleteCloudflareWorkerCron:input_type -> neobox.v1.DeleteCloudflareWorkerCronRequest
-	90,  // 164: neobox.v1.CloudflareService.PutCloudflareWorkerSecret:input_type -> neobox.v1.PutCloudflareWorkerSecretRequest
-	92,  // 165: neobox.v1.CloudflareService.DeleteCloudflareWorkerSecret:input_type -> neobox.v1.DeleteCloudflareWorkerSecretRequest
-	94,  // 166: neobox.v1.CloudflareService.RollbackCloudflareWorker:input_type -> neobox.v1.RollbackCloudflareWorkerRequest
-	96,  // 167: neobox.v1.CloudflareService.DeleteCloudflareWorker:input_type -> neobox.v1.DeleteCloudflareWorkerRequest
-	102, // 168: neobox.v1.CloudflareService.GetCloudflarePagesProject:input_type -> neobox.v1.GetCloudflarePagesProjectRequest
-	104, // 169: neobox.v1.CloudflareService.ListCloudflarePagesDeployments:input_type -> neobox.v1.ListCloudflarePagesDeploymentsRequest
-	106, // 170: neobox.v1.CloudflareService.CreateCloudflarePagesProject:input_type -> neobox.v1.CreateCloudflarePagesProjectRequest
-	108, // 171: neobox.v1.CloudflareService.UpdateCloudflarePagesProject:input_type -> neobox.v1.UpdateCloudflarePagesProjectRequest
-	110, // 172: neobox.v1.CloudflareService.DeleteCloudflarePagesProject:input_type -> neobox.v1.DeleteCloudflarePagesProjectRequest
-	112, // 173: neobox.v1.CloudflareService.RetryCloudflarePagesDeployment:input_type -> neobox.v1.RetryCloudflarePagesDeploymentRequest
-	114, // 174: neobox.v1.CloudflareService.RollbackCloudflarePagesDeployment:input_type -> neobox.v1.RollbackCloudflarePagesDeploymentRequest
-	116, // 175: neobox.v1.CloudflareService.DeleteCloudflarePagesDeployment:input_type -> neobox.v1.DeleteCloudflarePagesDeploymentRequest
-	118, // 176: neobox.v1.CloudflareService.AddCloudflarePagesDomain:input_type -> neobox.v1.AddCloudflarePagesDomainRequest
-	120, // 177: neobox.v1.CloudflareService.DeleteCloudflarePagesDomain:input_type -> neobox.v1.DeleteCloudflarePagesDomainRequest
-	122, // 178: neobox.v1.CloudflareService.SetCloudflarePagesEnvVar:input_type -> neobox.v1.SetCloudflarePagesEnvVarRequest
-	124, // 179: neobox.v1.CloudflareService.DeleteCloudflarePagesEnvVar:input_type -> neobox.v1.DeleteCloudflarePagesEnvVarRequest
-	126, // 180: neobox.v1.CloudflareService.ListCloudflareResourceOperations:input_type -> neobox.v1.ListCloudflareResourceOperationsRequest
-	134, // 181: neobox.v1.CloudflareService.GetCloudflareEmailRouting:input_type -> neobox.v1.GetCloudflareEmailRoutingRequest
-	136, // 182: neobox.v1.CloudflareService.ListCloudflareEmailAddresses:input_type -> neobox.v1.ListCloudflareEmailAddressesRequest
-	138, // 183: neobox.v1.CloudflareService.EnableCloudflareEmailRouting:input_type -> neobox.v1.EnableCloudflareEmailRoutingRequest
-	140, // 184: neobox.v1.CloudflareService.CreateCloudflareEmailRule:input_type -> neobox.v1.CreateCloudflareEmailRuleRequest
-	142, // 185: neobox.v1.CloudflareService.UpdateCloudflareEmailRule:input_type -> neobox.v1.UpdateCloudflareEmailRuleRequest
-	144, // 186: neobox.v1.CloudflareService.DeleteCloudflareEmailRule:input_type -> neobox.v1.DeleteCloudflareEmailRuleRequest
-	146, // 187: neobox.v1.CloudflareService.SetCloudflareEmailCatchAll:input_type -> neobox.v1.SetCloudflareEmailCatchAllRequest
-	148, // 188: neobox.v1.CloudflareService.CreateCloudflareEmailAddress:input_type -> neobox.v1.CreateCloudflareEmailAddressRequest
-	150, // 189: neobox.v1.CloudflareService.DeleteCloudflareEmailAddress:input_type -> neobox.v1.DeleteCloudflareEmailAddressRequest
-	22,  // 190: neobox.v1.CloudflareService.ListCloudflareZones:output_type -> neobox.v1.ListCloudflareZonesResponse
-	24,  // 191: neobox.v1.CloudflareService.GetCloudflareZone:output_type -> neobox.v1.GetCloudflareZoneResponse
-	26,  // 192: neobox.v1.CloudflareService.ListCloudflareDNSRecords:output_type -> neobox.v1.ListCloudflareDNSRecordsResponse
-	28,  // 193: neobox.v1.CloudflareService.CreateCloudflareDNSRecord:output_type -> neobox.v1.CreateCloudflareDNSRecordResponse
-	30,  // 194: neobox.v1.CloudflareService.UpdateCloudflareDNSRecord:output_type -> neobox.v1.UpdateCloudflareDNSRecordResponse
-	32,  // 195: neobox.v1.CloudflareService.SetCloudflareDNSRecordProxied:output_type -> neobox.v1.SetCloudflareDNSRecordProxiedResponse
-	34,  // 196: neobox.v1.CloudflareService.DeleteCloudflareDNSRecord:output_type -> neobox.v1.DeleteCloudflareDNSRecordResponse
-	36,  // 197: neobox.v1.CloudflareService.ListCloudflareDNSOperations:output_type -> neobox.v1.ListCloudflareDNSOperationsResponse
-	38,  // 198: neobox.v1.CloudflareService.ListCloudflareWorkers:output_type -> neobox.v1.ListCloudflareWorkersResponse
-	40,  // 199: neobox.v1.CloudflareService.ListCloudflarePagesProjects:output_type -> neobox.v1.ListCloudflarePagesProjectsResponse
-	48,  // 200: neobox.v1.CloudflareService.ListCloudflareTunnels:output_type -> neobox.v1.ListCloudflareTunnelsResponse
-	50,  // 201: neobox.v1.CloudflareService.GetCloudflareTunnel:output_type -> neobox.v1.GetCloudflareTunnelResponse
-	52,  // 202: neobox.v1.CloudflareService.CreateCloudflareTunnel:output_type -> neobox.v1.CreateCloudflareTunnelResponse
-	54,  // 203: neobox.v1.CloudflareService.DeleteCloudflareTunnel:output_type -> neobox.v1.DeleteCloudflareTunnelResponse
-	56,  // 204: neobox.v1.CloudflareService.GetCloudflareTunnelToken:output_type -> neobox.v1.GetCloudflareTunnelTokenResponse
-	58,  // 205: neobox.v1.CloudflareService.CleanupCloudflareTunnelConnections:output_type -> neobox.v1.CleanupCloudflareTunnelConnectionsResponse
-	60,  // 206: neobox.v1.CloudflareService.AddCloudflareTunnelHostname:output_type -> neobox.v1.AddCloudflareTunnelHostnameResponse
-	62,  // 207: neobox.v1.CloudflareService.UpdateCloudflareTunnelHostname:output_type -> neobox.v1.UpdateCloudflareTunnelHostnameResponse
-	64,  // 208: neobox.v1.CloudflareService.DeleteCloudflareTunnelHostname:output_type -> neobox.v1.DeleteCloudflareTunnelHostnameResponse
-	75,  // 209: neobox.v1.CloudflareService.GetCloudflareWorker:output_type -> neobox.v1.GetCloudflareWorkerResponse
-	77,  // 210: neobox.v1.CloudflareService.SetCloudflareWorkerWorkersDev:output_type -> neobox.v1.SetCloudflareWorkerWorkersDevResponse
-	79,  // 211: neobox.v1.CloudflareService.AttachCloudflareWorkerDomain:output_type -> neobox.v1.AttachCloudflareWorkerDomainResponse
-	81,  // 212: neobox.v1.CloudflareService.DetachCloudflareWorkerDomain:output_type -> neobox.v1.DetachCloudflareWorkerDomainResponse
-	83,  // 213: neobox.v1.CloudflareService.AddCloudflareWorkerRoute:output_type -> neobox.v1.AddCloudflareWorkerRouteResponse
-	85,  // 214: neobox.v1.CloudflareService.DeleteCloudflareWorkerRoute:output_type -> neobox.v1.DeleteCloudflareWorkerRouteResponse
-	87,  // 215: neobox.v1.CloudflareService.AddCloudflareWorkerCron:output_type -> neobox.v1.AddCloudflareWorkerCronResponse
-	89,  // 216: neobox.v1.CloudflareService.DeleteCloudflareWorkerCron:output_type -> neobox.v1.DeleteCloudflareWorkerCronResponse
-	91,  // 217: neobox.v1.CloudflareService.PutCloudflareWorkerSecret:output_type -> neobox.v1.PutCloudflareWorkerSecretResponse
-	93,  // 218: neobox.v1.CloudflareService.DeleteCloudflareWorkerSecret:output_type -> neobox.v1.DeleteCloudflareWorkerSecretResponse
-	95,  // 219: neobox.v1.CloudflareService.RollbackCloudflareWorker:output_type -> neobox.v1.RollbackCloudflareWorkerResponse
-	97,  // 220: neobox.v1.CloudflareService.DeleteCloudflareWorker:output_type -> neobox.v1.DeleteCloudflareWorkerResponse
-	103, // 221: neobox.v1.CloudflareService.GetCloudflarePagesProject:output_type -> neobox.v1.GetCloudflarePagesProjectResponse
-	105, // 222: neobox.v1.CloudflareService.ListCloudflarePagesDeployments:output_type -> neobox.v1.ListCloudflarePagesDeploymentsResponse
-	107, // 223: neobox.v1.CloudflareService.CreateCloudflarePagesProject:output_type -> neobox.v1.CreateCloudflarePagesProjectResponse
-	109, // 224: neobox.v1.CloudflareService.UpdateCloudflarePagesProject:output_type -> neobox.v1.UpdateCloudflarePagesProjectResponse
-	111, // 225: neobox.v1.CloudflareService.DeleteCloudflarePagesProject:output_type -> neobox.v1.DeleteCloudflarePagesProjectResponse
-	113, // 226: neobox.v1.CloudflareService.RetryCloudflarePagesDeployment:output_type -> neobox.v1.RetryCloudflarePagesDeploymentResponse
-	115, // 227: neobox.v1.CloudflareService.RollbackCloudflarePagesDeployment:output_type -> neobox.v1.RollbackCloudflarePagesDeploymentResponse
-	117, // 228: neobox.v1.CloudflareService.DeleteCloudflarePagesDeployment:output_type -> neobox.v1.DeleteCloudflarePagesDeploymentResponse
-	119, // 229: neobox.v1.CloudflareService.AddCloudflarePagesDomain:output_type -> neobox.v1.AddCloudflarePagesDomainResponse
-	121, // 230: neobox.v1.CloudflareService.DeleteCloudflarePagesDomain:output_type -> neobox.v1.DeleteCloudflarePagesDomainResponse
-	123, // 231: neobox.v1.CloudflareService.SetCloudflarePagesEnvVar:output_type -> neobox.v1.SetCloudflarePagesEnvVarResponse
-	125, // 232: neobox.v1.CloudflareService.DeleteCloudflarePagesEnvVar:output_type -> neobox.v1.DeleteCloudflarePagesEnvVarResponse
-	127, // 233: neobox.v1.CloudflareService.ListCloudflareResourceOperations:output_type -> neobox.v1.ListCloudflareResourceOperationsResponse
-	135, // 234: neobox.v1.CloudflareService.GetCloudflareEmailRouting:output_type -> neobox.v1.GetCloudflareEmailRoutingResponse
-	137, // 235: neobox.v1.CloudflareService.ListCloudflareEmailAddresses:output_type -> neobox.v1.ListCloudflareEmailAddressesResponse
-	139, // 236: neobox.v1.CloudflareService.EnableCloudflareEmailRouting:output_type -> neobox.v1.EnableCloudflareEmailRoutingResponse
-	141, // 237: neobox.v1.CloudflareService.CreateCloudflareEmailRule:output_type -> neobox.v1.CreateCloudflareEmailRuleResponse
-	143, // 238: neobox.v1.CloudflareService.UpdateCloudflareEmailRule:output_type -> neobox.v1.UpdateCloudflareEmailRuleResponse
-	145, // 239: neobox.v1.CloudflareService.DeleteCloudflareEmailRule:output_type -> neobox.v1.DeleteCloudflareEmailRuleResponse
-	147, // 240: neobox.v1.CloudflareService.SetCloudflareEmailCatchAll:output_type -> neobox.v1.SetCloudflareEmailCatchAllResponse
-	149, // 241: neobox.v1.CloudflareService.CreateCloudflareEmailAddress:output_type -> neobox.v1.CreateCloudflareEmailAddressResponse
-	151, // 242: neobox.v1.CloudflareService.DeleteCloudflareEmailAddress:output_type -> neobox.v1.DeleteCloudflareEmailAddressResponse
-	190, // [190:243] is the sub-list for method output_type
-	137, // [137:190] is the sub-list for method input_type
-	137, // [137:137] is the sub-list for extension type_name
-	137, // [137:137] is the sub-list for extension extendee
-	0,   // [0:137] is the sub-list for field type_name
+	155, // 137: neobox.v1.CloudflareEmailLog.time:type_name -> google.protobuf.Timestamp
+	155, // 138: neobox.v1.ListCloudflareEmailLogsRequest.start_time:type_name -> google.protobuf.Timestamp
+	155, // 139: neobox.v1.ListCloudflareEmailLogsRequest.end_time:type_name -> google.protobuf.Timestamp
+	152, // 140: neobox.v1.ListCloudflareEmailLogsResponse.logs:type_name -> neobox.v1.CloudflareEmailLog
+	21,  // 141: neobox.v1.CloudflareService.ListCloudflareZones:input_type -> neobox.v1.ListCloudflareZonesRequest
+	23,  // 142: neobox.v1.CloudflareService.GetCloudflareZone:input_type -> neobox.v1.GetCloudflareZoneRequest
+	25,  // 143: neobox.v1.CloudflareService.ListCloudflareDNSRecords:input_type -> neobox.v1.ListCloudflareDNSRecordsRequest
+	27,  // 144: neobox.v1.CloudflareService.CreateCloudflareDNSRecord:input_type -> neobox.v1.CreateCloudflareDNSRecordRequest
+	29,  // 145: neobox.v1.CloudflareService.UpdateCloudflareDNSRecord:input_type -> neobox.v1.UpdateCloudflareDNSRecordRequest
+	31,  // 146: neobox.v1.CloudflareService.SetCloudflareDNSRecordProxied:input_type -> neobox.v1.SetCloudflareDNSRecordProxiedRequest
+	33,  // 147: neobox.v1.CloudflareService.DeleteCloudflareDNSRecord:input_type -> neobox.v1.DeleteCloudflareDNSRecordRequest
+	35,  // 148: neobox.v1.CloudflareService.ListCloudflareDNSOperations:input_type -> neobox.v1.ListCloudflareDNSOperationsRequest
+	37,  // 149: neobox.v1.CloudflareService.ListCloudflareWorkers:input_type -> neobox.v1.ListCloudflareWorkersRequest
+	39,  // 150: neobox.v1.CloudflareService.ListCloudflarePagesProjects:input_type -> neobox.v1.ListCloudflarePagesProjectsRequest
+	47,  // 151: neobox.v1.CloudflareService.ListCloudflareTunnels:input_type -> neobox.v1.ListCloudflareTunnelsRequest
+	49,  // 152: neobox.v1.CloudflareService.GetCloudflareTunnel:input_type -> neobox.v1.GetCloudflareTunnelRequest
+	51,  // 153: neobox.v1.CloudflareService.CreateCloudflareTunnel:input_type -> neobox.v1.CreateCloudflareTunnelRequest
+	53,  // 154: neobox.v1.CloudflareService.DeleteCloudflareTunnel:input_type -> neobox.v1.DeleteCloudflareTunnelRequest
+	55,  // 155: neobox.v1.CloudflareService.GetCloudflareTunnelToken:input_type -> neobox.v1.GetCloudflareTunnelTokenRequest
+	57,  // 156: neobox.v1.CloudflareService.CleanupCloudflareTunnelConnections:input_type -> neobox.v1.CleanupCloudflareTunnelConnectionsRequest
+	59,  // 157: neobox.v1.CloudflareService.AddCloudflareTunnelHostname:input_type -> neobox.v1.AddCloudflareTunnelHostnameRequest
+	61,  // 158: neobox.v1.CloudflareService.UpdateCloudflareTunnelHostname:input_type -> neobox.v1.UpdateCloudflareTunnelHostnameRequest
+	63,  // 159: neobox.v1.CloudflareService.DeleteCloudflareTunnelHostname:input_type -> neobox.v1.DeleteCloudflareTunnelHostnameRequest
+	74,  // 160: neobox.v1.CloudflareService.GetCloudflareWorker:input_type -> neobox.v1.GetCloudflareWorkerRequest
+	76,  // 161: neobox.v1.CloudflareService.SetCloudflareWorkerWorkersDev:input_type -> neobox.v1.SetCloudflareWorkerWorkersDevRequest
+	78,  // 162: neobox.v1.CloudflareService.AttachCloudflareWorkerDomain:input_type -> neobox.v1.AttachCloudflareWorkerDomainRequest
+	80,  // 163: neobox.v1.CloudflareService.DetachCloudflareWorkerDomain:input_type -> neobox.v1.DetachCloudflareWorkerDomainRequest
+	82,  // 164: neobox.v1.CloudflareService.AddCloudflareWorkerRoute:input_type -> neobox.v1.AddCloudflareWorkerRouteRequest
+	84,  // 165: neobox.v1.CloudflareService.DeleteCloudflareWorkerRoute:input_type -> neobox.v1.DeleteCloudflareWorkerRouteRequest
+	86,  // 166: neobox.v1.CloudflareService.AddCloudflareWorkerCron:input_type -> neobox.v1.AddCloudflareWorkerCronRequest
+	88,  // 167: neobox.v1.CloudflareService.DeleteCloudflareWorkerCron:input_type -> neobox.v1.DeleteCloudflareWorkerCronRequest
+	90,  // 168: neobox.v1.CloudflareService.PutCloudflareWorkerSecret:input_type -> neobox.v1.PutCloudflareWorkerSecretRequest
+	92,  // 169: neobox.v1.CloudflareService.DeleteCloudflareWorkerSecret:input_type -> neobox.v1.DeleteCloudflareWorkerSecretRequest
+	94,  // 170: neobox.v1.CloudflareService.RollbackCloudflareWorker:input_type -> neobox.v1.RollbackCloudflareWorkerRequest
+	96,  // 171: neobox.v1.CloudflareService.DeleteCloudflareWorker:input_type -> neobox.v1.DeleteCloudflareWorkerRequest
+	102, // 172: neobox.v1.CloudflareService.GetCloudflarePagesProject:input_type -> neobox.v1.GetCloudflarePagesProjectRequest
+	104, // 173: neobox.v1.CloudflareService.ListCloudflarePagesDeployments:input_type -> neobox.v1.ListCloudflarePagesDeploymentsRequest
+	106, // 174: neobox.v1.CloudflareService.CreateCloudflarePagesProject:input_type -> neobox.v1.CreateCloudflarePagesProjectRequest
+	108, // 175: neobox.v1.CloudflareService.UpdateCloudflarePagesProject:input_type -> neobox.v1.UpdateCloudflarePagesProjectRequest
+	110, // 176: neobox.v1.CloudflareService.DeleteCloudflarePagesProject:input_type -> neobox.v1.DeleteCloudflarePagesProjectRequest
+	112, // 177: neobox.v1.CloudflareService.RetryCloudflarePagesDeployment:input_type -> neobox.v1.RetryCloudflarePagesDeploymentRequest
+	114, // 178: neobox.v1.CloudflareService.RollbackCloudflarePagesDeployment:input_type -> neobox.v1.RollbackCloudflarePagesDeploymentRequest
+	116, // 179: neobox.v1.CloudflareService.DeleteCloudflarePagesDeployment:input_type -> neobox.v1.DeleteCloudflarePagesDeploymentRequest
+	118, // 180: neobox.v1.CloudflareService.AddCloudflarePagesDomain:input_type -> neobox.v1.AddCloudflarePagesDomainRequest
+	120, // 181: neobox.v1.CloudflareService.DeleteCloudflarePagesDomain:input_type -> neobox.v1.DeleteCloudflarePagesDomainRequest
+	122, // 182: neobox.v1.CloudflareService.SetCloudflarePagesEnvVar:input_type -> neobox.v1.SetCloudflarePagesEnvVarRequest
+	124, // 183: neobox.v1.CloudflareService.DeleteCloudflarePagesEnvVar:input_type -> neobox.v1.DeleteCloudflarePagesEnvVarRequest
+	126, // 184: neobox.v1.CloudflareService.ListCloudflareResourceOperations:input_type -> neobox.v1.ListCloudflareResourceOperationsRequest
+	134, // 185: neobox.v1.CloudflareService.GetCloudflareEmailRouting:input_type -> neobox.v1.GetCloudflareEmailRoutingRequest
+	136, // 186: neobox.v1.CloudflareService.ListCloudflareEmailAddresses:input_type -> neobox.v1.ListCloudflareEmailAddressesRequest
+	138, // 187: neobox.v1.CloudflareService.EnableCloudflareEmailRouting:input_type -> neobox.v1.EnableCloudflareEmailRoutingRequest
+	140, // 188: neobox.v1.CloudflareService.CreateCloudflareEmailRule:input_type -> neobox.v1.CreateCloudflareEmailRuleRequest
+	142, // 189: neobox.v1.CloudflareService.UpdateCloudflareEmailRule:input_type -> neobox.v1.UpdateCloudflareEmailRuleRequest
+	144, // 190: neobox.v1.CloudflareService.DeleteCloudflareEmailRule:input_type -> neobox.v1.DeleteCloudflareEmailRuleRequest
+	146, // 191: neobox.v1.CloudflareService.SetCloudflareEmailCatchAll:input_type -> neobox.v1.SetCloudflareEmailCatchAllRequest
+	148, // 192: neobox.v1.CloudflareService.CreateCloudflareEmailAddress:input_type -> neobox.v1.CreateCloudflareEmailAddressRequest
+	150, // 193: neobox.v1.CloudflareService.DeleteCloudflareEmailAddress:input_type -> neobox.v1.DeleteCloudflareEmailAddressRequest
+	153, // 194: neobox.v1.CloudflareService.ListCloudflareEmailLogs:input_type -> neobox.v1.ListCloudflareEmailLogsRequest
+	22,  // 195: neobox.v1.CloudflareService.ListCloudflareZones:output_type -> neobox.v1.ListCloudflareZonesResponse
+	24,  // 196: neobox.v1.CloudflareService.GetCloudflareZone:output_type -> neobox.v1.GetCloudflareZoneResponse
+	26,  // 197: neobox.v1.CloudflareService.ListCloudflareDNSRecords:output_type -> neobox.v1.ListCloudflareDNSRecordsResponse
+	28,  // 198: neobox.v1.CloudflareService.CreateCloudflareDNSRecord:output_type -> neobox.v1.CreateCloudflareDNSRecordResponse
+	30,  // 199: neobox.v1.CloudflareService.UpdateCloudflareDNSRecord:output_type -> neobox.v1.UpdateCloudflareDNSRecordResponse
+	32,  // 200: neobox.v1.CloudflareService.SetCloudflareDNSRecordProxied:output_type -> neobox.v1.SetCloudflareDNSRecordProxiedResponse
+	34,  // 201: neobox.v1.CloudflareService.DeleteCloudflareDNSRecord:output_type -> neobox.v1.DeleteCloudflareDNSRecordResponse
+	36,  // 202: neobox.v1.CloudflareService.ListCloudflareDNSOperations:output_type -> neobox.v1.ListCloudflareDNSOperationsResponse
+	38,  // 203: neobox.v1.CloudflareService.ListCloudflareWorkers:output_type -> neobox.v1.ListCloudflareWorkersResponse
+	40,  // 204: neobox.v1.CloudflareService.ListCloudflarePagesProjects:output_type -> neobox.v1.ListCloudflarePagesProjectsResponse
+	48,  // 205: neobox.v1.CloudflareService.ListCloudflareTunnels:output_type -> neobox.v1.ListCloudflareTunnelsResponse
+	50,  // 206: neobox.v1.CloudflareService.GetCloudflareTunnel:output_type -> neobox.v1.GetCloudflareTunnelResponse
+	52,  // 207: neobox.v1.CloudflareService.CreateCloudflareTunnel:output_type -> neobox.v1.CreateCloudflareTunnelResponse
+	54,  // 208: neobox.v1.CloudflareService.DeleteCloudflareTunnel:output_type -> neobox.v1.DeleteCloudflareTunnelResponse
+	56,  // 209: neobox.v1.CloudflareService.GetCloudflareTunnelToken:output_type -> neobox.v1.GetCloudflareTunnelTokenResponse
+	58,  // 210: neobox.v1.CloudflareService.CleanupCloudflareTunnelConnections:output_type -> neobox.v1.CleanupCloudflareTunnelConnectionsResponse
+	60,  // 211: neobox.v1.CloudflareService.AddCloudflareTunnelHostname:output_type -> neobox.v1.AddCloudflareTunnelHostnameResponse
+	62,  // 212: neobox.v1.CloudflareService.UpdateCloudflareTunnelHostname:output_type -> neobox.v1.UpdateCloudflareTunnelHostnameResponse
+	64,  // 213: neobox.v1.CloudflareService.DeleteCloudflareTunnelHostname:output_type -> neobox.v1.DeleteCloudflareTunnelHostnameResponse
+	75,  // 214: neobox.v1.CloudflareService.GetCloudflareWorker:output_type -> neobox.v1.GetCloudflareWorkerResponse
+	77,  // 215: neobox.v1.CloudflareService.SetCloudflareWorkerWorkersDev:output_type -> neobox.v1.SetCloudflareWorkerWorkersDevResponse
+	79,  // 216: neobox.v1.CloudflareService.AttachCloudflareWorkerDomain:output_type -> neobox.v1.AttachCloudflareWorkerDomainResponse
+	81,  // 217: neobox.v1.CloudflareService.DetachCloudflareWorkerDomain:output_type -> neobox.v1.DetachCloudflareWorkerDomainResponse
+	83,  // 218: neobox.v1.CloudflareService.AddCloudflareWorkerRoute:output_type -> neobox.v1.AddCloudflareWorkerRouteResponse
+	85,  // 219: neobox.v1.CloudflareService.DeleteCloudflareWorkerRoute:output_type -> neobox.v1.DeleteCloudflareWorkerRouteResponse
+	87,  // 220: neobox.v1.CloudflareService.AddCloudflareWorkerCron:output_type -> neobox.v1.AddCloudflareWorkerCronResponse
+	89,  // 221: neobox.v1.CloudflareService.DeleteCloudflareWorkerCron:output_type -> neobox.v1.DeleteCloudflareWorkerCronResponse
+	91,  // 222: neobox.v1.CloudflareService.PutCloudflareWorkerSecret:output_type -> neobox.v1.PutCloudflareWorkerSecretResponse
+	93,  // 223: neobox.v1.CloudflareService.DeleteCloudflareWorkerSecret:output_type -> neobox.v1.DeleteCloudflareWorkerSecretResponse
+	95,  // 224: neobox.v1.CloudflareService.RollbackCloudflareWorker:output_type -> neobox.v1.RollbackCloudflareWorkerResponse
+	97,  // 225: neobox.v1.CloudflareService.DeleteCloudflareWorker:output_type -> neobox.v1.DeleteCloudflareWorkerResponse
+	103, // 226: neobox.v1.CloudflareService.GetCloudflarePagesProject:output_type -> neobox.v1.GetCloudflarePagesProjectResponse
+	105, // 227: neobox.v1.CloudflareService.ListCloudflarePagesDeployments:output_type -> neobox.v1.ListCloudflarePagesDeploymentsResponse
+	107, // 228: neobox.v1.CloudflareService.CreateCloudflarePagesProject:output_type -> neobox.v1.CreateCloudflarePagesProjectResponse
+	109, // 229: neobox.v1.CloudflareService.UpdateCloudflarePagesProject:output_type -> neobox.v1.UpdateCloudflarePagesProjectResponse
+	111, // 230: neobox.v1.CloudflareService.DeleteCloudflarePagesProject:output_type -> neobox.v1.DeleteCloudflarePagesProjectResponse
+	113, // 231: neobox.v1.CloudflareService.RetryCloudflarePagesDeployment:output_type -> neobox.v1.RetryCloudflarePagesDeploymentResponse
+	115, // 232: neobox.v1.CloudflareService.RollbackCloudflarePagesDeployment:output_type -> neobox.v1.RollbackCloudflarePagesDeploymentResponse
+	117, // 233: neobox.v1.CloudflareService.DeleteCloudflarePagesDeployment:output_type -> neobox.v1.DeleteCloudflarePagesDeploymentResponse
+	119, // 234: neobox.v1.CloudflareService.AddCloudflarePagesDomain:output_type -> neobox.v1.AddCloudflarePagesDomainResponse
+	121, // 235: neobox.v1.CloudflareService.DeleteCloudflarePagesDomain:output_type -> neobox.v1.DeleteCloudflarePagesDomainResponse
+	123, // 236: neobox.v1.CloudflareService.SetCloudflarePagesEnvVar:output_type -> neobox.v1.SetCloudflarePagesEnvVarResponse
+	125, // 237: neobox.v1.CloudflareService.DeleteCloudflarePagesEnvVar:output_type -> neobox.v1.DeleteCloudflarePagesEnvVarResponse
+	127, // 238: neobox.v1.CloudflareService.ListCloudflareResourceOperations:output_type -> neobox.v1.ListCloudflareResourceOperationsResponse
+	135, // 239: neobox.v1.CloudflareService.GetCloudflareEmailRouting:output_type -> neobox.v1.GetCloudflareEmailRoutingResponse
+	137, // 240: neobox.v1.CloudflareService.ListCloudflareEmailAddresses:output_type -> neobox.v1.ListCloudflareEmailAddressesResponse
+	139, // 241: neobox.v1.CloudflareService.EnableCloudflareEmailRouting:output_type -> neobox.v1.EnableCloudflareEmailRoutingResponse
+	141, // 242: neobox.v1.CloudflareService.CreateCloudflareEmailRule:output_type -> neobox.v1.CreateCloudflareEmailRuleResponse
+	143, // 243: neobox.v1.CloudflareService.UpdateCloudflareEmailRule:output_type -> neobox.v1.UpdateCloudflareEmailRuleResponse
+	145, // 244: neobox.v1.CloudflareService.DeleteCloudflareEmailRule:output_type -> neobox.v1.DeleteCloudflareEmailRuleResponse
+	147, // 245: neobox.v1.CloudflareService.SetCloudflareEmailCatchAll:output_type -> neobox.v1.SetCloudflareEmailCatchAllResponse
+	149, // 246: neobox.v1.CloudflareService.CreateCloudflareEmailAddress:output_type -> neobox.v1.CreateCloudflareEmailAddressResponse
+	151, // 247: neobox.v1.CloudflareService.DeleteCloudflareEmailAddress:output_type -> neobox.v1.DeleteCloudflareEmailAddressResponse
+	154, // 248: neobox.v1.CloudflareService.ListCloudflareEmailLogs:output_type -> neobox.v1.ListCloudflareEmailLogsResponse
+	195, // [195:249] is the sub-list for method output_type
+	141, // [141:195] is the sub-list for method input_type
+	141, // [141:141] is the sub-list for extension type_name
+	141, // [141:141] is the sub-list for extension extendee
+	0,   // [0:141] is the sub-list for field type_name
 }
 
 func init() { file_neobox_v1_cloudflare_proto_init() }
@@ -14334,6 +14735,42 @@ func file_neobox_v1_cloudflare_proto_init() {
 				return nil
 			}
 		}
+		file_neobox_v1_cloudflare_proto_msgTypes[142].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CloudflareEmailLog); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_neobox_v1_cloudflare_proto_msgTypes[143].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListCloudflareEmailLogsRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_neobox_v1_cloudflare_proto_msgTypes[144].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListCloudflareEmailLogsResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	file_neobox_v1_cloudflare_proto_msgTypes[65].OneofWrappers = []interface{}{}
 	file_neobox_v1_cloudflare_proto_msgTypes[98].OneofWrappers = []interface{}{}
@@ -14343,7 +14780,7 @@ func file_neobox_v1_cloudflare_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_neobox_v1_cloudflare_proto_rawDesc,
 			NumEnums:      10,
-			NumMessages:   142,
+			NumMessages:   145,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
