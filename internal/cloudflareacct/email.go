@@ -446,3 +446,26 @@ func (a *Account) DeleteEmailAddress(ctx context.Context, actor Actor, zoneID, a
 		},
 	})
 }
+
+// emailLogsPermission is what Cloudflare's GraphQL Analytics API needs to
+// read a Zone's Email Routing events.
+const emailLogsPermission = "Analytics Read"
+
+// EmailLogs reads a Zone's Email Routing events, newest first, from
+// Cloudflare's GraphQL Analytics API. Nothing is stored and, being a read,
+// nothing is logged. The Zone must belong to the connection's Account.
+func (a *Account) EmailLogs(ctx context.Context, zoneID string, q cloudflare.EmailLogQuery) ([]cloudflare.EmailLogEvent, error) {
+	q = q.Normalized()
+	if err := q.Validate(a.m.now()); err != nil {
+		return nil, err
+	}
+	zone, err := a.Zone(ctx, zoneID)
+	if err != nil {
+		return nil, err
+	}
+	events, err := a.api.ListEmailRoutingEvents(ctx, zone.ID, q)
+	if err != nil {
+		return nil, a.classify(ctx, err, "read this Zone's Email Routing logs", emailLogsPermission)
+	}
+	return events, nil
+}

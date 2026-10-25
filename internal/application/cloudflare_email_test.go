@@ -4,8 +4,10 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"connectrpc.com/connect"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"go.orx.me/apps/neo-box/internal/cloudflare/cftest"
 	cfrepo "go.orx.me/apps/neo-box/internal/repo/cloudflare"
@@ -397,5 +399,67 @@ func TestCloudflareEmailUnconfirmedWriteIsLoggedAsUnknown(t *testing.T) {
 	ops := resourceOps(t, f, conn)
 	if len(ops) != 1 || ops[0].Status != cfrepo.StatusUnknown || ops[0].Action != "enable_routing" {
 		t.Fatalf("operations = %+v", ops)
+	}
+}
+
+func TestCloudflareEmailLogs(t *testing.T) {
+	f, conn := emailFixture(t)
+	now := time.Now().UTC().Truncate(time.Second)
+	f.cf.AddEmailEvent("za1", cftest.EmailEvent{
+		Time: now.Add(-time.Hour), From: "bob@x.org", To: "info@alpha.com", Subject: "Hello", Status: "delivered",
+		EventType: "forward", Action: "forward", RuleMatched: "rule-1", MessageID: "<m1>", SPF: "pass", DKIM: "pass", DMARC: "pass", IsLastEvent: true,
+	})
+	f.cf.AddEmailEvent("za1", cftest.EmailEvent{Time: now.Add(-time.Minute), From: "s@x.org", To: "x@alpha.com", Status: "dropped", Action: "drop", IsSpam: true})
+	f.cf.AddEmailEvent("zb1", cftest.EmailEvent{Time: now.Add(-time.Minute), From: "o@x.org", To: "o@other-account.com", Status: "delivered"})
+	list := func(user, conn, zone string, start, end time.Time, limit int32) (*neoboxv1.ListCloudflareEmailLogsResponse, error) {
+		r, err := f.srv.ListCloudflareEmailLogs(asUser(user), connect.NewRequest(&neoboxv1.ListCloudflareEmailLogsRequest{
+			ConnectionId: conn, ZoneId: zone, StartTime: timestamppb.New(start), EndTime: timestamppb.New(end), Limit: limit,
+		}))
+		if err != nil {
+			return nil, err
+		}
+		return r.Msg, nil
+	}
+
+	got, err := list("u1", conn, "za1", now.Add(-2*time.Hour), now, 0)
+	if err != nil || len(got.GetLogs()) != 2 || got.GetTruncated() {
+		t.Fatalf("logs = %+v, %v", got, err)
+	}
+	newest, older := got.GetLogs()[0], got.GetLogs()[1]
+	if newest.GetStatus() != "dropped" || !newest.GetSpam() || newest.GetAction() != "drop" {
+		t.Fatalf("newest = %+v", newest)
+	}
+	if older.GetFrom() != "bob@x.org" || older.GetTo() != "info@alpha.com" || older.GetSubject() != "Hello" || older.GetRuleId() != "rule-1" ||
+		older.GetMessageId() != "<m1>" || older.GetSpf() != "pass" || older.GetDmarc() != "pass" || !older.GetLastEvent() ||
+		!older.GetTime().AsTime().Equal(now.Add(-time.Hour)) {
+		t.Fatalf("older = %+v", older)
+	}
+
+	// Reaching the limit says older events may exist.
+	got, err = list("u1", conn, "za1", now.Add(-2*time.Hour), now, 1)
+	if err != nil || len(got.GetLogs()) != 1 || !got.GetTruncated() {
+		t.Fatalf("limit 1 = %+v, %v", got, err)
+	}
+
+	// Reading logs is not a change: nothing is sent as a write or logged.
+	if w := f.cf.Writes(); len(w) != 0 || len(resourceOps(t, f, conn)) != 0 {
+		t.Fatalf("writes = %+v, operations = %+v", w, resourceOps(t, f, conn))
+	}
+
+	_, err = list("u1", conn, "zb1", now.Add(-2*time.Hour), now, 0)
+	wantCode(t, "zone of another account", err, connect.CodeNotFound)
+	_, err = list("u2", conn, "za1", now.Add(-2*time.Hour), now, 0)
+	wantCode(t, "connection of another user", err, connect.CodeNotFound)
+	_, err = list("u1", conn, "za1", now.Add(-40*24*time.Hour), now, 0)
+	wantCode(t, "older than Cloudflare keeps", err, connect.CodeInvalidArgument)
+	_, err = list("u1", conn, "za1", now, now.Add(-time.Hour), 0)
+	wantCode(t, "end before start", err, connect.CodeInvalidArgument)
+
+	// A token without Analytics Read gets a permission error naming it.
+	noAnalytics := f.connect(t, "u1", cfAccA, "email-read")
+	_, err = list("u1", noAnalytics, "za1", now.Add(-time.Hour), now, 0)
+	wantCode(t, "without Analytics Read", err, connect.CodePermissionDenied)
+	if !strings.Contains(err.Error(), "Analytics Read") {
+		t.Fatalf("error does not name the permission: %v", err)
 	}
 }

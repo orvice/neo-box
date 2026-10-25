@@ -84,4 +84,9 @@ export const TOKEN_PERMISSIONS: {
     permission: 'Email Routing Addresses · Edit',
     unlocks: 'adding and deleting destination addresses',
   },
+  {
+    scope: 'Zone',
+    permission: 'Analytics · Read',
+    unlocks: "the Email logs tab (Cloudflare's GraphQL Analytics API)",
+  },
 ]

@@ -16,6 +16,7 @@ import {
   type CloudflareZone,
 } from '@/gen/neobox/v1/cloudflare_pb'
 import type { MessageInitShape } from '@bufbuild/protobuf'
+import { timestampFromDate } from '@bufbuild/protobuf/wkt'
 import { Code, ConnectError, makeClient } from './transport'
 
 export {
@@ -59,6 +60,7 @@ export {
   type CloudflareEmailAddress,
   type CloudflareEmailCatchAll,
   type CloudflareEmailDNSRecord,
+  type CloudflareEmailLog,
   type CloudflareEmailRoutingSettings,
   type CloudflareEmailRule,
   type GetCloudflareEmailRoutingResponse,
@@ -147,6 +149,13 @@ const keys = {
     ['cloudflare', connectionId, 'email-routing', zoneId] as const,
   emailAddresses: (connectionId: string) =>
     ['cloudflare', connectionId, 'email-addresses'] as const,
+  emailLogs: (
+    connectionId: string,
+    zoneId: string,
+    rangeMs: number,
+    limit: number
+  ) =>
+    ['cloudflare', connectionId, 'email-logs', zoneId, rangeMs, limit] as const,
 }
 
 // Everything is read live from Cloudflare when a page opens; there is no
@@ -510,6 +519,34 @@ export function useCloudflareEmailAddresses(connectionId: string) {
     queryFn: async () =>
       await client.listCloudflareEmailAddresses({ connectionId }),
     retry: false,
+  })
+}
+
+/**
+ * A Zone's Email Routing events (mail received, forwarded, dropped,
+ * rejected), newest first, for the last rangeMs. Read live from Cloudflare's
+ * GraphQL Analytics API; the range ends when the query runs.
+ */
+export function useCloudflareEmailLogs(
+  connectionId: string,
+  zoneId: string,
+  rangeMs: number,
+  limit: number
+) {
+  return useQuery({
+    queryKey: keys.emailLogs(connectionId, zoneId, rangeMs, limit),
+    queryFn: async () => {
+      const end = new Date()
+      return await client.listCloudflareEmailLogs({
+        connectionId,
+        zoneId,
+        startTime: timestampFromDate(new Date(end.getTime() - rangeMs)),
+        endTime: timestampFromDate(end),
+        limit,
+      })
+    },
+    retry: false,
+    placeholderData: keepPreviousData,
   })
 }
 

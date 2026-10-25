@@ -187,3 +187,30 @@ func (s *CloudflareServiceServer) DeleteCloudflareEmailAddress(ctx context.Conte
 	}
 	return connect.NewResponse(&neoboxv1.DeleteCloudflareEmailAddressResponse{Result: r}), nil
 }
+
+func (s *CloudflareServiceServer) ListCloudflareEmailLogs(ctx context.Context, req *connect.Request[neoboxv1.ListCloudflareEmailLogsRequest]) (*connect.Response[neoboxv1.ListCloudflareEmailLogsResponse], error) {
+	_, a, err := s.openAccount(ctx, req.Msg.GetConnectionId())
+	if err != nil {
+		return nil, err
+	}
+	q := cloudflare.EmailLogQuery{
+		Start: req.Msg.GetStartTime().AsTime(),
+		End:   req.Msg.GetEndTime().AsTime(),
+		Limit: int(req.Msg.GetLimit()),
+	}.Normalized()
+	events, err := a.EmailLogs(ctx, trim(req.Msg.GetZoneId()), q)
+	if err != nil {
+		return nil, mapCloudflareErr(err)
+	}
+	out := &neoboxv1.ListCloudflareEmailLogsResponse{Truncated: len(events) >= q.Limit}
+	for _, e := range events {
+		out.Logs = append(out.Logs, &neoboxv1.CloudflareEmailLog{
+			Time: timestamppb.New(e.Time), From: e.From, To: e.To, Subject: e.Subject,
+			Status: e.Status, EventType: e.EventType, Action: e.Action, RuleId: e.RuleMatched,
+			MessageId: e.MessageID, SessionId: e.SessionID, ErrorDetail: e.ErrorDetail,
+			Spf: e.SPF, Dkim: e.DKIM, Dmarc: e.DMARC, Arc: e.ARC,
+			Spam: bool(e.IsSpam), Ndr: bool(e.IsNDR), LastEvent: bool(e.IsLastEvent),
+		})
+	}
+	return connect.NewResponse(out), nil
+}

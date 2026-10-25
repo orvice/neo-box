@@ -192,6 +192,9 @@ const (
 	// CloudflareServiceDeleteCloudflareEmailAddressProcedure is the fully-qualified name of the
 	// CloudflareService's DeleteCloudflareEmailAddress RPC.
 	CloudflareServiceDeleteCloudflareEmailAddressProcedure = "/neobox.v1.CloudflareService/DeleteCloudflareEmailAddress"
+	// CloudflareServiceListCloudflareEmailLogsProcedure is the fully-qualified name of the
+	// CloudflareService's ListCloudflareEmailLogs RPC.
+	CloudflareServiceListCloudflareEmailLogsProcedure = "/neobox.v1.CloudflareService/ListCloudflareEmailLogs"
 )
 
 // CloudflareServiceClient is a client for the neobox.v1.CloudflareService service.
@@ -318,6 +321,12 @@ type CloudflareServiceClient interface {
 	// DeleteCloudflareEmailAddress deletes a destination address, refused
 	// while a rule or the catch-all of zone_id still forwards to it.
 	DeleteCloudflareEmailAddress(context.Context, *connect.Request[v1.DeleteCloudflareEmailAddressRequest]) (*connect.Response[v1.DeleteCloudflareEmailAddressResponse], error)
+	// ListCloudflareEmailLogs reads a Zone's Email Routing events (mail
+	// received, forwarded, dropped, rejected or failed), newest first, from
+	// Cloudflare's GraphQL Analytics API. Cloudflare keeps them 31 days. The
+	// token needs the Analytics Read permission (PermissionDenied otherwise).
+	// Nothing is stored.
+	ListCloudflareEmailLogs(context.Context, *connect.Request[v1.ListCloudflareEmailLogsRequest]) (*connect.Response[v1.ListCloudflareEmailLogsResponse], error)
 }
 
 // NewCloudflareServiceClient constructs a client for the neobox.v1.CloudflareService service. By
@@ -649,6 +658,12 @@ func NewCloudflareServiceClient(httpClient connect.HTTPClient, baseURL string, o
 			connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareEmailAddress")),
 			connect.WithClientOptions(opts...),
 		),
+		listCloudflareEmailLogs: connect.NewClient[v1.ListCloudflareEmailLogsRequest, v1.ListCloudflareEmailLogsResponse](
+			httpClient,
+			baseURL+CloudflareServiceListCloudflareEmailLogsProcedure,
+			connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareEmailLogs")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -707,6 +722,7 @@ type cloudflareServiceClient struct {
 	setCloudflareEmailCatchAll         *connect.Client[v1.SetCloudflareEmailCatchAllRequest, v1.SetCloudflareEmailCatchAllResponse]
 	createCloudflareEmailAddress       *connect.Client[v1.CreateCloudflareEmailAddressRequest, v1.CreateCloudflareEmailAddressResponse]
 	deleteCloudflareEmailAddress       *connect.Client[v1.DeleteCloudflareEmailAddressRequest, v1.DeleteCloudflareEmailAddressResponse]
+	listCloudflareEmailLogs            *connect.Client[v1.ListCloudflareEmailLogsRequest, v1.ListCloudflareEmailLogsResponse]
 }
 
 // ListCloudflareZones calls neobox.v1.CloudflareService.ListCloudflareZones.
@@ -978,6 +994,11 @@ func (c *cloudflareServiceClient) DeleteCloudflareEmailAddress(ctx context.Conte
 	return c.deleteCloudflareEmailAddress.CallUnary(ctx, req)
 }
 
+// ListCloudflareEmailLogs calls neobox.v1.CloudflareService.ListCloudflareEmailLogs.
+func (c *cloudflareServiceClient) ListCloudflareEmailLogs(ctx context.Context, req *connect.Request[v1.ListCloudflareEmailLogsRequest]) (*connect.Response[v1.ListCloudflareEmailLogsResponse], error) {
+	return c.listCloudflareEmailLogs.CallUnary(ctx, req)
+}
+
 // CloudflareServiceHandler is an implementation of the neobox.v1.CloudflareService service.
 type CloudflareServiceHandler interface {
 	// ListCloudflareZones pages through the Account's Zones, optionally those
@@ -1102,6 +1123,12 @@ type CloudflareServiceHandler interface {
 	// DeleteCloudflareEmailAddress deletes a destination address, refused
 	// while a rule or the catch-all of zone_id still forwards to it.
 	DeleteCloudflareEmailAddress(context.Context, *connect.Request[v1.DeleteCloudflareEmailAddressRequest]) (*connect.Response[v1.DeleteCloudflareEmailAddressResponse], error)
+	// ListCloudflareEmailLogs reads a Zone's Email Routing events (mail
+	// received, forwarded, dropped, rejected or failed), newest first, from
+	// Cloudflare's GraphQL Analytics API. Cloudflare keeps them 31 days. The
+	// token needs the Analytics Read permission (PermissionDenied otherwise).
+	// Nothing is stored.
+	ListCloudflareEmailLogs(context.Context, *connect.Request[v1.ListCloudflareEmailLogsRequest]) (*connect.Response[v1.ListCloudflareEmailLogsResponse], error)
 }
 
 // NewCloudflareServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -1429,6 +1456,12 @@ func NewCloudflareServiceHandler(svc CloudflareServiceHandler, opts ...connect.H
 		connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareEmailAddress")),
 		connect.WithHandlerOptions(opts...),
 	)
+	cloudflareServiceListCloudflareEmailLogsHandler := connect.NewUnaryHandler(
+		CloudflareServiceListCloudflareEmailLogsProcedure,
+		svc.ListCloudflareEmailLogs,
+		connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareEmailLogs")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/neobox.v1.CloudflareService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case CloudflareServiceListCloudflareZonesProcedure:
@@ -1537,6 +1570,8 @@ func NewCloudflareServiceHandler(svc CloudflareServiceHandler, opts ...connect.H
 			cloudflareServiceCreateCloudflareEmailAddressHandler.ServeHTTP(w, r)
 		case CloudflareServiceDeleteCloudflareEmailAddressProcedure:
 			cloudflareServiceDeleteCloudflareEmailAddressHandler.ServeHTTP(w, r)
+		case CloudflareServiceListCloudflareEmailLogsProcedure:
+			cloudflareServiceListCloudflareEmailLogsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -1756,4 +1791,8 @@ func (UnimplementedCloudflareServiceHandler) CreateCloudflareEmailAddress(contex
 
 func (UnimplementedCloudflareServiceHandler) DeleteCloudflareEmailAddress(context.Context, *connect.Request[v1.DeleteCloudflareEmailAddressRequest]) (*connect.Response[v1.DeleteCloudflareEmailAddressResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.DeleteCloudflareEmailAddress is not implemented"))
+}
+
+func (UnimplementedCloudflareServiceHandler) ListCloudflareEmailLogs(context.Context, *connect.Request[v1.ListCloudflareEmailLogsRequest]) (*connect.Response[v1.ListCloudflareEmailLogsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.ListCloudflareEmailLogs is not implemented"))
 }
