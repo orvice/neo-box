@@ -6,15 +6,17 @@ one place.
 
 ## Terms
 
-- **User** — a person who signs in to Neo Box. Role `admin` can manage other
-  users; role `user` manages only their own data. Users sign in with a
-  password or an OAuth provider (GitHub, Google).
-- **Session** — a bearer token issued at sign-in. Only its sha256 is stored;
-  it expires after `auth.session_ttl`.
+- **User** — the person who signs in through Logto. This deployment grants
+  access to one configured User; Logto manages their profile and sign-in methods.
+- **Owner** — the stable owner of Neo Box's business data, independent of the
+  User's login identity. Existing users' resources are consolidated under this
+  Owner when adopting data; changing the login identity keeps those resources.
+- **Session** — a browser's authenticated access to the Owner's data, established
+  through Logto and maintained by Neo Box until expiry or sign-out.
 - **Provider** — a kind of third-party service Neo Box integrates with
   (today: NocoDB, Wasabi, Cloudflare and Google Workspace). Each Provider decides what it
   shows and does for a Connection; Neo Box has no provider-independent model
-  of resources. Not to be confused with the OAuth sign-in providers above.
+  of resources. Distinct from Logto, which provides sign-in.
 - **Connection** — access to a Provider, owned by one User: a name,
   the Provider's settings, and its credentials. Credentials are encrypted
   with `crypto.encryption_key` and never returned by the API. A Connection

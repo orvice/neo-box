@@ -6,25 +6,27 @@ import {
   type Interceptor,
 } from '@connectrpc/connect'
 import { createConnectTransport } from '@connectrpc/connect-web'
-import { TOKEN_KEY } from '@/lib/constants'
+import { API_BASE_URL, getCSRFToken, clearBrowserSession } from '@/lib/logto'
 
-export const BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
+export const BASE_URL = API_BASE_URL
 
-// authInterceptor injects the Authorization header on every Connect RPC. It also rewrites 401 / Unauthenticated errors into a
+// The browser authenticates with an HttpOnly session cookie. Attach the CSRF
+// token to Connect POST requests and redirect expired sessions to sign-in.
+// This rewrites 401 / Unauthenticated errors into a
 // hard redirect to /sign-in so existing React Query callers don't have to
 // special-case auth failures.
 const authInterceptor: Interceptor = (next) => async (req) => {
-  const token = localStorage.getItem(TOKEN_KEY)
-  if (token) req.header.set('Authorization', `Bearer ${token}`)
+  const csrf = await getCSRFToken()
+  if (csrf) req.header.set('X-CSRF-Token', csrf)
 
   try {
     return await next(req)
   } catch (err) {
     if (err instanceof ConnectError && err.code === Code.Unauthenticated) {
+      clearBrowserSession()
       // Don't trash the session when a deliberate "Me" check probes auth on
       // the login page — the sign-in page handles its own redirects.
       if (!isProbeRequest(req.url)) {
-        localStorage.removeItem(TOKEN_KEY)
         if (
           typeof window !== 'undefined' &&
           window.location.pathname !== '/sign-in'
@@ -37,13 +39,7 @@ const authInterceptor: Interceptor = (next) => async (req) => {
   }
 }
 
-const probeUrls = new Set<string>([
-  '/neobox.v1.AuthService/Me',
-  '/neobox.v1.AuthService/Login',
-  '/neobox.v1.AuthService/ListOAuthProviders',
-  '/neobox.v1.AuthService/BeginOAuthFlow',
-  '/neobox.v1.AuthService/CompleteOAuthFlow',
-])
+const probeUrls = new Set<string>(['/neobox.v1.AuthService/Me'])
 
 function isProbeRequest(url: string): boolean {
   for (const path of probeUrls) {
@@ -59,6 +55,7 @@ export const transport = createConnectTransport({
   // DevTools Network shows the body as binary so debugging falls back to
   // breakpoints or `connect.Code` / `err.message` inspection.
   useBinaryFormat: true,
+  fetch: (input, init) => fetch(input, { ...init, credentials: 'include' }),
   interceptors: [authInterceptor],
 })
 

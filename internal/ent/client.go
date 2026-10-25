@@ -18,6 +18,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent/cloudflarednsoperation"
 	"go.orx.me/apps/neo-box/internal/ent/cloudflareresourceoperation"
 	"go.orx.me/apps/neo-box/internal/ent/connection"
+	"go.orx.me/apps/neo-box/internal/ent/logtosession"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbfile"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbfilesource"
@@ -48,6 +49,8 @@ type Client struct {
 	CloudflareResourceOperation *CloudflareResourceOperationClient
 	// Connection is the client for interacting with the Connection builders.
 	Connection *ConnectionClient
+	// LogtoSession is the client for interacting with the LogtoSession builders.
+	LogtoSession *LogtoSessionClient
 	// NocoDBBackupPolicy is the client for interacting with the NocoDBBackupPolicy builders.
 	NocoDBBackupPolicy *NocoDBBackupPolicyClient
 	// NocoDBFile is the client for interacting with the NocoDBFile builders.
@@ -93,6 +96,7 @@ func (c *Client) init() {
 	c.CloudflareDNSOperation = NewCloudflareDNSOperationClient(c.config)
 	c.CloudflareResourceOperation = NewCloudflareResourceOperationClient(c.config)
 	c.Connection = NewConnectionClient(c.config)
+	c.LogtoSession = NewLogtoSessionClient(c.config)
 	c.NocoDBBackupPolicy = NewNocoDBBackupPolicyClient(c.config)
 	c.NocoDBFile = NewNocoDBFileClient(c.config)
 	c.NocoDBFileSource = NewNocoDBFileSourceClient(c.config)
@@ -204,6 +208,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		CloudflareDNSOperation:      NewCloudflareDNSOperationClient(cfg),
 		CloudflareResourceOperation: NewCloudflareResourceOperationClient(cfg),
 		Connection:                  NewConnectionClient(cfg),
+		LogtoSession:                NewLogtoSessionClient(cfg),
 		NocoDBBackupPolicy:          NewNocoDBBackupPolicyClient(cfg),
 		NocoDBFile:                  NewNocoDBFileClient(cfg),
 		NocoDBFileSource:            NewNocoDBFileSourceClient(cfg),
@@ -242,6 +247,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		CloudflareDNSOperation:      NewCloudflareDNSOperationClient(cfg),
 		CloudflareResourceOperation: NewCloudflareResourceOperationClient(cfg),
 		Connection:                  NewConnectionClient(cfg),
+		LogtoSession:                NewLogtoSessionClient(cfg),
 		NocoDBBackupPolicy:          NewNocoDBBackupPolicyClient(cfg),
 		NocoDBFile:                  NewNocoDBFileClient(cfg),
 		NocoDBFileSource:            NewNocoDBFileSourceClient(cfg),
@@ -287,10 +293,10 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Alert, c.CloudflareDNSOperation, c.CloudflareResourceOperation, c.Connection,
-		c.NocoDBBackupPolicy, c.NocoDBFile, c.NocoDBFileSource, c.NocoDBRestore,
-		c.NocoDBSnapshot, c.NocoDBSnapshotFile, c.NotificationChannel, c.OAuthState,
-		c.Session, c.User, c.WasabiBucketConfig, c.WasabiDailyUsage, c.WasabiSyncState,
-		c.WorkspaceOperation, c.WorkspaceTenant,
+		c.LogtoSession, c.NocoDBBackupPolicy, c.NocoDBFile, c.NocoDBFileSource,
+		c.NocoDBRestore, c.NocoDBSnapshot, c.NocoDBSnapshotFile, c.NotificationChannel,
+		c.OAuthState, c.Session, c.User, c.WasabiBucketConfig, c.WasabiDailyUsage,
+		c.WasabiSyncState, c.WorkspaceOperation, c.WorkspaceTenant,
 	} {
 		n.Use(hooks...)
 	}
@@ -301,10 +307,10 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Alert, c.CloudflareDNSOperation, c.CloudflareResourceOperation, c.Connection,
-		c.NocoDBBackupPolicy, c.NocoDBFile, c.NocoDBFileSource, c.NocoDBRestore,
-		c.NocoDBSnapshot, c.NocoDBSnapshotFile, c.NotificationChannel, c.OAuthState,
-		c.Session, c.User, c.WasabiBucketConfig, c.WasabiDailyUsage, c.WasabiSyncState,
-		c.WorkspaceOperation, c.WorkspaceTenant,
+		c.LogtoSession, c.NocoDBBackupPolicy, c.NocoDBFile, c.NocoDBFileSource,
+		c.NocoDBRestore, c.NocoDBSnapshot, c.NocoDBSnapshotFile, c.NotificationChannel,
+		c.OAuthState, c.Session, c.User, c.WasabiBucketConfig, c.WasabiDailyUsage,
+		c.WasabiSyncState, c.WorkspaceOperation, c.WorkspaceTenant,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -321,6 +327,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.CloudflareResourceOperation.mutate(ctx, m)
 	case *ConnectionMutation:
 		return c.Connection.mutate(ctx, m)
+	case *LogtoSessionMutation:
+		return c.LogtoSession.mutate(ctx, m)
 	case *NocoDBBackupPolicyMutation:
 		return c.NocoDBBackupPolicy.mutate(ctx, m)
 	case *NocoDBFileMutation:
@@ -885,6 +893,139 @@ func (c *ConnectionClient) mutate(ctx context.Context, m *ConnectionMutation) (V
 		return (&ConnectionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Connection mutation op: %q", m.Op())
+	}
+}
+
+// LogtoSessionClient is a client for the LogtoSession schema.
+type LogtoSessionClient struct {
+	config
+}
+
+// NewLogtoSessionClient returns a client for the LogtoSession from the given config.
+func NewLogtoSessionClient(c config) *LogtoSessionClient {
+	return &LogtoSessionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `logtosession.Hooks(f(g(h())))`.
+func (c *LogtoSessionClient) Use(hooks ...Hook) {
+	c.hooks.LogtoSession = append(c.hooks.LogtoSession, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `logtosession.Intercept(f(g(h())))`.
+func (c *LogtoSessionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LogtoSession = append(c.inters.LogtoSession, interceptors...)
+}
+
+// Create returns a builder for creating a LogtoSession entity.
+func (c *LogtoSessionClient) Create() *LogtoSessionCreate {
+	mutation := newLogtoSessionMutation(c.config, OpCreate)
+	return &LogtoSessionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LogtoSession entities.
+func (c *LogtoSessionClient) CreateBulk(builders ...*LogtoSessionCreate) *LogtoSessionCreateBulk {
+	return &LogtoSessionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *LogtoSessionClient) MapCreateBulk(slice any, setFunc func(*LogtoSessionCreate, int)) *LogtoSessionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &LogtoSessionCreateBulk{err: fmt.Errorf("calling to LogtoSessionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*LogtoSessionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &LogtoSessionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LogtoSession.
+func (c *LogtoSessionClient) Update() *LogtoSessionUpdate {
+	mutation := newLogtoSessionMutation(c.config, OpUpdate)
+	return &LogtoSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LogtoSessionClient) UpdateOne(_m *LogtoSession) *LogtoSessionUpdateOne {
+	mutation := newLogtoSessionMutation(c.config, OpUpdateOne, withLogtoSession(_m))
+	return &LogtoSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LogtoSessionClient) UpdateOneID(id string) *LogtoSessionUpdateOne {
+	mutation := newLogtoSessionMutation(c.config, OpUpdateOne, withLogtoSessionID(id))
+	return &LogtoSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LogtoSession.
+func (c *LogtoSessionClient) Delete() *LogtoSessionDelete {
+	mutation := newLogtoSessionMutation(c.config, OpDelete)
+	return &LogtoSessionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LogtoSessionClient) DeleteOne(_m *LogtoSession) *LogtoSessionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LogtoSessionClient) DeleteOneID(id string) *LogtoSessionDeleteOne {
+	builder := c.Delete().Where(logtosession.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LogtoSessionDeleteOne{builder}
+}
+
+// Query returns a query builder for LogtoSession.
+func (c *LogtoSessionClient) Query() *LogtoSessionQuery {
+	return &LogtoSessionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLogtoSession},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a LogtoSession entity by its id.
+func (c *LogtoSessionClient) Get(ctx context.Context, id string) (*LogtoSession, error) {
+	return c.Query().Where(logtosession.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LogtoSessionClient) GetX(ctx context.Context, id string) *LogtoSession {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *LogtoSessionClient) Hooks() []Hook {
+	return c.hooks.LogtoSession
+}
+
+// Interceptors returns the client interceptors.
+func (c *LogtoSessionClient) Interceptors() []Interceptor {
+	return c.inters.LogtoSession
+}
+
+func (c *LogtoSessionClient) mutate(ctx context.Context, m *LogtoSessionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LogtoSessionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LogtoSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LogtoSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LogtoSessionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LogtoSession mutation op: %q", m.Op())
 	}
 }
 
@@ -2887,14 +3028,14 @@ func (c *WorkspaceTenantClient) mutate(ctx context.Context, m *WorkspaceTenantMu
 type (
 	hooks struct {
 		Alert, CloudflareDNSOperation, CloudflareResourceOperation, Connection,
-		NocoDBBackupPolicy, NocoDBFile, NocoDBFileSource, NocoDBRestore,
+		LogtoSession, NocoDBBackupPolicy, NocoDBFile, NocoDBFileSource, NocoDBRestore,
 		NocoDBSnapshot, NocoDBSnapshotFile, NotificationChannel, OAuthState, Session,
 		User, WasabiBucketConfig, WasabiDailyUsage, WasabiSyncState,
 		WorkspaceOperation, WorkspaceTenant []ent.Hook
 	}
 	inters struct {
 		Alert, CloudflareDNSOperation, CloudflareResourceOperation, Connection,
-		NocoDBBackupPolicy, NocoDBFile, NocoDBFileSource, NocoDBRestore,
+		LogtoSession, NocoDBBackupPolicy, NocoDBFile, NocoDBFileSource, NocoDBRestore,
 		NocoDBSnapshot, NocoDBSnapshotFile, NotificationChannel, OAuthState, Session,
 		User, WasabiBucketConfig, WasabiDailyUsage, WasabiSyncState,
 		WorkspaceOperation, WorkspaceTenant []ent.Interceptor

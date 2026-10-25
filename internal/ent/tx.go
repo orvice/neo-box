@@ -20,6 +20,8 @@ type Tx struct {
 	CloudflareResourceOperation *CloudflareResourceOperationClient
 	// Connection is the client for interacting with the Connection builders.
 	Connection *ConnectionClient
+	// LogtoSession is the client for interacting with the LogtoSession builders.
+	LogtoSession *LogtoSessionClient
 	// NocoDBBackupPolicy is the client for interacting with the NocoDBBackupPolicy builders.
 	NocoDBBackupPolicy *NocoDBBackupPolicyClient
 	// NocoDBFile is the client for interacting with the NocoDBFile builders.
@@ -185,6 +187,7 @@ func (tx *Tx) init() {
 	tx.CloudflareDNSOperation = NewCloudflareDNSOperationClient(tx.config)
 	tx.CloudflareResourceOperation = NewCloudflareResourceOperationClient(tx.config)
 	tx.Connection = NewConnectionClient(tx.config)
+	tx.LogtoSession = NewLogtoSessionClient(tx.config)
 	tx.NocoDBBackupPolicy = NewNocoDBBackupPolicyClient(tx.config)
 	tx.NocoDBFile = NewNocoDBFileClient(tx.config)
 	tx.NocoDBFileSource = NewNocoDBFileSourceClient(tx.config)

@@ -26,6 +26,12 @@ const dsnEnv = "NEOBOX_TEST_POSTGRES_DSN"
 // NewClient creates a fresh schema, migrates it, and returns a client bound
 // to it. The schema is dropped when the test ends.
 func NewClient(t *testing.T) *ent.Client {
+	client, _ := NewClientAndDB(t)
+	return client
+}
+
+// NewClientAndDB also exposes the schema-bound SQL connection for migrations.
+func NewClientAndDB(t *testing.T) (*ent.Client, *sql.DB) {
 	t.Helper()
 	dsn := os.Getenv(dsnEnv)
 	if dsn == "" {
@@ -61,5 +67,5 @@ func NewClient(t *testing.T) *ent.Client {
 	if err := client.Schema.Create(ctx); err != nil {
 		t.Fatalf("migrate schema: %v", err)
 	}
-	return client
+	return client, db
 }

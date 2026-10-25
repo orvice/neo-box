@@ -5,7 +5,7 @@ React + TypeScript + Vite dashboard for Neo Box, built on the
 
 - `src/routes/` — TanStack Router file routes (`routeTree.gen.ts` is generated)
 - `src/features/` — page implementations
-- `src/api/` — ConnectRPC clients + React Query hooks (Bearer interceptor)
+- `src/api/` — ConnectRPC clients + React Query hooks (session cookie + CSRF)
 - `src/gen/` — protobuf-es output from `buf generate` (do not edit)
 - `src/components/ui/` — shadcn/ui primitives
 - `src/context/`, `src/stores/` — providers (theme, layout) and the auth store

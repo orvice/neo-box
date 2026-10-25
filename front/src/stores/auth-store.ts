@@ -1,90 +1,87 @@
 import { create } from 'zustand'
+import type { AuthUser } from '@/api/auth'
 import {
-  isAdmin as checkAdmin,
-  login as loginRequest,
-  logout as logoutRequest,
-  me as meRequest,
-  type AuthUser,
-  type LoginResponse,
-} from '@/api/auth'
-import { TOKEN_KEY } from '@/lib/constants'
+  getBrowserSession,
+  clearBrowserSession,
+  signIn,
+  signOut,
+} from '@/lib/logto'
 
 interface AuthState {
   auth: {
-    token: string | null
     user: AuthUser | null
-    /** Session restore (token present, user not yet fetched) in flight. */
+    authenticated: boolean
     restoring: boolean
-    setUser: (user: AuthUser | null) => void
-    applyLoginResponse: (res: LoginResponse) => void
-    login: (username: string, password: string) => Promise<boolean>
-    /** Fetch `Me` when a stored token exists but the user is unknown. */
+    checked: boolean
+    error: string | null
     restore: () => Promise<void>
-    logout: () => void
+    login: (redirectTo?: string) => Promise<void>
+    logout: () => Promise<void>
     reset: () => void
   }
 }
 
+let restoration: Promise<void> | undefined
+
 export const useAuthStore = create<AuthState>()((set, get) => ({
   auth: {
-    token: localStorage.getItem(TOKEN_KEY),
     user: null,
+    authenticated: false,
     restoring: false,
-    setUser: (user) => set((state) => ({ auth: { ...state.auth, user } })),
-    applyLoginResponse: (res) => {
-      if (!res.token) return
-      localStorage.setItem(TOKEN_KEY, res.token)
-      set((state) => ({
-        auth: {
-          ...state.auth,
-          token: res.token,
-          user: res.user ?? null,
-        },
-      }))
-    },
-    login: async (username, password) => {
-      try {
-        const res = await loginRequest(username, password)
-        if (!res.token) return false
-        get().auth.applyLoginResponse(res)
-        return true
-      } catch {
-        get().auth.reset()
-        return false
-      }
-    },
+    checked: false,
+    error: null,
     restore: async () => {
-      const { token, user, restoring } = get().auth
-      if (!token || user || restoring) return
-      set((state) => ({ auth: { ...state.auth, restoring: true } }))
-      try {
-        const res = await meRequest()
-        if (!res.user) {
-          get().auth.reset()
-          return
-        }
+      if (restoration) return restoration
+      if (get().auth.checked) return
+      restoration = (async () => {
         set((state) => ({
-          auth: { ...state.auth, user: res.user ?? null },
+          auth: { ...state.auth, restoring: true, error: null },
         }))
-      } catch {
-        get().auth.reset()
-      } finally {
-        set((state) => ({ auth: { ...state.auth, restoring: false } }))
-      }
+        try {
+          const session = await getBrowserSession()
+          if (!session) return
+          const user = session.user
+          set((state) => ({
+            auth: { ...state.auth, user, authenticated: true },
+          }))
+        } catch (error) {
+          set((state) => ({
+            auth: {
+              ...state.auth,
+              user: null,
+              authenticated: false,
+              error:
+                error instanceof Error
+                  ? error.message
+                  : 'Unable to restore sign-in.',
+            },
+          }))
+        } finally {
+          set((state) => ({
+            auth: { ...state.auth, checked: true, restoring: false },
+          }))
+        }
+      })().finally(() => {
+        restoration = undefined
+      })
+      return restoration
     },
-    logout: () => {
-      void logoutRequest().catch(() => undefined)
+    login: signIn,
+    logout: async () => {
+      await signOut()
       get().auth.reset()
     },
     reset: () => {
-      localStorage.removeItem(TOKEN_KEY)
+      clearBrowserSession()
       set((state) => ({
-        auth: { ...state.auth, token: null, user: null },
+        auth: {
+          ...state.auth,
+          user: null,
+          authenticated: false,
+          checked: false,
+          error: null,
+        },
       }))
     },
   },
 }))
-
-export function useIsAdmin() {
-  return useAuthStore((state) => checkAdmin(state.auth.user))
-}

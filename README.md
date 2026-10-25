@@ -7,8 +7,8 @@ protobuf contracts generated with buf, all in one monorepo.
 
 ## What It Does
 
-- **User center**: password and OAuth (GitHub, Google) sign-in, sessions,
-  self-service profile and password, and admin user management.
+- **Logto sign-in**: one configured owner, with accounts and sign-in methods
+  managed by Logto. Existing business data can be retained under that owner.
 - **Connections**: link accounts at third-party services (Providers) and
   manage them in one place. Credentials are verified before saving, stored
   encrypted, and never returned; each connection shows whether it currently
@@ -35,7 +35,7 @@ protobuf contracts generated with buf, all in one monorepo.
   routes, cron triggers, secrets, rollback, delete) and Pages projects
   (settings, variables, deployments, domains, delete) can be managed, with a
   log of every change. See [Cloudflare](#cloudflare).
-- Stores users, sessions, and metadata in PostgreSQL, and snapshot content in
+- Stores resource metadata in PostgreSQL, and snapshot content in
   S3-compatible object storage.
 
 ## Getting Started
@@ -87,8 +87,9 @@ curl http://127.0.0.1:8080/ping
 # {"message":"pong"}
 ```
 
-Open http://localhost:5173 and sign in. API requests (everything under
-`/api/`) require `Authorization: Bearer <session token>`.
+Open http://localhost:5173 and sign in through Logto. Go handles the login
+callback and keeps tokens in encrypted server-side sessions. API requests use
+an HttpOnly session cookie; write requests also require the session CSRF token.
 
 ## Configuration
 
@@ -105,37 +106,27 @@ log:
   format: text         # text | json (json recommended in production)
   add_source: false    # include source file:line in each entry
 
-# ── Authentication ─────────────────────────────────────────────────────
+# ── Authentication (Logto, server-side OIDC) ─────────────────────────────
 auth:
-  # Created on first start when the users table is empty. Change the
-  # password right after the first sign-in.
-  initial_admin_username: "admin"
-  initial_admin_password: "change-me"   # required on first start
-  session_ttl: 168h                     # bearer session lifetime (7 days)
-  # Local development only: when true, requests are treated as admin before
-  # the auth store is wired. Never enable in production.
-  allow_unauthenticated: false
-  # OAuth sign-in. A provider appears on the sign-in page only when both
-  # client_id and client_secret are set. redirect_url must be the dashboard's
-  # /auth/oauth/callback/<provider> route and must match the OAuth app.
-  oauth_providers:
-    github:
-      client_id: "Iv1.xxxxxxxxxxxxxxxx"
-      client_secret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-      redirect_url: "https://neobox.example.com/auth/oauth/callback/github"
-      scopes: ["read:user", "user:email"]   # default when omitted
-      display_name: "GitHub"                # default when omitted
-    google:
-      client_id: "xxxxxxxx.apps.googleusercontent.com"
-      client_secret: "GOCSPX-xxxxxxxxxxxxxxxx"
-      redirect_url: "https://neobox.example.com/auth/oauth/callback/google"
-      scopes: ["openid", "email", "profile"]  # default when omitted
-      display_name: "Google"
+  logto:
+    endpoint: "https://identity.example.com"
+    app_id: "<Traditional web App ID>"
+    app_secret: "<App Secret>"                # backend configuration only
+    public_url: "https://neobox.example.com"  # frontend + /api/ reverse proxy
+    owner_subject: "<your Logto user ID>"     # sub; only this user gets access
+    data_owner_id: "personal"                 # stable across login changes
+    session_ttl: 168h                         # absolute server session lifetime
+    adopt_existing_data: false               # enable once for legacy data
+
+# Register https://neobox.example.com/api/auth/callback as a Logto redirect URI,
+# and https://neobox.example.com/sign-in as a post-sign-out redirect URI.
+# Tokens stay encrypted in PostgreSQL; browser JS receives no access/refresh token.
+# No local password or user-management service is used.
+# See docs/logto.md before migrating existing data.
 
 # ── PostgreSQL ─────────────────────────────────────────────────────────
-# Users, sessions, OAuth state, connections, NocoDB policies, and snapshot
-# metadata. Name of a connection under store.db below; it must use driver
-# postgres. Tables are created and migrated automatically on startup.
+# Connections, policies, snapshots, usage, notification and audit data.
+# Tables are created and migrated automatically on startup.
 db_store: "main"                # default main
 
 # ── Credential encryption ──────────────────────────────────────────────

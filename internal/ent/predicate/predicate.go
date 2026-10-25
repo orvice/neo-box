@@ -18,6 +18,9 @@ type CloudflareResourceOperation func(*sql.Selector)
 // Connection is the predicate function for connection builders.
 type Connection func(*sql.Selector)
 
+// LogtoSession is the predicate function for logtosession builders.
+type LogtoSession func(*sql.Selector)
+
 // NocoDBBackupPolicy is the predicate function for nocodbbackuppolicy builders.
 type NocoDBBackupPolicy func(*sql.Selector)
 

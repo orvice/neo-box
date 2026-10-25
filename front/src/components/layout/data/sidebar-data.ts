@@ -1,10 +1,4 @@
-import {
-  Cable,
-  LayoutDashboard,
-  Settings,
-  UserRound,
-  Users,
-} from 'lucide-react'
+import { Cable, LayoutDashboard, Settings, UserRound } from 'lucide-react'
 import { providerInfos } from '@/features/connections/provider-info'
 import { type NavGroup } from '../types'
 
@@ -50,17 +44,6 @@ export const accountNav: NavGroup = {
       title: 'Settings',
       url: '/settings',
       icon: Settings,
-    },
-  ],
-}
-
-export const adminNav: NavGroup = {
-  title: 'Admin',
-  items: [
-    {
-      title: 'Users',
-      url: '/users',
-      icon: Users,
     },
   ],
 }

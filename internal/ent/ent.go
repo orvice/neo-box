@@ -16,6 +16,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent/cloudflarednsoperation"
 	"go.orx.me/apps/neo-box/internal/ent/cloudflareresourceoperation"
 	"go.orx.me/apps/neo-box/internal/ent/connection"
+	"go.orx.me/apps/neo-box/internal/ent/logtosession"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbbackuppolicy"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbfile"
 	"go.orx.me/apps/neo-box/internal/ent/nocodbfilesource"
@@ -95,6 +96,7 @@ func checkColumn(t, c string) error {
 			cloudflarednsoperation.Table:      cloudflarednsoperation.ValidColumn,
 			cloudflareresourceoperation.Table: cloudflareresourceoperation.ValidColumn,
 			connection.Table:                  connection.ValidColumn,
+			logtosession.Table:                logtosession.ValidColumn,
 			nocodbbackuppolicy.Table:          nocodbbackuppolicy.ValidColumn,
 			nocodbfile.Table:                  nocodbfile.ValidColumn,
 			nocodbfilesource.Table:            nocodbfilesource.ValidColumn,
