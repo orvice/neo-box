@@ -1365,7 +1365,6 @@ message ListCloudflareEmailLogsResponse {
   bool truncated = 2;
 }
 
-
 enum CloudflareZoneRuleCategory {
   CLOUDFLARE_ZONE_RULE_CATEGORY_UNSPECIFIED = 0;
   CLOUDFLARE_ZONE_RULE_CATEGORY_SINGLE_REDIRECT = 1;
@@ -1399,14 +1398,19 @@ message GetCloudflareZoneRulesRequest {
   string connection_id = 1 [(validate.rules).string.min_len = 1];
   string zone_id = 2 [(validate.rules).string.min_len = 1];
 }
-message GetCloudflareZoneRulesResponse { repeated CloudflareZoneRules categories = 1; }
+message GetCloudflareZoneRulesResponse {
+  repeated CloudflareZoneRules categories = 1;
+}
 message CreateCloudflareZoneRuleRequest {
   string connection_id = 1 [(validate.rules).string.min_len = 1];
   string zone_id = 2 [(validate.rules).string.min_len = 1];
   CloudflareZoneRuleCategory category = 3;
   CloudflareZoneRule rule = 4 [(validate.rules).message.required = true];
 }
-message CreateCloudflareZoneRuleResponse { CloudflareZoneRule rule = 1; CloudflareChangeResult result = 2; }
+message CreateCloudflareZoneRuleResponse {
+  CloudflareZoneRule rule = 1;
+  CloudflareChangeResult result = 2;
+}
 message UpdateCloudflareZoneRuleRequest {
   string connection_id = 1 [(validate.rules).string.min_len = 1];
   string zone_id = 2 [(validate.rules).string.min_len = 1];
@@ -1414,18 +1418,25 @@ message UpdateCloudflareZoneRuleRequest {
   string rule_id = 4 [(validate.rules).string.min_len = 1];
   CloudflareZoneRule rule = 5 [(validate.rules).message.required = true];
 }
-message UpdateCloudflareZoneRuleResponse { CloudflareZoneRule rule = 1; CloudflareChangeResult result = 2; }
+message UpdateCloudflareZoneRuleResponse {
+  CloudflareZoneRule rule = 1;
+  CloudflareChangeResult result = 2;
+}
 message DeleteCloudflareZoneRuleRequest {
   string connection_id = 1 [(validate.rules).string.min_len = 1];
   string zone_id = 2 [(validate.rules).string.min_len = 1];
   CloudflareZoneRuleCategory category = 3;
   string rule_id = 4 [(validate.rules).string.min_len = 1];
 }
-message DeleteCloudflareZoneRuleResponse { CloudflareChangeResult result = 1; }
+message DeleteCloudflareZoneRuleResponse {
+  CloudflareChangeResult result = 1;
+}
 message ReorderCloudflareZoneRulesRequest {
   string connection_id = 1 [(validate.rules).string.min_len = 1];
   string zone_id = 2 [(validate.rules).string.min_len = 1];
   CloudflareZoneRuleCategory category = 3;
   repeated string rule_ids = 4 [(validate.rules).repeated = {min_items: 1}];
 }
-message ReorderCloudflareZoneRulesResponse { CloudflareChangeResult result = 1; }
+message ReorderCloudflareZoneRulesResponse {
+  CloudflareChangeResult result = 1;
+}
