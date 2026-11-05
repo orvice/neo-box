@@ -17,18 +17,20 @@ import (
 
 // Permissions a Token can hold.
 const (
-	PermAccountRead = "account:read" // Account Settings Read
-	PermZoneRead    = "zone:read"
-	PermDNSRead     = "dns:read"
-	PermDNSEdit     = "dns:edit"
-	PermWorkersRead = "workers:read" // Workers Scripts Read
-	PermRoutesRead  = "routes:read"  // Workers Routes Read (zone)
-	PermPagesRead   = "pages:read"
-	PermTunnelRead  = "tunnel:read"  // Cloudflare Tunnel Read (account)
-	PermTunnelEdit  = "tunnel:edit"  // Cloudflare Tunnel Edit (account)
-	PermWorkersEdit = "workers:edit" // Workers Scripts Edit (account)
-	PermRoutesEdit  = "routes:edit"  // Workers Routes Edit (zone)
-	PermPagesEdit   = "pages:edit"   // Cloudflare Pages Edit (account)
+	PermAccountRead   = "account:read" // Account Settings Read
+	PermZoneRead      = "zone:read"
+	PermDNSRead       = "dns:read"
+	PermDNSEdit       = "dns:edit"
+	PermWorkersRead   = "workers:read" // Workers Scripts Read
+	PermRoutesRead    = "routes:read"  // Workers Routes Read (zone)
+	PermPagesRead     = "pages:read"
+	PermTunnelRead    = "tunnel:read"  // Cloudflare Tunnel Read (account)
+	PermTunnelEdit    = "tunnel:edit"  // Cloudflare Tunnel Edit (account)
+	PermWorkersEdit   = "workers:edit" // Workers Scripts Edit (account)
+	PermRoutesEdit    = "routes:edit"  // Workers Routes Edit (zone)
+	PermZoneRulesRead = "zone_rules:read"
+	PermZoneRulesEdit = "zone_rules:edit"
+	PermPagesEdit     = "pages:edit" // Cloudflare Pages Edit (account)
 )
 
 // Token is an API token known to the fake.
@@ -126,9 +128,10 @@ type Server struct {
 	tunnels     map[string][]*Tunnel // account → tunnels
 	requests    []Request
 	routeSeq    int
-	emailZones  map[string]*emailZone      // zone ID → Email Routing state
-	emailAddrs  map[string][]*EmailAddress // account → destination addresses
-	emailEvents map[string][]EmailEvent    // zone ID → Email Routing log events
+	emailZones  map[string]*emailZone       // zone ID → Email Routing state
+	emailAddrs  map[string][]*EmailAddress  // account → destination addresses
+	emailEvents map[string][]EmailEvent     // zone ID → Email Routing log events
+	rulesets    map[string][]map[string]any // zone ID → Rulesets
 
 	// Intercept, when set, sees every request first; returning true means
 	// it answered.
@@ -143,7 +146,7 @@ func New() *Server {
 	s := &Server{
 		tokens: map[string]*Token{}, accounts: map[string]string{}, records: map[string][]map[string]any{},
 		scripts: map[string][]*Script{}, subdomains: map[string]string{}, domains: map[string][]*WorkerDomain{},
-		projects: map[string][]*PagesProject{}, tunnels: map[string][]*Tunnel{}, emailZones: map[string]*emailZone{}, emailAddrs: map[string][]*EmailAddress{}, emailEvents: map[string][]EmailEvent{},
+		projects: map[string][]*PagesProject{}, tunnels: map[string][]*Tunnel{}, emailZones: map[string]*emailZone{}, emailAddrs: map[string][]*EmailAddress{}, emailEvents: map[string][]EmailEvent{}, rulesets: map[string][]map[string]any{},
 	}
 	s.Server = httptest.NewServer(http.HandlerFunc(s.serve))
 	return s
@@ -485,8 +488,11 @@ func (s *Server) zoneRoutes(w http.ResponseWriter, r *http.Request, tok *Token, 
 		s.routesOfZone(w, r, tok, z, parts, body)
 	case len(parts) >= 4 && parts[2] == "email" && parts[3] == "routing":
 		s.emailRoutes(w, r, tok, z, parts[4:], body)
+	case len(parts) >= 3 && parts[2] == "rulesets":
+		s.rulesetsRoute(w, r, tok, z, parts, body)
 	case len(parts) >= 3 && parts[2] == "dns_records":
 		s.dns(w, r, tok, z, parts, path, body)
+
 	default:
 		notFound(w, path)
 	}
