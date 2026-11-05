@@ -135,6 +135,18 @@ func (s *CloudflareServiceServer) DeleteCloudflareZoneRule(ctx context.Context, 
 	return connect.NewResponse(&neoboxv1.DeleteCloudflareZoneRuleResponse{Result: resultProto(r)}), nil
 }
 
-func (s *CloudflareServiceServer) ReorderCloudflareZoneRules(context.Context, *connect.Request[neoboxv1.ReorderCloudflareZoneRulesRequest]) (*connect.Response[neoboxv1.ReorderCloudflareZoneRulesResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("Zone Rules reorder is not wired"))
+func (s *CloudflareServiceServer) ReorderCloudflareZoneRules(ctx context.Context, req *connect.Request[neoboxv1.ReorderCloudflareZoneRulesRequest]) (*connect.Response[neoboxv1.ReorderCloudflareZoneRulesResponse], error) {
+	d, a, e := s.openAccount(ctx, req.Msg.GetConnectionId())
+	if e != nil {
+		return nil, e
+	}
+	p, e := protoRuleCategory(req.Msg.GetCategory())
+	if e != nil {
+		return nil, e
+	}
+	r, e := a.ReorderZoneRules(ctx, d.user, req.Msg.GetZoneId(), p, req.Msg.GetRuleIds())
+	if e != nil {
+		return nil, mapCloudflareErr(e)
+	}
+	return connect.NewResponse(&neoboxv1.ReorderCloudflareZoneRulesResponse{Result: resultProto(r)}), nil
 }

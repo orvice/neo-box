@@ -148,6 +148,52 @@ func (a *Account) UpdateZoneRule(ctx context.Context, actor Actor, zoneID string
 	})
 }
 
+func (a *Account) ReorderZoneRules(ctx context.Context, actor Actor, zoneID string, phase cloudflare.ZoneRuleCategory, ids []string) (*OperationResult, error) {
+	zone, err := a.Zone(ctx, zoneID)
+	if err != nil {
+		return nil, err
+	}
+	sets, err := a.api.ListZoneRulesets(ctx, zone.ID, phase)
+	if err != nil {
+		return nil, a.classify(ctx, err, "read Zone Rules", "Zone Rules Read")
+	}
+	rs, err := zoneRuleSet(sets)
+	if err != nil || rs == nil {
+		if err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("ruleset not found")
+	}
+	byID := make(map[string]cloudflare.ZoneRule, len(rs.Rules))
+	for _, r := range rs.Rules {
+		byID[r.ID] = r
+	}
+	ordered := make([]cloudflare.ZoneRule, 0, len(ids))
+	for _, id := range ids {
+		r, ok := byID[id]
+		if !ok {
+			return nil, fmt.Errorf("rule %q is not in the ruleset", id)
+		}
+		ordered = append(ordered, r)
+	}
+	before := map[string]any{"rule_ids": ruleIDs(rs.Rules)}
+	requested := map[string]any{"rule_ids": ids}
+	return a.mutateZoneRule(ctx, actor, zoneID, phase, "reorder_rules", "", before, requested, func(wctx context.Context) (map[string]any, error) {
+		out, e := a.api.ReorderZoneRules(wctx, zone.ID, *rs, ordered)
+		if e != nil {
+			return nil, e
+		}
+		return map[string]any{"rule_ids": ruleIDs(out.Rules)}, nil
+	})
+}
+func ruleIDs(rules []cloudflare.ZoneRule) []string {
+	out := make([]string, 0, len(rules))
+	for _, r := range rules {
+		out = append(out, r.ID)
+	}
+	return out
+}
+
 func (a *Account) DeleteZoneRule(ctx context.Context, actor Actor, zoneID string, phase cloudflare.ZoneRuleCategory, ruleID string) (*OperationResult, error) {
 	zone, err := a.Zone(ctx, zoneID)
 	if err != nil {
