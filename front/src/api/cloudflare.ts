@@ -14,6 +14,7 @@ import {
   type CloudflarePagesEnvironment,
   type CloudflareResourceKind,
   type CloudflareZone,
+
 } from '@/gen/neobox/v1/cloudflare_pb'
 import type { MessageInitShape } from '@bufbuild/protobuf'
 import { timestampFromDate } from '@bufbuild/protobuf/wkt'
@@ -43,6 +44,8 @@ export {
   CloudflarePagesEnvironment,
   CloudflarePagesEnvVarType,
   CloudflareResourceKind,
+  CloudflareZoneRuleCategory,
+  type CloudflareZoneRules,
   type CloudflareChangeResult,
   type CloudflarePagesBuildConfig,
   type CloudflarePagesDeployment,
@@ -87,6 +90,8 @@ const keys = {
     ['cloudflare', connectionId, 'zones', q] as const,
   zone: (connectionId: string, zoneId: string) =>
     ['cloudflare', connectionId, 'zone', zoneId] as const,
+  zoneRules: (connectionId: string, zoneId: string) =>
+    ['cloudflare', connectionId, 'zone-rules', zoneId] as const,
   records: (
     connectionId: string,
     zoneId: string,
@@ -177,6 +182,15 @@ export function useCloudflareZone(connectionId: string, zoneId: string) {
     queryKey: keys.zone(connectionId, zoneId),
     queryFn: async () =>
       (await client.getCloudflareZone({ connectionId, zoneId })).zone,
+    retry: false,
+  })
+}
+
+export function useCloudflareZoneRules(connectionId: string, zoneId: string) {
+  return useQuery({
+    queryKey: keys.zoneRules(connectionId, zoneId),
+    queryFn: async () =>
+      (await client.getCloudflareZoneRules({ connectionId, zoneId })).categories,
     retry: false,
   })
 }
