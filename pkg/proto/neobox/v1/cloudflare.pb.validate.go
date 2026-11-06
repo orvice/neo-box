@@ -20848,3 +20848,1797 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ListCloudflareEmailLogsResponseValidationError{}
+
+// Validate checks the field values on CloudflareZoneRule with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CloudflareZoneRule) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CloudflareZoneRule with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CloudflareZoneRuleMultiError, or nil if none found.
+func (m *CloudflareZoneRule) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CloudflareZoneRule) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Version
+
+	// no validation rules for Description
+
+	// no validation rules for Expression
+
+	// no validation rules for Action
+
+	if all {
+		switch v := interface{}(m.GetActionParameters()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CloudflareZoneRuleValidationError{
+					field:  "ActionParameters",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CloudflareZoneRuleValidationError{
+					field:  "ActionParameters",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetActionParameters()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CloudflareZoneRuleValidationError{
+				field:  "ActionParameters",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for ReadOnly
+
+	// no validation rules for ReadOnlyReason
+
+	if m.Enabled != nil {
+		// no validation rules for Enabled
+	}
+
+	if len(errors) > 0 {
+		return CloudflareZoneRuleMultiError(errors)
+	}
+
+	return nil
+}
+
+// CloudflareZoneRuleMultiError is an error wrapping multiple validation errors
+// returned by CloudflareZoneRule.ValidateAll() if the designated constraints
+// aren't met.
+type CloudflareZoneRuleMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CloudflareZoneRuleMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CloudflareZoneRuleMultiError) AllErrors() []error { return m }
+
+// CloudflareZoneRuleValidationError is the validation error returned by
+// CloudflareZoneRule.Validate if the designated constraints aren't met.
+type CloudflareZoneRuleValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CloudflareZoneRuleValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CloudflareZoneRuleValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CloudflareZoneRuleValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CloudflareZoneRuleValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CloudflareZoneRuleValidationError) ErrorName() string {
+	return "CloudflareZoneRuleValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CloudflareZoneRuleValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCloudflareZoneRule.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CloudflareZoneRuleValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CloudflareZoneRuleValidationError{}
+
+// Validate checks the field values on CloudflareZoneRules with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CloudflareZoneRules) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CloudflareZoneRules with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CloudflareZoneRulesMultiError, or nil if none found.
+func (m *CloudflareZoneRules) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CloudflareZoneRules) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Category
+
+	// no validation rules for RulesetId
+
+	// no validation rules for Snapshot
+
+	for idx, item := range m.GetRules() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, CloudflareZoneRulesValidationError{
+						field:  fmt.Sprintf("Rules[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, CloudflareZoneRulesValidationError{
+						field:  fmt.Sprintf("Rules[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return CloudflareZoneRulesValidationError{
+					field:  fmt.Sprintf("Rules[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for Issue
+
+	if len(errors) > 0 {
+		return CloudflareZoneRulesMultiError(errors)
+	}
+
+	return nil
+}
+
+// CloudflareZoneRulesMultiError is an error wrapping multiple validation
+// errors returned by CloudflareZoneRules.ValidateAll() if the designated
+// constraints aren't met.
+type CloudflareZoneRulesMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CloudflareZoneRulesMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CloudflareZoneRulesMultiError) AllErrors() []error { return m }
+
+// CloudflareZoneRulesValidationError is the validation error returned by
+// CloudflareZoneRules.Validate if the designated constraints aren't met.
+type CloudflareZoneRulesValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CloudflareZoneRulesValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CloudflareZoneRulesValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CloudflareZoneRulesValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CloudflareZoneRulesValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CloudflareZoneRulesValidationError) ErrorName() string {
+	return "CloudflareZoneRulesValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CloudflareZoneRulesValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCloudflareZoneRules.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CloudflareZoneRulesValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CloudflareZoneRulesValidationError{}
+
+// Validate checks the field values on GetCloudflareZoneRulesRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetCloudflareZoneRulesRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetCloudflareZoneRulesRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// GetCloudflareZoneRulesRequestMultiError, or nil if none found.
+func (m *GetCloudflareZoneRulesRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetCloudflareZoneRulesRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := GetCloudflareZoneRulesRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetZoneId()) < 1 {
+		err := GetCloudflareZoneRulesRequestValidationError{
+			field:  "ZoneId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return GetCloudflareZoneRulesRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetCloudflareZoneRulesRequestMultiError is an error wrapping multiple
+// validation errors returned by GetCloudflareZoneRulesRequest.ValidateAll()
+// if the designated constraints aren't met.
+type GetCloudflareZoneRulesRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetCloudflareZoneRulesRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetCloudflareZoneRulesRequestMultiError) AllErrors() []error { return m }
+
+// GetCloudflareZoneRulesRequestValidationError is the validation error
+// returned by GetCloudflareZoneRulesRequest.Validate if the designated
+// constraints aren't met.
+type GetCloudflareZoneRulesRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetCloudflareZoneRulesRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetCloudflareZoneRulesRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetCloudflareZoneRulesRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetCloudflareZoneRulesRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetCloudflareZoneRulesRequestValidationError) ErrorName() string {
+	return "GetCloudflareZoneRulesRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetCloudflareZoneRulesRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetCloudflareZoneRulesRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetCloudflareZoneRulesRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetCloudflareZoneRulesRequestValidationError{}
+
+// Validate checks the field values on GetCloudflareZoneRulesResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetCloudflareZoneRulesResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetCloudflareZoneRulesResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// GetCloudflareZoneRulesResponseMultiError, or nil if none found.
+func (m *GetCloudflareZoneRulesResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetCloudflareZoneRulesResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetCategories() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetCloudflareZoneRulesResponseValidationError{
+						field:  fmt.Sprintf("Categories[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetCloudflareZoneRulesResponseValidationError{
+						field:  fmt.Sprintf("Categories[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetCloudflareZoneRulesResponseValidationError{
+					field:  fmt.Sprintf("Categories[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return GetCloudflareZoneRulesResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetCloudflareZoneRulesResponseMultiError is an error wrapping multiple
+// validation errors returned by GetCloudflareZoneRulesResponse.ValidateAll()
+// if the designated constraints aren't met.
+type GetCloudflareZoneRulesResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetCloudflareZoneRulesResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetCloudflareZoneRulesResponseMultiError) AllErrors() []error { return m }
+
+// GetCloudflareZoneRulesResponseValidationError is the validation error
+// returned by GetCloudflareZoneRulesResponse.Validate if the designated
+// constraints aren't met.
+type GetCloudflareZoneRulesResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetCloudflareZoneRulesResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetCloudflareZoneRulesResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetCloudflareZoneRulesResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetCloudflareZoneRulesResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetCloudflareZoneRulesResponseValidationError) ErrorName() string {
+	return "GetCloudflareZoneRulesResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetCloudflareZoneRulesResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetCloudflareZoneRulesResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetCloudflareZoneRulesResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetCloudflareZoneRulesResponseValidationError{}
+
+// Validate checks the field values on CreateCloudflareZoneRuleRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CreateCloudflareZoneRuleRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreateCloudflareZoneRuleRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// CreateCloudflareZoneRuleRequestMultiError, or nil if none found.
+func (m *CreateCloudflareZoneRuleRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreateCloudflareZoneRuleRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := CreateCloudflareZoneRuleRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetZoneId()) < 1 {
+		err := CreateCloudflareZoneRuleRequestValidationError{
+			field:  "ZoneId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Category
+
+	if m.GetRule() == nil {
+		err := CreateCloudflareZoneRuleRequestValidationError{
+			field:  "Rule",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetRule()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CreateCloudflareZoneRuleRequestValidationError{
+					field:  "Rule",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CreateCloudflareZoneRuleRequestValidationError{
+					field:  "Rule",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetRule()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreateCloudflareZoneRuleRequestValidationError{
+				field:  "Rule",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return CreateCloudflareZoneRuleRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreateCloudflareZoneRuleRequestMultiError is an error wrapping multiple
+// validation errors returned by CreateCloudflareZoneRuleRequest.ValidateAll()
+// if the designated constraints aren't met.
+type CreateCloudflareZoneRuleRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreateCloudflareZoneRuleRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreateCloudflareZoneRuleRequestMultiError) AllErrors() []error { return m }
+
+// CreateCloudflareZoneRuleRequestValidationError is the validation error
+// returned by CreateCloudflareZoneRuleRequest.Validate if the designated
+// constraints aren't met.
+type CreateCloudflareZoneRuleRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreateCloudflareZoneRuleRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreateCloudflareZoneRuleRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreateCloudflareZoneRuleRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreateCloudflareZoneRuleRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreateCloudflareZoneRuleRequestValidationError) ErrorName() string {
+	return "CreateCloudflareZoneRuleRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreateCloudflareZoneRuleRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreateCloudflareZoneRuleRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreateCloudflareZoneRuleRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreateCloudflareZoneRuleRequestValidationError{}
+
+// Validate checks the field values on CreateCloudflareZoneRuleResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *CreateCloudflareZoneRuleResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreateCloudflareZoneRuleResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// CreateCloudflareZoneRuleResponseMultiError, or nil if none found.
+func (m *CreateCloudflareZoneRuleResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreateCloudflareZoneRuleResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetRule()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CreateCloudflareZoneRuleResponseValidationError{
+					field:  "Rule",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CreateCloudflareZoneRuleResponseValidationError{
+					field:  "Rule",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetRule()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreateCloudflareZoneRuleResponseValidationError{
+				field:  "Rule",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetResult()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CreateCloudflareZoneRuleResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CreateCloudflareZoneRuleResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetResult()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreateCloudflareZoneRuleResponseValidationError{
+				field:  "Result",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return CreateCloudflareZoneRuleResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreateCloudflareZoneRuleResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// CreateCloudflareZoneRuleResponse.ValidateAll() if the designated
+// constraints aren't met.
+type CreateCloudflareZoneRuleResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreateCloudflareZoneRuleResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreateCloudflareZoneRuleResponseMultiError) AllErrors() []error { return m }
+
+// CreateCloudflareZoneRuleResponseValidationError is the validation error
+// returned by CreateCloudflareZoneRuleResponse.Validate if the designated
+// constraints aren't met.
+type CreateCloudflareZoneRuleResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreateCloudflareZoneRuleResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreateCloudflareZoneRuleResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreateCloudflareZoneRuleResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreateCloudflareZoneRuleResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreateCloudflareZoneRuleResponseValidationError) ErrorName() string {
+	return "CreateCloudflareZoneRuleResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreateCloudflareZoneRuleResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreateCloudflareZoneRuleResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreateCloudflareZoneRuleResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreateCloudflareZoneRuleResponseValidationError{}
+
+// Validate checks the field values on UpdateCloudflareZoneRuleRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UpdateCloudflareZoneRuleRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpdateCloudflareZoneRuleRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// UpdateCloudflareZoneRuleRequestMultiError, or nil if none found.
+func (m *UpdateCloudflareZoneRuleRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpdateCloudflareZoneRuleRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := UpdateCloudflareZoneRuleRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetZoneId()) < 1 {
+		err := UpdateCloudflareZoneRuleRequestValidationError{
+			field:  "ZoneId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Category
+
+	if utf8.RuneCountInString(m.GetRuleId()) < 1 {
+		err := UpdateCloudflareZoneRuleRequestValidationError{
+			field:  "RuleId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetSnapshot()) < 1 {
+		err := UpdateCloudflareZoneRuleRequestValidationError{
+			field:  "Snapshot",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetRule() == nil {
+		err := UpdateCloudflareZoneRuleRequestValidationError{
+			field:  "Rule",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetRule()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpdateCloudflareZoneRuleRequestValidationError{
+					field:  "Rule",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpdateCloudflareZoneRuleRequestValidationError{
+					field:  "Rule",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetRule()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpdateCloudflareZoneRuleRequestValidationError{
+				field:  "Rule",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return UpdateCloudflareZoneRuleRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpdateCloudflareZoneRuleRequestMultiError is an error wrapping multiple
+// validation errors returned by UpdateCloudflareZoneRuleRequest.ValidateAll()
+// if the designated constraints aren't met.
+type UpdateCloudflareZoneRuleRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpdateCloudflareZoneRuleRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpdateCloudflareZoneRuleRequestMultiError) AllErrors() []error { return m }
+
+// UpdateCloudflareZoneRuleRequestValidationError is the validation error
+// returned by UpdateCloudflareZoneRuleRequest.Validate if the designated
+// constraints aren't met.
+type UpdateCloudflareZoneRuleRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdateCloudflareZoneRuleRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdateCloudflareZoneRuleRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdateCloudflareZoneRuleRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdateCloudflareZoneRuleRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdateCloudflareZoneRuleRequestValidationError) ErrorName() string {
+	return "UpdateCloudflareZoneRuleRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdateCloudflareZoneRuleRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdateCloudflareZoneRuleRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdateCloudflareZoneRuleRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdateCloudflareZoneRuleRequestValidationError{}
+
+// Validate checks the field values on UpdateCloudflareZoneRuleResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *UpdateCloudflareZoneRuleResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpdateCloudflareZoneRuleResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// UpdateCloudflareZoneRuleResponseMultiError, or nil if none found.
+func (m *UpdateCloudflareZoneRuleResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpdateCloudflareZoneRuleResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetRule()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpdateCloudflareZoneRuleResponseValidationError{
+					field:  "Rule",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpdateCloudflareZoneRuleResponseValidationError{
+					field:  "Rule",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetRule()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpdateCloudflareZoneRuleResponseValidationError{
+				field:  "Rule",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetResult()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpdateCloudflareZoneRuleResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpdateCloudflareZoneRuleResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetResult()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpdateCloudflareZoneRuleResponseValidationError{
+				field:  "Result",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return UpdateCloudflareZoneRuleResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpdateCloudflareZoneRuleResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// UpdateCloudflareZoneRuleResponse.ValidateAll() if the designated
+// constraints aren't met.
+type UpdateCloudflareZoneRuleResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpdateCloudflareZoneRuleResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpdateCloudflareZoneRuleResponseMultiError) AllErrors() []error { return m }
+
+// UpdateCloudflareZoneRuleResponseValidationError is the validation error
+// returned by UpdateCloudflareZoneRuleResponse.Validate if the designated
+// constraints aren't met.
+type UpdateCloudflareZoneRuleResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdateCloudflareZoneRuleResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdateCloudflareZoneRuleResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdateCloudflareZoneRuleResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdateCloudflareZoneRuleResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdateCloudflareZoneRuleResponseValidationError) ErrorName() string {
+	return "UpdateCloudflareZoneRuleResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdateCloudflareZoneRuleResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdateCloudflareZoneRuleResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdateCloudflareZoneRuleResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdateCloudflareZoneRuleResponseValidationError{}
+
+// Validate checks the field values on DeleteCloudflareZoneRuleRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DeleteCloudflareZoneRuleRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeleteCloudflareZoneRuleRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// DeleteCloudflareZoneRuleRequestMultiError, or nil if none found.
+func (m *DeleteCloudflareZoneRuleRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeleteCloudflareZoneRuleRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := DeleteCloudflareZoneRuleRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetZoneId()) < 1 {
+		err := DeleteCloudflareZoneRuleRequestValidationError{
+			field:  "ZoneId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Category
+
+	if utf8.RuneCountInString(m.GetRuleId()) < 1 {
+		err := DeleteCloudflareZoneRuleRequestValidationError{
+			field:  "RuleId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return DeleteCloudflareZoneRuleRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeleteCloudflareZoneRuleRequestMultiError is an error wrapping multiple
+// validation errors returned by DeleteCloudflareZoneRuleRequest.ValidateAll()
+// if the designated constraints aren't met.
+type DeleteCloudflareZoneRuleRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeleteCloudflareZoneRuleRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeleteCloudflareZoneRuleRequestMultiError) AllErrors() []error { return m }
+
+// DeleteCloudflareZoneRuleRequestValidationError is the validation error
+// returned by DeleteCloudflareZoneRuleRequest.Validate if the designated
+// constraints aren't met.
+type DeleteCloudflareZoneRuleRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeleteCloudflareZoneRuleRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeleteCloudflareZoneRuleRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeleteCloudflareZoneRuleRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeleteCloudflareZoneRuleRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeleteCloudflareZoneRuleRequestValidationError) ErrorName() string {
+	return "DeleteCloudflareZoneRuleRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeleteCloudflareZoneRuleRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeleteCloudflareZoneRuleRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeleteCloudflareZoneRuleRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeleteCloudflareZoneRuleRequestValidationError{}
+
+// Validate checks the field values on DeleteCloudflareZoneRuleResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *DeleteCloudflareZoneRuleResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeleteCloudflareZoneRuleResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// DeleteCloudflareZoneRuleResponseMultiError, or nil if none found.
+func (m *DeleteCloudflareZoneRuleResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeleteCloudflareZoneRuleResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetResult()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, DeleteCloudflareZoneRuleResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, DeleteCloudflareZoneRuleResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetResult()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return DeleteCloudflareZoneRuleResponseValidationError{
+				field:  "Result",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return DeleteCloudflareZoneRuleResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeleteCloudflareZoneRuleResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// DeleteCloudflareZoneRuleResponse.ValidateAll() if the designated
+// constraints aren't met.
+type DeleteCloudflareZoneRuleResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeleteCloudflareZoneRuleResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeleteCloudflareZoneRuleResponseMultiError) AllErrors() []error { return m }
+
+// DeleteCloudflareZoneRuleResponseValidationError is the validation error
+// returned by DeleteCloudflareZoneRuleResponse.Validate if the designated
+// constraints aren't met.
+type DeleteCloudflareZoneRuleResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeleteCloudflareZoneRuleResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeleteCloudflareZoneRuleResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeleteCloudflareZoneRuleResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeleteCloudflareZoneRuleResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeleteCloudflareZoneRuleResponseValidationError) ErrorName() string {
+	return "DeleteCloudflareZoneRuleResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeleteCloudflareZoneRuleResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeleteCloudflareZoneRuleResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeleteCloudflareZoneRuleResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeleteCloudflareZoneRuleResponseValidationError{}
+
+// Validate checks the field values on ReorderCloudflareZoneRulesRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *ReorderCloudflareZoneRulesRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ReorderCloudflareZoneRulesRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// ReorderCloudflareZoneRulesRequestMultiError, or nil if none found.
+func (m *ReorderCloudflareZoneRulesRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ReorderCloudflareZoneRulesRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetConnectionId()) < 1 {
+		err := ReorderCloudflareZoneRulesRequestValidationError{
+			field:  "ConnectionId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetZoneId()) < 1 {
+		err := ReorderCloudflareZoneRulesRequestValidationError{
+			field:  "ZoneId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Category
+
+	if len(m.GetRuleIds()) < 1 {
+		err := ReorderCloudflareZoneRulesRequestValidationError{
+			field:  "RuleIds",
+			reason: "value must contain at least 1 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetSnapshot()) < 1 {
+		err := ReorderCloudflareZoneRulesRequestValidationError{
+			field:  "Snapshot",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return ReorderCloudflareZoneRulesRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ReorderCloudflareZoneRulesRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// ReorderCloudflareZoneRulesRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ReorderCloudflareZoneRulesRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ReorderCloudflareZoneRulesRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ReorderCloudflareZoneRulesRequestMultiError) AllErrors() []error { return m }
+
+// ReorderCloudflareZoneRulesRequestValidationError is the validation error
+// returned by ReorderCloudflareZoneRulesRequest.Validate if the designated
+// constraints aren't met.
+type ReorderCloudflareZoneRulesRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ReorderCloudflareZoneRulesRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ReorderCloudflareZoneRulesRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ReorderCloudflareZoneRulesRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ReorderCloudflareZoneRulesRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ReorderCloudflareZoneRulesRequestValidationError) ErrorName() string {
+	return "ReorderCloudflareZoneRulesRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ReorderCloudflareZoneRulesRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sReorderCloudflareZoneRulesRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ReorderCloudflareZoneRulesRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ReorderCloudflareZoneRulesRequestValidationError{}
+
+// Validate checks the field values on ReorderCloudflareZoneRulesResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *ReorderCloudflareZoneRulesResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ReorderCloudflareZoneRulesResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// ReorderCloudflareZoneRulesResponseMultiError, or nil if none found.
+func (m *ReorderCloudflareZoneRulesResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ReorderCloudflareZoneRulesResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetResult()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ReorderCloudflareZoneRulesResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ReorderCloudflareZoneRulesResponseValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetResult()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ReorderCloudflareZoneRulesResponseValidationError{
+				field:  "Result",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return ReorderCloudflareZoneRulesResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ReorderCloudflareZoneRulesResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// ReorderCloudflareZoneRulesResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ReorderCloudflareZoneRulesResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ReorderCloudflareZoneRulesResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ReorderCloudflareZoneRulesResponseMultiError) AllErrors() []error { return m }
+
+// ReorderCloudflareZoneRulesResponseValidationError is the validation error
+// returned by ReorderCloudflareZoneRulesResponse.Validate if the designated
+// constraints aren't met.
+type ReorderCloudflareZoneRulesResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ReorderCloudflareZoneRulesResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ReorderCloudflareZoneRulesResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ReorderCloudflareZoneRulesResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ReorderCloudflareZoneRulesResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ReorderCloudflareZoneRulesResponseValidationError) ErrorName() string {
+	return "ReorderCloudflareZoneRulesResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ReorderCloudflareZoneRulesResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sReorderCloudflareZoneRulesResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ReorderCloudflareZoneRulesResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ReorderCloudflareZoneRulesResponseValidationError{}

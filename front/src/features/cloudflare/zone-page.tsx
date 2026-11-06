@@ -60,6 +60,7 @@ import {
 } from './list-parts'
 import { OperationsLog } from './operations'
 import { RecordDialog } from './record-dialog'
+import { ZoneRulesTab } from './zone-rules-tab'
 
 const route = getRouteApi(
   '/_authenticated/connections/$connectionId/zones/$zoneId'
@@ -128,7 +129,7 @@ export function CloudflareZonePage() {
               <TabsList>
                 <TabsTrigger value='records'>DNS records</TabsTrigger>
                 <TabsTrigger value='email'>Email routing</TabsTrigger>
-                <TabsTrigger value='email-logs'>Email logs</TabsTrigger>
+                <TabsTrigger value='rules'>Zone Rules</TabsTrigger>
                 <TabsTrigger value='operations'>Operation log</TabsTrigger>
               </TabsList>
               <TabsContent value='records' className='pt-2'>
@@ -148,6 +149,9 @@ export function CloudflareZonePage() {
               </TabsContent>
               <TabsContent value='email-logs' className='pt-2'>
                 <EmailLogsTab connectionId={connectionId} zoneId={zoneId} />
+              </TabsContent>
+              <TabsContent value='rules' className='pt-2'>
+                <ZoneRulesTab connectionId={connectionId} zoneId={zoneId} />
               </TabsContent>
               <TabsContent value='operations' className='pt-2'>
                 <OperationsLog connectionId={connectionId} zoneId={zoneId} />

@@ -205,6 +205,18 @@ can't be deleted while a Restore of it is pending or running.
   Read permission. Neo Box reads them live, newest first, never stores them,
   and does not log reading them (unlike changes, which are Resource
   operations); message bodies are not available.
+- **Zone Rules** — the five Cloudflare Zone Ruleset phases Neo Box manages:
+  Single Redirects, URL Rewrite Rules, Request Header Transform Rules,
+  Response Header Transform Rules and Origin Rules. Each category is read and
+  changed independently, in Cloudflare's live order. Unsupported rules remain
+  visible but read-only; unknown action configuration is preserved during safe
+  read-modify-write operations. Zone Rules are HTTP rules and are distinct
+  from DNS records, Worker routes and Email Routing rules.
+- **Zone Ruleset** — Cloudflare's ordered ruleset for one Zone Rules phase.
+  Neo Box reads the complete ruleset before a mutation, checks the live
+  snapshot against the user's edit, logs intent before sending, and refreshes
+  the affected category after a confirmed response. A successful save means
+  Cloudflare accepted configuration; it does not verify traffic behavior.
 
 ### Google Workspace
 
