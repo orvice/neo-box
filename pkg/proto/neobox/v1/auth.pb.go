@@ -28,29 +28,29 @@ type User struct {
 	unknownFields protoimpl.UnknownFields
 
 	// @gotags: json:"id,omitempty" yaml:"id,omitempty"
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty" yaml:"id,omitempty"`
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// @gotags: json:"username,omitempty" yaml:"username,omitempty"
-	Username string `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty" yaml:"username,omitempty"`
+	Username string `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
 	// @gotags: json:"display_name,omitempty" yaml:"display_name,omitempty"
-	DisplayName string `protobuf:"bytes,3,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty" yaml:"display_name,omitempty"`
+	DisplayName string `protobuf:"bytes,3,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
 	// @gotags: json:"role,omitempty" yaml:"role,omitempty"
-	Role string `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty" yaml:"role,omitempty"`
+	Role string `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
 	// @gotags: json:"disabled,omitempty" yaml:"disabled,omitempty"
-	Disabled bool `protobuf:"varint,5,opt,name=disabled,proto3" json:"disabled,omitempty" yaml:"disabled,omitempty"`
+	Disabled bool `protobuf:"varint,5,opt,name=disabled,proto3" json:"disabled,omitempty"`
 	// @gotags: json:"created_at,omitempty" yaml:"created_at,omitempty"
-	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty" yaml:"created_at,omitempty"`
+	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	// @gotags: json:"updated_at,omitempty" yaml:"updated_at,omitempty"
-	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty" yaml:"updated_at,omitempty"`
+	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	// @gotags: json:"avatar_url,omitempty" yaml:"avatar_url,omitempty"
-	AvatarUrl string `protobuf:"bytes,8,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty" yaml:"avatar_url,omitempty"`
+	AvatarUrl string `protobuf:"bytes,8,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
 	// @gotags: json:"email,omitempty" yaml:"email,omitempty"
-	Email string `protobuf:"bytes,9,opt,name=email,proto3" json:"email,omitempty" yaml:"email,omitempty"`
+	Email string `protobuf:"bytes,9,opt,name=email,proto3" json:"email,omitempty"`
 	// OAuth provider name (e.g. "github"). Empty for password users.
 	// @gotags: json:"provider,omitempty" yaml:"provider,omitempty"
-	Provider string `protobuf:"bytes,10,opt,name=provider,proto3" json:"provider,omitempty" yaml:"provider,omitempty"`
+	Provider string `protobuf:"bytes,10,opt,name=provider,proto3" json:"provider,omitempty"`
 	// External (provider-issued) account ID. Stable across email changes.
 	// @gotags: json:"external_id,omitempty" yaml:"external_id,omitempty"
-	ExternalId string `protobuf:"bytes,11,opt,name=external_id,json=externalId,proto3" json:"external_id,omitempty" yaml:"external_id,omitempty"`
+	ExternalId string `protobuf:"bytes,11,opt,name=external_id,json=externalId,proto3" json:"external_id,omitempty"`
 }
 
 func (x *User) Reset() {

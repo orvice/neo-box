@@ -1416,6 +1416,7 @@ message UpdateCloudflareZoneRuleRequest {
   string zone_id = 2 [(validate.rules).string.min_len = 1];
   CloudflareZoneRuleCategory category = 3;
   string rule_id = 4 [(validate.rules).string.min_len = 1];
+  string snapshot = 6 [(validate.rules).string.min_len = 1];
   CloudflareZoneRule rule = 5 [(validate.rules).message.required = true];
 }
 message UpdateCloudflareZoneRuleResponse {
@@ -1436,6 +1437,7 @@ message ReorderCloudflareZoneRulesRequest {
   string zone_id = 2 [(validate.rules).string.min_len = 1];
   CloudflareZoneRuleCategory category = 3;
   repeated string rule_ids = 4 [(validate.rules).repeated = {min_items: 1}];
+  string snapshot = 5 [(validate.rules).string.min_len = 1];
 }
 message ReorderCloudflareZoneRulesResponse {
   CloudflareChangeResult result = 1;

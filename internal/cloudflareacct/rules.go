@@ -155,7 +155,7 @@ func (a *Account) CreateZoneRule(ctx context.Context, actor Actor, zoneID string
 	})
 }
 
-func (a *Account) UpdateZoneRule(ctx context.Context, actor Actor, zoneID string, phase cloudflare.ZoneRuleCategory, ruleID string, rule cloudflare.ZoneRule) (*OperationResult, error) {
+func (a *Account) UpdateZoneRule(ctx context.Context, actor Actor, zoneID string, phase cloudflare.ZoneRuleCategory, ruleID string, snapshot string, rule cloudflare.ZoneRule) (*OperationResult, error) {
 	zone, err := a.Zone(ctx, zoneID)
 	if err != nil {
 		return nil, err
@@ -170,6 +170,9 @@ func (a *Account) UpdateZoneRule(ctx context.Context, actor Actor, zoneID string
 			return nil, err
 		}
 		return nil, fmt.Errorf("ruleset not found")
+	}
+	if snapshot != rs.Snapshot() {
+		return nil, fmt.Errorf("stale Zone Rules snapshot; refresh before editing")
 	}
 	old := rs.Rule(ruleID)
 	if old == nil {
@@ -193,7 +196,7 @@ func (a *Account) UpdateZoneRule(ctx context.Context, actor Actor, zoneID string
 	})
 }
 
-func (a *Account) ReorderZoneRules(ctx context.Context, actor Actor, zoneID string, phase cloudflare.ZoneRuleCategory, ids []string) (*OperationResult, error) {
+func (a *Account) ReorderZoneRules(ctx context.Context, actor Actor, zoneID string, phase cloudflare.ZoneRuleCategory, snapshot string, ids []string) (*OperationResult, error) {
 	zone, err := a.Zone(ctx, zoneID)
 	if err != nil {
 		return nil, err
@@ -208,6 +211,9 @@ func (a *Account) ReorderZoneRules(ctx context.Context, actor Actor, zoneID stri
 			return nil, err
 		}
 		return nil, fmt.Errorf("ruleset not found")
+	}
+	if snapshot != rs.Snapshot() {
+		return nil, fmt.Errorf("stale Zone Rules snapshot; refresh before reordering")
 	}
 	for _, r := range rs.Rules {
 		if err := ensureWritable(r); err != nil {

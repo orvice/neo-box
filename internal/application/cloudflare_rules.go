@@ -117,7 +117,7 @@ func (s *CloudflareServiceServer) UpdateCloudflareZoneRule(ctx context.Context, 
 	if e != nil {
 		return nil, e
 	}
-	r, e := a.UpdateZoneRule(ctx, d.user, req.Msg.GetZoneId(), p, req.Msg.GetRuleId(), inputRule(req.Msg.GetRule()))
+	r, e := a.UpdateZoneRule(ctx, d.user, req.Msg.GetZoneId(), p, req.Msg.GetRuleId(), req.Msg.GetSnapshot(), inputRule(req.Msg.GetRule()))
 	if e != nil {
 		return nil, mapCloudflareErr(e)
 	}
@@ -148,7 +148,7 @@ func (s *CloudflareServiceServer) ReorderCloudflareZoneRules(ctx context.Context
 	if e != nil {
 		return nil, e
 	}
-	r, e := a.ReorderZoneRules(ctx, d.user, req.Msg.GetZoneId(), p, req.Msg.GetRuleIds())
+	r, e := a.ReorderZoneRules(ctx, d.user, req.Msg.GetZoneId(), p, req.Msg.GetSnapshot(), req.Msg.GetRuleIds())
 	if e != nil {
 		return nil, mapCloudflareErr(e)
 	}

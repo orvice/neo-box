@@ -187,12 +187,17 @@ export function useCloudflareZone(connectionId: string, zoneId: string) {
 }
 
 export function useCloudflareZoneRules(connectionId: string, zoneId: string) {
-  return useQuery({
-    queryKey: keys.zoneRules(connectionId, zoneId),
-    queryFn: async () =>
-      (await client.getCloudflareZoneRules({ connectionId, zoneId })).categories,
-    retry: false,
-  })
+  return useQuery({ queryKey: keys.zoneRules(connectionId, zoneId), queryFn: async () => (await client.getCloudflareZoneRules({ connectionId, zoneId })).categories, retry: false })
+}
+export function useCloudflareZoneRuleMutations(connectionId: string, zoneId: string) {
+  const qc = useQueryClient()
+  const invalidate = () => qc.invalidateQueries({ queryKey: keys.zoneRules(connectionId, zoneId) })
+  return {
+    create: useMutation({ mutationFn: (x: any) => client.createCloudflareZoneRule(x), onSuccess: invalidate }),
+    update: useMutation({ mutationFn: (x: any) => client.updateCloudflareZoneRule(x), onSuccess: invalidate }),
+    remove: useMutation({ mutationFn: (x: any) => client.deleteCloudflareZoneRule(x), onSuccess: invalidate }),
+    reorder: useMutation({ mutationFn: (x: any) => client.reorderCloudflareZoneRules(x), onSuccess: invalidate }),
+  }
 }
 
 export function useCloudflareDNSRecords(

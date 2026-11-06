@@ -21791,6 +21791,17 @@ func (m *UpdateCloudflareZoneRuleRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if utf8.RuneCountInString(m.GetSnapshot()) < 1 {
+		err := UpdateCloudflareZoneRuleRequestValidationError{
+			field:  "Snapshot",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if m.GetRule() == nil {
 		err := UpdateCloudflareZoneRuleRequestValidationError{
 			field:  "Rule",
@@ -22398,6 +22409,17 @@ func (m *ReorderCloudflareZoneRulesRequest) validate(all bool) error {
 		err := ReorderCloudflareZoneRulesRequestValidationError{
 			field:  "RuleIds",
 			reason: "value must contain at least 1 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetSnapshot()) < 1 {
+		err := ReorderCloudflareZoneRulesRequestValidationError{
+			field:  "Snapshot",
+			reason: "value length must be at least 1 runes",
 		}
 		if !all {
 			return err
