@@ -38,6 +38,10 @@ func ruleCategoryProto(c cloudflare.ZoneRuleCategory) neoboxv1.CloudflareZoneRul
 }
 func ruleToProto(r cloudflare.ZoneRule) *neoboxv1.CloudflareZoneRule {
 	out := &neoboxv1.CloudflareZoneRule{Id: r.ID, Version: r.Version, Description: r.Description, Expression: r.Expression, Action: r.Action, Enabled: r.Enabled}
+	if ro, reason := cloudflareacct.RuleReadOnly(r); ro {
+		out.ReadOnly = true
+		out.ReadOnlyReason = reason
+	}
 	if len(r.ActionParameters) > 0 {
 		var m map[string]any
 		if json.Unmarshal(r.ActionParameters, &m) == nil {

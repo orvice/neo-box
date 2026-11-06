@@ -277,4 +277,3 @@ generation/lint/build checks for the files changed during implementation.
 - Update the domain glossary, architecture guidance and any necessary ADRs
   with the implementation. Use "HTTP rule" or the specific product/category
   name to distinguish this feature from Email Routing's existing "Routing rule".
-

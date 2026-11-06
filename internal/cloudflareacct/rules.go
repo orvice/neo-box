@@ -2,6 +2,7 @@ package cloudflareacct
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"sync"
@@ -28,7 +29,12 @@ func (a *Account) ZoneRules(ctx context.Context, zoneID string) (*ZoneRulesView,
 	if err != nil {
 		return nil, err
 	}
-	v := &ZoneRulesView{Categories: make(map[cloudflare.ZoneRuleCategory][]cloudflare.ZoneRuleset), Issues: make(map[cloudflare.ZoneRuleCategory]string)}
+	type phaseResult struct {
+		phase cloudflare.ZoneRuleCategory
+		sets  []cloudflare.ZoneRuleset
+		issue string
+	}
+	results := make(chan phaseResult, len(zoneRulePhases))
 	var wg sync.WaitGroup
 	for _, phase := range zoneRulePhases {
 		phase := phase
@@ -36,15 +42,25 @@ func (a *Account) ZoneRules(ctx context.Context, zoneID string) (*ZoneRulesView,
 		go func() {
 			defer wg.Done()
 			sets, e := a.api.ListZoneRulesets(ctx, zone.ID, phase)
+			r := phaseResult{phase: phase, sets: sets}
 			if e != nil {
-				v.Issues[phase] = e.Error()
-			} else {
-				v.Categories[phase] = sets
+				r.issue = e.Error()
 			}
+			results <- r
 		}()
 	}
 	wg.Wait()
+	close(results)
+	v := &ZoneRulesView{Categories: make(map[cloudflare.ZoneRuleCategory][]cloudflare.ZoneRuleset), Issues: make(map[cloudflare.ZoneRuleCategory]string)}
+	for r := range results {
+		if r.issue != "" {
+			v.Issues[r.phase] = r.issue
+		} else {
+			v.Categories[r.phase] = r.sets
+		}
+	}
 	return v, nil
+
 }
 
 func zoneRuleSet(sets []cloudflare.ZoneRuleset) (*cloudflare.ZoneRuleset, error) {
@@ -55,6 +71,26 @@ func zoneRuleSet(sets []cloudflare.ZoneRuleset) (*cloudflare.ZoneRuleset, error)
 		return nil, fmt.Errorf("Cloudflare returned multiple rulesets for one phase")
 	}
 	return &sets[0], nil
+}
+
+func RuleReadOnly(r cloudflare.ZoneRule) (bool, string) {
+	known := map[string]bool{"redirect": true, "rewrite": true, "route": true, "set_cache_settings": true, "remove_cache_settings": true, "set_config": true, "skip": true, "compress_response": true, "serve_stale": true}
+	if !known[r.Action] {
+		return true, "Cloudflare action is not supported for safe editing"
+	}
+	if len(r.ActionParameters) > 0 {
+		var x any
+		if json.Unmarshal(r.ActionParameters, &x) != nil {
+			return true, "Cloudflare action_parameters are not valid JSON"
+		}
+	}
+	return false, ""
+}
+func ensureWritable(r cloudflare.ZoneRule) error {
+	if ro, reason := RuleReadOnly(r); ro {
+		return fmt.Errorf("rule %s is read-only: %s", r.ID, reason)
+	}
+	return nil
 }
 
 func ruleLogState(r cloudflare.ZoneRule) map[string]any {
@@ -76,6 +112,9 @@ func (a *Account) mutateZoneRule(ctx context.Context, actor Actor, zoneID string
 }
 
 func (a *Account) CreateZoneRule(ctx context.Context, actor Actor, zoneID string, phase cloudflare.ZoneRuleCategory, rule cloudflare.ZoneRule) (*OperationResult, error) {
+	if err := ensureWritable(rule); err != nil {
+		return nil, err
+	}
 	zone, err := a.Zone(ctx, zoneID)
 	if err != nil {
 		return nil, err
@@ -136,6 +175,12 @@ func (a *Account) UpdateZoneRule(ctx context.Context, actor Actor, zoneID string
 	if old == nil {
 		return nil, fmt.Errorf("rule not found")
 	}
+	if err := ensureWritable(*old); err != nil {
+		return nil, err
+	}
+	if err := ensureWritable(rule); err != nil {
+		return nil, err
+	}
 	if old.Action != rule.Action && strings.TrimSpace(rule.Action) == "" {
 		return nil, fmt.Errorf("action is required")
 	}
@@ -163,6 +208,11 @@ func (a *Account) ReorderZoneRules(ctx context.Context, actor Actor, zoneID stri
 			return nil, err
 		}
 		return nil, fmt.Errorf("ruleset not found")
+	}
+	for _, r := range rs.Rules {
+		if err := ensureWritable(r); err != nil {
+			return nil, fmt.Errorf("cannot reorder rules: %w", err)
+		}
 	}
 	byID := make(map[string]cloudflare.ZoneRule, len(rs.Rules))
 	for _, r := range rs.Rules {
@@ -213,6 +263,9 @@ func (a *Account) DeleteZoneRule(ctx context.Context, actor Actor, zoneID string
 	old := rs.Rule(ruleID)
 	if old == nil {
 		return nil, fmt.Errorf("rule not found")
+	}
+	if err := ensureWritable(*old); err != nil {
+		return nil, err
 	}
 	return a.mutateZoneRule(ctx, actor, zoneID, phase, "delete_rule", ruleID, ruleLogState(*old), nil, func(wctx context.Context) (map[string]any, error) {
 		return nil, a.api.DeleteZoneRule(wctx, zone.ID, rs.ID, ruleID)
