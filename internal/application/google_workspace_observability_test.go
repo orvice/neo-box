@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"go.orx.me/apps/neo-box/internal/connection"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	"go.orx.me/apps/neo-box/internal/repo/connection/memory"
@@ -80,11 +80,11 @@ func TestOverviewReadsAllPagesKeepsPartialFailuresAndDeduplicatesCredentials(t *
 		}
 		return &googleworkspace.Client{HTTP: fake.Client(), Endpoint: fake.URL, CustomerID: customer, AdminEmail: admin}, nil
 	}
-	result, err := srv.GetWorkspaceOverview(asUser("owner"), connect.NewRequest(&neoboxv1.GetWorkspaceOverviewRequest{IncludeGroups: true, PageSize: 50}))
+	result, err := srv.GetWorkspaceOverview(asUser("owner"), &neoboxv1.GetWorkspaceOverviewRequest{IncludeGroups: true, PageSize: 50})
 	if err != nil {
 		t.Fatal(err)
 	}
-	r := result.Msg
+	r := result
 	if len(r.Tenants) != 3 || len(r.Users) != 2 || r.TotalCount != 2 || r.UsersComplete {
 		t.Fatalf("partial overview=%+v", r)
 	}
@@ -100,18 +100,18 @@ func TestOverviewReadsAllPagesKeepsPartialFailuresAndDeduplicatesCredentials(t *
 			t.Fatalf("paged tenant=%+v", summary)
 		}
 	}
-	filtered, err := srv.GetWorkspaceOverview(asUser("owner"), connect.NewRequest(&neoboxv1.GetWorkspaceOverviewRequest{SecurityFilter: "admins_without_two_step", PageSize: 1}))
-	if err != nil || filtered.Msg.TotalCount != 1 || len(filtered.Msg.Users) != 1 || filtered.Msg.Users[0].User.Id != "known" {
+	filtered, err := srv.GetWorkspaceOverview(asUser("owner"), &neoboxv1.GetWorkspaceOverviewRequest{SecurityFilter: "admins_without_two_step", PageSize: 1})
+	if err != nil || filtered.TotalCount != 1 || len(filtered.Users) != 1 || filtered.Users[0].User.Id != "known" {
 		t.Fatalf("security filter=%v %v", filtered, err)
 	}
-	searched, err := srv.GetWorkspaceOverview(asUser("owner"), connect.NewRequest(&neoboxv1.GetWorkspaceOverviewRequest{ConnectionId: ids[0], TenantId: "a", Query: "unknown@a.example"}))
-	if err != nil || searched.Msg.TotalCount != 1 {
+	searched, err := srv.GetWorkspaceOverview(asUser("owner"), &neoboxv1.GetWorkspaceOverviewRequest{ConnectionId: ids[0], TenantId: "a", Query: "unknown@a.example"})
+	if err != nil || searched.TotalCount != 1 {
 		t.Fatalf("tenant search=%v %v", searched, err)
 	}
-	if _, err = srv.GetWorkspaceOverview(asUser("other"), connect.NewRequest(&neoboxv1.GetWorkspaceOverviewRequest{ConnectionId: ids[0]})); connect.CodeOf(err) != connect.CodeNotFound {
+	if _, err = srv.GetWorkspaceOverview(asUser("other"), &neoboxv1.GetWorkspaceOverviewRequest{ConnectionId: ids[0]}); connect.CodeOf(err) != connect.CodeNotFound {
 		t.Fatalf("cross-owner overview=%v", err)
 	}
-	if _, err = srv.GetWorkspaceOverview(asUser("owner"), connect.NewRequest(&neoboxv1.GetWorkspaceOverviewRequest{TenantId: "a"})); connect.CodeOf(err) != connect.CodeInvalidArgument {
+	if _, err = srv.GetWorkspaceOverview(asUser("owner"), &neoboxv1.GetWorkspaceOverviewRequest{TenantId: "a"}); connect.CodeOf(err) != connect.CodeInvalidArgument {
 		t.Fatalf("ambiguous tenant=%v", err)
 	}
 }
@@ -157,7 +157,7 @@ func TestOperationRPCLogsActorAndSanitizedResultsAndFailsClosed(t *testing.T) {
 		return &googleworkspace.Client{HTTP: fake.Client(), Endpoint: fake.URL, CustomerID: customer, AdminEmail: admin}, nil
 	}
 	call := func() error {
-		_, err := srv.ResetWorkspaceUserPassword(asUser("owner"), connect.NewRequest(&neoboxv1.ResetWorkspaceUserPasswordRequest{ConnectionId: ids[0], TenantId: "a", UserId: "u", Password: "PASSWORD-SECRET", ChangePasswordAtNextLogin: true}))
+		_, err := srv.ResetWorkspaceUserPassword(asUser("owner"), &neoboxv1.ResetWorkspaceUserPasswordRequest{ConnectionId: ids[0], TenantId: "a", UserId: "u", Password: "PASSWORD-SECRET", ChangePasswordAtNextLogin: true})
 		return err
 	}
 	if err := call(); err != nil {
@@ -205,18 +205,18 @@ func TestOperationRPCLogsActorAndSanitizedResultsAndFailsClosed(t *testing.T) {
 	if !found {
 		t.Fatal("pending log was not retained")
 	}
-	if _, err := srv.ListWorkspaceOperations(asUser("other"), connect.NewRequest(&neoboxv1.ListWorkspaceOperationsRequest{ConnectionId: ids[0]})); connect.CodeOf(err) != connect.CodeNotFound {
+	if _, err := srv.ListWorkspaceOperations(asUser("other"), &neoboxv1.ListWorkspaceOperationsRequest{ConnectionId: ids[0]}); connect.CodeOf(err) != connect.CodeNotFound {
 		t.Fatalf("cross-owner history=%v", err)
 	}
 }
 func TestAuditRangeValidation(t *testing.T) {
 	now := time.Date(2026, 10, 13, 0, 0, 0, 0, time.UTC)
 	for _, in := range []*neoboxv1.ListWorkspaceAuditActivitiesRequest{{Application: "unknown"}, {StartTime: "invalid"}, {StartTime: now.Add(-181 * 24 * time.Hour).Format(time.RFC3339)}, {StartTime: now.Format(time.RFC3339), EndTime: now.Add(-time.Hour).Format(time.RFC3339)}} {
-		if _, err := workspaceAuditQuery(in, now); connect.CodeOf(err) != connect.CodeInvalidArgument {
+		if _, err := workspaceAuditQuery(context.Background(), in, now); connect.CodeOf(err) != connect.CodeInvalidArgument {
 			t.Fatalf("invalid audit filter accepted: %v", err)
 		}
 	}
-	q, err := workspaceAuditQuery(&neoboxv1.ListWorkspaceAuditActivitiesRequest{}, now)
+	q, err := workspaceAuditQuery(context.Background(), &neoboxv1.ListWorkspaceAuditActivitiesRequest{}, now)
 	if err != nil || q.Application != "login" || !q.Start.Equal(now.Add(-7*24*time.Hour)) {
 		t.Fatalf("default audit window=%+v %v", q, err)
 	}
@@ -241,8 +241,8 @@ func TestGoogleAuditRPCUsesOptionalReadScopeAndDoesNotCreateLocalOperations(t *t
 		}
 		return &googleworkspace.Client{HTTP: fake.Client(), Endpoint: fake.URL, ReportsEndpoint: fake.URL, CustomerID: customer, AdminEmail: admin}, nil
 	}
-	result, err := srv.ListWorkspaceAuditActivities(asUser("owner"), connect.NewRequest(&neoboxv1.ListWorkspaceAuditActivitiesRequest{ConnectionId: ids[0], TenantId: "a", Application: "login", UserKey: "u"}))
-	if err != nil || len(result.Msg.Activities) != 1 || result.Msg.Activities[0].Events[0].Parameters == nil || result.Msg.NextPageToken != "next" {
+	result, err := srv.ListWorkspaceAuditActivities(asUser("owner"), &neoboxv1.ListWorkspaceAuditActivitiesRequest{ConnectionId: ids[0], TenantId: "a", Application: "login", UserKey: "u"})
+	if err != nil || len(result.Activities) != 1 || result.Activities[0].Events[0].Parameters == nil || result.NextPageToken != "next" {
 		t.Fatalf("audit RPC=%v %v", result, err)
 	}
 	if len(rows.ops) != 0 {

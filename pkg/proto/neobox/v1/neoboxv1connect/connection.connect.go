@@ -5,268 +5,297 @@
 package neoboxv1connect
 
 import (
-	connect "connectrpc.com/connect"
+	connect "connectrpc.com/connect/v2"
 	context "context"
-	errors "errors"
 	v1 "go.orx.me/apps/neo-box/pkg/proto/neobox/v1"
-	http "net/http"
-	strings "strings"
+	sync "sync"
 )
-
-// This is a compile-time assertion to ensure that this generated file and the connect package are
-// compatible. If you get a compiler error that this constant is not defined, this code was
-// generated with a version of connect newer than the one compiled into your binary. You can fix the
-// problem by either regenerating this code with an older version of connect or updating the connect
-// version compiled into your binary.
-const _ = connect.IsAtLeastVersion1_13_0
 
 const (
 	// ConnectionServiceName is the fully-qualified name of the ConnectionService service.
 	ConnectionServiceName = "neobox.v1.ConnectionService"
 )
 
-// These constants are the fully-qualified names of the RPCs defined in this package. They're
-// exposed at runtime as Spec.Procedure and as the final two segments of the HTTP route.
+// These constants are the procedure names of the RPCs defined in this package. They're exposed at
+// runtime as Spec.Procedure and as the final two segments of the HTTP route.
 //
 // Note that these are different from the fully-qualified method names used by
 // google.golang.org/protobuf/reflect/protoreflect. To convert from these constants to
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// ConnectionServiceListConnectionsProcedure is the fully-qualified name of the ConnectionService's
+	// ConnectionServiceListConnectionsProcedure is the procedure name of the ConnectionService's
 	// ListConnections RPC.
 	ConnectionServiceListConnectionsProcedure = "/neobox.v1.ConnectionService/ListConnections"
-	// ConnectionServiceGetConnectionProcedure is the fully-qualified name of the ConnectionService's
+	// ConnectionServiceGetConnectionProcedure is the procedure name of the ConnectionService's
 	// GetConnection RPC.
 	ConnectionServiceGetConnectionProcedure = "/neobox.v1.ConnectionService/GetConnection"
-	// ConnectionServiceCreateConnectionProcedure is the fully-qualified name of the ConnectionService's
+	// ConnectionServiceCreateConnectionProcedure is the procedure name of the ConnectionService's
 	// CreateConnection RPC.
 	ConnectionServiceCreateConnectionProcedure = "/neobox.v1.ConnectionService/CreateConnection"
-	// ConnectionServiceUpdateConnectionProcedure is the fully-qualified name of the ConnectionService's
+	// ConnectionServiceUpdateConnectionProcedure is the procedure name of the ConnectionService's
 	// UpdateConnection RPC.
 	ConnectionServiceUpdateConnectionProcedure = "/neobox.v1.ConnectionService/UpdateConnection"
-	// ConnectionServiceDeleteConnectionProcedure is the fully-qualified name of the ConnectionService's
+	// ConnectionServiceDeleteConnectionProcedure is the procedure name of the ConnectionService's
 	// DeleteConnection RPC.
 	ConnectionServiceDeleteConnectionProcedure = "/neobox.v1.ConnectionService/DeleteConnection"
-	// ConnectionServiceTestConnectionProcedure is the fully-qualified name of the ConnectionService's
+	// ConnectionServiceTestConnectionProcedure is the procedure name of the ConnectionService's
 	// TestConnection RPC.
 	ConnectionServiceTestConnectionProcedure = "/neobox.v1.ConnectionService/TestConnection"
 )
 
+var (
+	connectionServiceListConnectionsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_connection_proto.Services().ByName("ConnectionService").Methods().ByName("ListConnections"),
+			Procedure:  ConnectionServiceListConnectionsProcedure,
+		}
+	})
+	connectionServiceGetConnectionSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_connection_proto.Services().ByName("ConnectionService").Methods().ByName("GetConnection"),
+			Procedure:  ConnectionServiceGetConnectionProcedure,
+		}
+	})
+	connectionServiceCreateConnectionSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_connection_proto.Services().ByName("ConnectionService").Methods().ByName("CreateConnection"),
+			Procedure:  ConnectionServiceCreateConnectionProcedure,
+		}
+	})
+	connectionServiceUpdateConnectionSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_connection_proto.Services().ByName("ConnectionService").Methods().ByName("UpdateConnection"),
+			Procedure:  ConnectionServiceUpdateConnectionProcedure,
+		}
+	})
+	connectionServiceDeleteConnectionSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_connection_proto.Services().ByName("ConnectionService").Methods().ByName("DeleteConnection"),
+			Procedure:  ConnectionServiceDeleteConnectionProcedure,
+		}
+	})
+	connectionServiceTestConnectionSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_connection_proto.Services().ByName("ConnectionService").Methods().ByName("TestConnection"),
+			Procedure:  ConnectionServiceTestConnectionProcedure,
+		}
+	})
+)
+
 // ConnectionServiceClient is a client for the neobox.v1.ConnectionService service.
 type ConnectionServiceClient interface {
-	ListConnections(context.Context, *connect.Request[v1.ListConnectionsRequest]) (*connect.Response[v1.ListConnectionsResponse], error)
-	GetConnection(context.Context, *connect.Request[v1.GetConnectionRequest]) (*connect.Response[v1.GetConnectionResponse], error)
+	ListConnections(context.Context, *v1.ListConnectionsRequest) (*v1.ListConnectionsResponse, error)
+	GetConnection(context.Context, *v1.GetConnectionRequest) (*v1.GetConnectionResponse, error)
 	// CreateConnection verifies the settings with the provider before saving.
-	CreateConnection(context.Context, *connect.Request[v1.CreateConnectionRequest]) (*connect.Response[v1.CreateConnectionResponse], error)
+	CreateConnection(context.Context, *v1.CreateConnectionRequest) (*v1.CreateConnectionResponse, error)
 	// UpdateConnection re-verifies when the settings change. The settings must
 	// be for the connection's provider.
-	UpdateConnection(context.Context, *connect.Request[v1.UpdateConnectionRequest]) (*connect.Response[v1.UpdateConnectionResponse], error)
+	UpdateConnection(context.Context, *v1.UpdateConnectionRequest) (*v1.UpdateConnectionResponse, error)
 	// DeleteConnection removes the connection and everything the provider
 	// stored for it (for NocoDB: snapshots with their content, and Backup
 	// Policies; for Cloudflare: the DNS operation log). Nothing is deleted at
 	// the provider.
-	DeleteConnection(context.Context, *connect.Request[v1.DeleteConnectionRequest]) (*connect.Response[v1.DeleteConnectionResponse], error)
+	DeleteConnection(context.Context, *v1.DeleteConnectionRequest) (*v1.DeleteConnectionResponse, error)
 	// TestConnection verifies the stored settings and records the result as
 	// the connection's status.
-	TestConnection(context.Context, *connect.Request[v1.TestConnectionRequest]) (*connect.Response[v1.TestConnectionResponse], error)
+	TestConnection(context.Context, *v1.TestConnectionRequest) (*v1.TestConnectionResponse, error)
 }
 
-// NewConnectionServiceClient constructs a client for the neobox.v1.ConnectionService service. By
-// default, it uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses,
-// and sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the
-// connect.WithGRPC() or connect.WithGRPCWeb() options.
-//
-// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
-// http://api.acme.com or https://acme.com/grpc).
-func NewConnectionServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) ConnectionServiceClient {
-	baseURL = strings.TrimRight(baseURL, "/")
-	connectionServiceMethods := v1.File_neobox_v1_connection_proto.Services().ByName("ConnectionService").Methods()
-	return &connectionServiceClient{
-		listConnections: connect.NewClient[v1.ListConnectionsRequest, v1.ListConnectionsResponse](
-			httpClient,
-			baseURL+ConnectionServiceListConnectionsProcedure,
-			connect.WithSchema(connectionServiceMethods.ByName("ListConnections")),
-			connect.WithClientOptions(opts...),
-		),
-		getConnection: connect.NewClient[v1.GetConnectionRequest, v1.GetConnectionResponse](
-			httpClient,
-			baseURL+ConnectionServiceGetConnectionProcedure,
-			connect.WithSchema(connectionServiceMethods.ByName("GetConnection")),
-			connect.WithClientOptions(opts...),
-		),
-		createConnection: connect.NewClient[v1.CreateConnectionRequest, v1.CreateConnectionResponse](
-			httpClient,
-			baseURL+ConnectionServiceCreateConnectionProcedure,
-			connect.WithSchema(connectionServiceMethods.ByName("CreateConnection")),
-			connect.WithClientOptions(opts...),
-		),
-		updateConnection: connect.NewClient[v1.UpdateConnectionRequest, v1.UpdateConnectionResponse](
-			httpClient,
-			baseURL+ConnectionServiceUpdateConnectionProcedure,
-			connect.WithSchema(connectionServiceMethods.ByName("UpdateConnection")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteConnection: connect.NewClient[v1.DeleteConnectionRequest, v1.DeleteConnectionResponse](
-			httpClient,
-			baseURL+ConnectionServiceDeleteConnectionProcedure,
-			connect.WithSchema(connectionServiceMethods.ByName("DeleteConnection")),
-			connect.WithClientOptions(opts...),
-		),
-		testConnection: connect.NewClient[v1.TestConnectionRequest, v1.TestConnectionResponse](
-			httpClient,
-			baseURL+ConnectionServiceTestConnectionProcedure,
-			connect.WithSchema(connectionServiceMethods.ByName("TestConnection")),
-			connect.WithClientOptions(opts...),
-		),
-	}
-}
-
-// connectionServiceClient implements ConnectionServiceClient.
-type connectionServiceClient struct {
-	listConnections  *connect.Client[v1.ListConnectionsRequest, v1.ListConnectionsResponse]
-	getConnection    *connect.Client[v1.GetConnectionRequest, v1.GetConnectionResponse]
-	createConnection *connect.Client[v1.CreateConnectionRequest, v1.CreateConnectionResponse]
-	updateConnection *connect.Client[v1.UpdateConnectionRequest, v1.UpdateConnectionResponse]
-	deleteConnection *connect.Client[v1.DeleteConnectionRequest, v1.DeleteConnectionResponse]
-	testConnection   *connect.Client[v1.TestConnectionRequest, v1.TestConnectionResponse]
-}
-
-// ListConnections calls neobox.v1.ConnectionService.ListConnections.
-func (c *connectionServiceClient) ListConnections(ctx context.Context, req *connect.Request[v1.ListConnectionsRequest]) (*connect.Response[v1.ListConnectionsResponse], error) {
-	return c.listConnections.CallUnary(ctx, req)
-}
-
-// GetConnection calls neobox.v1.ConnectionService.GetConnection.
-func (c *connectionServiceClient) GetConnection(ctx context.Context, req *connect.Request[v1.GetConnectionRequest]) (*connect.Response[v1.GetConnectionResponse], error) {
-	return c.getConnection.CallUnary(ctx, req)
-}
-
-// CreateConnection calls neobox.v1.ConnectionService.CreateConnection.
-func (c *connectionServiceClient) CreateConnection(ctx context.Context, req *connect.Request[v1.CreateConnectionRequest]) (*connect.Response[v1.CreateConnectionResponse], error) {
-	return c.createConnection.CallUnary(ctx, req)
-}
-
-// UpdateConnection calls neobox.v1.ConnectionService.UpdateConnection.
-func (c *connectionServiceClient) UpdateConnection(ctx context.Context, req *connect.Request[v1.UpdateConnectionRequest]) (*connect.Response[v1.UpdateConnectionResponse], error) {
-	return c.updateConnection.CallUnary(ctx, req)
-}
-
-// DeleteConnection calls neobox.v1.ConnectionService.DeleteConnection.
-func (c *connectionServiceClient) DeleteConnection(ctx context.Context, req *connect.Request[v1.DeleteConnectionRequest]) (*connect.Response[v1.DeleteConnectionResponse], error) {
-	return c.deleteConnection.CallUnary(ctx, req)
-}
-
-// TestConnection calls neobox.v1.ConnectionService.TestConnection.
-func (c *connectionServiceClient) TestConnection(ctx context.Context, req *connect.Request[v1.TestConnectionRequest]) (*connect.Response[v1.TestConnectionResponse], error) {
-	return c.testConnection.CallUnary(ctx, req)
+// NewConnectionServiceClient constructs a client for the neobox.v1.ConnectionService service.
+// Multiple service clients may share a single connect.Client.
+func NewConnectionServiceClient(client *connect.Client) ConnectionServiceClient {
+	return &connectionServiceClient{client: client}
 }
 
 // ConnectionServiceHandler is an implementation of the neobox.v1.ConnectionService service.
 type ConnectionServiceHandler interface {
-	ListConnections(context.Context, *connect.Request[v1.ListConnectionsRequest]) (*connect.Response[v1.ListConnectionsResponse], error)
-	GetConnection(context.Context, *connect.Request[v1.GetConnectionRequest]) (*connect.Response[v1.GetConnectionResponse], error)
+	ListConnections(context.Context, *v1.ListConnectionsRequest) (*v1.ListConnectionsResponse, error)
+	GetConnection(context.Context, *v1.GetConnectionRequest) (*v1.GetConnectionResponse, error)
 	// CreateConnection verifies the settings with the provider before saving.
-	CreateConnection(context.Context, *connect.Request[v1.CreateConnectionRequest]) (*connect.Response[v1.CreateConnectionResponse], error)
+	CreateConnection(context.Context, *v1.CreateConnectionRequest) (*v1.CreateConnectionResponse, error)
 	// UpdateConnection re-verifies when the settings change. The settings must
 	// be for the connection's provider.
-	UpdateConnection(context.Context, *connect.Request[v1.UpdateConnectionRequest]) (*connect.Response[v1.UpdateConnectionResponse], error)
+	UpdateConnection(context.Context, *v1.UpdateConnectionRequest) (*v1.UpdateConnectionResponse, error)
 	// DeleteConnection removes the connection and everything the provider
 	// stored for it (for NocoDB: snapshots with their content, and Backup
 	// Policies; for Cloudflare: the DNS operation log). Nothing is deleted at
 	// the provider.
-	DeleteConnection(context.Context, *connect.Request[v1.DeleteConnectionRequest]) (*connect.Response[v1.DeleteConnectionResponse], error)
+	DeleteConnection(context.Context, *v1.DeleteConnectionRequest) (*v1.DeleteConnectionResponse, error)
 	// TestConnection verifies the stored settings and records the result as
 	// the connection's status.
-	TestConnection(context.Context, *connect.Request[v1.TestConnectionRequest]) (*connect.Response[v1.TestConnectionResponse], error)
+	TestConnection(context.Context, *v1.TestConnectionRequest) (*v1.TestConnectionResponse, error)
 }
 
-// NewConnectionServiceHandler builds an HTTP handler from the service implementation. It returns
-// the path on which to mount the handler and the handler itself.
-//
-// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
-// and JSON codecs. They also support gzip compression.
-func NewConnectionServiceHandler(svc ConnectionServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
-	connectionServiceMethods := v1.File_neobox_v1_connection_proto.Services().ByName("ConnectionService").Methods()
-	connectionServiceListConnectionsHandler := connect.NewUnaryHandler(
-		ConnectionServiceListConnectionsProcedure,
-		svc.ListConnections,
-		connect.WithSchema(connectionServiceMethods.ByName("ListConnections")),
-		connect.WithHandlerOptions(opts...),
+// RegisterConnectionServiceHandler registers svc as the neobox.v1.ConnectionService implementation
+// on server.
+func RegisterConnectionServiceHandler(server *connect.Server, svc ConnectionServiceHandler) {
+	adapter := connectionServiceHandler{svc: svc}
+	server.Register(
+		connect.Method{Spec: connectionServiceListConnectionsSpec(), Handler: adapter.listConnections},
+		connect.Method{Spec: connectionServiceGetConnectionSpec(), Handler: adapter.getConnection},
+		connect.Method{Spec: connectionServiceCreateConnectionSpec(), Handler: adapter.createConnection},
+		connect.Method{Spec: connectionServiceUpdateConnectionSpec(), Handler: adapter.updateConnection},
+		connect.Method{Spec: connectionServiceDeleteConnectionSpec(), Handler: adapter.deleteConnection},
+		connect.Method{Spec: connectionServiceTestConnectionSpec(), Handler: adapter.testConnection},
 	)
-	connectionServiceGetConnectionHandler := connect.NewUnaryHandler(
-		ConnectionServiceGetConnectionProcedure,
-		svc.GetConnection,
-		connect.WithSchema(connectionServiceMethods.ByName("GetConnection")),
-		connect.WithHandlerOptions(opts...),
-	)
-	connectionServiceCreateConnectionHandler := connect.NewUnaryHandler(
-		ConnectionServiceCreateConnectionProcedure,
-		svc.CreateConnection,
-		connect.WithSchema(connectionServiceMethods.ByName("CreateConnection")),
-		connect.WithHandlerOptions(opts...),
-	)
-	connectionServiceUpdateConnectionHandler := connect.NewUnaryHandler(
-		ConnectionServiceUpdateConnectionProcedure,
-		svc.UpdateConnection,
-		connect.WithSchema(connectionServiceMethods.ByName("UpdateConnection")),
-		connect.WithHandlerOptions(opts...),
-	)
-	connectionServiceDeleteConnectionHandler := connect.NewUnaryHandler(
-		ConnectionServiceDeleteConnectionProcedure,
-		svc.DeleteConnection,
-		connect.WithSchema(connectionServiceMethods.ByName("DeleteConnection")),
-		connect.WithHandlerOptions(opts...),
-	)
-	connectionServiceTestConnectionHandler := connect.NewUnaryHandler(
-		ConnectionServiceTestConnectionProcedure,
-		svc.TestConnection,
-		connect.WithSchema(connectionServiceMethods.ByName("TestConnection")),
-		connect.WithHandlerOptions(opts...),
-	)
-	return "/neobox.v1.ConnectionService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case ConnectionServiceListConnectionsProcedure:
-			connectionServiceListConnectionsHandler.ServeHTTP(w, r)
-		case ConnectionServiceGetConnectionProcedure:
-			connectionServiceGetConnectionHandler.ServeHTTP(w, r)
-		case ConnectionServiceCreateConnectionProcedure:
-			connectionServiceCreateConnectionHandler.ServeHTTP(w, r)
-		case ConnectionServiceUpdateConnectionProcedure:
-			connectionServiceUpdateConnectionHandler.ServeHTTP(w, r)
-		case ConnectionServiceDeleteConnectionProcedure:
-			connectionServiceDeleteConnectionHandler.ServeHTTP(w, r)
-		case ConnectionServiceTestConnectionProcedure:
-			connectionServiceTestConnectionHandler.ServeHTTP(w, r)
-		default:
-			http.NotFound(w, r)
-		}
-	})
 }
 
 // UnimplementedConnectionServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedConnectionServiceHandler struct{}
 
-func (UnimplementedConnectionServiceHandler) ListConnections(context.Context, *connect.Request[v1.ListConnectionsRequest]) (*connect.Response[v1.ListConnectionsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.ConnectionService.ListConnections is not implemented"))
+func (UnimplementedConnectionServiceHandler) ListConnections(context.Context, *v1.ListConnectionsRequest) (*v1.ListConnectionsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.ConnectionService.ListConnections is not implemented")
 }
 
-func (UnimplementedConnectionServiceHandler) GetConnection(context.Context, *connect.Request[v1.GetConnectionRequest]) (*connect.Response[v1.GetConnectionResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.ConnectionService.GetConnection is not implemented"))
+func (UnimplementedConnectionServiceHandler) GetConnection(context.Context, *v1.GetConnectionRequest) (*v1.GetConnectionResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.ConnectionService.GetConnection is not implemented")
 }
 
-func (UnimplementedConnectionServiceHandler) CreateConnection(context.Context, *connect.Request[v1.CreateConnectionRequest]) (*connect.Response[v1.CreateConnectionResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.ConnectionService.CreateConnection is not implemented"))
+func (UnimplementedConnectionServiceHandler) CreateConnection(context.Context, *v1.CreateConnectionRequest) (*v1.CreateConnectionResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.ConnectionService.CreateConnection is not implemented")
 }
 
-func (UnimplementedConnectionServiceHandler) UpdateConnection(context.Context, *connect.Request[v1.UpdateConnectionRequest]) (*connect.Response[v1.UpdateConnectionResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.ConnectionService.UpdateConnection is not implemented"))
+func (UnimplementedConnectionServiceHandler) UpdateConnection(context.Context, *v1.UpdateConnectionRequest) (*v1.UpdateConnectionResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.ConnectionService.UpdateConnection is not implemented")
 }
 
-func (UnimplementedConnectionServiceHandler) DeleteConnection(context.Context, *connect.Request[v1.DeleteConnectionRequest]) (*connect.Response[v1.DeleteConnectionResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.ConnectionService.DeleteConnection is not implemented"))
+func (UnimplementedConnectionServiceHandler) DeleteConnection(context.Context, *v1.DeleteConnectionRequest) (*v1.DeleteConnectionResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.ConnectionService.DeleteConnection is not implemented")
 }
 
-func (UnimplementedConnectionServiceHandler) TestConnection(context.Context, *connect.Request[v1.TestConnectionRequest]) (*connect.Response[v1.TestConnectionResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.ConnectionService.TestConnection is not implemented"))
+func (UnimplementedConnectionServiceHandler) TestConnection(context.Context, *v1.TestConnectionRequest) (*v1.TestConnectionResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.ConnectionService.TestConnection is not implemented")
+}
+
+type connectionServiceClient struct {
+	client *connect.Client
+}
+
+func (c *connectionServiceClient) ListConnections(ctx context.Context, req *v1.ListConnectionsRequest) (*v1.ListConnectionsResponse, error) {
+	var res v1.ListConnectionsResponse
+	if err := c.client.CallUnary(ctx, connectionServiceListConnectionsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *connectionServiceClient) GetConnection(ctx context.Context, req *v1.GetConnectionRequest) (*v1.GetConnectionResponse, error) {
+	var res v1.GetConnectionResponse
+	if err := c.client.CallUnary(ctx, connectionServiceGetConnectionSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *connectionServiceClient) CreateConnection(ctx context.Context, req *v1.CreateConnectionRequest) (*v1.CreateConnectionResponse, error) {
+	var res v1.CreateConnectionResponse
+	if err := c.client.CallUnary(ctx, connectionServiceCreateConnectionSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *connectionServiceClient) UpdateConnection(ctx context.Context, req *v1.UpdateConnectionRequest) (*v1.UpdateConnectionResponse, error) {
+	var res v1.UpdateConnectionResponse
+	if err := c.client.CallUnary(ctx, connectionServiceUpdateConnectionSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *connectionServiceClient) DeleteConnection(ctx context.Context, req *v1.DeleteConnectionRequest) (*v1.DeleteConnectionResponse, error) {
+	var res v1.DeleteConnectionResponse
+	if err := c.client.CallUnary(ctx, connectionServiceDeleteConnectionSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *connectionServiceClient) TestConnection(ctx context.Context, req *v1.TestConnectionRequest) (*v1.TestConnectionResponse, error) {
+	var res v1.TestConnectionResponse
+	if err := c.client.CallUnary(ctx, connectionServiceTestConnectionSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+type connectionServiceHandler struct{ svc ConnectionServiceHandler }
+
+func (h connectionServiceHandler) listConnections(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListConnectionsRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListConnections(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h connectionServiceHandler) getConnection(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.GetConnectionRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.GetConnection(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h connectionServiceHandler) createConnection(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.CreateConnectionRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.CreateConnection(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h connectionServiceHandler) updateConnection(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.UpdateConnectionRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.UpdateConnection(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h connectionServiceHandler) deleteConnection(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteConnectionRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteConnection(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h connectionServiceHandler) testConnection(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.TestConnectionRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.TestConnection(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
 }

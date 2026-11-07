@@ -11,7 +11,7 @@ import (
 	"sync"
 	"testing"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	neoboxv1 "go.orx.me/apps/neo-box/pkg/proto/neobox/v1"
 )
@@ -87,19 +87,19 @@ type mailCall struct {
 func mailCalls() []mailCall {
 	return []mailCall{
 		{"labels", func(f *mailFixture, user string, c *neoboxv1.GmailAccessConfirmation) error {
-			_, err := f.srv.ListWorkspaceUserGmailLabels(asUser("owner"), connect.NewRequest(&neoboxv1.ListWorkspaceUserGmailLabelsRequest{ConnectionId: f.conn, TenantId: "a", UserId: user, Confirmation: c}))
+			_, err := f.srv.ListWorkspaceUserGmailLabels(asUser("owner"), &neoboxv1.ListWorkspaceUserGmailLabelsRequest{ConnectionId: f.conn, TenantId: "a", UserId: user, Confirmation: c})
 			return err
 		}},
 		{"search", func(f *mailFixture, user string, c *neoboxv1.GmailAccessConfirmation) error {
-			_, err := f.srv.SearchWorkspaceUserGmailMessages(asUser("owner"), connect.NewRequest(&neoboxv1.SearchWorkspaceUserGmailMessagesRequest{ConnectionId: f.conn, TenantId: "a", UserId: user, Confirmation: c, Query: "from:boss"}))
+			_, err := f.srv.SearchWorkspaceUserGmailMessages(asUser("owner"), &neoboxv1.SearchWorkspaceUserGmailMessagesRequest{ConnectionId: f.conn, TenantId: "a", UserId: user, Confirmation: c, Query: "from:boss"})
 			return err
 		}},
 		{"message", func(f *mailFixture, user string, c *neoboxv1.GmailAccessConfirmation) error {
-			_, err := f.srv.GetWorkspaceUserGmailMessage(asUser("owner"), connect.NewRequest(&neoboxv1.GetWorkspaceUserGmailMessageRequest{ConnectionId: f.conn, TenantId: "a", UserId: user, Confirmation: c, MessageId: "m1"}))
+			_, err := f.srv.GetWorkspaceUserGmailMessage(asUser("owner"), &neoboxv1.GetWorkspaceUserGmailMessageRequest{ConnectionId: f.conn, TenantId: "a", UserId: user, Confirmation: c, MessageId: "m1"})
 			return err
 		}},
 		{"attachment", func(f *mailFixture, user string, c *neoboxv1.GmailAccessConfirmation) error {
-			_, err := f.srv.DownloadWorkspaceUserGmailAttachment(asUser("owner"), connect.NewRequest(&neoboxv1.DownloadWorkspaceUserGmailAttachmentRequest{ConnectionId: f.conn, TenantId: "a", UserId: user, Confirmation: c, MessageId: "m1", PartId: "1"}))
+			_, err := f.srv.DownloadWorkspaceUserGmailAttachment(asUser("owner"), &neoboxv1.DownloadWorkspaceUserGmailAttachmentRequest{ConnectionId: f.conn, TenantId: "a", UserId: user, Confirmation: c, MessageId: "m1", PartId: "1"})
 			return err
 		}},
 	}
@@ -138,7 +138,7 @@ func TestMailRejectedBeforeAnyTokenIsRequested(t *testing.T) {
 		t.Fatal("a refused request was logged as an access")
 	}
 	// Another Neo Box user's connection stays unreachable.
-	_, err := f.srv.SearchWorkspaceUserGmailMessages(asUser("other"), connect.NewRequest(&neoboxv1.SearchWorkspaceUserGmailMessagesRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: f.confirm("ada@a.example")}))
+	_, err := f.srv.SearchWorkspaceUserGmailMessages(asUser("other"), &neoboxv1.SearchWorkspaceUserGmailMessagesRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: f.confirm("ada@a.example")})
 	if connect.CodeOf(err) != connect.CodeNotFound {
 		t.Fatalf("other owner=%v", err)
 	}
@@ -149,7 +149,7 @@ func TestMailInvalidArgumentsCostNoGoogleCall(t *testing.T) {
 	c := f.confirm("ada@a.example")
 	search := func(m *neoboxv1.SearchWorkspaceUserGmailMessagesRequest) error {
 		m.ConnectionId, m.TenantId, m.UserId, m.Confirmation = f.conn, "a", "ada", c
-		_, err := f.srv.SearchWorkspaceUserGmailMessages(asUser("owner"), connect.NewRequest(m))
+		_, err := f.srv.SearchWorkspaceUserGmailMessages(asUser("owner"), m)
 		return err
 	}
 	for name, m := range map[string]*neoboxv1.SearchWorkspaceUserGmailMessagesRequest{
@@ -166,13 +166,13 @@ func TestMailInvalidArgumentsCostNoGoogleCall(t *testing.T) {
 		}
 	}
 	for _, id := range []string{"", "../x", "a b", strings.Repeat("a", 65)} {
-		_, err := f.srv.GetWorkspaceUserGmailMessage(asUser("owner"), connect.NewRequest(&neoboxv1.GetWorkspaceUserGmailMessageRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: c, MessageId: id}))
+		_, err := f.srv.GetWorkspaceUserGmailMessage(asUser("owner"), &neoboxv1.GetWorkspaceUserGmailMessageRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: c, MessageId: id})
 		if connect.CodeOf(err) != connect.CodeInvalidArgument {
 			t.Errorf("message id %q: err=%v", id, err)
 		}
 	}
 	for _, part := range []string{"", "x", "1/2", "1."} {
-		_, err := f.srv.DownloadWorkspaceUserGmailAttachment(asUser("owner"), connect.NewRequest(&neoboxv1.DownloadWorkspaceUserGmailAttachmentRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: c, MessageId: "m1", PartId: part}))
+		_, err := f.srv.DownloadWorkspaceUserGmailAttachment(asUser("owner"), &neoboxv1.DownloadWorkspaceUserGmailAttachmentRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: c, MessageId: "m1", PartId: part})
 		if connect.CodeOf(err) != connect.CodeInvalidArgument {
 			t.Errorf("part id %q: err=%v", part, err)
 		}
@@ -186,27 +186,27 @@ func TestMailAccessesAreEachRecordedWithReasonAndNoContent(t *testing.T) {
 	f := newMailFixture(t, nil)
 	c := f.confirm(" ADA@a.example ")
 
-	labels, err := f.srv.ListWorkspaceUserGmailLabels(asUser("owner"), connect.NewRequest(&neoboxv1.ListWorkspaceUserGmailLabelsRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada.l@a.example", Confirmation: c}))
-	if err != nil || len(labels.Msg.Labels) != 2 || !labels.Msg.Labels[0].CountsKnown || labels.Msg.Labels[0].MessagesTotal != 7 || labels.Msg.UserEmail != "ada@a.example" {
+	labels, err := f.srv.ListWorkspaceUserGmailLabels(asUser("owner"), &neoboxv1.ListWorkspaceUserGmailLabelsRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada.l@a.example", Confirmation: c})
+	if err != nil || len(labels.Labels) != 2 || !labels.Labels[0].CountsKnown || labels.Labels[0].MessagesTotal != 7 || labels.UserEmail != "ada@a.example" {
 		t.Fatalf("labels=%v %v", labels, err)
 	}
 
-	found, err := f.srv.SearchWorkspaceUserGmailMessages(asUser("owner"), connect.NewRequest(&neoboxv1.SearchWorkspaceUserGmailMessagesRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: c, Query: "from:boss@secret.test SECRET-WORDS", LabelIds: []string{"INBOX"}}))
-	if err != nil || len(found.Msg.Messages) != 1 || found.Msg.Messages[0].Subject != "SECRET-SUBJECT" || found.Msg.Messages[0].Date == nil || found.Msg.ResultSizeEstimate != 1 {
+	found, err := f.srv.SearchWorkspaceUserGmailMessages(asUser("owner"), &neoboxv1.SearchWorkspaceUserGmailMessagesRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: c, Query: "from:boss@secret.test SECRET-WORDS", LabelIds: []string{"INBOX"}})
+	if err != nil || len(found.Messages) != 1 || found.Messages[0].Subject != "SECRET-SUBJECT" || found.Messages[0].Date == nil || found.ResultSizeEstimate != 1 {
 		t.Fatalf("search=%v %v", found, err)
 	}
 
-	msg, err := f.srv.GetWorkspaceUserGmailMessage(asUser("owner"), connect.NewRequest(&neoboxv1.GetWorkspaceUserGmailMessageRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: c, MessageId: "m1"}))
-	if err != nil || msg.Msg.Message.PlainText != "SECRET-BODY" || len(msg.Msg.Message.Attachments) != 2 {
+	msg, err := f.srv.GetWorkspaceUserGmailMessage(asUser("owner"), &neoboxv1.GetWorkspaceUserGmailMessageRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: c, MessageId: "m1"})
+	if err != nil || msg.Message.PlainText != "SECRET-BODY" || len(msg.Message.Attachments) != 2 {
 		t.Fatalf("message=%v %v", msg, err)
 	}
-	pdf, zip := msg.Msg.Message.Attachments[0], msg.Msg.Message.Attachments[1]
+	pdf, zip := msg.Message.Attachments[0], msg.Message.Attachments[1]
 	if pdf.PartId != "1" || pdf.TooLarge || !pdf.Downloadable || !zip.TooLarge {
-		t.Fatalf("attachments=%v", msg.Msg.Message.Attachments)
+		t.Fatalf("attachments=%v", msg.Message.Attachments)
 	}
 
-	file, err := f.srv.DownloadWorkspaceUserGmailAttachment(asUser("owner"), connect.NewRequest(&neoboxv1.DownloadWorkspaceUserGmailAttachmentRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: c, MessageId: "m1", PartId: "1"}))
-	if err != nil || string(file.Msg.Data) != "PDF-CONTENT" || file.Msg.Filename != "SECRET.pdf" || file.Msg.MimeType != "application/pdf" {
+	file, err := f.srv.DownloadWorkspaceUserGmailAttachment(asUser("owner"), &neoboxv1.DownloadWorkspaceUserGmailAttachmentRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: c, MessageId: "m1", PartId: "1"})
+	if err != nil || string(file.Data) != "PDF-CONTENT" || file.Filename != "SECRET.pdf" || file.MimeType != "application/pdf" {
 		t.Fatalf("download=%v %v", file, err)
 	}
 
@@ -239,8 +239,8 @@ func TestMailAccessesAreEachRecordedWithReasonAndNoContent(t *testing.T) {
 	}
 	// Mail accesses are listed with the tenant's other operations, and the
 	// existing search finds them by "gmail".
-	list, err := f.srv.ListWorkspaceOperations(asUser("owner"), connect.NewRequest(&neoboxv1.ListWorkspaceOperationsRequest{ConnectionId: f.conn, TenantId: "a"}))
-	if err != nil || len(list.Msg.Operations) != 4 {
+	list, err := f.srv.ListWorkspaceOperations(asUser("owner"), &neoboxv1.ListWorkspaceOperationsRequest{ConnectionId: f.conn, TenantId: "a"})
+	if err != nil || len(list.Operations) != 4 {
 		t.Fatalf("list=%v %v", list, err)
 	}
 }
@@ -285,12 +285,12 @@ func TestMailMissingAuthorizationIsReportedBesideTheFeature(t *testing.T) {
 func TestMailMissingMessageAndOversizedAttachmentHaveOwnCodes(t *testing.T) {
 	f := newMailFixture(t, nil)
 	c := f.confirm("ada@a.example")
-	_, err := f.srv.GetWorkspaceUserGmailMessage(asUser("owner"), connect.NewRequest(&neoboxv1.GetWorkspaceUserGmailMessageRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: c, MessageId: "gone"}))
+	_, err := f.srv.GetWorkspaceUserGmailMessage(asUser("owner"), &neoboxv1.GetWorkspaceUserGmailMessageRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: c, MessageId: "gone"})
 	if connect.CodeOf(err) != connect.CodeNotFound || !strings.Contains(err.Error(), "message") {
 		t.Fatalf("missing message=%v", err)
 	}
 	get := func(part string) error {
-		_, err := f.srv.DownloadWorkspaceUserGmailAttachment(asUser("owner"), connect.NewRequest(&neoboxv1.DownloadWorkspaceUserGmailAttachmentRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: c, MessageId: "m1", PartId: part}))
+		_, err := f.srv.DownloadWorkspaceUserGmailAttachment(asUser("owner"), &neoboxv1.DownloadWorkspaceUserGmailAttachmentRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: c, MessageId: "m1", PartId: part})
 		return err
 	}
 	if err := get("2"); connect.CodeOf(err) != connect.CodeFailedPrecondition || !strings.Contains(err.Error(), "25 MB") {
@@ -319,8 +319,8 @@ func TestMailMessageThatGmailWillNotGiveStaysInTheListAsUnavailable(t *testing.T
 		}
 		return false
 	})
-	res, err := f.srv.SearchWorkspaceUserGmailMessages(asUser("owner"), connect.NewRequest(&neoboxv1.SearchWorkspaceUserGmailMessagesRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: f.confirm("ada@a.example")}))
-	if err != nil || len(res.Msg.Messages) != 1 || !res.Msg.Messages[0].Unavailable || res.Msg.Messages[0].Id != "m1" {
+	res, err := f.srv.SearchWorkspaceUserGmailMessages(asUser("owner"), &neoboxv1.SearchWorkspaceUserGmailMessagesRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: f.confirm("ada@a.example")})
+	if err != nil || len(res.Messages) != 1 || !res.Messages[0].Unavailable || res.Messages[0].Id != "m1" {
 		t.Fatalf("res=%v %v", res, err)
 	}
 }

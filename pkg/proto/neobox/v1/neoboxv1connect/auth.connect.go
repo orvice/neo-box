@@ -5,451 +5,524 @@
 package neoboxv1connect
 
 import (
-	connect "connectrpc.com/connect"
+	connect "connectrpc.com/connect/v2"
 	context "context"
-	errors "errors"
 	v1 "go.orx.me/apps/neo-box/pkg/proto/neobox/v1"
-	http "net/http"
-	strings "strings"
+	sync "sync"
 )
-
-// This is a compile-time assertion to ensure that this generated file and the connect package are
-// compatible. If you get a compiler error that this constant is not defined, this code was
-// generated with a version of connect newer than the one compiled into your binary. You can fix the
-// problem by either regenerating this code with an older version of connect or updating the connect
-// version compiled into your binary.
-const _ = connect.IsAtLeastVersion1_13_0
 
 const (
 	// AuthServiceName is the fully-qualified name of the AuthService service.
 	AuthServiceName = "neobox.v1.AuthService"
 )
 
-// These constants are the fully-qualified names of the RPCs defined in this package. They're
-// exposed at runtime as Spec.Procedure and as the final two segments of the HTTP route.
+// These constants are the procedure names of the RPCs defined in this package. They're exposed at
+// runtime as Spec.Procedure and as the final two segments of the HTTP route.
 //
 // Note that these are different from the fully-qualified method names used by
 // google.golang.org/protobuf/reflect/protoreflect. To convert from these constants to
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// AuthServiceLoginProcedure is the fully-qualified name of the AuthService's Login RPC.
+	// AuthServiceLoginProcedure is the procedure name of the AuthService's Login RPC.
 	AuthServiceLoginProcedure = "/neobox.v1.AuthService/Login"
-	// AuthServiceMeProcedure is the fully-qualified name of the AuthService's Me RPC.
+	// AuthServiceMeProcedure is the procedure name of the AuthService's Me RPC.
 	AuthServiceMeProcedure = "/neobox.v1.AuthService/Me"
-	// AuthServiceLogoutProcedure is the fully-qualified name of the AuthService's Logout RPC.
+	// AuthServiceLogoutProcedure is the procedure name of the AuthService's Logout RPC.
 	AuthServiceLogoutProcedure = "/neobox.v1.AuthService/Logout"
-	// AuthServiceListUsersProcedure is the fully-qualified name of the AuthService's ListUsers RPC.
+	// AuthServiceListUsersProcedure is the procedure name of the AuthService's ListUsers RPC.
 	AuthServiceListUsersProcedure = "/neobox.v1.AuthService/ListUsers"
-	// AuthServiceCreateUserProcedure is the fully-qualified name of the AuthService's CreateUser RPC.
+	// AuthServiceCreateUserProcedure is the procedure name of the AuthService's CreateUser RPC.
 	AuthServiceCreateUserProcedure = "/neobox.v1.AuthService/CreateUser"
-	// AuthServiceUpdateUserPasswordProcedure is the fully-qualified name of the AuthService's
+	// AuthServiceUpdateUserPasswordProcedure is the procedure name of the AuthService's
 	// UpdateUserPassword RPC.
 	AuthServiceUpdateUserPasswordProcedure = "/neobox.v1.AuthService/UpdateUserPassword"
-	// AuthServiceSetUserDisabledProcedure is the fully-qualified name of the AuthService's
-	// SetUserDisabled RPC.
-	AuthServiceSetUserDisabledProcedure = "/neobox.v1.AuthService/SetUserDisabled"
-	// AuthServiceUpdateProfileProcedure is the fully-qualified name of the AuthService's UpdateProfile
+	// AuthServiceSetUserDisabledProcedure is the procedure name of the AuthService's SetUserDisabled
 	// RPC.
+	AuthServiceSetUserDisabledProcedure = "/neobox.v1.AuthService/SetUserDisabled"
+	// AuthServiceUpdateProfileProcedure is the procedure name of the AuthService's UpdateProfile RPC.
 	AuthServiceUpdateProfileProcedure = "/neobox.v1.AuthService/UpdateProfile"
-	// AuthServiceChangePasswordProcedure is the fully-qualified name of the AuthService's
-	// ChangePassword RPC.
+	// AuthServiceChangePasswordProcedure is the procedure name of the AuthService's ChangePassword RPC.
 	AuthServiceChangePasswordProcedure = "/neobox.v1.AuthService/ChangePassword"
-	// AuthServiceListOAuthProvidersProcedure is the fully-qualified name of the AuthService's
+	// AuthServiceListOAuthProvidersProcedure is the procedure name of the AuthService's
 	// ListOAuthProviders RPC.
 	AuthServiceListOAuthProvidersProcedure = "/neobox.v1.AuthService/ListOAuthProviders"
-	// AuthServiceBeginOAuthFlowProcedure is the fully-qualified name of the AuthService's
-	// BeginOAuthFlow RPC.
+	// AuthServiceBeginOAuthFlowProcedure is the procedure name of the AuthService's BeginOAuthFlow RPC.
 	AuthServiceBeginOAuthFlowProcedure = "/neobox.v1.AuthService/BeginOAuthFlow"
-	// AuthServiceCompleteOAuthFlowProcedure is the fully-qualified name of the AuthService's
+	// AuthServiceCompleteOAuthFlowProcedure is the procedure name of the AuthService's
 	// CompleteOAuthFlow RPC.
 	AuthServiceCompleteOAuthFlowProcedure = "/neobox.v1.AuthService/CompleteOAuthFlow"
+)
+
+var (
+	authServiceLoginSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_auth_proto.Services().ByName("AuthService").Methods().ByName("Login"),
+			Procedure:  AuthServiceLoginProcedure,
+		}
+	})
+	authServiceMeSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_auth_proto.Services().ByName("AuthService").Methods().ByName("Me"),
+			Procedure:  AuthServiceMeProcedure,
+		}
+	})
+	authServiceLogoutSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_auth_proto.Services().ByName("AuthService").Methods().ByName("Logout"),
+			Procedure:  AuthServiceLogoutProcedure,
+		}
+	})
+	authServiceListUsersSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_auth_proto.Services().ByName("AuthService").Methods().ByName("ListUsers"),
+			Procedure:  AuthServiceListUsersProcedure,
+		}
+	})
+	authServiceCreateUserSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_auth_proto.Services().ByName("AuthService").Methods().ByName("CreateUser"),
+			Procedure:  AuthServiceCreateUserProcedure,
+		}
+	})
+	authServiceUpdateUserPasswordSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_auth_proto.Services().ByName("AuthService").Methods().ByName("UpdateUserPassword"),
+			Procedure:  AuthServiceUpdateUserPasswordProcedure,
+		}
+	})
+	authServiceSetUserDisabledSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_auth_proto.Services().ByName("AuthService").Methods().ByName("SetUserDisabled"),
+			Procedure:  AuthServiceSetUserDisabledProcedure,
+		}
+	})
+	authServiceUpdateProfileSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_auth_proto.Services().ByName("AuthService").Methods().ByName("UpdateProfile"),
+			Procedure:  AuthServiceUpdateProfileProcedure,
+		}
+	})
+	authServiceChangePasswordSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_auth_proto.Services().ByName("AuthService").Methods().ByName("ChangePassword"),
+			Procedure:  AuthServiceChangePasswordProcedure,
+		}
+	})
+	authServiceListOAuthProvidersSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_auth_proto.Services().ByName("AuthService").Methods().ByName("ListOAuthProviders"),
+			Procedure:  AuthServiceListOAuthProvidersProcedure,
+		}
+	})
+	authServiceBeginOAuthFlowSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_auth_proto.Services().ByName("AuthService").Methods().ByName("BeginOAuthFlow"),
+			Procedure:  AuthServiceBeginOAuthFlowProcedure,
+		}
+	})
+	authServiceCompleteOAuthFlowSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_auth_proto.Services().ByName("AuthService").Methods().ByName("CompleteOAuthFlow"),
+			Procedure:  AuthServiceCompleteOAuthFlowProcedure,
+		}
+	})
 )
 
 // AuthServiceClient is a client for the neobox.v1.AuthService service.
 type AuthServiceClient interface {
 	// Login is public and exchanges username/password for a session token.
-	Login(context.Context, *connect.Request[v1.LoginRequest]) (*connect.Response[v1.LoginResponse], error)
+	Login(context.Context, *v1.LoginRequest) (*v1.LoginResponse, error)
 	// Me returns the authenticated user for the current session.
-	Me(context.Context, *connect.Request[v1.MeRequest]) (*connect.Response[v1.MeResponse], error)
+	Me(context.Context, *v1.MeRequest) (*v1.MeResponse, error)
 	// Logout revokes the current session token.
-	Logout(context.Context, *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error)
+	Logout(context.Context, *v1.LogoutRequest) (*v1.LogoutResponse, error)
 	// ListUsers lists users. Admin only.
-	ListUsers(context.Context, *connect.Request[v1.ListUsersRequest]) (*connect.Response[v1.ListUsersResponse], error)
+	ListUsers(context.Context, *v1.ListUsersRequest) (*v1.ListUsersResponse, error)
 	// CreateUser creates a user. Admin only.
-	CreateUser(context.Context, *connect.Request[v1.CreateUserRequest]) (*connect.Response[v1.CreateUserResponse], error)
+	CreateUser(context.Context, *v1.CreateUserRequest) (*v1.CreateUserResponse, error)
 	// UpdateUserPassword changes a user's password. Admin only.
-	UpdateUserPassword(context.Context, *connect.Request[v1.UpdateUserPasswordRequest]) (*connect.Response[v1.UpdateUserPasswordResponse], error)
+	UpdateUserPassword(context.Context, *v1.UpdateUserPasswordRequest) (*v1.UpdateUserPasswordResponse, error)
 	// SetUserDisabled enables or disables a user. Admin only.
-	SetUserDisabled(context.Context, *connect.Request[v1.SetUserDisabledRequest]) (*connect.Response[v1.SetUserDisabledResponse], error)
+	SetUserDisabled(context.Context, *v1.SetUserDisabledRequest) (*v1.SetUserDisabledResponse, error)
 	// UpdateProfile updates the authenticated user's display name.
-	UpdateProfile(context.Context, *connect.Request[v1.UpdateProfileRequest]) (*connect.Response[v1.UpdateProfileResponse], error)
+	UpdateProfile(context.Context, *v1.UpdateProfileRequest) (*v1.UpdateProfileResponse, error)
 	// ChangePassword changes the authenticated user's password.
-	ChangePassword(context.Context, *connect.Request[v1.ChangePasswordRequest]) (*connect.Response[v1.ChangePasswordResponse], error)
+	ChangePassword(context.Context, *v1.ChangePasswordRequest) (*v1.ChangePasswordResponse, error)
 	// ListOAuthProviders is public and returns the OAuth providers configured
 	// on the server. Frontends use it to decide which "Sign in with X" buttons
 	// to render on the login page.
-	ListOAuthProviders(context.Context, *connect.Request[v1.ListOAuthProvidersRequest]) (*connect.Response[v1.ListOAuthProvidersResponse], error)
+	ListOAuthProviders(context.Context, *v1.ListOAuthProvidersRequest) (*v1.ListOAuthProvidersResponse, error)
 	// BeginOAuthFlow is public and returns the provider authorize URL plus an
 	// opaque state token. The client redirects the user to authorize_url.
-	BeginOAuthFlow(context.Context, *connect.Request[v1.BeginOAuthFlowRequest]) (*connect.Response[v1.BeginOAuthFlowResponse], error)
+	BeginOAuthFlow(context.Context, *v1.BeginOAuthFlowRequest) (*v1.BeginOAuthFlowResponse, error)
 	// CompleteOAuthFlow is public and exchanges the provider's authorization
 	// code for a session token. The response mirrors LoginResponse.
-	CompleteOAuthFlow(context.Context, *connect.Request[v1.CompleteOAuthFlowRequest]) (*connect.Response[v1.CompleteOAuthFlowResponse], error)
+	CompleteOAuthFlow(context.Context, *v1.CompleteOAuthFlowRequest) (*v1.CompleteOAuthFlowResponse, error)
 }
 
-// NewAuthServiceClient constructs a client for the neobox.v1.AuthService service. By default, it
-// uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses, and sends
-// uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC() or
-// connect.WithGRPCWeb() options.
-//
-// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
-// http://api.acme.com or https://acme.com/grpc).
-func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) AuthServiceClient {
-	baseURL = strings.TrimRight(baseURL, "/")
-	authServiceMethods := v1.File_neobox_v1_auth_proto.Services().ByName("AuthService").Methods()
-	return &authServiceClient{
-		login: connect.NewClient[v1.LoginRequest, v1.LoginResponse](
-			httpClient,
-			baseURL+AuthServiceLoginProcedure,
-			connect.WithSchema(authServiceMethods.ByName("Login")),
-			connect.WithClientOptions(opts...),
-		),
-		me: connect.NewClient[v1.MeRequest, v1.MeResponse](
-			httpClient,
-			baseURL+AuthServiceMeProcedure,
-			connect.WithSchema(authServiceMethods.ByName("Me")),
-			connect.WithClientOptions(opts...),
-		),
-		logout: connect.NewClient[v1.LogoutRequest, v1.LogoutResponse](
-			httpClient,
-			baseURL+AuthServiceLogoutProcedure,
-			connect.WithSchema(authServiceMethods.ByName("Logout")),
-			connect.WithClientOptions(opts...),
-		),
-		listUsers: connect.NewClient[v1.ListUsersRequest, v1.ListUsersResponse](
-			httpClient,
-			baseURL+AuthServiceListUsersProcedure,
-			connect.WithSchema(authServiceMethods.ByName("ListUsers")),
-			connect.WithClientOptions(opts...),
-		),
-		createUser: connect.NewClient[v1.CreateUserRequest, v1.CreateUserResponse](
-			httpClient,
-			baseURL+AuthServiceCreateUserProcedure,
-			connect.WithSchema(authServiceMethods.ByName("CreateUser")),
-			connect.WithClientOptions(opts...),
-		),
-		updateUserPassword: connect.NewClient[v1.UpdateUserPasswordRequest, v1.UpdateUserPasswordResponse](
-			httpClient,
-			baseURL+AuthServiceUpdateUserPasswordProcedure,
-			connect.WithSchema(authServiceMethods.ByName("UpdateUserPassword")),
-			connect.WithClientOptions(opts...),
-		),
-		setUserDisabled: connect.NewClient[v1.SetUserDisabledRequest, v1.SetUserDisabledResponse](
-			httpClient,
-			baseURL+AuthServiceSetUserDisabledProcedure,
-			connect.WithSchema(authServiceMethods.ByName("SetUserDisabled")),
-			connect.WithClientOptions(opts...),
-		),
-		updateProfile: connect.NewClient[v1.UpdateProfileRequest, v1.UpdateProfileResponse](
-			httpClient,
-			baseURL+AuthServiceUpdateProfileProcedure,
-			connect.WithSchema(authServiceMethods.ByName("UpdateProfile")),
-			connect.WithClientOptions(opts...),
-		),
-		changePassword: connect.NewClient[v1.ChangePasswordRequest, v1.ChangePasswordResponse](
-			httpClient,
-			baseURL+AuthServiceChangePasswordProcedure,
-			connect.WithSchema(authServiceMethods.ByName("ChangePassword")),
-			connect.WithClientOptions(opts...),
-		),
-		listOAuthProviders: connect.NewClient[v1.ListOAuthProvidersRequest, v1.ListOAuthProvidersResponse](
-			httpClient,
-			baseURL+AuthServiceListOAuthProvidersProcedure,
-			connect.WithSchema(authServiceMethods.ByName("ListOAuthProviders")),
-			connect.WithClientOptions(opts...),
-		),
-		beginOAuthFlow: connect.NewClient[v1.BeginOAuthFlowRequest, v1.BeginOAuthFlowResponse](
-			httpClient,
-			baseURL+AuthServiceBeginOAuthFlowProcedure,
-			connect.WithSchema(authServiceMethods.ByName("BeginOAuthFlow")),
-			connect.WithClientOptions(opts...),
-		),
-		completeOAuthFlow: connect.NewClient[v1.CompleteOAuthFlowRequest, v1.CompleteOAuthFlowResponse](
-			httpClient,
-			baseURL+AuthServiceCompleteOAuthFlowProcedure,
-			connect.WithSchema(authServiceMethods.ByName("CompleteOAuthFlow")),
-			connect.WithClientOptions(opts...),
-		),
-	}
-}
-
-// authServiceClient implements AuthServiceClient.
-type authServiceClient struct {
-	login              *connect.Client[v1.LoginRequest, v1.LoginResponse]
-	me                 *connect.Client[v1.MeRequest, v1.MeResponse]
-	logout             *connect.Client[v1.LogoutRequest, v1.LogoutResponse]
-	listUsers          *connect.Client[v1.ListUsersRequest, v1.ListUsersResponse]
-	createUser         *connect.Client[v1.CreateUserRequest, v1.CreateUserResponse]
-	updateUserPassword *connect.Client[v1.UpdateUserPasswordRequest, v1.UpdateUserPasswordResponse]
-	setUserDisabled    *connect.Client[v1.SetUserDisabledRequest, v1.SetUserDisabledResponse]
-	updateProfile      *connect.Client[v1.UpdateProfileRequest, v1.UpdateProfileResponse]
-	changePassword     *connect.Client[v1.ChangePasswordRequest, v1.ChangePasswordResponse]
-	listOAuthProviders *connect.Client[v1.ListOAuthProvidersRequest, v1.ListOAuthProvidersResponse]
-	beginOAuthFlow     *connect.Client[v1.BeginOAuthFlowRequest, v1.BeginOAuthFlowResponse]
-	completeOAuthFlow  *connect.Client[v1.CompleteOAuthFlowRequest, v1.CompleteOAuthFlowResponse]
-}
-
-// Login calls neobox.v1.AuthService.Login.
-func (c *authServiceClient) Login(ctx context.Context, req *connect.Request[v1.LoginRequest]) (*connect.Response[v1.LoginResponse], error) {
-	return c.login.CallUnary(ctx, req)
-}
-
-// Me calls neobox.v1.AuthService.Me.
-func (c *authServiceClient) Me(ctx context.Context, req *connect.Request[v1.MeRequest]) (*connect.Response[v1.MeResponse], error) {
-	return c.me.CallUnary(ctx, req)
-}
-
-// Logout calls neobox.v1.AuthService.Logout.
-func (c *authServiceClient) Logout(ctx context.Context, req *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error) {
-	return c.logout.CallUnary(ctx, req)
-}
-
-// ListUsers calls neobox.v1.AuthService.ListUsers.
-func (c *authServiceClient) ListUsers(ctx context.Context, req *connect.Request[v1.ListUsersRequest]) (*connect.Response[v1.ListUsersResponse], error) {
-	return c.listUsers.CallUnary(ctx, req)
-}
-
-// CreateUser calls neobox.v1.AuthService.CreateUser.
-func (c *authServiceClient) CreateUser(ctx context.Context, req *connect.Request[v1.CreateUserRequest]) (*connect.Response[v1.CreateUserResponse], error) {
-	return c.createUser.CallUnary(ctx, req)
-}
-
-// UpdateUserPassword calls neobox.v1.AuthService.UpdateUserPassword.
-func (c *authServiceClient) UpdateUserPassword(ctx context.Context, req *connect.Request[v1.UpdateUserPasswordRequest]) (*connect.Response[v1.UpdateUserPasswordResponse], error) {
-	return c.updateUserPassword.CallUnary(ctx, req)
-}
-
-// SetUserDisabled calls neobox.v1.AuthService.SetUserDisabled.
-func (c *authServiceClient) SetUserDisabled(ctx context.Context, req *connect.Request[v1.SetUserDisabledRequest]) (*connect.Response[v1.SetUserDisabledResponse], error) {
-	return c.setUserDisabled.CallUnary(ctx, req)
-}
-
-// UpdateProfile calls neobox.v1.AuthService.UpdateProfile.
-func (c *authServiceClient) UpdateProfile(ctx context.Context, req *connect.Request[v1.UpdateProfileRequest]) (*connect.Response[v1.UpdateProfileResponse], error) {
-	return c.updateProfile.CallUnary(ctx, req)
-}
-
-// ChangePassword calls neobox.v1.AuthService.ChangePassword.
-func (c *authServiceClient) ChangePassword(ctx context.Context, req *connect.Request[v1.ChangePasswordRequest]) (*connect.Response[v1.ChangePasswordResponse], error) {
-	return c.changePassword.CallUnary(ctx, req)
-}
-
-// ListOAuthProviders calls neobox.v1.AuthService.ListOAuthProviders.
-func (c *authServiceClient) ListOAuthProviders(ctx context.Context, req *connect.Request[v1.ListOAuthProvidersRequest]) (*connect.Response[v1.ListOAuthProvidersResponse], error) {
-	return c.listOAuthProviders.CallUnary(ctx, req)
-}
-
-// BeginOAuthFlow calls neobox.v1.AuthService.BeginOAuthFlow.
-func (c *authServiceClient) BeginOAuthFlow(ctx context.Context, req *connect.Request[v1.BeginOAuthFlowRequest]) (*connect.Response[v1.BeginOAuthFlowResponse], error) {
-	return c.beginOAuthFlow.CallUnary(ctx, req)
-}
-
-// CompleteOAuthFlow calls neobox.v1.AuthService.CompleteOAuthFlow.
-func (c *authServiceClient) CompleteOAuthFlow(ctx context.Context, req *connect.Request[v1.CompleteOAuthFlowRequest]) (*connect.Response[v1.CompleteOAuthFlowResponse], error) {
-	return c.completeOAuthFlow.CallUnary(ctx, req)
+// NewAuthServiceClient constructs a client for the neobox.v1.AuthService service. Multiple service
+// clients may share a single connect.Client.
+func NewAuthServiceClient(client *connect.Client) AuthServiceClient {
+	return &authServiceClient{client: client}
 }
 
 // AuthServiceHandler is an implementation of the neobox.v1.AuthService service.
 type AuthServiceHandler interface {
 	// Login is public and exchanges username/password for a session token.
-	Login(context.Context, *connect.Request[v1.LoginRequest]) (*connect.Response[v1.LoginResponse], error)
+	Login(context.Context, *v1.LoginRequest) (*v1.LoginResponse, error)
 	// Me returns the authenticated user for the current session.
-	Me(context.Context, *connect.Request[v1.MeRequest]) (*connect.Response[v1.MeResponse], error)
+	Me(context.Context, *v1.MeRequest) (*v1.MeResponse, error)
 	// Logout revokes the current session token.
-	Logout(context.Context, *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error)
+	Logout(context.Context, *v1.LogoutRequest) (*v1.LogoutResponse, error)
 	// ListUsers lists users. Admin only.
-	ListUsers(context.Context, *connect.Request[v1.ListUsersRequest]) (*connect.Response[v1.ListUsersResponse], error)
+	ListUsers(context.Context, *v1.ListUsersRequest) (*v1.ListUsersResponse, error)
 	// CreateUser creates a user. Admin only.
-	CreateUser(context.Context, *connect.Request[v1.CreateUserRequest]) (*connect.Response[v1.CreateUserResponse], error)
+	CreateUser(context.Context, *v1.CreateUserRequest) (*v1.CreateUserResponse, error)
 	// UpdateUserPassword changes a user's password. Admin only.
-	UpdateUserPassword(context.Context, *connect.Request[v1.UpdateUserPasswordRequest]) (*connect.Response[v1.UpdateUserPasswordResponse], error)
+	UpdateUserPassword(context.Context, *v1.UpdateUserPasswordRequest) (*v1.UpdateUserPasswordResponse, error)
 	// SetUserDisabled enables or disables a user. Admin only.
-	SetUserDisabled(context.Context, *connect.Request[v1.SetUserDisabledRequest]) (*connect.Response[v1.SetUserDisabledResponse], error)
+	SetUserDisabled(context.Context, *v1.SetUserDisabledRequest) (*v1.SetUserDisabledResponse, error)
 	// UpdateProfile updates the authenticated user's display name.
-	UpdateProfile(context.Context, *connect.Request[v1.UpdateProfileRequest]) (*connect.Response[v1.UpdateProfileResponse], error)
+	UpdateProfile(context.Context, *v1.UpdateProfileRequest) (*v1.UpdateProfileResponse, error)
 	// ChangePassword changes the authenticated user's password.
-	ChangePassword(context.Context, *connect.Request[v1.ChangePasswordRequest]) (*connect.Response[v1.ChangePasswordResponse], error)
+	ChangePassword(context.Context, *v1.ChangePasswordRequest) (*v1.ChangePasswordResponse, error)
 	// ListOAuthProviders is public and returns the OAuth providers configured
 	// on the server. Frontends use it to decide which "Sign in with X" buttons
 	// to render on the login page.
-	ListOAuthProviders(context.Context, *connect.Request[v1.ListOAuthProvidersRequest]) (*connect.Response[v1.ListOAuthProvidersResponse], error)
+	ListOAuthProviders(context.Context, *v1.ListOAuthProvidersRequest) (*v1.ListOAuthProvidersResponse, error)
 	// BeginOAuthFlow is public and returns the provider authorize URL plus an
 	// opaque state token. The client redirects the user to authorize_url.
-	BeginOAuthFlow(context.Context, *connect.Request[v1.BeginOAuthFlowRequest]) (*connect.Response[v1.BeginOAuthFlowResponse], error)
+	BeginOAuthFlow(context.Context, *v1.BeginOAuthFlowRequest) (*v1.BeginOAuthFlowResponse, error)
 	// CompleteOAuthFlow is public and exchanges the provider's authorization
 	// code for a session token. The response mirrors LoginResponse.
-	CompleteOAuthFlow(context.Context, *connect.Request[v1.CompleteOAuthFlowRequest]) (*connect.Response[v1.CompleteOAuthFlowResponse], error)
+	CompleteOAuthFlow(context.Context, *v1.CompleteOAuthFlowRequest) (*v1.CompleteOAuthFlowResponse, error)
 }
 
-// NewAuthServiceHandler builds an HTTP handler from the service implementation. It returns the path
-// on which to mount the handler and the handler itself.
-//
-// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
-// and JSON codecs. They also support gzip compression.
-func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
-	authServiceMethods := v1.File_neobox_v1_auth_proto.Services().ByName("AuthService").Methods()
-	authServiceLoginHandler := connect.NewUnaryHandler(
-		AuthServiceLoginProcedure,
-		svc.Login,
-		connect.WithSchema(authServiceMethods.ByName("Login")),
-		connect.WithHandlerOptions(opts...),
+// RegisterAuthServiceHandler registers svc as the neobox.v1.AuthService implementation on server.
+func RegisterAuthServiceHandler(server *connect.Server, svc AuthServiceHandler) {
+	adapter := authServiceHandler{svc: svc}
+	server.Register(
+		connect.Method{Spec: authServiceLoginSpec(), Handler: adapter.login},
+		connect.Method{Spec: authServiceMeSpec(), Handler: adapter.me},
+		connect.Method{Spec: authServiceLogoutSpec(), Handler: adapter.logout},
+		connect.Method{Spec: authServiceListUsersSpec(), Handler: adapter.listUsers},
+		connect.Method{Spec: authServiceCreateUserSpec(), Handler: adapter.createUser},
+		connect.Method{Spec: authServiceUpdateUserPasswordSpec(), Handler: adapter.updateUserPassword},
+		connect.Method{Spec: authServiceSetUserDisabledSpec(), Handler: adapter.setUserDisabled},
+		connect.Method{Spec: authServiceUpdateProfileSpec(), Handler: adapter.updateProfile},
+		connect.Method{Spec: authServiceChangePasswordSpec(), Handler: adapter.changePassword},
+		connect.Method{Spec: authServiceListOAuthProvidersSpec(), Handler: adapter.listOAuthProviders},
+		connect.Method{Spec: authServiceBeginOAuthFlowSpec(), Handler: adapter.beginOAuthFlow},
+		connect.Method{Spec: authServiceCompleteOAuthFlowSpec(), Handler: adapter.completeOAuthFlow},
 	)
-	authServiceMeHandler := connect.NewUnaryHandler(
-		AuthServiceMeProcedure,
-		svc.Me,
-		connect.WithSchema(authServiceMethods.ByName("Me")),
-		connect.WithHandlerOptions(opts...),
-	)
-	authServiceLogoutHandler := connect.NewUnaryHandler(
-		AuthServiceLogoutProcedure,
-		svc.Logout,
-		connect.WithSchema(authServiceMethods.ByName("Logout")),
-		connect.WithHandlerOptions(opts...),
-	)
-	authServiceListUsersHandler := connect.NewUnaryHandler(
-		AuthServiceListUsersProcedure,
-		svc.ListUsers,
-		connect.WithSchema(authServiceMethods.ByName("ListUsers")),
-		connect.WithHandlerOptions(opts...),
-	)
-	authServiceCreateUserHandler := connect.NewUnaryHandler(
-		AuthServiceCreateUserProcedure,
-		svc.CreateUser,
-		connect.WithSchema(authServiceMethods.ByName("CreateUser")),
-		connect.WithHandlerOptions(opts...),
-	)
-	authServiceUpdateUserPasswordHandler := connect.NewUnaryHandler(
-		AuthServiceUpdateUserPasswordProcedure,
-		svc.UpdateUserPassword,
-		connect.WithSchema(authServiceMethods.ByName("UpdateUserPassword")),
-		connect.WithHandlerOptions(opts...),
-	)
-	authServiceSetUserDisabledHandler := connect.NewUnaryHandler(
-		AuthServiceSetUserDisabledProcedure,
-		svc.SetUserDisabled,
-		connect.WithSchema(authServiceMethods.ByName("SetUserDisabled")),
-		connect.WithHandlerOptions(opts...),
-	)
-	authServiceUpdateProfileHandler := connect.NewUnaryHandler(
-		AuthServiceUpdateProfileProcedure,
-		svc.UpdateProfile,
-		connect.WithSchema(authServiceMethods.ByName("UpdateProfile")),
-		connect.WithHandlerOptions(opts...),
-	)
-	authServiceChangePasswordHandler := connect.NewUnaryHandler(
-		AuthServiceChangePasswordProcedure,
-		svc.ChangePassword,
-		connect.WithSchema(authServiceMethods.ByName("ChangePassword")),
-		connect.WithHandlerOptions(opts...),
-	)
-	authServiceListOAuthProvidersHandler := connect.NewUnaryHandler(
-		AuthServiceListOAuthProvidersProcedure,
-		svc.ListOAuthProviders,
-		connect.WithSchema(authServiceMethods.ByName("ListOAuthProviders")),
-		connect.WithHandlerOptions(opts...),
-	)
-	authServiceBeginOAuthFlowHandler := connect.NewUnaryHandler(
-		AuthServiceBeginOAuthFlowProcedure,
-		svc.BeginOAuthFlow,
-		connect.WithSchema(authServiceMethods.ByName("BeginOAuthFlow")),
-		connect.WithHandlerOptions(opts...),
-	)
-	authServiceCompleteOAuthFlowHandler := connect.NewUnaryHandler(
-		AuthServiceCompleteOAuthFlowProcedure,
-		svc.CompleteOAuthFlow,
-		connect.WithSchema(authServiceMethods.ByName("CompleteOAuthFlow")),
-		connect.WithHandlerOptions(opts...),
-	)
-	return "/neobox.v1.AuthService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case AuthServiceLoginProcedure:
-			authServiceLoginHandler.ServeHTTP(w, r)
-		case AuthServiceMeProcedure:
-			authServiceMeHandler.ServeHTTP(w, r)
-		case AuthServiceLogoutProcedure:
-			authServiceLogoutHandler.ServeHTTP(w, r)
-		case AuthServiceListUsersProcedure:
-			authServiceListUsersHandler.ServeHTTP(w, r)
-		case AuthServiceCreateUserProcedure:
-			authServiceCreateUserHandler.ServeHTTP(w, r)
-		case AuthServiceUpdateUserPasswordProcedure:
-			authServiceUpdateUserPasswordHandler.ServeHTTP(w, r)
-		case AuthServiceSetUserDisabledProcedure:
-			authServiceSetUserDisabledHandler.ServeHTTP(w, r)
-		case AuthServiceUpdateProfileProcedure:
-			authServiceUpdateProfileHandler.ServeHTTP(w, r)
-		case AuthServiceChangePasswordProcedure:
-			authServiceChangePasswordHandler.ServeHTTP(w, r)
-		case AuthServiceListOAuthProvidersProcedure:
-			authServiceListOAuthProvidersHandler.ServeHTTP(w, r)
-		case AuthServiceBeginOAuthFlowProcedure:
-			authServiceBeginOAuthFlowHandler.ServeHTTP(w, r)
-		case AuthServiceCompleteOAuthFlowProcedure:
-			authServiceCompleteOAuthFlowHandler.ServeHTTP(w, r)
-		default:
-			http.NotFound(w, r)
-		}
-	})
 }
 
 // UnimplementedAuthServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedAuthServiceHandler struct{}
 
-func (UnimplementedAuthServiceHandler) Login(context.Context, *connect.Request[v1.LoginRequest]) (*connect.Response[v1.LoginResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.AuthService.Login is not implemented"))
+func (UnimplementedAuthServiceHandler) Login(context.Context, *v1.LoginRequest) (*v1.LoginResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.AuthService.Login is not implemented")
 }
 
-func (UnimplementedAuthServiceHandler) Me(context.Context, *connect.Request[v1.MeRequest]) (*connect.Response[v1.MeResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.AuthService.Me is not implemented"))
+func (UnimplementedAuthServiceHandler) Me(context.Context, *v1.MeRequest) (*v1.MeResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.AuthService.Me is not implemented")
 }
 
-func (UnimplementedAuthServiceHandler) Logout(context.Context, *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.AuthService.Logout is not implemented"))
+func (UnimplementedAuthServiceHandler) Logout(context.Context, *v1.LogoutRequest) (*v1.LogoutResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.AuthService.Logout is not implemented")
 }
 
-func (UnimplementedAuthServiceHandler) ListUsers(context.Context, *connect.Request[v1.ListUsersRequest]) (*connect.Response[v1.ListUsersResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.AuthService.ListUsers is not implemented"))
+func (UnimplementedAuthServiceHandler) ListUsers(context.Context, *v1.ListUsersRequest) (*v1.ListUsersResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.AuthService.ListUsers is not implemented")
 }
 
-func (UnimplementedAuthServiceHandler) CreateUser(context.Context, *connect.Request[v1.CreateUserRequest]) (*connect.Response[v1.CreateUserResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.AuthService.CreateUser is not implemented"))
+func (UnimplementedAuthServiceHandler) CreateUser(context.Context, *v1.CreateUserRequest) (*v1.CreateUserResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.AuthService.CreateUser is not implemented")
 }
 
-func (UnimplementedAuthServiceHandler) UpdateUserPassword(context.Context, *connect.Request[v1.UpdateUserPasswordRequest]) (*connect.Response[v1.UpdateUserPasswordResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.AuthService.UpdateUserPassword is not implemented"))
+func (UnimplementedAuthServiceHandler) UpdateUserPassword(context.Context, *v1.UpdateUserPasswordRequest) (*v1.UpdateUserPasswordResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.AuthService.UpdateUserPassword is not implemented")
 }
 
-func (UnimplementedAuthServiceHandler) SetUserDisabled(context.Context, *connect.Request[v1.SetUserDisabledRequest]) (*connect.Response[v1.SetUserDisabledResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.AuthService.SetUserDisabled is not implemented"))
+func (UnimplementedAuthServiceHandler) SetUserDisabled(context.Context, *v1.SetUserDisabledRequest) (*v1.SetUserDisabledResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.AuthService.SetUserDisabled is not implemented")
 }
 
-func (UnimplementedAuthServiceHandler) UpdateProfile(context.Context, *connect.Request[v1.UpdateProfileRequest]) (*connect.Response[v1.UpdateProfileResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.AuthService.UpdateProfile is not implemented"))
+func (UnimplementedAuthServiceHandler) UpdateProfile(context.Context, *v1.UpdateProfileRequest) (*v1.UpdateProfileResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.AuthService.UpdateProfile is not implemented")
 }
 
-func (UnimplementedAuthServiceHandler) ChangePassword(context.Context, *connect.Request[v1.ChangePasswordRequest]) (*connect.Response[v1.ChangePasswordResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.AuthService.ChangePassword is not implemented"))
+func (UnimplementedAuthServiceHandler) ChangePassword(context.Context, *v1.ChangePasswordRequest) (*v1.ChangePasswordResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.AuthService.ChangePassword is not implemented")
 }
 
-func (UnimplementedAuthServiceHandler) ListOAuthProviders(context.Context, *connect.Request[v1.ListOAuthProvidersRequest]) (*connect.Response[v1.ListOAuthProvidersResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.AuthService.ListOAuthProviders is not implemented"))
+func (UnimplementedAuthServiceHandler) ListOAuthProviders(context.Context, *v1.ListOAuthProvidersRequest) (*v1.ListOAuthProvidersResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.AuthService.ListOAuthProviders is not implemented")
 }
 
-func (UnimplementedAuthServiceHandler) BeginOAuthFlow(context.Context, *connect.Request[v1.BeginOAuthFlowRequest]) (*connect.Response[v1.BeginOAuthFlowResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.AuthService.BeginOAuthFlow is not implemented"))
+func (UnimplementedAuthServiceHandler) BeginOAuthFlow(context.Context, *v1.BeginOAuthFlowRequest) (*v1.BeginOAuthFlowResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.AuthService.BeginOAuthFlow is not implemented")
 }
 
-func (UnimplementedAuthServiceHandler) CompleteOAuthFlow(context.Context, *connect.Request[v1.CompleteOAuthFlowRequest]) (*connect.Response[v1.CompleteOAuthFlowResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.AuthService.CompleteOAuthFlow is not implemented"))
+func (UnimplementedAuthServiceHandler) CompleteOAuthFlow(context.Context, *v1.CompleteOAuthFlowRequest) (*v1.CompleteOAuthFlowResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.AuthService.CompleteOAuthFlow is not implemented")
+}
+
+type authServiceClient struct {
+	client *connect.Client
+}
+
+func (c *authServiceClient) Login(ctx context.Context, req *v1.LoginRequest) (*v1.LoginResponse, error) {
+	var res v1.LoginResponse
+	if err := c.client.CallUnary(ctx, authServiceLoginSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *authServiceClient) Me(ctx context.Context, req *v1.MeRequest) (*v1.MeResponse, error) {
+	var res v1.MeResponse
+	if err := c.client.CallUnary(ctx, authServiceMeSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *authServiceClient) Logout(ctx context.Context, req *v1.LogoutRequest) (*v1.LogoutResponse, error) {
+	var res v1.LogoutResponse
+	if err := c.client.CallUnary(ctx, authServiceLogoutSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *authServiceClient) ListUsers(ctx context.Context, req *v1.ListUsersRequest) (*v1.ListUsersResponse, error) {
+	var res v1.ListUsersResponse
+	if err := c.client.CallUnary(ctx, authServiceListUsersSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *authServiceClient) CreateUser(ctx context.Context, req *v1.CreateUserRequest) (*v1.CreateUserResponse, error) {
+	var res v1.CreateUserResponse
+	if err := c.client.CallUnary(ctx, authServiceCreateUserSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *authServiceClient) UpdateUserPassword(ctx context.Context, req *v1.UpdateUserPasswordRequest) (*v1.UpdateUserPasswordResponse, error) {
+	var res v1.UpdateUserPasswordResponse
+	if err := c.client.CallUnary(ctx, authServiceUpdateUserPasswordSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *authServiceClient) SetUserDisabled(ctx context.Context, req *v1.SetUserDisabledRequest) (*v1.SetUserDisabledResponse, error) {
+	var res v1.SetUserDisabledResponse
+	if err := c.client.CallUnary(ctx, authServiceSetUserDisabledSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *authServiceClient) UpdateProfile(ctx context.Context, req *v1.UpdateProfileRequest) (*v1.UpdateProfileResponse, error) {
+	var res v1.UpdateProfileResponse
+	if err := c.client.CallUnary(ctx, authServiceUpdateProfileSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *authServiceClient) ChangePassword(ctx context.Context, req *v1.ChangePasswordRequest) (*v1.ChangePasswordResponse, error) {
+	var res v1.ChangePasswordResponse
+	if err := c.client.CallUnary(ctx, authServiceChangePasswordSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *authServiceClient) ListOAuthProviders(ctx context.Context, req *v1.ListOAuthProvidersRequest) (*v1.ListOAuthProvidersResponse, error) {
+	var res v1.ListOAuthProvidersResponse
+	if err := c.client.CallUnary(ctx, authServiceListOAuthProvidersSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *authServiceClient) BeginOAuthFlow(ctx context.Context, req *v1.BeginOAuthFlowRequest) (*v1.BeginOAuthFlowResponse, error) {
+	var res v1.BeginOAuthFlowResponse
+	if err := c.client.CallUnary(ctx, authServiceBeginOAuthFlowSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *authServiceClient) CompleteOAuthFlow(ctx context.Context, req *v1.CompleteOAuthFlowRequest) (*v1.CompleteOAuthFlowResponse, error) {
+	var res v1.CompleteOAuthFlowResponse
+	if err := c.client.CallUnary(ctx, authServiceCompleteOAuthFlowSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+type authServiceHandler struct{ svc AuthServiceHandler }
+
+func (h authServiceHandler) login(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.LoginRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.Login(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h authServiceHandler) me(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.MeRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.Me(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h authServiceHandler) logout(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.LogoutRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.Logout(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h authServiceHandler) listUsers(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListUsersRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListUsers(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h authServiceHandler) createUser(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.CreateUserRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.CreateUser(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h authServiceHandler) updateUserPassword(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.UpdateUserPasswordRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.UpdateUserPassword(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h authServiceHandler) setUserDisabled(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.SetUserDisabledRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.SetUserDisabled(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h authServiceHandler) updateProfile(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.UpdateProfileRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.UpdateProfile(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h authServiceHandler) changePassword(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ChangePasswordRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ChangePassword(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h authServiceHandler) listOAuthProviders(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListOAuthProvidersRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListOAuthProviders(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h authServiceHandler) beginOAuthFlow(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.BeginOAuthFlowRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.BeginOAuthFlow(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h authServiceHandler) completeOAuthFlow(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.CompleteOAuthFlowRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.CompleteOAuthFlow(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
 }

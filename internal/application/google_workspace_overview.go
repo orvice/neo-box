@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	"go.orx.me/apps/neo-box/internal/repo/auth"
 	connrepo "go.orx.me/apps/neo-box/internal/repo/connection"
@@ -45,16 +45,16 @@ func validSecurityFilter(raw string) bool {
 func (s *GoogleWorkspaceServiceServer) overviewSources(ctx context.Context, connectionID, tenantID string) ([]workspaceOverviewSource, error) {
 	user, ok := auth.UserFromContext(ctx)
 	if !ok {
-		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
+		return nil, connect.NewError(connect.CodeUnauthenticated, "unauthenticated")
 	}
 	if tenantID != "" && connectionID == "" {
-		return nil, connectx.RequiredArgument("connection_id")
+		return nil, connectx.RequiredArgument(ctx, "connection_id")
 	}
 	s.mu.RLock()
 	r, conns, f := s.repo, s.conns, s.newClient
 	s.mu.RUnlock()
 	if r == nil || conns == nil {
-		return nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("Google Workspace is not available"))
+		return nil, connect.NewError(connect.CodeFailedPrecondition, "Google Workspace is not available")
 	}
 	var connections []*connrepo.Connection
 	if connectionID != "" {
@@ -90,7 +90,7 @@ func (s *GoogleWorkspaceServiceServer) overviewSources(ctx context.Context, conn
 		}
 	}
 	if len(out) > workspaceOverviewTenantLimit {
-		return nil, connect.NewError(connect.CodeResourceExhausted, errors.New("overview reads at most 20 tenants at once; select a Service Account or one tenant"))
+		return nil, connect.NewError(connect.CodeResourceExhausted, "overview reads at most 20 tenants at once; select a Service Account or one tenant")
 	}
 	sort.Slice(out, func(i, j int) bool {
 		a, b := out[i], out[j]
@@ -198,7 +198,7 @@ func scanWorkspaceSource(ctx context.Context, source workspaceOverviewSource, no
 		}
 	}
 	if err != nil {
-		summary.UsersError = mapWorkspaceErr(err).Error()
+		summary.UsersError = mapWorkspaceErr(ctx, err).Error()
 	} else if !summary.UsersComplete {
 		summary.UsersError = "Scan limit reached; counts cover only observed users"
 	}
@@ -211,7 +211,7 @@ func scanWorkspaceSource(ctx context.Context, source workspaceOverviewSource, no
 			summary.GroupCount = &value
 		}
 		if gerr != nil {
-			summary.GroupsError = mapWorkspaceFeatureErr(gerr, googleworkspace.GroupScope).Error()
+			summary.GroupsError = mapWorkspaceFeatureErr(ctx, gerr, googleworkspace.GroupScope).Error()
 		} else if !summary.GroupsComplete {
 			summary.GroupsError = "Scan limit reached; count covers only observed groups"
 		}
@@ -251,18 +251,18 @@ func overviewUserMatches(u workspaceObservedUser, filter, query string) bool {
 	text := strings.ToLower(strings.Join([]string{u.u.PrimaryEmail, u.u.Name.GivenName, u.u.Name.FamilyName, u.u.OrgUnitPath, u.source.t.Name, u.source.t.CustomerID, u.source.d.c.Name}, " "))
 	return strings.Contains(text, strings.ToLower(query))
 }
-func (s *GoogleWorkspaceServiceServer) GetWorkspaceOverview(ctx context.Context, req *connect.Request[neoboxv1.GetWorkspaceOverviewRequest]) (*connect.Response[neoboxv1.GetWorkspaceOverviewResponse], error) {
-	if !validSecurityFilter(req.Msg.GetSecurityFilter()) {
-		return nil, connectx.InvalidArgument("security_filter", "unknown account filter")
+func (s *GoogleWorkspaceServiceServer) GetWorkspaceOverview(ctx context.Context, req *neoboxv1.GetWorkspaceOverviewRequest) (*neoboxv1.GetWorkspaceOverviewResponse, error) {
+	if !validSecurityFilter(req.GetSecurityFilter()) {
+		return nil, connectx.InvalidArgument(ctx, "security_filter", "unknown account filter")
 	}
-	days := int(req.Msg.GetInactivityDays())
+	days := int(req.GetInactivityDays())
 	if days == 0 {
 		days = 90
 	}
 	if days < 1 || days > 3650 {
-		return nil, connectx.InvalidArgument("inactivity_days", "must be between 1 and 3650")
+		return nil, connectx.InvalidArgument(ctx, "inactivity_days", "must be between 1 and 3650")
 	}
-	sources, err := s.overviewSources(ctx, req.Msg.GetConnectionId(), req.Msg.GetTenantId())
+	sources, err := s.overviewSources(ctx, req.GetConnectionId(), req.GetTenantId())
 	if err != nil {
 		return nil, err
 	}
@@ -283,7 +283,7 @@ func (s *GoogleWorkspaceServiceServer) GetWorkspaceOverview(ctx context.Context,
 				scans[i] = workspaceOverviewScan{summary: &neoboxv1.WorkspaceTenantSummary{ConnectionId: source.d.c.ID, ConnectionName: source.d.c.Name, Tenant: workspaceTenantToProto(source.t), UsersError: "Overview read timed out"}}
 				return
 			}
-			scans[i] = scanWorkspaceSource(ctx, source, now, days, req.Msg.GetIncludeGroups())
+			scans[i] = scanWorkspaceSource(ctx, source, now, days, req.GetIncludeGroups())
 		}(i, source)
 	}
 	wg.Wait()
@@ -307,8 +307,8 @@ func (s *GoogleWorkspaceServiceServer) GetWorkspaceOverview(ctx context.Context,
 	for _, u := range unique {
 		countSecurity(out.Totals, u)
 		key := u.source.t.CustomerID + "\x00" + u.u.ID
-		query := strings.ToLower(strings.TrimSpace(req.Msg.GetQuery()))
-		if overviewUserMatches(u, req.Msg.GetSecurityFilter(), "") && (query == "" || overviewUserMatches(u, "all", query) || strings.Contains(strings.ToLower(sourceNames[key]), query)) {
+		query := strings.ToLower(strings.TrimSpace(req.GetQuery()))
+		if overviewUserMatches(u, req.GetSecurityFilter(), "") && (query == "" || overviewUserMatches(u, "all", query) || strings.Contains(strings.ToLower(sourceNames[key]), query)) {
 			matches = append(matches, u)
 		}
 	}
@@ -322,14 +322,14 @@ func (s *GoogleWorkspaceServiceServer) GetWorkspaceOverview(ctx context.Context,
 		}
 		return a.u.ID < b.u.ID
 	})
-	page, size := pageArgs(req.Msg.GetPage(), req.Msg.GetPageSize(), 50, 1, 200)
+	page, size := pageArgs(req.GetPage(), req.GetPageSize(), 50, 1, 200)
 	out.TotalCount, out.Page, out.PageSize = int64(len(matches)), int32(page), int32(size)
 	start := min((page-1)*size, len(matches))
 	end := min(start+size, len(matches))
 	for _, u := range matches[start:end] {
 		out.Users = append(out.Users, &neoboxv1.WorkspaceOverviewUser{ConnectionId: u.source.d.c.ID, ConnectionName: u.source.d.c.Name, TenantId: u.source.t.ID, TenantName: u.source.t.Name, User: workspaceUserToProto(&u.u), Inactive: u.f.Inactive, NeverLoggedIn: u.f.NeverLoggedIn, AdminWithoutTwoStep: u.f.AdminWithoutTwoStep, SecurityUnknown: u.f.Unknown})
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }
 
 func securityDataScore(u googleworkspace.User) int {

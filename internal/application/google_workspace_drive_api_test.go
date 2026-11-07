@@ -10,7 +10,7 @@ import (
 	"sync"
 	"testing"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	neoboxv1 "go.orx.me/apps/neo-box/pkg/proto/neobox/v1"
 )
@@ -93,19 +93,19 @@ func newDriveAPIFixture(t *testing.T, drive http.HandlerFunc) *driveAPIFixture {
 }
 
 func (f *driveAPIFixture) drives(reason string) (*neoboxv1.ListWorkspaceSharedDrivesResponse, error) {
-	res, err := f.srv.ListWorkspaceSharedDrives(asUser("owner"), connect.NewRequest(&neoboxv1.ListWorkspaceSharedDrivesRequest{ConnectionId: f.conn, TenantId: "a", Reason: reason, NoOrganizer: true}))
+	res, err := f.srv.ListWorkspaceSharedDrives(asUser("owner"), &neoboxv1.ListWorkspaceSharedDrivesRequest{ConnectionId: f.conn, TenantId: "a", Reason: reason, NoOrganizer: true})
 	if err != nil {
 		return nil, err
 	}
-	return res.Msg, nil
+	return res, nil
 }
 
 func (f *driveAPIFixture) files(user string, c *neoboxv1.DriveAccessConfirmation) (*neoboxv1.ListWorkspaceUserExposedFilesResponse, error) {
-	res, err := f.srv.ListWorkspaceUserExposedFiles(asUser("owner"), connect.NewRequest(&neoboxv1.ListWorkspaceUserExposedFilesRequest{ConnectionId: f.conn, TenantId: "a", UserId: user, Confirmation: c}))
+	res, err := f.srv.ListWorkspaceUserExposedFiles(asUser("owner"), &neoboxv1.ListWorkspaceUserExposedFilesRequest{ConnectionId: f.conn, TenantId: "a", UserId: user, Confirmation: c})
 	if err != nil {
 		return nil, err
 	}
-	return res.Msg, nil
+	return res, nil
 }
 
 func driveConfirm(email string) *neoboxv1.DriveAccessConfirmation {
@@ -139,8 +139,8 @@ func TestSharedDrivesAreListedAsTheAdministratorWithOnlyTheReadonlyScope(t *test
 			t.Fatalf("operation holds a drive name: %s", raw)
 		}
 	}
-	list, err := f.srv.ListWorkspaceOperations(asUser("owner"), connect.NewRequest(&neoboxv1.ListWorkspaceOperationsRequest{ConnectionId: f.conn, TenantId: "a"}))
-	if err != nil || len(list.Msg.Operations) != 1 {
+	list, err := f.srv.ListWorkspaceOperations(asUser("owner"), &neoboxv1.ListWorkspaceOperationsRequest{ConnectionId: f.conn, TenantId: "a"})
+	if err != nil || len(list.Operations) != 1 {
 		t.Fatalf("list=%v %v", list, err)
 	}
 }
@@ -159,7 +159,7 @@ func TestSharedDriveRequestsAreRejectedBeforeAnyTokenIsRequested(t *testing.T) {
 		"huge page":       {ConnectionId: f.conn, TenantId: "a", Reason: "r", PageSize: 500},
 		"long name query": {ConnectionId: f.conn, TenantId: "a", Reason: "r", NamePrefix: long},
 	} {
-		if _, err := f.srv.ListWorkspaceSharedDrives(asUser("owner"), connect.NewRequest(req)); connect.CodeOf(err) != connect.CodeInvalidArgument {
+		if _, err := f.srv.ListWorkspaceSharedDrives(asUser("owner"), req); connect.CodeOf(err) != connect.CodeInvalidArgument {
 			t.Errorf("%s: %v", name, err)
 		}
 	}
@@ -168,7 +168,7 @@ func TestSharedDriveRequestsAreRejectedBeforeAnyTokenIsRequested(t *testing.T) {
 		who    string
 		tenant string
 	}{{"other owner", "other", "a"}, {"foreign tenant", "owner", "foreign"}} {
-		_, err := f.srv.ListWorkspaceSharedDrives(asUser(c.who), connect.NewRequest(&neoboxv1.ListWorkspaceSharedDrivesRequest{ConnectionId: f.conn, TenantId: c.tenant, Reason: "r"}))
+		_, err := f.srv.ListWorkspaceSharedDrives(asUser(c.who), &neoboxv1.ListWorkspaceSharedDrivesRequest{ConnectionId: f.conn, TenantId: c.tenant, Reason: "r"})
 		if connect.CodeOf(err) != connect.CodeNotFound {
 			t.Errorf("%s: %v", c.name, err)
 		}
@@ -242,11 +242,11 @@ func TestExposedFilesRejectedBeforeAnyTokenIsRequested(t *testing.T) {
 		"unknown exposure": {ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: driveConfirm("ada@a.example"), Exposures: []string{"limited"}},
 		"huge page":        {ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: driveConfirm("ada@a.example"), PageSize: 1000},
 	} {
-		if _, err := f.srv.ListWorkspaceUserExposedFiles(asUser("owner"), connect.NewRequest(req)); connect.CodeOf(err) != connect.CodeInvalidArgument {
+		if _, err := f.srv.ListWorkspaceUserExposedFiles(asUser("owner"), req); connect.CodeOf(err) != connect.CodeInvalidArgument {
 			t.Errorf("%s: %v", name, err)
 		}
 	}
-	if _, err := f.srv.ListWorkspaceUserExposedFiles(asUser("other"), connect.NewRequest(&neoboxv1.ListWorkspaceUserExposedFilesRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: driveConfirm("ada@a.example")})); connect.CodeOf(err) != connect.CodeNotFound {
+	if _, err := f.srv.ListWorkspaceUserExposedFiles(asUser("other"), &neoboxv1.ListWorkspaceUserExposedFilesRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: driveConfirm("ada@a.example")}); connect.CodeOf(err) != connect.CodeNotFound {
 		t.Errorf("other owner: %v", err)
 	}
 	if len(f.opened) != 0 || len(f.driveHit) != 0 || len(f.rows.ops) != 0 {

@@ -5,239 +5,260 @@
 package neoboxv1connect
 
 import (
-	connect "connectrpc.com/connect"
+	connect "connectrpc.com/connect/v2"
 	context "context"
-	errors "errors"
 	v1 "go.orx.me/apps/neo-box/pkg/proto/neobox/v1"
-	http "net/http"
-	strings "strings"
+	sync "sync"
 )
-
-// This is a compile-time assertion to ensure that this generated file and the connect package are
-// compatible. If you get a compiler error that this constant is not defined, this code was
-// generated with a version of connect newer than the one compiled into your binary. You can fix the
-// problem by either regenerating this code with an older version of connect or updating the connect
-// version compiled into your binary.
-const _ = connect.IsAtLeastVersion1_13_0
 
 const (
 	// WasabiServiceName is the fully-qualified name of the WasabiService service.
 	WasabiServiceName = "neobox.v1.WasabiService"
 )
 
-// These constants are the fully-qualified names of the RPCs defined in this package. They're
-// exposed at runtime as Spec.Procedure and as the final two segments of the HTTP route.
+// These constants are the procedure names of the RPCs defined in this package. They're exposed at
+// runtime as Spec.Procedure and as the final two segments of the HTTP route.
 //
 // Note that these are different from the fully-qualified method names used by
 // google.golang.org/protobuf/reflect/protoreflect. To convert from these constants to
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// WasabiServiceGetWasabiOverviewProcedure is the fully-qualified name of the WasabiService's
+	// WasabiServiceGetWasabiOverviewProcedure is the procedure name of the WasabiService's
 	// GetWasabiOverview RPC.
 	WasabiServiceGetWasabiOverviewProcedure = "/neobox.v1.WasabiService/GetWasabiOverview"
-	// WasabiServiceListWasabiBucketsProcedure is the fully-qualified name of the WasabiService's
+	// WasabiServiceListWasabiBucketsProcedure is the procedure name of the WasabiService's
 	// ListWasabiBuckets RPC.
 	WasabiServiceListWasabiBucketsProcedure = "/neobox.v1.WasabiService/ListWasabiBuckets"
-	// WasabiServiceGetWasabiUsageProcedure is the fully-qualified name of the WasabiService's
-	// GetWasabiUsage RPC.
+	// WasabiServiceGetWasabiUsageProcedure is the procedure name of the WasabiService's GetWasabiUsage
+	// RPC.
 	WasabiServiceGetWasabiUsageProcedure = "/neobox.v1.WasabiService/GetWasabiUsage"
-	// WasabiServiceSyncWasabiConnectionProcedure is the fully-qualified name of the WasabiService's
+	// WasabiServiceSyncWasabiConnectionProcedure is the procedure name of the WasabiService's
 	// SyncWasabiConnection RPC.
 	WasabiServiceSyncWasabiConnectionProcedure = "/neobox.v1.WasabiService/SyncWasabiConnection"
-	// WasabiServiceGetWasabiCostBreakdownProcedure is the fully-qualified name of the WasabiService's
+	// WasabiServiceGetWasabiCostBreakdownProcedure is the procedure name of the WasabiService's
 	// GetWasabiCostBreakdown RPC.
 	WasabiServiceGetWasabiCostBreakdownProcedure = "/neobox.v1.WasabiService/GetWasabiCostBreakdown"
+)
+
+var (
+	wasabiServiceGetWasabiOverviewSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_wasabi_proto.Services().ByName("WasabiService").Methods().ByName("GetWasabiOverview"),
+			Procedure:  WasabiServiceGetWasabiOverviewProcedure,
+		}
+	})
+	wasabiServiceListWasabiBucketsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_wasabi_proto.Services().ByName("WasabiService").Methods().ByName("ListWasabiBuckets"),
+			Procedure:  WasabiServiceListWasabiBucketsProcedure,
+		}
+	})
+	wasabiServiceGetWasabiUsageSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_wasabi_proto.Services().ByName("WasabiService").Methods().ByName("GetWasabiUsage"),
+			Procedure:  WasabiServiceGetWasabiUsageProcedure,
+		}
+	})
+	wasabiServiceSyncWasabiConnectionSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_wasabi_proto.Services().ByName("WasabiService").Methods().ByName("SyncWasabiConnection"),
+			Procedure:  WasabiServiceSyncWasabiConnectionProcedure,
+		}
+	})
+	wasabiServiceGetWasabiCostBreakdownSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_wasabi_proto.Services().ByName("WasabiService").Methods().ByName("GetWasabiCostBreakdown"),
+			Procedure:  WasabiServiceGetWasabiCostBreakdownProcedure,
+		}
+	})
 )
 
 // WasabiServiceClient is a client for the neobox.v1.WasabiService service.
 type WasabiServiceClient interface {
 	// GetWasabiOverview returns the newest account totals, the cost estimate,
 	// and the sync state.
-	GetWasabiOverview(context.Context, *connect.Request[v1.GetWasabiOverviewRequest]) (*connect.Response[v1.GetWasabiOverviewResponse], error)
+	GetWasabiOverview(context.Context, *v1.GetWasabiOverviewRequest) (*v1.GetWasabiOverviewResponse, error)
 	// ListWasabiBuckets lists buckets with their newest day of usage.
-	ListWasabiBuckets(context.Context, *connect.Request[v1.ListWasabiBucketsRequest]) (*connect.Response[v1.ListWasabiBucketsResponse], error)
+	ListWasabiBuckets(context.Context, *v1.ListWasabiBucketsRequest) (*v1.ListWasabiBucketsResponse, error)
 	// GetWasabiUsage returns the daily usage of the account or one bucket.
-	GetWasabiUsage(context.Context, *connect.Request[v1.GetWasabiUsageRequest]) (*connect.Response[v1.GetWasabiUsageResponse], error)
+	GetWasabiUsage(context.Context, *v1.GetWasabiUsageRequest) (*v1.GetWasabiUsageResponse, error)
 	// SyncWasabiConnection re-fetches the last 7 days in the background (a
 	// backfill first, if it has not finished).
-	SyncWasabiConnection(context.Context, *connect.Request[v1.SyncWasabiConnectionRequest]) (*connect.Response[v1.SyncWasabiConnectionResponse], error)
+	SyncWasabiConnection(context.Context, *v1.SyncWasabiConnectionRequest) (*v1.SyncWasabiConnectionResponse, error)
 	// GetWasabiCostBreakdown splits the cost estimate's period by what the
 	// charge pays for (active storage, deleted storage still billed, the 1 TB
 	// minimum) and by bucket, at the connection's price.
-	GetWasabiCostBreakdown(context.Context, *connect.Request[v1.GetWasabiCostBreakdownRequest]) (*connect.Response[v1.GetWasabiCostBreakdownResponse], error)
+	GetWasabiCostBreakdown(context.Context, *v1.GetWasabiCostBreakdownRequest) (*v1.GetWasabiCostBreakdownResponse, error)
 }
 
-// NewWasabiServiceClient constructs a client for the neobox.v1.WasabiService service. By default,
-// it uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses, and
-// sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC()
-// or connect.WithGRPCWeb() options.
-//
-// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
-// http://api.acme.com or https://acme.com/grpc).
-func NewWasabiServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) WasabiServiceClient {
-	baseURL = strings.TrimRight(baseURL, "/")
-	wasabiServiceMethods := v1.File_neobox_v1_wasabi_proto.Services().ByName("WasabiService").Methods()
-	return &wasabiServiceClient{
-		getWasabiOverview: connect.NewClient[v1.GetWasabiOverviewRequest, v1.GetWasabiOverviewResponse](
-			httpClient,
-			baseURL+WasabiServiceGetWasabiOverviewProcedure,
-			connect.WithSchema(wasabiServiceMethods.ByName("GetWasabiOverview")),
-			connect.WithClientOptions(opts...),
-		),
-		listWasabiBuckets: connect.NewClient[v1.ListWasabiBucketsRequest, v1.ListWasabiBucketsResponse](
-			httpClient,
-			baseURL+WasabiServiceListWasabiBucketsProcedure,
-			connect.WithSchema(wasabiServiceMethods.ByName("ListWasabiBuckets")),
-			connect.WithClientOptions(opts...),
-		),
-		getWasabiUsage: connect.NewClient[v1.GetWasabiUsageRequest, v1.GetWasabiUsageResponse](
-			httpClient,
-			baseURL+WasabiServiceGetWasabiUsageProcedure,
-			connect.WithSchema(wasabiServiceMethods.ByName("GetWasabiUsage")),
-			connect.WithClientOptions(opts...),
-		),
-		syncWasabiConnection: connect.NewClient[v1.SyncWasabiConnectionRequest, v1.SyncWasabiConnectionResponse](
-			httpClient,
-			baseURL+WasabiServiceSyncWasabiConnectionProcedure,
-			connect.WithSchema(wasabiServiceMethods.ByName("SyncWasabiConnection")),
-			connect.WithClientOptions(opts...),
-		),
-		getWasabiCostBreakdown: connect.NewClient[v1.GetWasabiCostBreakdownRequest, v1.GetWasabiCostBreakdownResponse](
-			httpClient,
-			baseURL+WasabiServiceGetWasabiCostBreakdownProcedure,
-			connect.WithSchema(wasabiServiceMethods.ByName("GetWasabiCostBreakdown")),
-			connect.WithClientOptions(opts...),
-		),
-	}
-}
-
-// wasabiServiceClient implements WasabiServiceClient.
-type wasabiServiceClient struct {
-	getWasabiOverview      *connect.Client[v1.GetWasabiOverviewRequest, v1.GetWasabiOverviewResponse]
-	listWasabiBuckets      *connect.Client[v1.ListWasabiBucketsRequest, v1.ListWasabiBucketsResponse]
-	getWasabiUsage         *connect.Client[v1.GetWasabiUsageRequest, v1.GetWasabiUsageResponse]
-	syncWasabiConnection   *connect.Client[v1.SyncWasabiConnectionRequest, v1.SyncWasabiConnectionResponse]
-	getWasabiCostBreakdown *connect.Client[v1.GetWasabiCostBreakdownRequest, v1.GetWasabiCostBreakdownResponse]
-}
-
-// GetWasabiOverview calls neobox.v1.WasabiService.GetWasabiOverview.
-func (c *wasabiServiceClient) GetWasabiOverview(ctx context.Context, req *connect.Request[v1.GetWasabiOverviewRequest]) (*connect.Response[v1.GetWasabiOverviewResponse], error) {
-	return c.getWasabiOverview.CallUnary(ctx, req)
-}
-
-// ListWasabiBuckets calls neobox.v1.WasabiService.ListWasabiBuckets.
-func (c *wasabiServiceClient) ListWasabiBuckets(ctx context.Context, req *connect.Request[v1.ListWasabiBucketsRequest]) (*connect.Response[v1.ListWasabiBucketsResponse], error) {
-	return c.listWasabiBuckets.CallUnary(ctx, req)
-}
-
-// GetWasabiUsage calls neobox.v1.WasabiService.GetWasabiUsage.
-func (c *wasabiServiceClient) GetWasabiUsage(ctx context.Context, req *connect.Request[v1.GetWasabiUsageRequest]) (*connect.Response[v1.GetWasabiUsageResponse], error) {
-	return c.getWasabiUsage.CallUnary(ctx, req)
-}
-
-// SyncWasabiConnection calls neobox.v1.WasabiService.SyncWasabiConnection.
-func (c *wasabiServiceClient) SyncWasabiConnection(ctx context.Context, req *connect.Request[v1.SyncWasabiConnectionRequest]) (*connect.Response[v1.SyncWasabiConnectionResponse], error) {
-	return c.syncWasabiConnection.CallUnary(ctx, req)
-}
-
-// GetWasabiCostBreakdown calls neobox.v1.WasabiService.GetWasabiCostBreakdown.
-func (c *wasabiServiceClient) GetWasabiCostBreakdown(ctx context.Context, req *connect.Request[v1.GetWasabiCostBreakdownRequest]) (*connect.Response[v1.GetWasabiCostBreakdownResponse], error) {
-	return c.getWasabiCostBreakdown.CallUnary(ctx, req)
+// NewWasabiServiceClient constructs a client for the neobox.v1.WasabiService service. Multiple
+// service clients may share a single connect.Client.
+func NewWasabiServiceClient(client *connect.Client) WasabiServiceClient {
+	return &wasabiServiceClient{client: client}
 }
 
 // WasabiServiceHandler is an implementation of the neobox.v1.WasabiService service.
 type WasabiServiceHandler interface {
 	// GetWasabiOverview returns the newest account totals, the cost estimate,
 	// and the sync state.
-	GetWasabiOverview(context.Context, *connect.Request[v1.GetWasabiOverviewRequest]) (*connect.Response[v1.GetWasabiOverviewResponse], error)
+	GetWasabiOverview(context.Context, *v1.GetWasabiOverviewRequest) (*v1.GetWasabiOverviewResponse, error)
 	// ListWasabiBuckets lists buckets with their newest day of usage.
-	ListWasabiBuckets(context.Context, *connect.Request[v1.ListWasabiBucketsRequest]) (*connect.Response[v1.ListWasabiBucketsResponse], error)
+	ListWasabiBuckets(context.Context, *v1.ListWasabiBucketsRequest) (*v1.ListWasabiBucketsResponse, error)
 	// GetWasabiUsage returns the daily usage of the account or one bucket.
-	GetWasabiUsage(context.Context, *connect.Request[v1.GetWasabiUsageRequest]) (*connect.Response[v1.GetWasabiUsageResponse], error)
+	GetWasabiUsage(context.Context, *v1.GetWasabiUsageRequest) (*v1.GetWasabiUsageResponse, error)
 	// SyncWasabiConnection re-fetches the last 7 days in the background (a
 	// backfill first, if it has not finished).
-	SyncWasabiConnection(context.Context, *connect.Request[v1.SyncWasabiConnectionRequest]) (*connect.Response[v1.SyncWasabiConnectionResponse], error)
+	SyncWasabiConnection(context.Context, *v1.SyncWasabiConnectionRequest) (*v1.SyncWasabiConnectionResponse, error)
 	// GetWasabiCostBreakdown splits the cost estimate's period by what the
 	// charge pays for (active storage, deleted storage still billed, the 1 TB
 	// minimum) and by bucket, at the connection's price.
-	GetWasabiCostBreakdown(context.Context, *connect.Request[v1.GetWasabiCostBreakdownRequest]) (*connect.Response[v1.GetWasabiCostBreakdownResponse], error)
+	GetWasabiCostBreakdown(context.Context, *v1.GetWasabiCostBreakdownRequest) (*v1.GetWasabiCostBreakdownResponse, error)
 }
 
-// NewWasabiServiceHandler builds an HTTP handler from the service implementation. It returns the
-// path on which to mount the handler and the handler itself.
-//
-// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
-// and JSON codecs. They also support gzip compression.
-func NewWasabiServiceHandler(svc WasabiServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
-	wasabiServiceMethods := v1.File_neobox_v1_wasabi_proto.Services().ByName("WasabiService").Methods()
-	wasabiServiceGetWasabiOverviewHandler := connect.NewUnaryHandler(
-		WasabiServiceGetWasabiOverviewProcedure,
-		svc.GetWasabiOverview,
-		connect.WithSchema(wasabiServiceMethods.ByName("GetWasabiOverview")),
-		connect.WithHandlerOptions(opts...),
+// RegisterWasabiServiceHandler registers svc as the neobox.v1.WasabiService implementation on
+// server.
+func RegisterWasabiServiceHandler(server *connect.Server, svc WasabiServiceHandler) {
+	adapter := wasabiServiceHandler{svc: svc}
+	server.Register(
+		connect.Method{Spec: wasabiServiceGetWasabiOverviewSpec(), Handler: adapter.getWasabiOverview},
+		connect.Method{Spec: wasabiServiceListWasabiBucketsSpec(), Handler: adapter.listWasabiBuckets},
+		connect.Method{Spec: wasabiServiceGetWasabiUsageSpec(), Handler: adapter.getWasabiUsage},
+		connect.Method{Spec: wasabiServiceSyncWasabiConnectionSpec(), Handler: adapter.syncWasabiConnection},
+		connect.Method{Spec: wasabiServiceGetWasabiCostBreakdownSpec(), Handler: adapter.getWasabiCostBreakdown},
 	)
-	wasabiServiceListWasabiBucketsHandler := connect.NewUnaryHandler(
-		WasabiServiceListWasabiBucketsProcedure,
-		svc.ListWasabiBuckets,
-		connect.WithSchema(wasabiServiceMethods.ByName("ListWasabiBuckets")),
-		connect.WithHandlerOptions(opts...),
-	)
-	wasabiServiceGetWasabiUsageHandler := connect.NewUnaryHandler(
-		WasabiServiceGetWasabiUsageProcedure,
-		svc.GetWasabiUsage,
-		connect.WithSchema(wasabiServiceMethods.ByName("GetWasabiUsage")),
-		connect.WithHandlerOptions(opts...),
-	)
-	wasabiServiceSyncWasabiConnectionHandler := connect.NewUnaryHandler(
-		WasabiServiceSyncWasabiConnectionProcedure,
-		svc.SyncWasabiConnection,
-		connect.WithSchema(wasabiServiceMethods.ByName("SyncWasabiConnection")),
-		connect.WithHandlerOptions(opts...),
-	)
-	wasabiServiceGetWasabiCostBreakdownHandler := connect.NewUnaryHandler(
-		WasabiServiceGetWasabiCostBreakdownProcedure,
-		svc.GetWasabiCostBreakdown,
-		connect.WithSchema(wasabiServiceMethods.ByName("GetWasabiCostBreakdown")),
-		connect.WithHandlerOptions(opts...),
-	)
-	return "/neobox.v1.WasabiService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case WasabiServiceGetWasabiOverviewProcedure:
-			wasabiServiceGetWasabiOverviewHandler.ServeHTTP(w, r)
-		case WasabiServiceListWasabiBucketsProcedure:
-			wasabiServiceListWasabiBucketsHandler.ServeHTTP(w, r)
-		case WasabiServiceGetWasabiUsageProcedure:
-			wasabiServiceGetWasabiUsageHandler.ServeHTTP(w, r)
-		case WasabiServiceSyncWasabiConnectionProcedure:
-			wasabiServiceSyncWasabiConnectionHandler.ServeHTTP(w, r)
-		case WasabiServiceGetWasabiCostBreakdownProcedure:
-			wasabiServiceGetWasabiCostBreakdownHandler.ServeHTTP(w, r)
-		default:
-			http.NotFound(w, r)
-		}
-	})
 }
 
 // UnimplementedWasabiServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedWasabiServiceHandler struct{}
 
-func (UnimplementedWasabiServiceHandler) GetWasabiOverview(context.Context, *connect.Request[v1.GetWasabiOverviewRequest]) (*connect.Response[v1.GetWasabiOverviewResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.WasabiService.GetWasabiOverview is not implemented"))
+func (UnimplementedWasabiServiceHandler) GetWasabiOverview(context.Context, *v1.GetWasabiOverviewRequest) (*v1.GetWasabiOverviewResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.WasabiService.GetWasabiOverview is not implemented")
 }
 
-func (UnimplementedWasabiServiceHandler) ListWasabiBuckets(context.Context, *connect.Request[v1.ListWasabiBucketsRequest]) (*connect.Response[v1.ListWasabiBucketsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.WasabiService.ListWasabiBuckets is not implemented"))
+func (UnimplementedWasabiServiceHandler) ListWasabiBuckets(context.Context, *v1.ListWasabiBucketsRequest) (*v1.ListWasabiBucketsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.WasabiService.ListWasabiBuckets is not implemented")
 }
 
-func (UnimplementedWasabiServiceHandler) GetWasabiUsage(context.Context, *connect.Request[v1.GetWasabiUsageRequest]) (*connect.Response[v1.GetWasabiUsageResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.WasabiService.GetWasabiUsage is not implemented"))
+func (UnimplementedWasabiServiceHandler) GetWasabiUsage(context.Context, *v1.GetWasabiUsageRequest) (*v1.GetWasabiUsageResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.WasabiService.GetWasabiUsage is not implemented")
 }
 
-func (UnimplementedWasabiServiceHandler) SyncWasabiConnection(context.Context, *connect.Request[v1.SyncWasabiConnectionRequest]) (*connect.Response[v1.SyncWasabiConnectionResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.WasabiService.SyncWasabiConnection is not implemented"))
+func (UnimplementedWasabiServiceHandler) SyncWasabiConnection(context.Context, *v1.SyncWasabiConnectionRequest) (*v1.SyncWasabiConnectionResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.WasabiService.SyncWasabiConnection is not implemented")
 }
 
-func (UnimplementedWasabiServiceHandler) GetWasabiCostBreakdown(context.Context, *connect.Request[v1.GetWasabiCostBreakdownRequest]) (*connect.Response[v1.GetWasabiCostBreakdownResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.WasabiService.GetWasabiCostBreakdown is not implemented"))
+func (UnimplementedWasabiServiceHandler) GetWasabiCostBreakdown(context.Context, *v1.GetWasabiCostBreakdownRequest) (*v1.GetWasabiCostBreakdownResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.WasabiService.GetWasabiCostBreakdown is not implemented")
+}
+
+type wasabiServiceClient struct {
+	client *connect.Client
+}
+
+func (c *wasabiServiceClient) GetWasabiOverview(ctx context.Context, req *v1.GetWasabiOverviewRequest) (*v1.GetWasabiOverviewResponse, error) {
+	var res v1.GetWasabiOverviewResponse
+	if err := c.client.CallUnary(ctx, wasabiServiceGetWasabiOverviewSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *wasabiServiceClient) ListWasabiBuckets(ctx context.Context, req *v1.ListWasabiBucketsRequest) (*v1.ListWasabiBucketsResponse, error) {
+	var res v1.ListWasabiBucketsResponse
+	if err := c.client.CallUnary(ctx, wasabiServiceListWasabiBucketsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *wasabiServiceClient) GetWasabiUsage(ctx context.Context, req *v1.GetWasabiUsageRequest) (*v1.GetWasabiUsageResponse, error) {
+	var res v1.GetWasabiUsageResponse
+	if err := c.client.CallUnary(ctx, wasabiServiceGetWasabiUsageSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *wasabiServiceClient) SyncWasabiConnection(ctx context.Context, req *v1.SyncWasabiConnectionRequest) (*v1.SyncWasabiConnectionResponse, error) {
+	var res v1.SyncWasabiConnectionResponse
+	if err := c.client.CallUnary(ctx, wasabiServiceSyncWasabiConnectionSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *wasabiServiceClient) GetWasabiCostBreakdown(ctx context.Context, req *v1.GetWasabiCostBreakdownRequest) (*v1.GetWasabiCostBreakdownResponse, error) {
+	var res v1.GetWasabiCostBreakdownResponse
+	if err := c.client.CallUnary(ctx, wasabiServiceGetWasabiCostBreakdownSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+type wasabiServiceHandler struct{ svc WasabiServiceHandler }
+
+func (h wasabiServiceHandler) getWasabiOverview(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.GetWasabiOverviewRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.GetWasabiOverview(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h wasabiServiceHandler) listWasabiBuckets(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListWasabiBucketsRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListWasabiBuckets(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h wasabiServiceHandler) getWasabiUsage(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.GetWasabiUsageRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.GetWasabiUsage(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h wasabiServiceHandler) syncWasabiConnection(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.SyncWasabiConnectionRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.SyncWasabiConnection(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h wasabiServiceHandler) getWasabiCostBreakdown(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.GetWasabiCostBreakdownRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.GetWasabiCostBreakdown(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
 }

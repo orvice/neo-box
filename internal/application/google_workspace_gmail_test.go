@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	neoboxv1 "go.orx.me/apps/neo-box/pkg/proto/neobox/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -109,11 +109,11 @@ func (f *gmailFixture) confirm(email string) *neoboxv1.GmailAccessConfirmation {
 	return &neoboxv1.GmailAccessConfirmation{Reason: "offboarding check", TargetEmail: email}
 }
 func (f *gmailFixture) read(user string, c *neoboxv1.GmailAccessConfirmation) (*neoboxv1.GetWorkspaceUserGmailSettingsResponse, error) {
-	res, err := f.srv.GetWorkspaceUserGmailSettings(asUser("owner"), connect.NewRequest(&neoboxv1.GetWorkspaceUserGmailSettingsRequest{ConnectionId: f.conn, TenantId: "a", UserId: user, Confirmation: c}))
+	res, err := f.srv.GetWorkspaceUserGmailSettings(asUser("owner"), &neoboxv1.GetWorkspaceUserGmailSettingsRequest{ConnectionId: f.conn, TenantId: "a", UserId: user, Confirmation: c})
 	if err != nil {
 		return nil, err
 	}
-	return res.Msg, nil
+	return res, nil
 }
 
 func TestGmailSettingsRejectedBeforeAnyTokenIsRequested(t *testing.T) {
@@ -148,10 +148,10 @@ func TestGmailSettingsRejectedBeforeAnyTokenIsRequested(t *testing.T) {
 		t.Fatal("a refused request was logged as an access")
 	}
 	// Another Neo Box user's connection and a foreign tenant stay unreachable.
-	if _, err := f.srv.GetWorkspaceUserGmailSettings(asUser("other"), connect.NewRequest(&neoboxv1.GetWorkspaceUserGmailSettingsRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: f.confirm("ada@a.example")})); connect.CodeOf(err) != connect.CodeNotFound {
+	if _, err := f.srv.GetWorkspaceUserGmailSettings(asUser("other"), &neoboxv1.GetWorkspaceUserGmailSettingsRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: f.confirm("ada@a.example")}); connect.CodeOf(err) != connect.CodeNotFound {
 		t.Fatalf("other owner=%v", err)
 	}
-	if _, err := f.srv.GetWorkspaceUserGmailSettings(asUser("owner"), connect.NewRequest(&neoboxv1.GetWorkspaceUserGmailSettingsRequest{ConnectionId: f.conn, TenantId: "foreign", UserId: "ada", Confirmation: f.confirm("ada@a.example")})); connect.CodeOf(err) != connect.CodeNotFound {
+	if _, err := f.srv.GetWorkspaceUserGmailSettings(asUser("owner"), &neoboxv1.GetWorkspaceUserGmailSettingsRequest{ConnectionId: f.conn, TenantId: "foreign", UserId: "ada", Confirmation: f.confirm("ada@a.example")}); connect.CodeOf(err) != connect.CodeNotFound {
 		t.Fatalf("foreign tenant=%v", err)
 	}
 	if len(f.opened) != 0 {
@@ -194,8 +194,8 @@ func TestGmailSettingsReadIsRecordedWithReasonAndNoContent(t *testing.T) {
 		}
 	}
 	// Reads are listed with the tenant's other operations.
-	list, err := f.srv.ListWorkspaceOperations(asUser("owner"), connect.NewRequest(&neoboxv1.ListWorkspaceOperationsRequest{ConnectionId: f.conn, TenantId: "a"}))
-	if err != nil || len(list.Msg.Operations) != 1 {
+	list, err := f.srv.ListWorkspaceOperations(asUser("owner"), &neoboxv1.ListWorkspaceOperationsRequest{ConnectionId: f.conn, TenantId: "a"})
+	if err != nil || len(list.Operations) != 1 {
 		t.Fatalf("list=%v %v", list, err)
 	}
 }
@@ -261,11 +261,11 @@ func TestGmailVacationUpdateValidatesThenRecordsAndNeverResends(t *testing.T) {
 		w.WriteHeader(404)
 	})
 	update := func(v *neoboxv1.GmailVacationInput, c *neoboxv1.GmailAccessConfirmation) (*neoboxv1.GmailVacation, error) {
-		res, err := f.srv.UpdateWorkspaceUserGmailVacation(asUser("owner"), connect.NewRequest(&neoboxv1.UpdateWorkspaceUserGmailVacationRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: c, Vacation: v}))
+		res, err := f.srv.UpdateWorkspaceUserGmailVacation(asUser("owner"), &neoboxv1.UpdateWorkspaceUserGmailVacationRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: c, Vacation: v})
 		if err != nil {
 			return nil, err
 		}
-		return res.Msg.Vacation, nil
+		return res.Vacation, nil
 	}
 	end := timestamppb.New(time.UnixMilli(1790000000000))
 	if _, err := update(nil, f.confirm("ada@a.example")); connect.CodeOf(err) != connect.CodeInvalidArgument {
@@ -303,7 +303,7 @@ func TestGmailVacationUpdateUnconfirmedIsUnknownAndSentOnce(t *testing.T) {
 		}
 		w.WriteHeader(502)
 	})
-	_, err := f.srv.UpdateWorkspaceUserGmailVacation(asUser("owner"), connect.NewRequest(&neoboxv1.UpdateWorkspaceUserGmailVacationRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: f.confirm("ada@a.example"), Vacation: &neoboxv1.GmailVacationInput{Enabled: true, Subject: "Away"}}))
+	_, err := f.srv.UpdateWorkspaceUserGmailVacation(asUser("owner"), &neoboxv1.UpdateWorkspaceUserGmailVacationRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada", Confirmation: f.confirm("ada@a.example"), Vacation: &neoboxv1.GmailVacationInput{Enabled: true, Subject: "Away"}})
 	if connect.CodeOf(err) != connect.CodeUnknown || puts != 1 {
 		t.Fatalf("err=%v puts=%d", err, puts)
 	}

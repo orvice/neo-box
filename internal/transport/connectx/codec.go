@@ -1,11 +1,12 @@
 package connectx
 
 import (
-	"bytes"
-	"encoding/json"
+	"context"
 	"fmt"
+	"io"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2/connecthttp"
+	"connectrpc.com/connect/v2/connectproto"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
@@ -31,40 +32,27 @@ func newSnakeCaseJSONCodec(name string) *snakeCaseJSONCodec {
 
 func (c *snakeCaseJSONCodec) Name() string { return c.name }
 
-func (c *snakeCaseJSONCodec) Marshal(message any) ([]byte, error) {
+func (c *snakeCaseJSONCodec) MarshalWrite(_ context.Context, dst io.Writer, message any) error {
 	msg, ok := message.(proto.Message)
 	if !ok {
-		return nil, fmt.Errorf("connectx: marshal: expected proto.Message, got %T", message)
+		return fmt.Errorf("connectx: marshal: expected proto.Message, got %T", message)
 	}
-	return protojson.MarshalOptions{UseProtoNames: true}.Marshal(msg)
-}
-
-func (c *snakeCaseJSONCodec) MarshalAppend(dst []byte, message any) ([]byte, error) {
-	msg, ok := message.(proto.Message)
-	if !ok {
-		return nil, fmt.Errorf("connectx: marshal: expected proto.Message, got %T", message)
-	}
-	return protojson.MarshalOptions{UseProtoNames: true}.MarshalAppend(dst, msg)
-}
-
-func (c *snakeCaseJSONCodec) MarshalStable(message any) ([]byte, error) {
-	raw, err := c.Marshal(message)
+	raw, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(msg)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	// protojson emits non-deterministic whitespace; compact it so stable
-	// callers get a byte-stable representation. Matches the upstream impl.
-	out := &bytes.Buffer{}
-	if err := json.Compact(out, raw); err != nil {
-		return nil, err
-	}
-	return out.Bytes(), nil
+	_, err = dst.Write(raw)
+	return err
 }
 
-func (c *snakeCaseJSONCodec) Unmarshal(data []byte, message any) error {
+func (c *snakeCaseJSONCodec) UnmarshalRead(_ context.Context, src io.Reader, message any) error {
 	msg, ok := message.(proto.Message)
 	if !ok {
 		return fmt.Errorf("connectx: unmarshal: expected proto.Message, got %T", message)
+	}
+	data, err := io.ReadAll(src)
+	if err != nil {
+		return err
 	}
 	if len(data) == 0 {
 		// protojson rejects empty input; Connect peers send "{}" for empty
@@ -74,16 +62,25 @@ func (c *snakeCaseJSONCodec) Unmarshal(data []byte, message any) error {
 	return protojson.UnmarshalOptions{DiscardUnknown: true}.Unmarshal(data, msg)
 }
 
-func (c *snakeCaseJSONCodec) IsBinary() bool { return false }
+// RPCMaxRequestBytes is the largest single RPC request message the server
+// accepts. connect-go v2 defaults to 4 MiB; the limit is stated explicitly so
+// it is a deliberate choice rather than an inherited default. Larger requests
+// fail with CodeResourceExhausted before the handler runs. Snapshot downloads
+// are plain HTTP streams outside the RPC layer and are not affected.
+const RPCMaxRequestBytes = 4 << 20
 
-// HandlerOptions returns the connect.HandlerOption slice that should be
-// applied to every Connect handler so server responses keep their legacy
-// snake_case JSON shape. The same codec is registered under both "json" and
-// "json; charset=utf-8" names because connect-go matches Content-Type
-// suffixes exactly.
-func HandlerOptions() []connect.HandlerOption {
-	return []connect.HandlerOption{
-		connect.WithCodec(newSnakeCaseJSONCodec("json")),
-		connect.WithCodec(newSnakeCaseJSONCodec("json; charset=utf-8")),
+// HandlerOptions returns the connecthttp option slice that should be applied
+// to the shared Connect server so responses keep their legacy snake_case JSON
+// shape. connecthttp.WithCodecs replaces the default codec set instead of
+// adding to it, so the binary protobuf codec Connect-Web clients use is listed
+// explicitly. connect-go canonicalizes "application/json; charset=utf-8" to
+// the bare "json" codec, so one registration covers both content types.
+func HandlerOptions() []connecthttp.Option {
+	return []connecthttp.Option{
+		connecthttp.WithCodecs(
+			newSnakeCaseJSONCodec("json"),
+			connectproto.NewBinaryCodec(),
+		),
+		connecthttp.WithReadMaxBytes(RPCMaxRequestBytes),
 	}
 }

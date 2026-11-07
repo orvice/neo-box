@@ -3,7 +3,6 @@ package application
 import (
 	"context"
 
-	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"go.orx.me/apps/neo-box/internal/cloudflare"
@@ -62,14 +61,14 @@ func emailRuleInputFromProto(in *neoboxv1.CloudflareEmailRuleInput) cloudflare.E
 	}
 }
 
-func (s *CloudflareServiceServer) GetCloudflareEmailRouting(ctx context.Context, req *connect.Request[neoboxv1.GetCloudflareEmailRoutingRequest]) (*connect.Response[neoboxv1.GetCloudflareEmailRoutingResponse], error) {
-	_, a, err := s.openAccount(ctx, req.Msg.GetConnectionId())
+func (s *CloudflareServiceServer) GetCloudflareEmailRouting(ctx context.Context, req *neoboxv1.GetCloudflareEmailRoutingRequest) (*neoboxv1.GetCloudflareEmailRoutingResponse, error) {
+	_, a, err := s.openAccount(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	v, err := a.EmailRouting(ctx, trim(req.Msg.GetZoneId()))
+	v, err := a.EmailRouting(ctx, trim(req.GetZoneId()))
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
 	out := &neoboxv1.GetCloudflareEmailRoutingResponse{
 		Settings: &neoboxv1.CloudflareEmailRoutingSettings{
@@ -90,17 +89,17 @@ func (s *CloudflareServiceServer) GetCloudflareEmailRouting(ctx context.Context,
 		}
 		out.RequiredDnsRecords = append(out.RequiredDnsRecords, rec)
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }
 
-func (s *CloudflareServiceServer) ListCloudflareEmailAddresses(ctx context.Context, req *connect.Request[neoboxv1.ListCloudflareEmailAddressesRequest]) (*connect.Response[neoboxv1.ListCloudflareEmailAddressesResponse], error) {
-	_, a, err := s.openAccount(ctx, req.Msg.GetConnectionId())
+func (s *CloudflareServiceServer) ListCloudflareEmailAddresses(ctx context.Context, req *neoboxv1.ListCloudflareEmailAddressesRequest) (*neoboxv1.ListCloudflareEmailAddressesResponse, error) {
+	_, a, err := s.openAccount(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
 	list, err := a.EmailAddresses(ctx)
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
 	out := &neoboxv1.ListCloudflareEmailAddressesResponse{}
 	for _, ad := range list {
@@ -113,94 +112,94 @@ func (s *CloudflareServiceServer) ListCloudflareEmailAddresses(ctx context.Conte
 		}
 		out.Addresses = append(out.Addresses, pa)
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }
 
-func (s *CloudflareServiceServer) EnableCloudflareEmailRouting(ctx context.Context, req *connect.Request[neoboxv1.EnableCloudflareEmailRoutingRequest]) (*connect.Response[neoboxv1.EnableCloudflareEmailRoutingResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.EnableEmailRouting(ctx, actor, trim(req.Msg.GetZoneId()))
+func (s *CloudflareServiceServer) EnableCloudflareEmailRouting(ctx context.Context, req *neoboxv1.EnableCloudflareEmailRoutingRequest) (*neoboxv1.EnableCloudflareEmailRoutingResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.EnableEmailRouting(ctx, actor, trim(req.GetZoneId()))
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.EnableCloudflareEmailRoutingResponse{Result: r}), nil
+	return &neoboxv1.EnableCloudflareEmailRoutingResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) CreateCloudflareEmailRule(ctx context.Context, req *connect.Request[neoboxv1.CreateCloudflareEmailRuleRequest]) (*connect.Response[neoboxv1.CreateCloudflareEmailRuleResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.CreateEmailRule(ctx, actor, trim(req.Msg.GetZoneId()), emailRuleInputFromProto(req.Msg.GetRule()))
+func (s *CloudflareServiceServer) CreateCloudflareEmailRule(ctx context.Context, req *neoboxv1.CreateCloudflareEmailRuleRequest) (*neoboxv1.CreateCloudflareEmailRuleResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.CreateEmailRule(ctx, actor, trim(req.GetZoneId()), emailRuleInputFromProto(req.GetRule()))
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.CreateCloudflareEmailRuleResponse{Result: r}), nil
+	return &neoboxv1.CreateCloudflareEmailRuleResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) UpdateCloudflareEmailRule(ctx context.Context, req *connect.Request[neoboxv1.UpdateCloudflareEmailRuleRequest]) (*connect.Response[neoboxv1.UpdateCloudflareEmailRuleResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.UpdateEmailRule(ctx, actor, trim(req.Msg.GetZoneId()), trim(req.Msg.GetRuleId()), emailRuleInputFromProto(req.Msg.GetRule()))
+func (s *CloudflareServiceServer) UpdateCloudflareEmailRule(ctx context.Context, req *neoboxv1.UpdateCloudflareEmailRuleRequest) (*neoboxv1.UpdateCloudflareEmailRuleResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.UpdateEmailRule(ctx, actor, trim(req.GetZoneId()), trim(req.GetRuleId()), emailRuleInputFromProto(req.GetRule()))
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.UpdateCloudflareEmailRuleResponse{Result: r}), nil
+	return &neoboxv1.UpdateCloudflareEmailRuleResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) DeleteCloudflareEmailRule(ctx context.Context, req *connect.Request[neoboxv1.DeleteCloudflareEmailRuleRequest]) (*connect.Response[neoboxv1.DeleteCloudflareEmailRuleResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.DeleteEmailRule(ctx, actor, trim(req.Msg.GetZoneId()), trim(req.Msg.GetRuleId()))
+func (s *CloudflareServiceServer) DeleteCloudflareEmailRule(ctx context.Context, req *neoboxv1.DeleteCloudflareEmailRuleRequest) (*neoboxv1.DeleteCloudflareEmailRuleResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.DeleteEmailRule(ctx, actor, trim(req.GetZoneId()), trim(req.GetRuleId()))
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.DeleteCloudflareEmailRuleResponse{Result: r}), nil
+	return &neoboxv1.DeleteCloudflareEmailRuleResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) SetCloudflareEmailCatchAll(ctx context.Context, req *connect.Request[neoboxv1.SetCloudflareEmailCatchAllRequest]) (*connect.Response[neoboxv1.SetCloudflareEmailCatchAllResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.SetEmailCatchAll(ctx, actor, trim(req.Msg.GetZoneId()), cloudflare.EmailCatchAllInput{
-			Enabled: req.Msg.GetEnabled(), Action: emailActionFromProto(req.Msg.GetAction()), Target: req.Msg.GetTarget(),
+func (s *CloudflareServiceServer) SetCloudflareEmailCatchAll(ctx context.Context, req *neoboxv1.SetCloudflareEmailCatchAllRequest) (*neoboxv1.SetCloudflareEmailCatchAllResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.SetEmailCatchAll(ctx, actor, trim(req.GetZoneId()), cloudflare.EmailCatchAllInput{
+			Enabled: req.GetEnabled(), Action: emailActionFromProto(req.GetAction()), Target: req.GetTarget(),
 		})
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.SetCloudflareEmailCatchAllResponse{Result: r}), nil
+	return &neoboxv1.SetCloudflareEmailCatchAllResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) CreateCloudflareEmailAddress(ctx context.Context, req *connect.Request[neoboxv1.CreateCloudflareEmailAddressRequest]) (*connect.Response[neoboxv1.CreateCloudflareEmailAddressResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.CreateEmailAddress(ctx, actor, req.Msg.GetEmail())
+func (s *CloudflareServiceServer) CreateCloudflareEmailAddress(ctx context.Context, req *neoboxv1.CreateCloudflareEmailAddressRequest) (*neoboxv1.CreateCloudflareEmailAddressResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.CreateEmailAddress(ctx, actor, req.GetEmail())
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.CreateCloudflareEmailAddressResponse{Result: r}), nil
+	return &neoboxv1.CreateCloudflareEmailAddressResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) DeleteCloudflareEmailAddress(ctx context.Context, req *connect.Request[neoboxv1.DeleteCloudflareEmailAddressRequest]) (*connect.Response[neoboxv1.DeleteCloudflareEmailAddressResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.DeleteEmailAddress(ctx, actor, trim(req.Msg.GetZoneId()), trim(req.Msg.GetAddressId()))
+func (s *CloudflareServiceServer) DeleteCloudflareEmailAddress(ctx context.Context, req *neoboxv1.DeleteCloudflareEmailAddressRequest) (*neoboxv1.DeleteCloudflareEmailAddressResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.DeleteEmailAddress(ctx, actor, trim(req.GetZoneId()), trim(req.GetAddressId()))
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.DeleteCloudflareEmailAddressResponse{Result: r}), nil
+	return &neoboxv1.DeleteCloudflareEmailAddressResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) ListCloudflareEmailLogs(ctx context.Context, req *connect.Request[neoboxv1.ListCloudflareEmailLogsRequest]) (*connect.Response[neoboxv1.ListCloudflareEmailLogsResponse], error) {
-	_, a, err := s.openAccount(ctx, req.Msg.GetConnectionId())
+func (s *CloudflareServiceServer) ListCloudflareEmailLogs(ctx context.Context, req *neoboxv1.ListCloudflareEmailLogsRequest) (*neoboxv1.ListCloudflareEmailLogsResponse, error) {
+	_, a, err := s.openAccount(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
 	q := cloudflare.EmailLogQuery{
-		Start: req.Msg.GetStartTime().AsTime(),
-		End:   req.Msg.GetEndTime().AsTime(),
-		Limit: int(req.Msg.GetLimit()),
+		Start: req.GetStartTime().AsTime(),
+		End:   req.GetEndTime().AsTime(),
+		Limit: int(req.GetLimit()),
 	}.Normalized()
-	events, err := a.EmailLogs(ctx, trim(req.Msg.GetZoneId()), q)
+	events, err := a.EmailLogs(ctx, trim(req.GetZoneId()), q)
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
 	out := &neoboxv1.ListCloudflareEmailLogsResponse{Truncated: len(events) >= q.Limit}
 	for _, e := range events {
@@ -212,5 +211,5 @@ func (s *CloudflareServiceServer) ListCloudflareEmailLogs(ctx context.Context, r
 			Spam: bool(e.IsSpam), Ndr: bool(e.IsNDR), LastEvent: bool(e.IsLastEvent),
 		})
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }

@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"go.orx.me/apps/neo-box/internal/cloudflare"
@@ -47,26 +47,26 @@ func (s *ConnectionServiceServer) SetService(svc *connection.Service) {
 func (s *ConnectionServiceServer) deps(ctx context.Context) (string, *connection.Service, error) {
 	user, ok := auth.UserFromContext(ctx)
 	if !ok {
-		return "", nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
+		return "", nil, connect.NewError(connect.CodeUnauthenticated, "unauthenticated")
 	}
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	if s.svc == nil {
-		return "", nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("connections are not available"))
+		return "", nil, connect.NewError(connect.CodeFailedPrecondition, "connections are not available")
 	}
 	return user.GetId(), s.svc, nil
 }
 
-func (s *ConnectionServiceServer) ListConnections(ctx context.Context, req *connect.Request[neoboxv1.ListConnectionsRequest]) (*connect.Response[neoboxv1.ListConnectionsResponse], error) {
+func (s *ConnectionServiceServer) ListConnections(ctx context.Context, req *neoboxv1.ListConnectionsRequest) (*neoboxv1.ListConnectionsResponse, error) {
 	userID, svc, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
 	filter := connrepo.Filter{UserID: userID}
-	if p := req.Msg.GetProvider(); p != neoboxv1.Provider_PROVIDER_UNSPECIFIED {
+	if p := req.GetProvider(); p != neoboxv1.Provider_PROVIDER_UNSPECIFIED {
 		key, ok := providerKey(p)
 		if !ok {
-			return nil, connectx.InvalidArgument("provider", "unknown provider")
+			return nil, connectx.InvalidArgument(ctx, "provider", "unknown provider")
 		}
 		filter.Provider = key
 	}
@@ -78,63 +78,63 @@ func (s *ConnectionServiceServer) ListConnections(ctx context.Context, req *conn
 	for _, c := range conns {
 		out = append(out, connectionToProto(c))
 	}
-	return connect.NewResponse(&neoboxv1.ListConnectionsResponse{Connections: out}), nil
+	return &neoboxv1.ListConnectionsResponse{Connections: out}, nil
 }
 
-func (s *ConnectionServiceServer) GetConnection(ctx context.Context, req *connect.Request[neoboxv1.GetConnectionRequest]) (*connect.Response[neoboxv1.GetConnectionResponse], error) {
+func (s *ConnectionServiceServer) GetConnection(ctx context.Context, req *neoboxv1.GetConnectionRequest) (*neoboxv1.GetConnectionResponse, error) {
 	userID, svc, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	c, err := loadConnection(ctx, svc, userID, req.Msg.GetId())
+	c, err := loadConnection(ctx, svc, userID, req.GetId())
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.GetConnectionResponse{Connection: connectionToProto(c)}), nil
+	return &neoboxv1.GetConnectionResponse{Connection: connectionToProto(c)}, nil
 }
 
-func (s *ConnectionServiceServer) CreateConnection(ctx context.Context, req *connect.Request[neoboxv1.CreateConnectionRequest]) (*connect.Response[neoboxv1.CreateConnectionResponse], error) {
+func (s *ConnectionServiceServer) CreateConnection(ctx context.Context, req *neoboxv1.CreateConnectionRequest) (*neoboxv1.CreateConnectionResponse, error) {
 	userID, svc, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	name := strings.TrimSpace(req.Msg.GetName())
+	name := strings.TrimSpace(req.GetName())
 	if name == "" {
-		return nil, connectx.RequiredArgument("name")
+		return nil, connectx.RequiredArgument(ctx, "name")
 	}
-	settings, err := createSettings(req.Msg)
+	settings, err := createSettings(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 	if settings.secret == nil {
-		return nil, connectx.RequiredArgument(settings.secretField)
+		return nil, connectx.RequiredArgument(ctx, settings.secretField)
 	}
 	c, err := svc.Create(ctx, userID, settings.provider, name, settings.config, settings.secret)
 	if err != nil {
 		return nil, mapConnectionErr(err)
 	}
-	return connect.NewResponse(&neoboxv1.CreateConnectionResponse{Connection: connectionToProto(c)}), nil
+	return &neoboxv1.CreateConnectionResponse{Connection: connectionToProto(c)}, nil
 }
 
-func (s *ConnectionServiceServer) UpdateConnection(ctx context.Context, req *connect.Request[neoboxv1.UpdateConnectionRequest]) (*connect.Response[neoboxv1.UpdateConnectionResponse], error) {
+func (s *ConnectionServiceServer) UpdateConnection(ctx context.Context, req *neoboxv1.UpdateConnectionRequest) (*neoboxv1.UpdateConnectionResponse, error) {
 	userID, svc, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	c, err := loadConnection(ctx, svc, userID, req.Msg.GetId())
+	c, err := loadConnection(ctx, svc, userID, req.GetId())
 	if err != nil {
 		return nil, err
 	}
-	name := strings.TrimSpace(req.Msg.GetName())
+	name := strings.TrimSpace(req.GetName())
 	if name == "" {
-		return nil, connectx.RequiredArgument("name")
+		return nil, connectx.RequiredArgument(ctx, "name")
 	}
-	settings, err := updateSettings(req.Msg)
+	settings, err := updateSettings(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 	if settings.provider != c.Provider {
-		return nil, connectx.InvalidArgument("settings", "must be for the connection's provider")
+		return nil, connectx.InvalidArgument(ctx, "settings", "must be for the connection's provider")
 	}
 	if c.Provider == googleworkspace.ProviderType {
 		var before googleworkspace.ConnectionConfig
@@ -142,44 +142,44 @@ func (s *ConnectionServiceServer) UpdateConnection(ctx context.Context, req *con
 			return nil, connectx.InternalWith(err)
 		}
 		if before != settings.config.(googleworkspace.ConnectionConfig) {
-			return nil, connectx.InvalidArgument("service_account_json", "key rotation must keep the same Service Account; create another connection for a different identity")
+			return nil, connectx.InvalidArgument(ctx, "service_account_json", "key rotation must keep the same Service Account; create another connection for a different identity")
 		}
 	}
 	// A nil secret keeps the stored one.
 	if err := svc.Update(ctx, c, name, settings.config, settings.secret); err != nil {
 		return nil, mapConnectionErr(err)
 	}
-	return connect.NewResponse(&neoboxv1.UpdateConnectionResponse{Connection: connectionToProto(c)}), nil
+	return &neoboxv1.UpdateConnectionResponse{Connection: connectionToProto(c)}, nil
 }
 
-func (s *ConnectionServiceServer) DeleteConnection(ctx context.Context, req *connect.Request[neoboxv1.DeleteConnectionRequest]) (*connect.Response[neoboxv1.DeleteConnectionResponse], error) {
+func (s *ConnectionServiceServer) DeleteConnection(ctx context.Context, req *neoboxv1.DeleteConnectionRequest) (*neoboxv1.DeleteConnectionResponse, error) {
 	userID, svc, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	c, err := loadConnection(ctx, svc, userID, req.Msg.GetId())
+	c, err := loadConnection(ctx, svc, userID, req.GetId())
 	if err != nil {
 		return nil, err
 	}
 	if err := svc.Delete(ctx, c); err != nil {
 		return nil, mapConnectionErr(err)
 	}
-	return connect.NewResponse(&neoboxv1.DeleteConnectionResponse{}), nil
+	return &neoboxv1.DeleteConnectionResponse{}, nil
 }
 
-func (s *ConnectionServiceServer) TestConnection(ctx context.Context, req *connect.Request[neoboxv1.TestConnectionRequest]) (*connect.Response[neoboxv1.TestConnectionResponse], error) {
+func (s *ConnectionServiceServer) TestConnection(ctx context.Context, req *neoboxv1.TestConnectionRequest) (*neoboxv1.TestConnectionResponse, error) {
 	userID, svc, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	c, err := loadConnection(ctx, svc, userID, req.Msg.GetId())
+	c, err := loadConnection(ctx, svc, userID, req.GetId())
 	if err != nil {
 		return nil, err
 	}
 	if err := svc.Test(ctx, c); err != nil {
 		return nil, mapConnectionErr(err)
 	}
-	return connect.NewResponse(&neoboxv1.TestConnectionResponse{Connection: connectionToProto(c)}), nil
+	return &neoboxv1.TestConnectionResponse{Connection: connectionToProto(c)}, nil
 }
 
 // --- provider settings ---
@@ -193,42 +193,42 @@ type providerSettings struct {
 	secretField string
 }
 
-func createSettings(m *neoboxv1.CreateConnectionRequest) (*providerSettings, error) {
+func createSettings(ctx context.Context, m *neoboxv1.CreateConnectionRequest) (*providerSettings, error) {
 	switch v := m.GetSettings().(type) {
 	case *neoboxv1.CreateConnectionRequest_Nocodb:
-		return nocodbSettings(v.Nocodb)
+		return nocodbSettings(ctx, v.Nocodb)
 	case *neoboxv1.CreateConnectionRequest_Wasabi:
-		return wasabiSettings(v.Wasabi)
+		return wasabiSettings(ctx, v.Wasabi)
 	case *neoboxv1.CreateConnectionRequest_GoogleWorkspace:
-		return workspaceSettings(v.GoogleWorkspace)
+		return workspaceSettings(ctx, v.GoogleWorkspace)
 	case *neoboxv1.CreateConnectionRequest_Cloudflare:
-		return cloudflareSettings(v.Cloudflare)
+		return cloudflareSettings(ctx, v.Cloudflare)
 	}
-	return nil, connectx.RequiredArgument("settings")
+	return nil, connectx.RequiredArgument(ctx, "settings")
 }
 
-func updateSettings(m *neoboxv1.UpdateConnectionRequest) (*providerSettings, error) {
+func updateSettings(ctx context.Context, m *neoboxv1.UpdateConnectionRequest) (*providerSettings, error) {
 	switch v := m.GetSettings().(type) {
 	case *neoboxv1.UpdateConnectionRequest_Nocodb:
-		return nocodbSettings(v.Nocodb)
+		return nocodbSettings(ctx, v.Nocodb)
 	case *neoboxv1.UpdateConnectionRequest_Wasabi:
-		return wasabiSettings(v.Wasabi)
+		return wasabiSettings(ctx, v.Wasabi)
 	case *neoboxv1.UpdateConnectionRequest_GoogleWorkspace:
-		return workspaceSettings(v.GoogleWorkspace)
+		return workspaceSettings(ctx, v.GoogleWorkspace)
 	case *neoboxv1.UpdateConnectionRequest_Cloudflare:
-		return cloudflareSettings(v.Cloudflare)
+		return cloudflareSettings(ctx, v.Cloudflare)
 	}
-	return nil, connectx.RequiredArgument("settings")
+	return nil, connectx.RequiredArgument(ctx, "settings")
 }
 
-func nocodbSettings(in *neoboxv1.NocoDBConnectionSettings) (*providerSettings, error) {
+func nocodbSettings(ctx context.Context, in *neoboxv1.NocoDBConnectionSettings) (*providerSettings, error) {
 	baseURL, err := nocodb.NormalizeBaseURL(in.GetBaseUrl())
 	if err != nil {
-		return nil, connectx.InvalidArgument("base_url", "must be an http(s) URL")
+		return nil, connectx.InvalidArgument(ctx, "base_url", "must be an http(s) URL")
 	}
 	rps := in.GetRequestsPerSecond()
 	if rps < 0 || rps > 1000 || math.IsNaN(rps) {
-		return nil, connectx.InvalidArgument("requests_per_second", "must be between 0 and 1000")
+		return nil, connectx.InvalidArgument(ctx, "requests_per_second", "must be between 0 and 1000")
 	}
 	out := &providerSettings{
 		provider:    nocodb.ProviderType,
@@ -241,18 +241,18 @@ func nocodbSettings(in *neoboxv1.NocoDBConnectionSettings) (*providerSettings, e
 	return out, nil
 }
 
-func wasabiSettings(in *neoboxv1.WasabiConnectionSettings) (*providerSettings, error) {
+func wasabiSettings(ctx context.Context, in *neoboxv1.WasabiConnectionSettings) (*providerSettings, error) {
 	keyID := strings.TrimSpace(in.GetAccessKeyId())
 	if keyID == "" {
-		return nil, connectx.RequiredArgument("access_key_id")
+		return nil, connectx.RequiredArgument(ctx, "access_key_id")
 	}
 	price := in.GetPricePerTbMonth()
 	if price < 0 || math.IsNaN(price) || math.IsInf(price, 0) {
-		return nil, connectx.InvalidArgument("price_per_tb_month", "must be a non-negative number")
+		return nil, connectx.InvalidArgument(ctx, "price_per_tb_month", "must be a non-negative number")
 	}
 	budget := in.GetBudgetUsd()
 	if budget < 0 || math.IsNaN(budget) || math.IsInf(budget, 0) {
-		return nil, connectx.InvalidArgument("budget_usd", "must be a non-negative number")
+		return nil, connectx.InvalidArgument(ctx, "budget_usd", "must be a non-negative number")
 	}
 	cfg := wasabi.ConnectionConfig{
 		AccessKeyID:         keyID,
@@ -263,10 +263,10 @@ func wasabiSettings(in *neoboxv1.WasabiConnectionSettings) (*providerSettings, e
 	}
 	anchor, err := cfg.Anchor()
 	if err != nil {
-		return nil, connectx.InvalidArgument("billing_cycle_anchor", "must be a YYYY-MM-DD day")
+		return nil, connectx.InvalidArgument(ctx, "billing_cycle_anchor", "must be a YYYY-MM-DD day")
 	}
 	if anchor.After(time.Now()) {
-		return nil, connectx.InvalidArgument("billing_cycle_anchor", "must not be in the future")
+		return nil, connectx.InvalidArgument(ctx, "billing_cycle_anchor", "must not be in the future")
 	}
 	out := &providerSettings{provider: wasabi.ProviderType, config: cfg, secretField: "secret_key"}
 	if sk := strings.TrimSpace(in.GetSecretKey()); sk != "" {
@@ -275,13 +275,13 @@ func wasabiSettings(in *neoboxv1.WasabiConnectionSettings) (*providerSettings, e
 	return out, nil
 }
 
-func cloudflareSettings(in *neoboxv1.CloudflareConnectionSettings) (*providerSettings, error) {
+func cloudflareSettings(ctx context.Context, in *neoboxv1.CloudflareConnectionSettings) (*providerSettings, error) {
 	if strings.TrimSpace(in.GetAccountId()) == "" {
-		return nil, connectx.RequiredArgument("account_id")
+		return nil, connectx.RequiredArgument(ctx, "account_id")
 	}
 	accountID, err := cloudflare.NormalizeAccountID(in.GetAccountId())
 	if err != nil {
-		return nil, connectx.InvalidArgument("account_id", "must be 32 hexadecimal characters (Account ID in the Cloudflare dashboard)")
+		return nil, connectx.InvalidArgument(ctx, "account_id", "must be 32 hexadecimal characters (Account ID in the Cloudflare dashboard)")
 	}
 	out := &providerSettings{
 		provider:    cloudflare.ProviderType,
@@ -358,7 +358,7 @@ func providerToProto(key string) neoboxv1.Provider {
 func loadConnection(ctx context.Context, svc *connection.Service, userID, id string) (*connrepo.Connection, error) {
 	id = strings.TrimSpace(id)
 	if id == "" {
-		return nil, connectx.RequiredArgument("id")
+		return nil, connectx.RequiredArgument(ctx, "id")
 	}
 	c, err := svc.Get(ctx, userID, id)
 	if err != nil {
@@ -371,9 +371,9 @@ func mapConnectionErr(err error) error {
 	var verr *connection.VerifyError
 	switch {
 	case errors.As(err, &verr):
-		return connect.NewError(connect.CodeInvalidArgument, verr)
+		return connect.NewError(connect.CodeInvalidArgument, verr.Error()).WithCause(verr)
 	case errors.Is(err, connection.ErrNoCipher), errors.Is(err, connection.ErrBusy):
-		return connect.NewError(connect.CodeFailedPrecondition, err)
+		return connect.NewError(connect.CodeFailedPrecondition, err.Error()).WithCause(err)
 	case errors.Is(err, connrepo.ErrNotFound):
 		return connectx.NotFound("connection not found")
 	}
@@ -404,19 +404,19 @@ func statusToProto(s connrepo.Status) neoboxv1.ConnectionStatus {
 	return neoboxv1.ConnectionStatus_CONNECTION_STATUS_UNSPECIFIED
 }
 
-func workspaceSettings(in *neoboxv1.GoogleWorkspaceConnectionSettings) (*providerSettings, error) {
+func workspaceSettings(ctx context.Context, in *neoboxv1.GoogleWorkspaceConnectionSettings) (*providerSettings, error) {
 	cfg := googleworkspace.ConnectionConfig{ServiceAccountEmail: strings.TrimSpace(in.GetServiceAccountEmail()), ClientID: strings.TrimSpace(in.GetClientId())}
 	out := &providerSettings{provider: googleworkspace.ProviderType, secretField: "service_account_json"}
 	if raw := strings.TrimSpace(in.GetServiceAccountJson()); raw != "" {
 		metadata, _, err := googleworkspace.ParseKey(raw)
 		if err != nil {
-			return nil, connectx.InvalidArgument("service_account_json", err.Error())
+			return nil, connectx.InvalidArgument(ctx, "service_account_json", err.Error())
 		}
 		cfg = *metadata
 		out.secret = googleworkspace.ConnectionSecret{ServiceAccountJSON: raw}
 	}
 	if !googleworkspace.ValidEmail(cfg.ServiceAccountEmail) || cfg.ClientID == "" {
-		return nil, connectx.InvalidArgument("settings", "Service Account email and Client ID are required")
+		return nil, connectx.InvalidArgument(ctx, "settings", "Service Account email and Client ID are required")
 	}
 	out.config = cfg
 	return out, nil

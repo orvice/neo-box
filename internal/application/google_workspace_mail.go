@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	"go.orx.me/apps/neo-box/internal/transport/connectx"
 	neoboxv1 "go.orx.me/apps/neo-box/pkg/proto/neobox/v1"
@@ -46,7 +46,7 @@ func (s *GoogleWorkspaceServiceServer) mailAccess(ctx context.Context, connectio
 	}
 	api, err := d.mail(ctx, cfg, sec, t.CustomerID, u.PrimaryEmail, reason)
 	if err != nil {
-		return nil, "", connect.NewError(connect.CodeFailedPrecondition, err)
+		return nil, "", connect.NewError(connect.CodeFailedPrecondition, err.Error()).WithCause(err)
 	}
 	api.SetWriteRecorder(workspaceRecorder{repo: d.repo, connection: d.c, tenant: t, actorName: d.actorName})
 	return api, u.PrimaryEmail, nil
@@ -55,39 +55,39 @@ func (s *GoogleWorkspaceServiceServer) mailAccess(ctx context.Context, connectio
 // mapMailErr adds the mail-specific outcomes to the shared Workspace mapping.
 // A missing gmail.readonly authorization is a rejected delegation
 // (FailedPrecondition, never Unauthenticated, which signs the user out).
-func mapMailErr(err error) error {
+func mapMailErr(ctx context.Context, err error) error {
 	switch {
 	case errors.Is(err, googleworkspace.ErrMailNotFound):
 		return connectx.NotFound("message or attachment not found")
 	case errors.Is(err, googleworkspace.ErrAttachmentTooLarge):
-		return connect.NewError(connect.CodeFailedPrecondition, err)
+		return connect.NewError(connect.CodeFailedPrecondition, err.Error()).WithCause(err)
 	}
-	return mapWorkspaceFeatureErr(err, googleworkspace.GmailReadonlyScope)
+	return mapWorkspaceFeatureErr(ctx, err, googleworkspace.GmailReadonlyScope)
 }
 
-func (s *GoogleWorkspaceServiceServer) ListWorkspaceUserGmailLabels(ctx context.Context, req *connect.Request[neoboxv1.ListWorkspaceUserGmailLabelsRequest]) (*connect.Response[neoboxv1.ListWorkspaceUserGmailLabelsResponse], error) {
-	in := req.Msg
+func (s *GoogleWorkspaceServiceServer) ListWorkspaceUserGmailLabels(ctx context.Context, req *neoboxv1.ListWorkspaceUserGmailLabelsRequest) (*neoboxv1.ListWorkspaceUserGmailLabelsResponse, error) {
+	in := req
 	api, email, err := s.mailAccess(ctx, in.GetConnectionId(), in.GetTenantId(), in.GetUserId(), in.GetConfirmation())
 	if err != nil {
 		return nil, err
 	}
 	res, err := api.ListLabels(ctx)
 	if err != nil {
-		return nil, mapMailErr(err)
+		return nil, mapMailErr(ctx, err)
 	}
 	out := &neoboxv1.ListWorkspaceUserGmailLabelsResponse{UserEmail: email, ReadAt: timestamppb.New(res.ReadAt)}
 	for _, l := range res.Labels {
 		out.Labels = append(out.Labels, &neoboxv1.GmailMailLabel{Id: l.ID, Name: l.Name, Type: l.Type, CountsKnown: l.CountsKnown, MessagesTotal: int32(l.MessagesTotal), MessagesUnread: int32(l.MessagesUnread)})
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }
 
-func (s *GoogleWorkspaceServiceServer) SearchWorkspaceUserGmailMessages(ctx context.Context, req *connect.Request[neoboxv1.SearchWorkspaceUserGmailMessagesRequest]) (*connect.Response[neoboxv1.SearchWorkspaceUserGmailMessagesResponse], error) {
-	in := req.Msg
+func (s *GoogleWorkspaceServiceServer) SearchWorkspaceUserGmailMessages(ctx context.Context, req *neoboxv1.SearchWorkspaceUserGmailMessagesRequest) (*neoboxv1.SearchWorkspaceUserGmailMessagesResponse, error) {
+	in := req
 	search := googleworkspace.MailSearch{Query: in.GetQuery(), LabelIDs: in.GetLabelIds(), IncludeSpamTrash: in.GetIncludeSpamTrash(), PageToken: in.GetPageToken(), PageSize: int(in.GetPageSize())}
 	// Checked before the target is resolved: a bad query costs no Google call.
 	if err := search.Validate(); err != nil {
-		return nil, mapWorkspaceErr(err)
+		return nil, mapWorkspaceErr(ctx, err)
 	}
 	api, email, err := s.mailAccess(ctx, in.GetConnectionId(), in.GetTenantId(), in.GetUserId(), in.GetConfirmation())
 	if err != nil {
@@ -95,7 +95,7 @@ func (s *GoogleWorkspaceServiceServer) SearchWorkspaceUserGmailMessages(ctx cont
 	}
 	page, err := api.SearchMessages(ctx, search)
 	if err != nil {
-		return nil, mapMailErr(err)
+		return nil, mapMailErr(ctx, err)
 	}
 	out := &neoboxv1.SearchWorkspaceUserGmailMessagesResponse{UserEmail: email, NextPageToken: page.NextPageToken, ResultSizeEstimate: int32(page.ResultSizeEstimate), ReadAt: timestamppb.New(page.ReadAt)}
 	for _, m := range page.Messages {
@@ -104,13 +104,13 @@ func (s *GoogleWorkspaceServiceServer) SearchWorkspaceUserGmailMessages(ctx cont
 			Date: gmailTime(m.Date), LabelIds: m.LabelIDs, HasAttachment: m.HasAttachment, Unavailable: m.Unavailable,
 		})
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }
 
-func (s *GoogleWorkspaceServiceServer) GetWorkspaceUserGmailMessage(ctx context.Context, req *connect.Request[neoboxv1.GetWorkspaceUserGmailMessageRequest]) (*connect.Response[neoboxv1.GetWorkspaceUserGmailMessageResponse], error) {
-	in := req.Msg
+func (s *GoogleWorkspaceServiceServer) GetWorkspaceUserGmailMessage(ctx context.Context, req *neoboxv1.GetWorkspaceUserGmailMessageRequest) (*neoboxv1.GetWorkspaceUserGmailMessageResponse, error) {
+	in := req
 	if !googleworkspace.ValidMailID(in.GetMessageId()) {
-		return nil, connectx.InvalidArgument("message_id", "is not valid")
+		return nil, connectx.InvalidArgument(ctx, "message_id", "is not valid")
 	}
 	api, email, err := s.mailAccess(ctx, in.GetConnectionId(), in.GetTenantId(), in.GetUserId(), in.GetConfirmation())
 	if err != nil {
@@ -118,7 +118,7 @@ func (s *GoogleWorkspaceServiceServer) GetWorkspaceUserGmailMessage(ctx context.
 	}
 	m, err := api.ReadMessage(ctx, in.GetMessageId())
 	if err != nil {
-		return nil, mapMailErr(err)
+		return nil, mapMailErr(ctx, err)
 	}
 	msg := &neoboxv1.GmailMessage{
 		Id: m.ID, ThreadId: m.ThreadID, From: m.From, To: m.To, Cc: m.Cc, Bcc: m.Bcc, ReplyTo: m.ReplyTo, Subject: m.Subject,
@@ -131,16 +131,16 @@ func (s *GoogleWorkspaceServiceServer) GetWorkspaceUserGmailMessage(ctx context.
 			Downloadable: a.Downloadable, TooLarge: a.Size > googleworkspace.MaxAttachmentBytes,
 		})
 	}
-	return connect.NewResponse(&neoboxv1.GetWorkspaceUserGmailMessageResponse{UserEmail: email, Message: msg, ReadAt: timestamppb.New(m.ReadAt)}), nil
+	return &neoboxv1.GetWorkspaceUserGmailMessageResponse{UserEmail: email, Message: msg, ReadAt: timestamppb.New(m.ReadAt)}, nil
 }
 
-func (s *GoogleWorkspaceServiceServer) DownloadWorkspaceUserGmailAttachment(ctx context.Context, req *connect.Request[neoboxv1.DownloadWorkspaceUserGmailAttachmentRequest]) (*connect.Response[neoboxv1.DownloadWorkspaceUserGmailAttachmentResponse], error) {
-	in := req.Msg
+func (s *GoogleWorkspaceServiceServer) DownloadWorkspaceUserGmailAttachment(ctx context.Context, req *neoboxv1.DownloadWorkspaceUserGmailAttachmentRequest) (*neoboxv1.DownloadWorkspaceUserGmailAttachmentResponse, error) {
+	in := req
 	if !googleworkspace.ValidMailID(in.GetMessageId()) {
-		return nil, connectx.InvalidArgument("message_id", "is not valid")
+		return nil, connectx.InvalidArgument(ctx, "message_id", "is not valid")
 	}
 	if !googleworkspace.ValidMailPartID(in.GetPartId()) {
-		return nil, connectx.InvalidArgument("part_id", "is not valid")
+		return nil, connectx.InvalidArgument(ctx, "part_id", "is not valid")
 	}
 	api, _, err := s.mailAccess(ctx, in.GetConnectionId(), in.GetTenantId(), in.GetUserId(), in.GetConfirmation())
 	if err != nil {
@@ -148,7 +148,7 @@ func (s *GoogleWorkspaceServiceServer) DownloadWorkspaceUserGmailAttachment(ctx 
 	}
 	file, err := api.DownloadAttachment(ctx, in.GetMessageId(), in.GetPartId())
 	if err != nil {
-		return nil, mapMailErr(err)
+		return nil, mapMailErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.DownloadWorkspaceUserGmailAttachmentResponse{Filename: file.Filename, MimeType: file.MimeType, Data: file.Data}), nil
+	return &neoboxv1.DownloadWorkspaceUserGmailAttachmentResponse{Filename: file.Filename, MimeType: file.MimeType, Data: file.Data}, nil
 }

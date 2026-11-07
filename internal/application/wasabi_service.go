@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"go.orx.me/apps/neo-box/internal/connection"
@@ -61,12 +61,12 @@ type wasabiDeps struct {
 func (s *WasabiServiceServer) deps(ctx context.Context) (string, *wasabiDeps, error) {
 	user, ok := auth.UserFromContext(ctx)
 	if !ok {
-		return "", nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
+		return "", nil, connect.NewError(connect.CodeUnauthenticated, "unauthenticated")
 	}
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	if s.repo == nil || s.sync == nil || s.conns == nil {
-		return "", nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("wasabi usage is not available"))
+		return "", nil, connect.NewError(connect.CodeFailedPrecondition, "wasabi usage is not available")
 	}
 	return user.GetId(), &wasabiDeps{repo: s.repo, sync: s.sync, conns: s.conns}, nil
 }
@@ -77,7 +77,7 @@ func (d *wasabiDeps) load(ctx context.Context, userID, id string) (*connrepo.Con
 	var cfg wasabi.ConnectionConfig
 	id = strings.TrimSpace(id)
 	if id == "" {
-		return nil, cfg, connectx.RequiredArgument("connection_id")
+		return nil, cfg, connectx.RequiredArgument(ctx, "connection_id")
 	}
 	c, err := d.conns.Get(ctx, userID, id)
 	if err != nil {
@@ -92,12 +92,12 @@ func (d *wasabiDeps) load(ctx context.Context, userID, id string) (*connrepo.Con
 	return c, cfg, nil
 }
 
-func (s *WasabiServiceServer) GetWasabiOverview(ctx context.Context, req *connect.Request[neoboxv1.GetWasabiOverviewRequest]) (*connect.Response[neoboxv1.GetWasabiOverviewResponse], error) {
+func (s *WasabiServiceServer) GetWasabiOverview(ctx context.Context, req *neoboxv1.GetWasabiOverviewRequest) (*neoboxv1.GetWasabiOverviewResponse, error) {
 	userID, d, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	conn, cfg, err := d.load(ctx, userID, req.Msg.GetConnectionId())
+	conn, cfg, err := d.load(ctx, userID, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
@@ -138,15 +138,15 @@ func (s *WasabiServiceServer) GetWasabiOverview(ctx context.Context, req *connec
 			resp.BucketCount++
 		}
 	}
-	return connect.NewResponse(resp), nil
+	return resp, nil
 }
 
-func (s *WasabiServiceServer) ListWasabiBuckets(ctx context.Context, req *connect.Request[neoboxv1.ListWasabiBucketsRequest]) (*connect.Response[neoboxv1.ListWasabiBucketsResponse], error) {
+func (s *WasabiServiceServer) ListWasabiBuckets(ctx context.Context, req *neoboxv1.ListWasabiBucketsRequest) (*neoboxv1.ListWasabiBucketsResponse, error) {
 	userID, d, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	conn, _, err := d.load(ctx, userID, req.Msg.GetConnectionId())
+	conn, _, err := d.load(ctx, userID, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +170,7 @@ func (s *WasabiServiceServer) ListWasabiBuckets(ctx context.Context, req *connec
 	out := make([]*neoboxv1.WasabiBucket, 0, len(buckets))
 	for _, b := range buckets {
 		deleted := b.Day.Before(newest)
-		if deleted && !req.Msg.GetIncludeDeleted() {
+		if deleted && !req.GetIncludeDeleted() {
 			continue
 		}
 		wb := &neoboxv1.WasabiBucket{Name: b.Bucket, Region: b.Region, Deleted: deleted, Latest: usageToProto(b)}
@@ -179,37 +179,37 @@ func (s *WasabiServiceServer) ListWasabiBuckets(ctx context.Context, req *connec
 		}
 		out = append(out, wb)
 	}
-	return connect.NewResponse(&neoboxv1.ListWasabiBucketsResponse{Buckets: out}), nil
+	return &neoboxv1.ListWasabiBucketsResponse{Buckets: out}, nil
 }
 
-func (s *WasabiServiceServer) GetWasabiUsage(ctx context.Context, req *connect.Request[neoboxv1.GetWasabiUsageRequest]) (*connect.Response[neoboxv1.GetWasabiUsageResponse], error) {
+func (s *WasabiServiceServer) GetWasabiUsage(ctx context.Context, req *neoboxv1.GetWasabiUsageRequest) (*neoboxv1.GetWasabiUsageResponse, error) {
 	userID, d, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	conn, _, err := d.load(ctx, userID, req.Msg.GetConnectionId())
+	conn, _, err := d.load(ctx, userID, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
 	to := wasabi.DayOf(s.now())
-	if v := req.Msg.GetTo(); v != "" {
+	if v := req.GetTo(); v != "" {
 		if to, err = time.Parse(wasabi.DateLayout, v); err != nil {
-			return nil, connectx.InvalidArgument("to", "must be a YYYY-MM-DD day")
+			return nil, connectx.InvalidArgument(ctx, "to", "must be a YYYY-MM-DD day")
 		}
 	}
 	from := to.AddDate(0, 0, -(defaultUsageDays - 1))
-	if v := req.Msg.GetFrom(); v != "" {
+	if v := req.GetFrom(); v != "" {
 		if from, err = time.Parse(wasabi.DateLayout, v); err != nil {
-			return nil, connectx.InvalidArgument("from", "must be a YYYY-MM-DD day")
+			return nil, connectx.InvalidArgument(ctx, "from", "must be a YYYY-MM-DD day")
 		}
 	}
 	if from.After(to) {
-		return nil, connectx.InvalidArgument("from", "must not be after to")
+		return nil, connectx.InvalidArgument(ctx, "from", "must not be after to")
 	}
 	if to.Sub(from) > maxUsageDays*24*time.Hour {
-		return nil, connectx.InvalidArgument("from", "range must be at most 800 days")
+		return nil, connectx.InvalidArgument(ctx, "from", "range must be at most 800 days")
 	}
-	days, err := d.repo.ListUsage(ctx, conn.ID, req.Msg.GetBucket(), from, to)
+	days, err := d.repo.ListUsage(ctx, conn.ID, req.GetBucket(), from, to)
 	if err != nil {
 		return nil, connectx.InternalWith(err)
 	}
@@ -217,15 +217,15 @@ func (s *WasabiServiceServer) GetWasabiUsage(ctx context.Context, req *connect.R
 	for _, u := range days {
 		out = append(out, usageToProto(u))
 	}
-	return connect.NewResponse(&neoboxv1.GetWasabiUsageResponse{Days: out}), nil
+	return &neoboxv1.GetWasabiUsageResponse{Days: out}, nil
 }
 
-func (s *WasabiServiceServer) SyncWasabiConnection(ctx context.Context, req *connect.Request[neoboxv1.SyncWasabiConnectionRequest]) (*connect.Response[neoboxv1.SyncWasabiConnectionResponse], error) {
+func (s *WasabiServiceServer) SyncWasabiConnection(ctx context.Context, req *neoboxv1.SyncWasabiConnectionRequest) (*neoboxv1.SyncWasabiConnectionResponse, error) {
 	userID, d, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	conn, _, err := d.load(ctx, userID, req.Msg.GetConnectionId())
+	conn, _, err := d.load(ctx, userID, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
@@ -234,15 +234,15 @@ func (s *WasabiServiceServer) SyncWasabiConnection(ctx context.Context, req *con
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.SyncWasabiConnectionResponse{Sync: state}), nil
+	return &neoboxv1.SyncWasabiConnectionResponse{Sync: state}, nil
 }
 
-func (s *WasabiServiceServer) GetWasabiCostBreakdown(ctx context.Context, req *connect.Request[neoboxv1.GetWasabiCostBreakdownRequest]) (*connect.Response[neoboxv1.GetWasabiCostBreakdownResponse], error) {
+func (s *WasabiServiceServer) GetWasabiCostBreakdown(ctx context.Context, req *neoboxv1.GetWasabiCostBreakdownRequest) (*neoboxv1.GetWasabiCostBreakdownResponse, error) {
 	userID, d, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	conn, cfg, err := d.load(ctx, userID, req.Msg.GetConnectionId())
+	conn, cfg, err := d.load(ctx, userID, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
@@ -262,7 +262,7 @@ func (s *WasabiServiceServer) GetWasabiCostBreakdown(ctx context.Context, req *c
 		return nil, connectx.InternalWith(err)
 	}
 	b := wasabi.CostBreakdown(account, buckets, cfg.Price(), anchor, today)
-	return connect.NewResponse(&neoboxv1.GetWasabiCostBreakdownResponse{Breakdown: breakdownToProto(b, cfg.Price())}), nil
+	return &neoboxv1.GetWasabiCostBreakdownResponse{Breakdown: breakdownToProto(b, cfg.Price())}, nil
 }
 
 // --- conversions ---

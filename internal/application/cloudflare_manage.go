@@ -5,7 +5,6 @@ import (
 	"sort"
 	"strings"
 
-	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -31,7 +30,7 @@ func (s *CloudflareServiceServer) change(
 	}
 	res, err := run(a, d.user)
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
 	return changeResultToProto(res), nil
 }
@@ -87,17 +86,17 @@ func resourceKindToProto(k cfrepo.ResourceKind) neoboxv1.CloudflareResourceKind 
 	return neoboxv1.CloudflareResourceKind_CLOUDFLARE_RESOURCE_KIND_UNSPECIFIED
 }
 
-func (s *CloudflareServiceServer) ListCloudflareResourceOperations(ctx context.Context, req *connect.Request[neoboxv1.ListCloudflareResourceOperationsRequest]) (*connect.Response[neoboxv1.ListCloudflareResourceOperationsResponse], error) {
+func (s *CloudflareServiceServer) ListCloudflareResourceOperations(ctx context.Context, req *neoboxv1.ListCloudflareResourceOperationsRequest) (*neoboxv1.ListCloudflareResourceOperationsResponse, error) {
 	d, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	c, err := d.load(ctx, req.Msg.GetConnectionId())
+	c, err := d.load(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
 	var kind cfrepo.ResourceKind
-	switch req.Msg.GetKind() {
+	switch req.GetKind() {
 	case neoboxv1.CloudflareResourceKind_CLOUDFLARE_RESOURCE_KIND_WORKER:
 		kind = cfrepo.KindWorker
 	case neoboxv1.CloudflareResourceKind_CLOUDFLARE_RESOURCE_KIND_PAGES:
@@ -105,9 +104,9 @@ func (s *CloudflareServiceServer) ListCloudflareResourceOperations(ctx context.C
 	case neoboxv1.CloudflareResourceKind_CLOUDFLARE_RESOURCE_KIND_EMAIL_ROUTING:
 		kind = cfrepo.KindEmailRouting
 	}
-	page, size := pageArgs(req.Msg.GetPage(), req.Msg.GetPageSize(), defaultOperationsSize, 1, maxOperationsSize)
+	page, size := pageArgs(req.GetPage(), req.GetPageSize(), defaultOperationsSize, 1, maxOperationsSize)
 	ops, total, err := d.repo.ListResourceOperations(ctx, cfrepo.ResourceFilter{
-		UserID: d.user.ID, ConnectionID: c.ID, Kind: kind, Resource: strings.TrimSpace(req.Msg.GetResource()),
+		UserID: d.user.ID, ConnectionID: c.ID, Kind: kind, Resource: strings.TrimSpace(req.GetResource()),
 		Offset: (page - 1) * size, Limit: size,
 	})
 	if err != nil {
@@ -117,19 +116,19 @@ func (s *CloudflareServiceServer) ListCloudflareResourceOperations(ctx context.C
 	for _, op := range ops {
 		out = append(out, resourceOperationToProto(op))
 	}
-	return connect.NewResponse(&neoboxv1.ListCloudflareResourceOperationsResponse{Operations: out, PageInfo: pageInfoOf(page, size, total)}), nil
+	return &neoboxv1.ListCloudflareResourceOperationsResponse{Operations: out, PageInfo: pageInfoOf(page, size, total)}, nil
 }
 
 // --- Workers ---
 
-func (s *CloudflareServiceServer) GetCloudflareWorker(ctx context.Context, req *connect.Request[neoboxv1.GetCloudflareWorkerRequest]) (*connect.Response[neoboxv1.GetCloudflareWorkerResponse], error) {
-	_, a, err := s.openAccount(ctx, req.Msg.GetConnectionId())
+func (s *CloudflareServiceServer) GetCloudflareWorker(ctx context.Context, req *neoboxv1.GetCloudflareWorkerRequest) (*neoboxv1.GetCloudflareWorkerResponse, error) {
+	_, a, err := s.openAccount(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	w, err := a.Worker(ctx, strings.TrimSpace(req.Msg.GetName()))
+	w, err := a.Worker(ctx, strings.TrimSpace(req.GetName()))
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
 	out := &neoboxv1.GetCloudflareWorkerResponse{
 		Name: w.Name, WorkersDevSubdomain: w.Subdomain, Issues: readIssuesToProto(w.Issues),
@@ -182,119 +181,119 @@ func (s *CloudflareServiceServer) GetCloudflareWorker(ctx context.Context, req *
 		}
 		out.Versions = append(out.Versions, pv)
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }
 
 func trim(s string) string { return strings.TrimSpace(s) }
 
-func (s *CloudflareServiceServer) SetCloudflareWorkerWorkersDev(ctx context.Context, req *connect.Request[neoboxv1.SetCloudflareWorkerWorkersDevRequest]) (*connect.Response[neoboxv1.SetCloudflareWorkerWorkersDevResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.SetWorkersDev(ctx, actor, trim(req.Msg.GetName()), req.Msg.GetEnabled())
+func (s *CloudflareServiceServer) SetCloudflareWorkerWorkersDev(ctx context.Context, req *neoboxv1.SetCloudflareWorkerWorkersDevRequest) (*neoboxv1.SetCloudflareWorkerWorkersDevResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.SetWorkersDev(ctx, actor, trim(req.GetName()), req.GetEnabled())
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.SetCloudflareWorkerWorkersDevResponse{Result: r}), nil
+	return &neoboxv1.SetCloudflareWorkerWorkersDevResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) AttachCloudflareWorkerDomain(ctx context.Context, req *connect.Request[neoboxv1.AttachCloudflareWorkerDomainRequest]) (*connect.Response[neoboxv1.AttachCloudflareWorkerDomainResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.AttachWorkerDomain(ctx, actor, trim(req.Msg.GetName()), req.Msg.GetHostname())
+func (s *CloudflareServiceServer) AttachCloudflareWorkerDomain(ctx context.Context, req *neoboxv1.AttachCloudflareWorkerDomainRequest) (*neoboxv1.AttachCloudflareWorkerDomainResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.AttachWorkerDomain(ctx, actor, trim(req.GetName()), req.GetHostname())
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.AttachCloudflareWorkerDomainResponse{Result: r}), nil
+	return &neoboxv1.AttachCloudflareWorkerDomainResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) DetachCloudflareWorkerDomain(ctx context.Context, req *connect.Request[neoboxv1.DetachCloudflareWorkerDomainRequest]) (*connect.Response[neoboxv1.DetachCloudflareWorkerDomainResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.DetachWorkerDomain(ctx, actor, trim(req.Msg.GetName()), req.Msg.GetHostname())
+func (s *CloudflareServiceServer) DetachCloudflareWorkerDomain(ctx context.Context, req *neoboxv1.DetachCloudflareWorkerDomainRequest) (*neoboxv1.DetachCloudflareWorkerDomainResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.DetachWorkerDomain(ctx, actor, trim(req.GetName()), req.GetHostname())
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.DetachCloudflareWorkerDomainResponse{Result: r}), nil
+	return &neoboxv1.DetachCloudflareWorkerDomainResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) AddCloudflareWorkerRoute(ctx context.Context, req *connect.Request[neoboxv1.AddCloudflareWorkerRouteRequest]) (*connect.Response[neoboxv1.AddCloudflareWorkerRouteResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.AddWorkerRoute(ctx, actor, trim(req.Msg.GetName()), req.Msg.GetPattern())
+func (s *CloudflareServiceServer) AddCloudflareWorkerRoute(ctx context.Context, req *neoboxv1.AddCloudflareWorkerRouteRequest) (*neoboxv1.AddCloudflareWorkerRouteResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.AddWorkerRoute(ctx, actor, trim(req.GetName()), req.GetPattern())
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.AddCloudflareWorkerRouteResponse{Result: r}), nil
+	return &neoboxv1.AddCloudflareWorkerRouteResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) DeleteCloudflareWorkerRoute(ctx context.Context, req *connect.Request[neoboxv1.DeleteCloudflareWorkerRouteRequest]) (*connect.Response[neoboxv1.DeleteCloudflareWorkerRouteResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.DeleteWorkerRoute(ctx, actor, trim(req.Msg.GetName()), trim(req.Msg.GetZoneId()), trim(req.Msg.GetRouteId()))
+func (s *CloudflareServiceServer) DeleteCloudflareWorkerRoute(ctx context.Context, req *neoboxv1.DeleteCloudflareWorkerRouteRequest) (*neoboxv1.DeleteCloudflareWorkerRouteResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.DeleteWorkerRoute(ctx, actor, trim(req.GetName()), trim(req.GetZoneId()), trim(req.GetRouteId()))
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.DeleteCloudflareWorkerRouteResponse{Result: r}), nil
+	return &neoboxv1.DeleteCloudflareWorkerRouteResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) AddCloudflareWorkerCron(ctx context.Context, req *connect.Request[neoboxv1.AddCloudflareWorkerCronRequest]) (*connect.Response[neoboxv1.AddCloudflareWorkerCronResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.AddWorkerSchedule(ctx, actor, trim(req.Msg.GetName()), req.Msg.GetCron())
+func (s *CloudflareServiceServer) AddCloudflareWorkerCron(ctx context.Context, req *neoboxv1.AddCloudflareWorkerCronRequest) (*neoboxv1.AddCloudflareWorkerCronResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.AddWorkerSchedule(ctx, actor, trim(req.GetName()), req.GetCron())
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.AddCloudflareWorkerCronResponse{Result: r}), nil
+	return &neoboxv1.AddCloudflareWorkerCronResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) DeleteCloudflareWorkerCron(ctx context.Context, req *connect.Request[neoboxv1.DeleteCloudflareWorkerCronRequest]) (*connect.Response[neoboxv1.DeleteCloudflareWorkerCronResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.DeleteWorkerSchedule(ctx, actor, trim(req.Msg.GetName()), req.Msg.GetCron())
+func (s *CloudflareServiceServer) DeleteCloudflareWorkerCron(ctx context.Context, req *neoboxv1.DeleteCloudflareWorkerCronRequest) (*neoboxv1.DeleteCloudflareWorkerCronResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.DeleteWorkerSchedule(ctx, actor, trim(req.GetName()), req.GetCron())
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.DeleteCloudflareWorkerCronResponse{Result: r}), nil
+	return &neoboxv1.DeleteCloudflareWorkerCronResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) PutCloudflareWorkerSecret(ctx context.Context, req *connect.Request[neoboxv1.PutCloudflareWorkerSecretRequest]) (*connect.Response[neoboxv1.PutCloudflareWorkerSecretResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.PutWorkerSecret(ctx, actor, trim(req.Msg.GetName()), trim(req.Msg.GetSecretName()), req.Msg.GetValue())
+func (s *CloudflareServiceServer) PutCloudflareWorkerSecret(ctx context.Context, req *neoboxv1.PutCloudflareWorkerSecretRequest) (*neoboxv1.PutCloudflareWorkerSecretResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.PutWorkerSecret(ctx, actor, trim(req.GetName()), trim(req.GetSecretName()), req.GetValue())
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.PutCloudflareWorkerSecretResponse{Result: r}), nil
+	return &neoboxv1.PutCloudflareWorkerSecretResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) DeleteCloudflareWorkerSecret(ctx context.Context, req *connect.Request[neoboxv1.DeleteCloudflareWorkerSecretRequest]) (*connect.Response[neoboxv1.DeleteCloudflareWorkerSecretResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.DeleteWorkerSecret(ctx, actor, trim(req.Msg.GetName()), trim(req.Msg.GetSecretName()))
+func (s *CloudflareServiceServer) DeleteCloudflareWorkerSecret(ctx context.Context, req *neoboxv1.DeleteCloudflareWorkerSecretRequest) (*neoboxv1.DeleteCloudflareWorkerSecretResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.DeleteWorkerSecret(ctx, actor, trim(req.GetName()), trim(req.GetSecretName()))
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.DeleteCloudflareWorkerSecretResponse{Result: r}), nil
+	return &neoboxv1.DeleteCloudflareWorkerSecretResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) RollbackCloudflareWorker(ctx context.Context, req *connect.Request[neoboxv1.RollbackCloudflareWorkerRequest]) (*connect.Response[neoboxv1.RollbackCloudflareWorkerResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.RollbackWorker(ctx, actor, trim(req.Msg.GetName()), req.Msg.GetVersionId())
+func (s *CloudflareServiceServer) RollbackCloudflareWorker(ctx context.Context, req *neoboxv1.RollbackCloudflareWorkerRequest) (*neoboxv1.RollbackCloudflareWorkerResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.RollbackWorker(ctx, actor, trim(req.GetName()), req.GetVersionId())
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.RollbackCloudflareWorkerResponse{Result: r}), nil
+	return &neoboxv1.RollbackCloudflareWorkerResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) DeleteCloudflareWorker(ctx context.Context, req *connect.Request[neoboxv1.DeleteCloudflareWorkerRequest]) (*connect.Response[neoboxv1.DeleteCloudflareWorkerResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.DeleteWorker(ctx, actor, trim(req.Msg.GetName()))
+func (s *CloudflareServiceServer) DeleteCloudflareWorker(ctx context.Context, req *neoboxv1.DeleteCloudflareWorkerRequest) (*neoboxv1.DeleteCloudflareWorkerResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.DeleteWorker(ctx, actor, trim(req.GetName()))
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.DeleteCloudflareWorkerResponse{Result: r}), nil
+	return &neoboxv1.DeleteCloudflareWorkerResponse{Result: r}, nil
 }
 
 // --- Pages ---
@@ -311,7 +310,7 @@ func pagesEnvToProto(e string) neoboxv1.CloudflarePagesEnvironment {
 
 // pagesEnvFromProto turns the enum into the environment name, "" for
 // unspecified and an InvalidArgument for a value that does not exist.
-func pagesEnvFromProto(e neoboxv1.CloudflarePagesEnvironment) (string, error) {
+func pagesEnvFromProto(ctx context.Context, e neoboxv1.CloudflarePagesEnvironment) (string, error) {
 	switch e {
 	case neoboxv1.CloudflarePagesEnvironment_CLOUDFLARE_PAGES_ENVIRONMENT_UNSPECIFIED:
 		return "", nil
@@ -320,14 +319,14 @@ func pagesEnvFromProto(e neoboxv1.CloudflarePagesEnvironment) (string, error) {
 	case neoboxv1.CloudflarePagesEnvironment_CLOUDFLARE_PAGES_ENVIRONMENT_PREVIEW:
 		return cloudflareacct.PagesPreview, nil
 	}
-	return "", connectx.InvalidArgument("environment", "must be production or preview")
+	return "", connectx.InvalidArgument(ctx, "environment", "must be production or preview")
 }
 
 // requiredPagesEnv is pagesEnvFromProto for requests that need one.
-func requiredPagesEnv(e neoboxv1.CloudflarePagesEnvironment) (string, error) {
-	env, err := pagesEnvFromProto(e)
+func requiredPagesEnv(ctx context.Context, e neoboxv1.CloudflarePagesEnvironment) (string, error) {
+	env, err := pagesEnvFromProto(ctx, e)
 	if err == nil && env == "" {
-		err = connectx.InvalidArgument("environment", "is required")
+		err = connectx.InvalidArgument(ctx, "environment", "is required")
 	}
 	return env, err
 }
@@ -350,14 +349,14 @@ func envVarsToProto(vars map[string]*cloudflare.PagesEnvVar) []*neoboxv1.Cloudfl
 	return out
 }
 
-func (s *CloudflareServiceServer) GetCloudflarePagesProject(ctx context.Context, req *connect.Request[neoboxv1.GetCloudflarePagesProjectRequest]) (*connect.Response[neoboxv1.GetCloudflarePagesProjectResponse], error) {
-	_, a, err := s.openAccount(ctx, req.Msg.GetConnectionId())
+func (s *CloudflareServiceServer) GetCloudflarePagesProject(ctx context.Context, req *neoboxv1.GetCloudflarePagesProjectRequest) (*neoboxv1.GetCloudflarePagesProjectResponse, error) {
+	_, a, err := s.openAccount(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	d, err := a.PagesProjectDetail(ctx, trim(req.Msg.GetName()))
+	d, err := a.PagesProjectDetail(ctx, trim(req.GetName()))
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
 	p := d.Project
 	out := &neoboxv1.GetCloudflarePagesProjectResponse{
@@ -380,7 +379,7 @@ func (s *CloudflareServiceServer) GetCloudflarePagesProject(ctx context.Context,
 	for _, dom := range d.Domains {
 		out.Domains = append(out.Domains, &neoboxv1.CloudflarePagesDomain{Name: dom.Name, Status: dom.Status})
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }
 
 func deploymentToProto(d *cloudflare.PagesDeployment) *neoboxv1.CloudflarePagesDeployment {
@@ -395,39 +394,39 @@ func deploymentToProto(d *cloudflare.PagesDeployment) *neoboxv1.CloudflarePagesD
 	return out
 }
 
-func (s *CloudflareServiceServer) ListCloudflarePagesDeployments(ctx context.Context, req *connect.Request[neoboxv1.ListCloudflarePagesDeploymentsRequest]) (*connect.Response[neoboxv1.ListCloudflarePagesDeploymentsResponse], error) {
-	env, err := pagesEnvFromProto(req.Msg.GetEnvironment())
+func (s *CloudflareServiceServer) ListCloudflarePagesDeployments(ctx context.Context, req *neoboxv1.ListCloudflarePagesDeploymentsRequest) (*neoboxv1.ListCloudflarePagesDeploymentsResponse, error) {
+	env, err := pagesEnvFromProto(ctx, req.GetEnvironment())
 	if err != nil {
 		return nil, err
 	}
-	_, a, err := s.openAccount(ctx, req.Msg.GetConnectionId())
+	_, a, err := s.openAccount(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	page, size := pageArgs(req.Msg.GetPage(), req.Msg.GetPageSize(), defaultDeploymentListSize, 1, maxOperationsSize)
-	list, info, err := a.PagesDeployments(ctx, trim(req.Msg.GetName()), env, page, size)
+	page, size := pageArgs(req.GetPage(), req.GetPageSize(), defaultDeploymentListSize, 1, maxOperationsSize)
+	list, info, err := a.PagesDeployments(ctx, trim(req.GetName()), env, page, size)
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
 	out := &neoboxv1.ListCloudflarePagesDeploymentsResponse{PageInfo: cfPageInfoToProto(info, page, size)}
 	for i := range list {
 		out.Deployments = append(out.Deployments, deploymentToProto(&list[i]))
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }
 
-func (s *CloudflareServiceServer) CreateCloudflarePagesProject(ctx context.Context, req *connect.Request[neoboxv1.CreateCloudflarePagesProjectRequest]) (*connect.Response[neoboxv1.CreateCloudflarePagesProjectResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.CreatePagesProject(ctx, actor, req.Msg.GetName(), req.Msg.GetProductionBranch())
+func (s *CloudflareServiceServer) CreateCloudflarePagesProject(ctx context.Context, req *neoboxv1.CreateCloudflarePagesProjectRequest) (*neoboxv1.CreateCloudflarePagesProjectResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.CreatePagesProject(ctx, actor, req.GetName(), req.GetProductionBranch())
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.CreateCloudflarePagesProjectResponse{Result: r}), nil
+	return &neoboxv1.CreateCloudflarePagesProjectResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) UpdateCloudflarePagesProject(ctx context.Context, req *connect.Request[neoboxv1.UpdateCloudflarePagesProjectRequest]) (*connect.Response[neoboxv1.UpdateCloudflarePagesProjectResponse], error) {
-	m := req.Msg
+func (s *CloudflareServiceServer) UpdateCloudflarePagesProject(ctx context.Context, req *neoboxv1.UpdateCloudflarePagesProjectRequest) (*neoboxv1.UpdateCloudflarePagesProjectResponse, error) {
+	m := req
 	r, err := s.change(ctx, m.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
 		return a.UpdatePagesProject(ctx, actor, trim(m.GetName()), cloudflareacct.PagesProjectUpdate{
 			ProductionBranch: m.ProductionBranch, BuildCommand: m.BuildCommand, DestinationDir: m.DestinationDir, RootDir: m.RootDir,
@@ -436,101 +435,101 @@ func (s *CloudflareServiceServer) UpdateCloudflarePagesProject(ctx context.Conte
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.UpdateCloudflarePagesProjectResponse{Result: r}), nil
+	return &neoboxv1.UpdateCloudflarePagesProjectResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) DeleteCloudflarePagesProject(ctx context.Context, req *connect.Request[neoboxv1.DeleteCloudflarePagesProjectRequest]) (*connect.Response[neoboxv1.DeleteCloudflarePagesProjectResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.DeletePagesProject(ctx, actor, trim(req.Msg.GetName()))
+func (s *CloudflareServiceServer) DeleteCloudflarePagesProject(ctx context.Context, req *neoboxv1.DeleteCloudflarePagesProjectRequest) (*neoboxv1.DeleteCloudflarePagesProjectResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.DeletePagesProject(ctx, actor, trim(req.GetName()))
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.DeleteCloudflarePagesProjectResponse{Result: r}), nil
+	return &neoboxv1.DeleteCloudflarePagesProjectResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) RetryCloudflarePagesDeployment(ctx context.Context, req *connect.Request[neoboxv1.RetryCloudflarePagesDeploymentRequest]) (*connect.Response[neoboxv1.RetryCloudflarePagesDeploymentResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.RetryPagesDeployment(ctx, actor, trim(req.Msg.GetName()), trim(req.Msg.GetDeploymentId()))
+func (s *CloudflareServiceServer) RetryCloudflarePagesDeployment(ctx context.Context, req *neoboxv1.RetryCloudflarePagesDeploymentRequest) (*neoboxv1.RetryCloudflarePagesDeploymentResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.RetryPagesDeployment(ctx, actor, trim(req.GetName()), trim(req.GetDeploymentId()))
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.RetryCloudflarePagesDeploymentResponse{Result: r}), nil
+	return &neoboxv1.RetryCloudflarePagesDeploymentResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) RollbackCloudflarePagesDeployment(ctx context.Context, req *connect.Request[neoboxv1.RollbackCloudflarePagesDeploymentRequest]) (*connect.Response[neoboxv1.RollbackCloudflarePagesDeploymentResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.RollbackPagesDeployment(ctx, actor, trim(req.Msg.GetName()), trim(req.Msg.GetDeploymentId()))
+func (s *CloudflareServiceServer) RollbackCloudflarePagesDeployment(ctx context.Context, req *neoboxv1.RollbackCloudflarePagesDeploymentRequest) (*neoboxv1.RollbackCloudflarePagesDeploymentResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.RollbackPagesDeployment(ctx, actor, trim(req.GetName()), trim(req.GetDeploymentId()))
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.RollbackCloudflarePagesDeploymentResponse{Result: r}), nil
+	return &neoboxv1.RollbackCloudflarePagesDeploymentResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) DeleteCloudflarePagesDeployment(ctx context.Context, req *connect.Request[neoboxv1.DeleteCloudflarePagesDeploymentRequest]) (*connect.Response[neoboxv1.DeleteCloudflarePagesDeploymentResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.DeletePagesDeployment(ctx, actor, trim(req.Msg.GetName()), trim(req.Msg.GetDeploymentId()))
+func (s *CloudflareServiceServer) DeleteCloudflarePagesDeployment(ctx context.Context, req *neoboxv1.DeleteCloudflarePagesDeploymentRequest) (*neoboxv1.DeleteCloudflarePagesDeploymentResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.DeletePagesDeployment(ctx, actor, trim(req.GetName()), trim(req.GetDeploymentId()))
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.DeleteCloudflarePagesDeploymentResponse{Result: r}), nil
+	return &neoboxv1.DeleteCloudflarePagesDeploymentResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) AddCloudflarePagesDomain(ctx context.Context, req *connect.Request[neoboxv1.AddCloudflarePagesDomainRequest]) (*connect.Response[neoboxv1.AddCloudflarePagesDomainResponse], error) {
-	d, a, err := s.openAccount(ctx, req.Msg.GetConnectionId())
+func (s *CloudflareServiceServer) AddCloudflarePagesDomain(ctx context.Context, req *neoboxv1.AddCloudflarePagesDomainRequest) (*neoboxv1.AddCloudflarePagesDomainResponse, error) {
+	d, a, err := s.openAccount(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	res, err := a.AddPagesDomain(ctx, d.user, trim(req.Msg.GetName()), req.Msg.GetHostname(), req.Msg.GetCreateDns())
+	res, err := a.AddPagesDomain(ctx, d.user, trim(req.GetName()), req.GetHostname(), req.GetCreateDns())
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
 	dns := cloudflareacct.RecordResult{Status: cloudflareacct.RecordNotRequested}
 	if res.DNS != nil {
 		dns = *res.DNS
 	}
-	return connect.NewResponse(&neoboxv1.AddCloudflarePagesDomainResponse{
+	return &neoboxv1.AddCloudflarePagesDomainResponse{
 		Result: changeResultToProto(res.OperationResult), Record: recordResultToProto(dns),
-	}), nil
+	}, nil
 }
 
-func (s *CloudflareServiceServer) DeleteCloudflarePagesDomain(ctx context.Context, req *connect.Request[neoboxv1.DeleteCloudflarePagesDomainRequest]) (*connect.Response[neoboxv1.DeleteCloudflarePagesDomainResponse], error) {
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.DeletePagesDomain(ctx, actor, trim(req.Msg.GetName()), req.Msg.GetHostname())
+func (s *CloudflareServiceServer) DeleteCloudflarePagesDomain(ctx context.Context, req *neoboxv1.DeleteCloudflarePagesDomainRequest) (*neoboxv1.DeleteCloudflarePagesDomainResponse, error) {
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.DeletePagesDomain(ctx, actor, trim(req.GetName()), req.GetHostname())
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.DeleteCloudflarePagesDomainResponse{Result: r}), nil
+	return &neoboxv1.DeleteCloudflarePagesDomainResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) SetCloudflarePagesEnvVar(ctx context.Context, req *connect.Request[neoboxv1.SetCloudflarePagesEnvVarRequest]) (*connect.Response[neoboxv1.SetCloudflarePagesEnvVarResponse], error) {
-	env, err := requiredPagesEnv(req.Msg.GetEnvironment())
+func (s *CloudflareServiceServer) SetCloudflarePagesEnvVar(ctx context.Context, req *neoboxv1.SetCloudflarePagesEnvVarRequest) (*neoboxv1.SetCloudflarePagesEnvVarResponse, error) {
+	env, err := requiredPagesEnv(ctx, req.GetEnvironment())
 	if err != nil {
 		return nil, err
 	}
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.SetPagesEnvVar(ctx, actor, trim(req.Msg.GetName()), env, trim(req.Msg.GetVarName()), req.Msg.GetValue(), req.Msg.GetSecret())
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.SetPagesEnvVar(ctx, actor, trim(req.GetName()), env, trim(req.GetVarName()), req.GetValue(), req.GetSecret())
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.SetCloudflarePagesEnvVarResponse{Result: r}), nil
+	return &neoboxv1.SetCloudflarePagesEnvVarResponse{Result: r}, nil
 }
 
-func (s *CloudflareServiceServer) DeleteCloudflarePagesEnvVar(ctx context.Context, req *connect.Request[neoboxv1.DeleteCloudflarePagesEnvVarRequest]) (*connect.Response[neoboxv1.DeleteCloudflarePagesEnvVarResponse], error) {
-	env, err := requiredPagesEnv(req.Msg.GetEnvironment())
+func (s *CloudflareServiceServer) DeleteCloudflarePagesEnvVar(ctx context.Context, req *neoboxv1.DeleteCloudflarePagesEnvVarRequest) (*neoboxv1.DeleteCloudflarePagesEnvVarResponse, error) {
+	env, err := requiredPagesEnv(ctx, req.GetEnvironment())
 	if err != nil {
 		return nil, err
 	}
-	r, err := s.change(ctx, req.Msg.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
-		return a.DeletePagesEnvVar(ctx, actor, trim(req.Msg.GetName()), env, trim(req.Msg.GetVarName()))
+	r, err := s.change(ctx, req.GetConnectionId(), func(a *cloudflareacct.Account, actor cloudflareacct.Actor) (*cloudflareacct.OperationResult, error) {
+		return a.DeletePagesEnvVar(ctx, actor, trim(req.GetName()), env, trim(req.GetVarName()))
 	})
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&neoboxv1.DeleteCloudflarePagesEnvVarResponse{Result: r}), nil
+	return &neoboxv1.DeleteCloudflarePagesEnvVarResponse{Result: r}, nil
 }

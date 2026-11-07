@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"connectrpc.com/connect"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	"go.orx.me/apps/neo-box/internal/transport/connectx"
 	neoboxv1 "go.orx.me/apps/neo-box/pkg/proto/neobox/v1"
@@ -21,20 +20,20 @@ const (
 // ListWorkspaceStorageUsage shows every user's storage against the quota Google
 // reports. Read-only: it does not set limits (Google has no API for that), and
 // reads aggregate reports and the Directory only, so nothing is logged.
-func (s *GoogleWorkspaceServiceServer) ListWorkspaceStorageUsage(ctx context.Context, req *connect.Request[neoboxv1.ListWorkspaceStorageUsageRequest]) (*connect.Response[neoboxv1.ListWorkspaceStorageUsageResponse], error) {
-	in := req.Msg
+func (s *GoogleWorkspaceServiceServer) ListWorkspaceStorageUsage(ctx context.Context, req *neoboxv1.ListWorkspaceStorageUsageRequest) (*neoboxv1.ListWorkspaceStorageUsageResponse, error) {
+	in := req
 	sortBy := strings.TrimSpace(in.GetSort())
 	switch sortBy {
 	case "", "used", "percent", "email":
 	default:
-		return nil, connectx.InvalidArgument("sort", "must be used, percent or email")
+		return nil, connectx.InvalidArgument(ctx, "sort", "must be used, percent or email")
 	}
 	threshold := int(in.GetThresholdPercent())
 	if threshold == 0 {
 		threshold = defaultStorageThreshold
 	}
 	if threshold < 1 || threshold > 100 {
-		return nil, connectx.InvalidArgument("threshold_percent", "must be between 1 and 100")
+		return nil, connectx.InvalidArgument(ctx, "threshold_percent", "must be between 1 and 100")
 	}
 	d, t, api, err := s.open(ctx, in.GetConnectionId(), in.GetTenantId(), googleworkspace.UsageScope)
 	if err != nil {
@@ -46,10 +45,10 @@ func (s *GoogleWorkspaceServiceServer) ListWorkspaceStorageUsage(ctx context.Con
 	defer cancel()
 	usage, err := api.ListStorageUsage(usageCtx, time.Now().UTC())
 	if errors.Is(err, googleworkspace.ErrNoUsageData) {
-		return connect.NewResponse(&neoboxv1.ListWorkspaceStorageUsageResponse{Page: int32(page), PageSize: int32(size), ThresholdPercent: int32(threshold)}), nil
+		return &neoboxv1.ListWorkspaceStorageUsageResponse{Page: int32(page), PageSize: int32(size), ThresholdPercent: int32(threshold)}, nil
 	}
 	if err != nil {
-		return nil, mapWorkspaceFeatureErr(err, googleworkspace.UsageScope)
+		return nil, mapWorkspaceFeatureErr(ctx, err, googleworkspace.UsageScope)
 	}
 
 	// Units come from the Directory. If that read fails the storage figures are
@@ -106,7 +105,7 @@ func (s *GoogleWorkspaceServiceServer) ListWorkspaceStorageUsage(ctx context.Con
 			GmailMb: r.GmailMB, DriveMb: r.DriveMB, PhotosMb: r.PhotosMB, UsedMb: r.Used(), QuotaMb: r.Quota(), UsedPercent: r.Percent(),
 		})
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }
 
 func joinReasons(a, b string) string {

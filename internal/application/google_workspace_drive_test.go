@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	neoboxv1 "go.orx.me/apps/neo-box/pkg/proto/neobox/v1"
 )
@@ -53,11 +53,11 @@ func TestDriveActivitiesUseOnlyTheAuditScopeAndMapPresetsToGoogleFilters(t *test
 		fmt.Fprint(w, driveAudit(driveEvent("change_document_visibility", true, `,{"name":"visibility_change","value":"external"}`), driveEvent("change_user_access", false, "")))
 	})
 	call := func(preset string, side bool) *neoboxv1.ListWorkspaceDriveActivitiesResponse {
-		res, err := f.srv.ListWorkspaceDriveActivities(asUser("owner"), connect.NewRequest(&neoboxv1.ListWorkspaceDriveActivitiesRequest{ConnectionId: f.conn, TenantId: "a", Preset: preset, IncludeSideEffects: side}))
+		res, err := f.srv.ListWorkspaceDriveActivities(asUser("owner"), &neoboxv1.ListWorkspaceDriveActivitiesRequest{ConnectionId: f.conn, TenantId: "a", Preset: preset, IncludeSideEffects: side})
 		if err != nil {
 			t.Fatal(err)
 		}
-		return res.Msg
+		return res
 	}
 	res := call("public_web", false)
 	if len(f.opened) != 1 || len(f.opened[0]) != 1 || f.opened[0][0] != googleworkspace.AuditScope {
@@ -89,8 +89,8 @@ func TestDriveActivityDropsAnActivityWhoseEventsAreAllSideEffects(t *testing.T) 
 	f := newDriveFixture(t, func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprint(w, driveAudit(driveEvent("change_user_access", false, "")))
 	})
-	res, err := f.srv.ListWorkspaceDriveActivities(asUser("owner"), connect.NewRequest(&neoboxv1.ListWorkspaceDriveActivitiesRequest{ConnectionId: f.conn, TenantId: "a"}))
-	if err != nil || len(res.Msg.Activities) != 0 || res.Msg.HiddenEventCount != 1 {
+	res, err := f.srv.ListWorkspaceDriveActivities(asUser("owner"), &neoboxv1.ListWorkspaceDriveActivitiesRequest{ConnectionId: f.conn, TenantId: "a"})
+	if err != nil || len(res.Activities) != 0 || res.HiddenEventCount != 1 {
 		t.Fatalf("res=%v err=%v", res, err)
 	}
 }
@@ -98,23 +98,23 @@ func TestDriveActivityDropsAnActivityWhoseEventsAreAllSideEffects(t *testing.T) 
 func TestDriveRequestsAreRejectedBeforeGoogleIsReached(t *testing.T) {
 	f := newDriveFixture(t, func(http.ResponseWriter, *http.Request) {})
 	ctx := asUser("owner")
-	if _, err := f.srv.ListWorkspaceDriveActivities(ctx, connect.NewRequest(&neoboxv1.ListWorkspaceDriveActivitiesRequest{ConnectionId: f.conn, TenantId: "a", Preset: "everything"})); connect.CodeOf(err) != connect.CodeInvalidArgument {
+	if _, err := f.srv.ListWorkspaceDriveActivities(ctx, &neoboxv1.ListWorkspaceDriveActivitiesRequest{ConnectionId: f.conn, TenantId: "a", Preset: "everything"}); connect.CodeOf(err) != connect.CodeInvalidArgument {
 		t.Fatalf("preset=%v", err)
 	}
-	if _, err := f.srv.ListWorkspaceDriveActivities(ctx, connect.NewRequest(&neoboxv1.ListWorkspaceDriveActivitiesRequest{ConnectionId: f.conn, TenantId: "a", StartTime: "2020-01-01T00:00:00Z"})); connect.CodeOf(err) != connect.CodeInvalidArgument {
+	if _, err := f.srv.ListWorkspaceDriveActivities(ctx, &neoboxv1.ListWorkspaceDriveActivitiesRequest{ConnectionId: f.conn, TenantId: "a", StartTime: "2020-01-01T00:00:00Z"}); connect.CodeOf(err) != connect.CodeInvalidArgument {
 		t.Fatalf("window=%v", err)
 	}
-	if _, err := f.srv.ListWorkspaceDriveUsage(ctx, connect.NewRequest(&neoboxv1.ListWorkspaceDriveUsageRequest{ConnectionId: f.conn, TenantId: "a", Sort: "random"})); connect.CodeOf(err) != connect.CodeInvalidArgument {
+	if _, err := f.srv.ListWorkspaceDriveUsage(ctx, &neoboxv1.ListWorkspaceDriveUsageRequest{ConnectionId: f.conn, TenantId: "a", Sort: "random"}); connect.CodeOf(err) != connect.CodeInvalidArgument {
 		t.Fatalf("sort=%v", err)
 	}
 	for _, other := range []struct {
 		ctx    context.Context
 		tenant string
 	}{{asUser("other"), "a"}, {ctx, "foreign"}} {
-		if _, err := f.srv.ListWorkspaceDriveActivities(other.ctx, connect.NewRequest(&neoboxv1.ListWorkspaceDriveActivitiesRequest{ConnectionId: f.conn, TenantId: other.tenant})); connect.CodeOf(err) != connect.CodeNotFound {
+		if _, err := f.srv.ListWorkspaceDriveActivities(other.ctx, &neoboxv1.ListWorkspaceDriveActivitiesRequest{ConnectionId: f.conn, TenantId: other.tenant}); connect.CodeOf(err) != connect.CodeNotFound {
 			t.Fatalf("activities %s=%v", other.tenant, err)
 		}
-		if _, err := f.srv.ListWorkspaceDriveUsage(other.ctx, connect.NewRequest(&neoboxv1.ListWorkspaceDriveUsageRequest{ConnectionId: f.conn, TenantId: other.tenant})); connect.CodeOf(err) != connect.CodeNotFound {
+		if _, err := f.srv.ListWorkspaceDriveUsage(other.ctx, &neoboxv1.ListWorkspaceDriveUsageRequest{ConnectionId: f.conn, TenantId: other.tenant}); connect.CodeOf(err) != connect.CodeNotFound {
 			t.Fatalf("usage %s=%v", other.tenant, err)
 		}
 	}
@@ -139,11 +139,11 @@ func TestDriveUsageRanksPagesAndKeepsUnknownUnknown(t *testing.T) {
 		fmt.Fprintf(w, `{"usageReports":[%s,%s,%s,%s]}`, usageRow("small@a.example", "100", "1000"), usageRow("big@a.example", "900", "1000"), usageRow("none@a.example", "", "1000"), usageRow("free@a.example", "50", "0"))
 	})
 	read := func(q, sortBy string, page, size int32) *neoboxv1.ListWorkspaceDriveUsageResponse {
-		res, err := f.srv.ListWorkspaceDriveUsage(asUser("owner"), connect.NewRequest(&neoboxv1.ListWorkspaceDriveUsageRequest{ConnectionId: f.conn, TenantId: "a", Query: q, Sort: sortBy, Page: page, PageSize: size}))
+		res, err := f.srv.ListWorkspaceDriveUsage(asUser("owner"), &neoboxv1.ListWorkspaceDriveUsageRequest{ConnectionId: f.conn, TenantId: "a", Query: q, Sort: sortBy, Page: page, PageSize: size})
 		if err != nil {
 			t.Fatal(err)
 		}
-		return res.Msg
+		return res
 	}
 	res := read("", "", 1, 3)
 	if len(f.opened) != 1 || len(f.opened[0]) != 1 || f.opened[0][0] != googleworkspace.UsageScope {
@@ -179,8 +179,8 @@ func TestDriveUsageRanksPagesAndKeepsUnknownUnknown(t *testing.T) {
 
 func TestDriveUsageWithoutAReportIsNotAnEmptyOrZeroResult(t *testing.T) {
 	f := newDriveFixture(t, func(w http.ResponseWriter, _ *http.Request) { fmt.Fprint(w, `{"usageReports":[]}`) })
-	res, err := f.srv.ListWorkspaceDriveUsage(asUser("owner"), connect.NewRequest(&neoboxv1.ListWorkspaceDriveUsageRequest{ConnectionId: f.conn, TenantId: "a"}))
-	if err != nil || res.Msg.HasData || res.Msg.Date != "" || res.Msg.TotalUsedMb != 0 || len(res.Msg.Users) != 0 {
+	res, err := f.srv.ListWorkspaceDriveUsage(asUser("owner"), &neoboxv1.ListWorkspaceDriveUsageRequest{ConnectionId: f.conn, TenantId: "a"})
+	if err != nil || res.HasData || res.Date != "" || res.TotalUsedMb != 0 || len(res.Users) != 0 {
 		t.Fatalf("res=%v err=%v", res, err)
 	}
 }
@@ -191,11 +191,11 @@ func TestDriveMissingScopeIsReportedBesideTheViewWithoutChangingTenantHealth(t *
 		return &googleworkspace.Client{HTTP: &http.Client{Transport: roundTripperFunc(func(*http.Request) (*http.Response, error) { return nil, googleworkspace.ErrDelegation })}, Endpoint: "http://invalid", ReportsEndpoint: "http://invalid", CustomerID: "Ca", AdminEmail: "admin@a.example"}, nil
 	}
 	before := f.rows.rows["a"].Status
-	_, err := f.srv.ListWorkspaceDriveUsage(asUser("owner"), connect.NewRequest(&neoboxv1.ListWorkspaceDriveUsageRequest{ConnectionId: f.conn, TenantId: "a"}))
+	_, err := f.srv.ListWorkspaceDriveUsage(asUser("owner"), &neoboxv1.ListWorkspaceDriveUsageRequest{ConnectionId: f.conn, TenantId: "a"})
 	if connect.CodeOf(err) != connect.CodeFailedPrecondition || !strings.Contains(err.Error(), googleworkspace.UsageScope) {
 		t.Fatalf("usage err=%v", err)
 	}
-	_, err = f.srv.ListWorkspaceDriveActivities(asUser("owner"), connect.NewRequest(&neoboxv1.ListWorkspaceDriveActivitiesRequest{ConnectionId: f.conn, TenantId: "a"}))
+	_, err = f.srv.ListWorkspaceDriveActivities(asUser("owner"), &neoboxv1.ListWorkspaceDriveActivitiesRequest{ConnectionId: f.conn, TenantId: "a"})
 	if connect.CodeOf(err) != connect.CodeFailedPrecondition || !strings.Contains(err.Error(), googleworkspace.AuditScope) {
 		t.Fatalf("activity err=%v", err)
 	}

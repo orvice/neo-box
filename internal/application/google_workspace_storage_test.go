@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	neoboxv1 "go.orx.me/apps/neo-box/pkg/proto/neobox/v1"
 )
@@ -46,11 +46,11 @@ func storageHandler(directoryFails bool) http.HandlerFunc {
 
 func TestStorageUsageSummarisesUsersAndOrgUnitsAgainstTheReportedQuota(t *testing.T) {
 	f := newDriveFixture(t, storageHandler(false))
-	res, err := f.srv.ListWorkspaceStorageUsage(asUser("owner"), connect.NewRequest(&neoboxv1.ListWorkspaceStorageUsageRequest{ConnectionId: f.conn, TenantId: "a"}))
+	res, err := f.srv.ListWorkspaceStorageUsage(asUser("owner"), &neoboxv1.ListWorkspaceStorageUsageRequest{ConnectionId: f.conn, TenantId: "a"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	m := res.Msg
+	m := res
 	if !m.HasData || m.UsersRead != 4 || m.TotalCount != 4 || m.ThresholdPercent != 80 || m.TotalUsedMb != 3000 {
 		t.Fatalf("res=%v", m)
 	}
@@ -79,11 +79,11 @@ func TestStorageUsageFiltersSortsAndPagesButSummarisesEveryone(t *testing.T) {
 	f := newDriveFixture(t, storageHandler(false))
 	call := func(r *neoboxv1.ListWorkspaceStorageUsageRequest) *neoboxv1.ListWorkspaceStorageUsageResponse {
 		r.ConnectionId, r.TenantId = f.conn, "a"
-		res, err := f.srv.ListWorkspaceStorageUsage(asUser("owner"), connect.NewRequest(r))
+		res, err := f.srv.ListWorkspaceStorageUsage(asUser("owner"), r)
 		if err != nil {
 			t.Fatal(err)
 		}
-		return res.Msg
+		return res
 	}
 	m := call(&neoboxv1.ListWorkspaceStorageUsageRequest{OrgUnitPath: "/Sales", Sort: "percent"})
 	if m.TotalCount != 2 || m.Users[0].Email != "ada@a.example" || len(m.OrgUnits) != 2 || m.UsersRead != 4 {
@@ -104,11 +104,11 @@ func TestStorageUsageFiltersSortsAndPagesButSummarisesEveryone(t *testing.T) {
 
 func TestStorageUsageSaysSoWhenTheDirectoryCannotBeReadInsteadOfHidingTheFigures(t *testing.T) {
 	f := newDriveFixture(t, storageHandler(true))
-	res, err := f.srv.ListWorkspaceStorageUsage(asUser("owner"), connect.NewRequest(&neoboxv1.ListWorkspaceStorageUsageRequest{ConnectionId: f.conn, TenantId: "a"}))
+	res, err := f.srv.ListWorkspaceStorageUsage(asUser("owner"), &neoboxv1.ListWorkspaceStorageUsageRequest{ConnectionId: f.conn, TenantId: "a"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	m := res.Msg
+	m := res
 	if !m.Partial || m.PartialReason == "" || m.UsersRead != 4 || m.Users[0].OrgUnitPath != "" || len(m.OrgUnits) != 1 {
 		t.Fatalf("res=%v", m)
 	}
@@ -116,8 +116,8 @@ func TestStorageUsageSaysSoWhenTheDirectoryCannotBeReadInsteadOfHidingTheFigures
 
 func TestStorageUsageWithoutAReportIsNoDataNotZero(t *testing.T) {
 	f := newDriveFixture(t, func(w http.ResponseWriter, _ *http.Request) { fmt.Fprint(w, `{"usageReports":[]}`) })
-	res, err := f.srv.ListWorkspaceStorageUsage(asUser("owner"), connect.NewRequest(&neoboxv1.ListWorkspaceStorageUsageRequest{ConnectionId: f.conn, TenantId: "a"}))
-	if err != nil || res.Msg.HasData || res.Msg.TotalUsedMb != 0 {
+	res, err := f.srv.ListWorkspaceStorageUsage(asUser("owner"), &neoboxv1.ListWorkspaceStorageUsageRequest{ConnectionId: f.conn, TenantId: "a"})
+	if err != nil || res.HasData || res.TotalUsedMb != 0 {
 		t.Fatalf("res=%v err=%v", res, err)
 	}
 }
@@ -126,7 +126,7 @@ func TestStorageUsageRequestsAreRejectedBeforeGoogleIsReached(t *testing.T) {
 	f := newDriveFixture(t, storageHandler(false))
 	call := func(user, tenant string, r *neoboxv1.ListWorkspaceStorageUsageRequest) error {
 		r.ConnectionId, r.TenantId = f.conn, tenant
-		_, err := f.srv.ListWorkspaceStorageUsage(asUser(user), connect.NewRequest(r))
+		_, err := f.srv.ListWorkspaceStorageUsage(asUser(user), r)
 		return err
 	}
 	if connect.CodeOf(call("owner", "a", &neoboxv1.ListWorkspaceStorageUsageRequest{Sort: "random"})) != connect.CodeInvalidArgument {

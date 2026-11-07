@@ -5,1794 +5,2203 @@
 package neoboxv1connect
 
 import (
-	connect "connectrpc.com/connect"
+	connect "connectrpc.com/connect/v2"
 	context "context"
-	errors "errors"
 	v1 "go.orx.me/apps/neo-box/pkg/proto/neobox/v1"
-	http "net/http"
-	strings "strings"
+	sync "sync"
 )
-
-// This is a compile-time assertion to ensure that this generated file and the connect package are
-// compatible. If you get a compiler error that this constant is not defined, this code was
-// generated with a version of connect newer than the one compiled into your binary. You can fix the
-// problem by either regenerating this code with an older version of connect or updating the connect
-// version compiled into your binary.
-const _ = connect.IsAtLeastVersion1_13_0
 
 const (
 	// CloudflareServiceName is the fully-qualified name of the CloudflareService service.
 	CloudflareServiceName = "neobox.v1.CloudflareService"
 )
 
-// These constants are the fully-qualified names of the RPCs defined in this package. They're
-// exposed at runtime as Spec.Procedure and as the final two segments of the HTTP route.
+// These constants are the procedure names of the RPCs defined in this package. They're exposed at
+// runtime as Spec.Procedure and as the final two segments of the HTTP route.
 //
 // Note that these are different from the fully-qualified method names used by
 // google.golang.org/protobuf/reflect/protoreflect. To convert from these constants to
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// CloudflareServiceListCloudflareZonesProcedure is the fully-qualified name of the
-	// CloudflareService's ListCloudflareZones RPC.
+	// CloudflareServiceListCloudflareZonesProcedure is the procedure name of the CloudflareService's
+	// ListCloudflareZones RPC.
 	CloudflareServiceListCloudflareZonesProcedure = "/neobox.v1.CloudflareService/ListCloudflareZones"
-	// CloudflareServiceGetCloudflareZoneProcedure is the fully-qualified name of the
-	// CloudflareService's GetCloudflareZone RPC.
+	// CloudflareServiceGetCloudflareZoneProcedure is the procedure name of the CloudflareService's
+	// GetCloudflareZone RPC.
 	CloudflareServiceGetCloudflareZoneProcedure = "/neobox.v1.CloudflareService/GetCloudflareZone"
-	// CloudflareServiceListCloudflareDNSRecordsProcedure is the fully-qualified name of the
+	// CloudflareServiceListCloudflareDNSRecordsProcedure is the procedure name of the
 	// CloudflareService's ListCloudflareDNSRecords RPC.
 	CloudflareServiceListCloudflareDNSRecordsProcedure = "/neobox.v1.CloudflareService/ListCloudflareDNSRecords"
-	// CloudflareServiceCreateCloudflareDNSRecordProcedure is the fully-qualified name of the
+	// CloudflareServiceCreateCloudflareDNSRecordProcedure is the procedure name of the
 	// CloudflareService's CreateCloudflareDNSRecord RPC.
 	CloudflareServiceCreateCloudflareDNSRecordProcedure = "/neobox.v1.CloudflareService/CreateCloudflareDNSRecord"
-	// CloudflareServiceUpdateCloudflareDNSRecordProcedure is the fully-qualified name of the
+	// CloudflareServiceUpdateCloudflareDNSRecordProcedure is the procedure name of the
 	// CloudflareService's UpdateCloudflareDNSRecord RPC.
 	CloudflareServiceUpdateCloudflareDNSRecordProcedure = "/neobox.v1.CloudflareService/UpdateCloudflareDNSRecord"
-	// CloudflareServiceSetCloudflareDNSRecordProxiedProcedure is the fully-qualified name of the
+	// CloudflareServiceSetCloudflareDNSRecordProxiedProcedure is the procedure name of the
 	// CloudflareService's SetCloudflareDNSRecordProxied RPC.
 	CloudflareServiceSetCloudflareDNSRecordProxiedProcedure = "/neobox.v1.CloudflareService/SetCloudflareDNSRecordProxied"
-	// CloudflareServiceDeleteCloudflareDNSRecordProcedure is the fully-qualified name of the
+	// CloudflareServiceDeleteCloudflareDNSRecordProcedure is the procedure name of the
 	// CloudflareService's DeleteCloudflareDNSRecord RPC.
 	CloudflareServiceDeleteCloudflareDNSRecordProcedure = "/neobox.v1.CloudflareService/DeleteCloudflareDNSRecord"
-	// CloudflareServiceListCloudflareDNSOperationsProcedure is the fully-qualified name of the
+	// CloudflareServiceListCloudflareDNSOperationsProcedure is the procedure name of the
 	// CloudflareService's ListCloudflareDNSOperations RPC.
 	CloudflareServiceListCloudflareDNSOperationsProcedure = "/neobox.v1.CloudflareService/ListCloudflareDNSOperations"
-	// CloudflareServiceListCloudflareWorkersProcedure is the fully-qualified name of the
-	// CloudflareService's ListCloudflareWorkers RPC.
+	// CloudflareServiceListCloudflareWorkersProcedure is the procedure name of the CloudflareService's
+	// ListCloudflareWorkers RPC.
 	CloudflareServiceListCloudflareWorkersProcedure = "/neobox.v1.CloudflareService/ListCloudflareWorkers"
-	// CloudflareServiceListCloudflarePagesProjectsProcedure is the fully-qualified name of the
+	// CloudflareServiceListCloudflarePagesProjectsProcedure is the procedure name of the
 	// CloudflareService's ListCloudflarePagesProjects RPC.
 	CloudflareServiceListCloudflarePagesProjectsProcedure = "/neobox.v1.CloudflareService/ListCloudflarePagesProjects"
-	// CloudflareServiceListCloudflareTunnelsProcedure is the fully-qualified name of the
-	// CloudflareService's ListCloudflareTunnels RPC.
+	// CloudflareServiceListCloudflareTunnelsProcedure is the procedure name of the CloudflareService's
+	// ListCloudflareTunnels RPC.
 	CloudflareServiceListCloudflareTunnelsProcedure = "/neobox.v1.CloudflareService/ListCloudflareTunnels"
-	// CloudflareServiceGetCloudflareTunnelProcedure is the fully-qualified name of the
-	// CloudflareService's GetCloudflareTunnel RPC.
+	// CloudflareServiceGetCloudflareTunnelProcedure is the procedure name of the CloudflareService's
+	// GetCloudflareTunnel RPC.
 	CloudflareServiceGetCloudflareTunnelProcedure = "/neobox.v1.CloudflareService/GetCloudflareTunnel"
-	// CloudflareServiceCreateCloudflareTunnelProcedure is the fully-qualified name of the
-	// CloudflareService's CreateCloudflareTunnel RPC.
+	// CloudflareServiceCreateCloudflareTunnelProcedure is the procedure name of the CloudflareService's
+	// CreateCloudflareTunnel RPC.
 	CloudflareServiceCreateCloudflareTunnelProcedure = "/neobox.v1.CloudflareService/CreateCloudflareTunnel"
-	// CloudflareServiceDeleteCloudflareTunnelProcedure is the fully-qualified name of the
-	// CloudflareService's DeleteCloudflareTunnel RPC.
+	// CloudflareServiceDeleteCloudflareTunnelProcedure is the procedure name of the CloudflareService's
+	// DeleteCloudflareTunnel RPC.
 	CloudflareServiceDeleteCloudflareTunnelProcedure = "/neobox.v1.CloudflareService/DeleteCloudflareTunnel"
-	// CloudflareServiceGetCloudflareTunnelTokenProcedure is the fully-qualified name of the
+	// CloudflareServiceGetCloudflareTunnelTokenProcedure is the procedure name of the
 	// CloudflareService's GetCloudflareTunnelToken RPC.
 	CloudflareServiceGetCloudflareTunnelTokenProcedure = "/neobox.v1.CloudflareService/GetCloudflareTunnelToken"
-	// CloudflareServiceCleanupCloudflareTunnelConnectionsProcedure is the fully-qualified name of the
+	// CloudflareServiceCleanupCloudflareTunnelConnectionsProcedure is the procedure name of the
 	// CloudflareService's CleanupCloudflareTunnelConnections RPC.
 	CloudflareServiceCleanupCloudflareTunnelConnectionsProcedure = "/neobox.v1.CloudflareService/CleanupCloudflareTunnelConnections"
-	// CloudflareServiceAddCloudflareTunnelHostnameProcedure is the fully-qualified name of the
+	// CloudflareServiceAddCloudflareTunnelHostnameProcedure is the procedure name of the
 	// CloudflareService's AddCloudflareTunnelHostname RPC.
 	CloudflareServiceAddCloudflareTunnelHostnameProcedure = "/neobox.v1.CloudflareService/AddCloudflareTunnelHostname"
-	// CloudflareServiceUpdateCloudflareTunnelHostnameProcedure is the fully-qualified name of the
+	// CloudflareServiceUpdateCloudflareTunnelHostnameProcedure is the procedure name of the
 	// CloudflareService's UpdateCloudflareTunnelHostname RPC.
 	CloudflareServiceUpdateCloudflareTunnelHostnameProcedure = "/neobox.v1.CloudflareService/UpdateCloudflareTunnelHostname"
-	// CloudflareServiceDeleteCloudflareTunnelHostnameProcedure is the fully-qualified name of the
+	// CloudflareServiceDeleteCloudflareTunnelHostnameProcedure is the procedure name of the
 	// CloudflareService's DeleteCloudflareTunnelHostname RPC.
 	CloudflareServiceDeleteCloudflareTunnelHostnameProcedure = "/neobox.v1.CloudflareService/DeleteCloudflareTunnelHostname"
-	// CloudflareServiceGetCloudflareWorkerProcedure is the fully-qualified name of the
-	// CloudflareService's GetCloudflareWorker RPC.
+	// CloudflareServiceGetCloudflareWorkerProcedure is the procedure name of the CloudflareService's
+	// GetCloudflareWorker RPC.
 	CloudflareServiceGetCloudflareWorkerProcedure = "/neobox.v1.CloudflareService/GetCloudflareWorker"
-	// CloudflareServiceSetCloudflareWorkerWorkersDevProcedure is the fully-qualified name of the
+	// CloudflareServiceSetCloudflareWorkerWorkersDevProcedure is the procedure name of the
 	// CloudflareService's SetCloudflareWorkerWorkersDev RPC.
 	CloudflareServiceSetCloudflareWorkerWorkersDevProcedure = "/neobox.v1.CloudflareService/SetCloudflareWorkerWorkersDev"
-	// CloudflareServiceAttachCloudflareWorkerDomainProcedure is the fully-qualified name of the
+	// CloudflareServiceAttachCloudflareWorkerDomainProcedure is the procedure name of the
 	// CloudflareService's AttachCloudflareWorkerDomain RPC.
 	CloudflareServiceAttachCloudflareWorkerDomainProcedure = "/neobox.v1.CloudflareService/AttachCloudflareWorkerDomain"
-	// CloudflareServiceDetachCloudflareWorkerDomainProcedure is the fully-qualified name of the
+	// CloudflareServiceDetachCloudflareWorkerDomainProcedure is the procedure name of the
 	// CloudflareService's DetachCloudflareWorkerDomain RPC.
 	CloudflareServiceDetachCloudflareWorkerDomainProcedure = "/neobox.v1.CloudflareService/DetachCloudflareWorkerDomain"
-	// CloudflareServiceAddCloudflareWorkerRouteProcedure is the fully-qualified name of the
+	// CloudflareServiceAddCloudflareWorkerRouteProcedure is the procedure name of the
 	// CloudflareService's AddCloudflareWorkerRoute RPC.
 	CloudflareServiceAddCloudflareWorkerRouteProcedure = "/neobox.v1.CloudflareService/AddCloudflareWorkerRoute"
-	// CloudflareServiceDeleteCloudflareWorkerRouteProcedure is the fully-qualified name of the
+	// CloudflareServiceDeleteCloudflareWorkerRouteProcedure is the procedure name of the
 	// CloudflareService's DeleteCloudflareWorkerRoute RPC.
 	CloudflareServiceDeleteCloudflareWorkerRouteProcedure = "/neobox.v1.CloudflareService/DeleteCloudflareWorkerRoute"
-	// CloudflareServiceAddCloudflareWorkerCronProcedure is the fully-qualified name of the
+	// CloudflareServiceAddCloudflareWorkerCronProcedure is the procedure name of the
 	// CloudflareService's AddCloudflareWorkerCron RPC.
 	CloudflareServiceAddCloudflareWorkerCronProcedure = "/neobox.v1.CloudflareService/AddCloudflareWorkerCron"
-	// CloudflareServiceDeleteCloudflareWorkerCronProcedure is the fully-qualified name of the
+	// CloudflareServiceDeleteCloudflareWorkerCronProcedure is the procedure name of the
 	// CloudflareService's DeleteCloudflareWorkerCron RPC.
 	CloudflareServiceDeleteCloudflareWorkerCronProcedure = "/neobox.v1.CloudflareService/DeleteCloudflareWorkerCron"
-	// CloudflareServicePutCloudflareWorkerSecretProcedure is the fully-qualified name of the
+	// CloudflareServicePutCloudflareWorkerSecretProcedure is the procedure name of the
 	// CloudflareService's PutCloudflareWorkerSecret RPC.
 	CloudflareServicePutCloudflareWorkerSecretProcedure = "/neobox.v1.CloudflareService/PutCloudflareWorkerSecret"
-	// CloudflareServiceDeleteCloudflareWorkerSecretProcedure is the fully-qualified name of the
+	// CloudflareServiceDeleteCloudflareWorkerSecretProcedure is the procedure name of the
 	// CloudflareService's DeleteCloudflareWorkerSecret RPC.
 	CloudflareServiceDeleteCloudflareWorkerSecretProcedure = "/neobox.v1.CloudflareService/DeleteCloudflareWorkerSecret"
-	// CloudflareServiceRollbackCloudflareWorkerProcedure is the fully-qualified name of the
+	// CloudflareServiceRollbackCloudflareWorkerProcedure is the procedure name of the
 	// CloudflareService's RollbackCloudflareWorker RPC.
 	CloudflareServiceRollbackCloudflareWorkerProcedure = "/neobox.v1.CloudflareService/RollbackCloudflareWorker"
-	// CloudflareServiceDeleteCloudflareWorkerProcedure is the fully-qualified name of the
-	// CloudflareService's DeleteCloudflareWorker RPC.
+	// CloudflareServiceDeleteCloudflareWorkerProcedure is the procedure name of the CloudflareService's
+	// DeleteCloudflareWorker RPC.
 	CloudflareServiceDeleteCloudflareWorkerProcedure = "/neobox.v1.CloudflareService/DeleteCloudflareWorker"
-	// CloudflareServiceGetCloudflarePagesProjectProcedure is the fully-qualified name of the
+	// CloudflareServiceGetCloudflarePagesProjectProcedure is the procedure name of the
 	// CloudflareService's GetCloudflarePagesProject RPC.
 	CloudflareServiceGetCloudflarePagesProjectProcedure = "/neobox.v1.CloudflareService/GetCloudflarePagesProject"
-	// CloudflareServiceListCloudflarePagesDeploymentsProcedure is the fully-qualified name of the
+	// CloudflareServiceListCloudflarePagesDeploymentsProcedure is the procedure name of the
 	// CloudflareService's ListCloudflarePagesDeployments RPC.
 	CloudflareServiceListCloudflarePagesDeploymentsProcedure = "/neobox.v1.CloudflareService/ListCloudflarePagesDeployments"
-	// CloudflareServiceCreateCloudflarePagesProjectProcedure is the fully-qualified name of the
+	// CloudflareServiceCreateCloudflarePagesProjectProcedure is the procedure name of the
 	// CloudflareService's CreateCloudflarePagesProject RPC.
 	CloudflareServiceCreateCloudflarePagesProjectProcedure = "/neobox.v1.CloudflareService/CreateCloudflarePagesProject"
-	// CloudflareServiceUpdateCloudflarePagesProjectProcedure is the fully-qualified name of the
+	// CloudflareServiceUpdateCloudflarePagesProjectProcedure is the procedure name of the
 	// CloudflareService's UpdateCloudflarePagesProject RPC.
 	CloudflareServiceUpdateCloudflarePagesProjectProcedure = "/neobox.v1.CloudflareService/UpdateCloudflarePagesProject"
-	// CloudflareServiceDeleteCloudflarePagesProjectProcedure is the fully-qualified name of the
+	// CloudflareServiceDeleteCloudflarePagesProjectProcedure is the procedure name of the
 	// CloudflareService's DeleteCloudflarePagesProject RPC.
 	CloudflareServiceDeleteCloudflarePagesProjectProcedure = "/neobox.v1.CloudflareService/DeleteCloudflarePagesProject"
-	// CloudflareServiceRetryCloudflarePagesDeploymentProcedure is the fully-qualified name of the
+	// CloudflareServiceRetryCloudflarePagesDeploymentProcedure is the procedure name of the
 	// CloudflareService's RetryCloudflarePagesDeployment RPC.
 	CloudflareServiceRetryCloudflarePagesDeploymentProcedure = "/neobox.v1.CloudflareService/RetryCloudflarePagesDeployment"
-	// CloudflareServiceRollbackCloudflarePagesDeploymentProcedure is the fully-qualified name of the
+	// CloudflareServiceRollbackCloudflarePagesDeploymentProcedure is the procedure name of the
 	// CloudflareService's RollbackCloudflarePagesDeployment RPC.
 	CloudflareServiceRollbackCloudflarePagesDeploymentProcedure = "/neobox.v1.CloudflareService/RollbackCloudflarePagesDeployment"
-	// CloudflareServiceDeleteCloudflarePagesDeploymentProcedure is the fully-qualified name of the
+	// CloudflareServiceDeleteCloudflarePagesDeploymentProcedure is the procedure name of the
 	// CloudflareService's DeleteCloudflarePagesDeployment RPC.
 	CloudflareServiceDeleteCloudflarePagesDeploymentProcedure = "/neobox.v1.CloudflareService/DeleteCloudflarePagesDeployment"
-	// CloudflareServiceAddCloudflarePagesDomainProcedure is the fully-qualified name of the
+	// CloudflareServiceAddCloudflarePagesDomainProcedure is the procedure name of the
 	// CloudflareService's AddCloudflarePagesDomain RPC.
 	CloudflareServiceAddCloudflarePagesDomainProcedure = "/neobox.v1.CloudflareService/AddCloudflarePagesDomain"
-	// CloudflareServiceDeleteCloudflarePagesDomainProcedure is the fully-qualified name of the
+	// CloudflareServiceDeleteCloudflarePagesDomainProcedure is the procedure name of the
 	// CloudflareService's DeleteCloudflarePagesDomain RPC.
 	CloudflareServiceDeleteCloudflarePagesDomainProcedure = "/neobox.v1.CloudflareService/DeleteCloudflarePagesDomain"
-	// CloudflareServiceSetCloudflarePagesEnvVarProcedure is the fully-qualified name of the
+	// CloudflareServiceSetCloudflarePagesEnvVarProcedure is the procedure name of the
 	// CloudflareService's SetCloudflarePagesEnvVar RPC.
 	CloudflareServiceSetCloudflarePagesEnvVarProcedure = "/neobox.v1.CloudflareService/SetCloudflarePagesEnvVar"
-	// CloudflareServiceDeleteCloudflarePagesEnvVarProcedure is the fully-qualified name of the
+	// CloudflareServiceDeleteCloudflarePagesEnvVarProcedure is the procedure name of the
 	// CloudflareService's DeleteCloudflarePagesEnvVar RPC.
 	CloudflareServiceDeleteCloudflarePagesEnvVarProcedure = "/neobox.v1.CloudflareService/DeleteCloudflarePagesEnvVar"
-	// CloudflareServiceListCloudflareResourceOperationsProcedure is the fully-qualified name of the
+	// CloudflareServiceListCloudflareResourceOperationsProcedure is the procedure name of the
 	// CloudflareService's ListCloudflareResourceOperations RPC.
 	CloudflareServiceListCloudflareResourceOperationsProcedure = "/neobox.v1.CloudflareService/ListCloudflareResourceOperations"
-	// CloudflareServiceGetCloudflareEmailRoutingProcedure is the fully-qualified name of the
+	// CloudflareServiceGetCloudflareEmailRoutingProcedure is the procedure name of the
 	// CloudflareService's GetCloudflareEmailRouting RPC.
 	CloudflareServiceGetCloudflareEmailRoutingProcedure = "/neobox.v1.CloudflareService/GetCloudflareEmailRouting"
-	// CloudflareServiceListCloudflareEmailAddressesProcedure is the fully-qualified name of the
+	// CloudflareServiceListCloudflareEmailAddressesProcedure is the procedure name of the
 	// CloudflareService's ListCloudflareEmailAddresses RPC.
 	CloudflareServiceListCloudflareEmailAddressesProcedure = "/neobox.v1.CloudflareService/ListCloudflareEmailAddresses"
-	// CloudflareServiceEnableCloudflareEmailRoutingProcedure is the fully-qualified name of the
+	// CloudflareServiceEnableCloudflareEmailRoutingProcedure is the procedure name of the
 	// CloudflareService's EnableCloudflareEmailRouting RPC.
 	CloudflareServiceEnableCloudflareEmailRoutingProcedure = "/neobox.v1.CloudflareService/EnableCloudflareEmailRouting"
-	// CloudflareServiceCreateCloudflareEmailRuleProcedure is the fully-qualified name of the
+	// CloudflareServiceCreateCloudflareEmailRuleProcedure is the procedure name of the
 	// CloudflareService's CreateCloudflareEmailRule RPC.
 	CloudflareServiceCreateCloudflareEmailRuleProcedure = "/neobox.v1.CloudflareService/CreateCloudflareEmailRule"
-	// CloudflareServiceUpdateCloudflareEmailRuleProcedure is the fully-qualified name of the
+	// CloudflareServiceUpdateCloudflareEmailRuleProcedure is the procedure name of the
 	// CloudflareService's UpdateCloudflareEmailRule RPC.
 	CloudflareServiceUpdateCloudflareEmailRuleProcedure = "/neobox.v1.CloudflareService/UpdateCloudflareEmailRule"
-	// CloudflareServiceDeleteCloudflareEmailRuleProcedure is the fully-qualified name of the
+	// CloudflareServiceDeleteCloudflareEmailRuleProcedure is the procedure name of the
 	// CloudflareService's DeleteCloudflareEmailRule RPC.
 	CloudflareServiceDeleteCloudflareEmailRuleProcedure = "/neobox.v1.CloudflareService/DeleteCloudflareEmailRule"
-	// CloudflareServiceSetCloudflareEmailCatchAllProcedure is the fully-qualified name of the
+	// CloudflareServiceSetCloudflareEmailCatchAllProcedure is the procedure name of the
 	// CloudflareService's SetCloudflareEmailCatchAll RPC.
 	CloudflareServiceSetCloudflareEmailCatchAllProcedure = "/neobox.v1.CloudflareService/SetCloudflareEmailCatchAll"
-	// CloudflareServiceCreateCloudflareEmailAddressProcedure is the fully-qualified name of the
+	// CloudflareServiceCreateCloudflareEmailAddressProcedure is the procedure name of the
 	// CloudflareService's CreateCloudflareEmailAddress RPC.
 	CloudflareServiceCreateCloudflareEmailAddressProcedure = "/neobox.v1.CloudflareService/CreateCloudflareEmailAddress"
-	// CloudflareServiceDeleteCloudflareEmailAddressProcedure is the fully-qualified name of the
+	// CloudflareServiceDeleteCloudflareEmailAddressProcedure is the procedure name of the
 	// CloudflareService's DeleteCloudflareEmailAddress RPC.
 	CloudflareServiceDeleteCloudflareEmailAddressProcedure = "/neobox.v1.CloudflareService/DeleteCloudflareEmailAddress"
-	// CloudflareServiceListCloudflareEmailLogsProcedure is the fully-qualified name of the
+	// CloudflareServiceListCloudflareEmailLogsProcedure is the procedure name of the
 	// CloudflareService's ListCloudflareEmailLogs RPC.
 	CloudflareServiceListCloudflareEmailLogsProcedure = "/neobox.v1.CloudflareService/ListCloudflareEmailLogs"
+)
+
+var (
+	cloudflareServiceListCloudflareZonesSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("ListCloudflareZones"),
+			Procedure:  CloudflareServiceListCloudflareZonesProcedure,
+		}
+	})
+	cloudflareServiceGetCloudflareZoneSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("GetCloudflareZone"),
+			Procedure:  CloudflareServiceGetCloudflareZoneProcedure,
+		}
+	})
+	cloudflareServiceListCloudflareDNSRecordsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("ListCloudflareDNSRecords"),
+			Procedure:  CloudflareServiceListCloudflareDNSRecordsProcedure,
+		}
+	})
+	cloudflareServiceCreateCloudflareDNSRecordSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("CreateCloudflareDNSRecord"),
+			Procedure:  CloudflareServiceCreateCloudflareDNSRecordProcedure,
+		}
+	})
+	cloudflareServiceUpdateCloudflareDNSRecordSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("UpdateCloudflareDNSRecord"),
+			Procedure:  CloudflareServiceUpdateCloudflareDNSRecordProcedure,
+		}
+	})
+	cloudflareServiceSetCloudflareDNSRecordProxiedSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("SetCloudflareDNSRecordProxied"),
+			Procedure:  CloudflareServiceSetCloudflareDNSRecordProxiedProcedure,
+		}
+	})
+	cloudflareServiceDeleteCloudflareDNSRecordSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("DeleteCloudflareDNSRecord"),
+			Procedure:  CloudflareServiceDeleteCloudflareDNSRecordProcedure,
+		}
+	})
+	cloudflareServiceListCloudflareDNSOperationsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("ListCloudflareDNSOperations"),
+			Procedure:  CloudflareServiceListCloudflareDNSOperationsProcedure,
+		}
+	})
+	cloudflareServiceListCloudflareWorkersSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("ListCloudflareWorkers"),
+			Procedure:  CloudflareServiceListCloudflareWorkersProcedure,
+		}
+	})
+	cloudflareServiceListCloudflarePagesProjectsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("ListCloudflarePagesProjects"),
+			Procedure:  CloudflareServiceListCloudflarePagesProjectsProcedure,
+		}
+	})
+	cloudflareServiceListCloudflareTunnelsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("ListCloudflareTunnels"),
+			Procedure:  CloudflareServiceListCloudflareTunnelsProcedure,
+		}
+	})
+	cloudflareServiceGetCloudflareTunnelSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("GetCloudflareTunnel"),
+			Procedure:  CloudflareServiceGetCloudflareTunnelProcedure,
+		}
+	})
+	cloudflareServiceCreateCloudflareTunnelSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("CreateCloudflareTunnel"),
+			Procedure:  CloudflareServiceCreateCloudflareTunnelProcedure,
+		}
+	})
+	cloudflareServiceDeleteCloudflareTunnelSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("DeleteCloudflareTunnel"),
+			Procedure:  CloudflareServiceDeleteCloudflareTunnelProcedure,
+		}
+	})
+	cloudflareServiceGetCloudflareTunnelTokenSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("GetCloudflareTunnelToken"),
+			Procedure:  CloudflareServiceGetCloudflareTunnelTokenProcedure,
+		}
+	})
+	cloudflareServiceCleanupCloudflareTunnelConnectionsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("CleanupCloudflareTunnelConnections"),
+			Procedure:  CloudflareServiceCleanupCloudflareTunnelConnectionsProcedure,
+		}
+	})
+	cloudflareServiceAddCloudflareTunnelHostnameSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("AddCloudflareTunnelHostname"),
+			Procedure:  CloudflareServiceAddCloudflareTunnelHostnameProcedure,
+		}
+	})
+	cloudflareServiceUpdateCloudflareTunnelHostnameSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("UpdateCloudflareTunnelHostname"),
+			Procedure:  CloudflareServiceUpdateCloudflareTunnelHostnameProcedure,
+		}
+	})
+	cloudflareServiceDeleteCloudflareTunnelHostnameSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("DeleteCloudflareTunnelHostname"),
+			Procedure:  CloudflareServiceDeleteCloudflareTunnelHostnameProcedure,
+		}
+	})
+	cloudflareServiceGetCloudflareWorkerSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("GetCloudflareWorker"),
+			Procedure:  CloudflareServiceGetCloudflareWorkerProcedure,
+		}
+	})
+	cloudflareServiceSetCloudflareWorkerWorkersDevSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("SetCloudflareWorkerWorkersDev"),
+			Procedure:  CloudflareServiceSetCloudflareWorkerWorkersDevProcedure,
+		}
+	})
+	cloudflareServiceAttachCloudflareWorkerDomainSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("AttachCloudflareWorkerDomain"),
+			Procedure:  CloudflareServiceAttachCloudflareWorkerDomainProcedure,
+		}
+	})
+	cloudflareServiceDetachCloudflareWorkerDomainSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("DetachCloudflareWorkerDomain"),
+			Procedure:  CloudflareServiceDetachCloudflareWorkerDomainProcedure,
+		}
+	})
+	cloudflareServiceAddCloudflareWorkerRouteSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("AddCloudflareWorkerRoute"),
+			Procedure:  CloudflareServiceAddCloudflareWorkerRouteProcedure,
+		}
+	})
+	cloudflareServiceDeleteCloudflareWorkerRouteSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("DeleteCloudflareWorkerRoute"),
+			Procedure:  CloudflareServiceDeleteCloudflareWorkerRouteProcedure,
+		}
+	})
+	cloudflareServiceAddCloudflareWorkerCronSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("AddCloudflareWorkerCron"),
+			Procedure:  CloudflareServiceAddCloudflareWorkerCronProcedure,
+		}
+	})
+	cloudflareServiceDeleteCloudflareWorkerCronSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("DeleteCloudflareWorkerCron"),
+			Procedure:  CloudflareServiceDeleteCloudflareWorkerCronProcedure,
+		}
+	})
+	cloudflareServicePutCloudflareWorkerSecretSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("PutCloudflareWorkerSecret"),
+			Procedure:  CloudflareServicePutCloudflareWorkerSecretProcedure,
+		}
+	})
+	cloudflareServiceDeleteCloudflareWorkerSecretSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("DeleteCloudflareWorkerSecret"),
+			Procedure:  CloudflareServiceDeleteCloudflareWorkerSecretProcedure,
+		}
+	})
+	cloudflareServiceRollbackCloudflareWorkerSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("RollbackCloudflareWorker"),
+			Procedure:  CloudflareServiceRollbackCloudflareWorkerProcedure,
+		}
+	})
+	cloudflareServiceDeleteCloudflareWorkerSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("DeleteCloudflareWorker"),
+			Procedure:  CloudflareServiceDeleteCloudflareWorkerProcedure,
+		}
+	})
+	cloudflareServiceGetCloudflarePagesProjectSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("GetCloudflarePagesProject"),
+			Procedure:  CloudflareServiceGetCloudflarePagesProjectProcedure,
+		}
+	})
+	cloudflareServiceListCloudflarePagesDeploymentsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("ListCloudflarePagesDeployments"),
+			Procedure:  CloudflareServiceListCloudflarePagesDeploymentsProcedure,
+		}
+	})
+	cloudflareServiceCreateCloudflarePagesProjectSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("CreateCloudflarePagesProject"),
+			Procedure:  CloudflareServiceCreateCloudflarePagesProjectProcedure,
+		}
+	})
+	cloudflareServiceUpdateCloudflarePagesProjectSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("UpdateCloudflarePagesProject"),
+			Procedure:  CloudflareServiceUpdateCloudflarePagesProjectProcedure,
+		}
+	})
+	cloudflareServiceDeleteCloudflarePagesProjectSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("DeleteCloudflarePagesProject"),
+			Procedure:  CloudflareServiceDeleteCloudflarePagesProjectProcedure,
+		}
+	})
+	cloudflareServiceRetryCloudflarePagesDeploymentSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("RetryCloudflarePagesDeployment"),
+			Procedure:  CloudflareServiceRetryCloudflarePagesDeploymentProcedure,
+		}
+	})
+	cloudflareServiceRollbackCloudflarePagesDeploymentSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("RollbackCloudflarePagesDeployment"),
+			Procedure:  CloudflareServiceRollbackCloudflarePagesDeploymentProcedure,
+		}
+	})
+	cloudflareServiceDeleteCloudflarePagesDeploymentSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("DeleteCloudflarePagesDeployment"),
+			Procedure:  CloudflareServiceDeleteCloudflarePagesDeploymentProcedure,
+		}
+	})
+	cloudflareServiceAddCloudflarePagesDomainSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("AddCloudflarePagesDomain"),
+			Procedure:  CloudflareServiceAddCloudflarePagesDomainProcedure,
+		}
+	})
+	cloudflareServiceDeleteCloudflarePagesDomainSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("DeleteCloudflarePagesDomain"),
+			Procedure:  CloudflareServiceDeleteCloudflarePagesDomainProcedure,
+		}
+	})
+	cloudflareServiceSetCloudflarePagesEnvVarSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("SetCloudflarePagesEnvVar"),
+			Procedure:  CloudflareServiceSetCloudflarePagesEnvVarProcedure,
+		}
+	})
+	cloudflareServiceDeleteCloudflarePagesEnvVarSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("DeleteCloudflarePagesEnvVar"),
+			Procedure:  CloudflareServiceDeleteCloudflarePagesEnvVarProcedure,
+		}
+	})
+	cloudflareServiceListCloudflareResourceOperationsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("ListCloudflareResourceOperations"),
+			Procedure:  CloudflareServiceListCloudflareResourceOperationsProcedure,
+		}
+	})
+	cloudflareServiceGetCloudflareEmailRoutingSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("GetCloudflareEmailRouting"),
+			Procedure:  CloudflareServiceGetCloudflareEmailRoutingProcedure,
+		}
+	})
+	cloudflareServiceListCloudflareEmailAddressesSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("ListCloudflareEmailAddresses"),
+			Procedure:  CloudflareServiceListCloudflareEmailAddressesProcedure,
+		}
+	})
+	cloudflareServiceEnableCloudflareEmailRoutingSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("EnableCloudflareEmailRouting"),
+			Procedure:  CloudflareServiceEnableCloudflareEmailRoutingProcedure,
+		}
+	})
+	cloudflareServiceCreateCloudflareEmailRuleSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("CreateCloudflareEmailRule"),
+			Procedure:  CloudflareServiceCreateCloudflareEmailRuleProcedure,
+		}
+	})
+	cloudflareServiceUpdateCloudflareEmailRuleSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("UpdateCloudflareEmailRule"),
+			Procedure:  CloudflareServiceUpdateCloudflareEmailRuleProcedure,
+		}
+	})
+	cloudflareServiceDeleteCloudflareEmailRuleSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("DeleteCloudflareEmailRule"),
+			Procedure:  CloudflareServiceDeleteCloudflareEmailRuleProcedure,
+		}
+	})
+	cloudflareServiceSetCloudflareEmailCatchAllSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("SetCloudflareEmailCatchAll"),
+			Procedure:  CloudflareServiceSetCloudflareEmailCatchAllProcedure,
+		}
+	})
+	cloudflareServiceCreateCloudflareEmailAddressSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("CreateCloudflareEmailAddress"),
+			Procedure:  CloudflareServiceCreateCloudflareEmailAddressProcedure,
+		}
+	})
+	cloudflareServiceDeleteCloudflareEmailAddressSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("DeleteCloudflareEmailAddress"),
+			Procedure:  CloudflareServiceDeleteCloudflareEmailAddressProcedure,
+		}
+	})
+	cloudflareServiceListCloudflareEmailLogsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("ListCloudflareEmailLogs"),
+			Procedure:  CloudflareServiceListCloudflareEmailLogsProcedure,
+		}
+	})
 )
 
 // CloudflareServiceClient is a client for the neobox.v1.CloudflareService service.
 type CloudflareServiceClient interface {
 	// ListCloudflareZones pages through the Account's Zones, optionally those
 	// whose name contains query.
-	ListCloudflareZones(context.Context, *connect.Request[v1.ListCloudflareZonesRequest]) (*connect.Response[v1.ListCloudflareZonesResponse], error)
-	GetCloudflareZone(context.Context, *connect.Request[v1.GetCloudflareZoneRequest]) (*connect.Response[v1.GetCloudflareZoneResponse], error)
+	ListCloudflareZones(context.Context, *v1.ListCloudflareZonesRequest) (*v1.ListCloudflareZonesResponse, error)
+	GetCloudflareZone(context.Context, *v1.GetCloudflareZoneRequest) (*v1.GetCloudflareZoneResponse, error)
 	// ListCloudflareDNSRecords pages through a Zone's DNS records, optionally
 	// those matching query.
-	ListCloudflareDNSRecords(context.Context, *connect.Request[v1.ListCloudflareDNSRecordsRequest]) (*connect.Response[v1.ListCloudflareDNSRecordsResponse], error)
-	CreateCloudflareDNSRecord(context.Context, *connect.Request[v1.CreateCloudflareDNSRecordRequest]) (*connect.Response[v1.CreateCloudflareDNSRecordResponse], error)
+	ListCloudflareDNSRecords(context.Context, *v1.ListCloudflareDNSRecordsRequest) (*v1.ListCloudflareDNSRecordsResponse, error)
+	CreateCloudflareDNSRecord(context.Context, *v1.CreateCloudflareDNSRecordRequest) (*v1.CreateCloudflareDNSRecordResponse, error)
 	// UpdateCloudflareDNSRecord changes the fields the form shows and keeps
 	// every other attribute of the record (comment, tags, settings, ...).
-	UpdateCloudflareDNSRecord(context.Context, *connect.Request[v1.UpdateCloudflareDNSRecordRequest]) (*connect.Response[v1.UpdateCloudflareDNSRecordResponse], error)
+	UpdateCloudflareDNSRecord(context.Context, *v1.UpdateCloudflareDNSRecordRequest) (*v1.UpdateCloudflareDNSRecordResponse, error)
 	// SetCloudflareDNSRecordProxied changes only the proxy status.
-	SetCloudflareDNSRecordProxied(context.Context, *connect.Request[v1.SetCloudflareDNSRecordProxiedRequest]) (*connect.Response[v1.SetCloudflareDNSRecordProxiedResponse], error)
-	DeleteCloudflareDNSRecord(context.Context, *connect.Request[v1.DeleteCloudflareDNSRecordRequest]) (*connect.Response[v1.DeleteCloudflareDNSRecordResponse], error)
+	SetCloudflareDNSRecordProxied(context.Context, *v1.SetCloudflareDNSRecordProxiedRequest) (*v1.SetCloudflareDNSRecordProxiedResponse, error)
+	DeleteCloudflareDNSRecord(context.Context, *v1.DeleteCloudflareDNSRecordRequest) (*v1.DeleteCloudflareDNSRecordResponse, error)
 	// ListCloudflareDNSOperations lists the DNS changes started from Neo Box
 	// for a connection (and Zone), newest first.
-	ListCloudflareDNSOperations(context.Context, *connect.Request[v1.ListCloudflareDNSOperationsRequest]) (*connect.Response[v1.ListCloudflareDNSOperationsResponse], error)
-	ListCloudflareWorkers(context.Context, *connect.Request[v1.ListCloudflareWorkersRequest]) (*connect.Response[v1.ListCloudflareWorkersResponse], error)
-	ListCloudflarePagesProjects(context.Context, *connect.Request[v1.ListCloudflarePagesProjectsRequest]) (*connect.Response[v1.ListCloudflarePagesProjectsResponse], error)
+	ListCloudflareDNSOperations(context.Context, *v1.ListCloudflareDNSOperationsRequest) (*v1.ListCloudflareDNSOperationsResponse, error)
+	ListCloudflareWorkers(context.Context, *v1.ListCloudflareWorkersRequest) (*v1.ListCloudflareWorkersResponse, error)
+	ListCloudflarePagesProjects(context.Context, *v1.ListCloudflarePagesProjectsRequest) (*v1.ListCloudflarePagesProjectsResponse, error)
 	// ListCloudflareTunnels pages through the Account's cloudflared Tunnels,
 	// optionally those whose name contains query.
-	ListCloudflareTunnels(context.Context, *connect.Request[v1.ListCloudflareTunnelsRequest]) (*connect.Response[v1.ListCloudflareTunnelsResponse], error)
+	ListCloudflareTunnels(context.Context, *v1.ListCloudflareTunnelsRequest) (*v1.ListCloudflareTunnelsResponse, error)
 	// GetCloudflareTunnel reads a Tunnel with its connectors and public
 	// hostnames. A part that could not be read is reported in issues.
-	GetCloudflareTunnel(context.Context, *connect.Request[v1.GetCloudflareTunnelRequest]) (*connect.Response[v1.GetCloudflareTunnelResponse], error)
+	GetCloudflareTunnel(context.Context, *v1.GetCloudflareTunnelRequest) (*v1.GetCloudflareTunnelResponse, error)
 	// CreateCloudflareTunnel creates a remotely managed Tunnel, whose
 	// hostnames are edited here and whose cloudflared runs with a token.
-	CreateCloudflareTunnel(context.Context, *connect.Request[v1.CreateCloudflareTunnelRequest]) (*connect.Response[v1.CreateCloudflareTunnelResponse], error)
+	CreateCloudflareTunnel(context.Context, *v1.CreateCloudflareTunnelRequest) (*v1.CreateCloudflareTunnelResponse, error)
 	// DeleteCloudflareTunnel deletes a Tunnel. Cloudflare refuses while
 	// cloudflared is connected. DNS records pointing at it are left alone.
-	DeleteCloudflareTunnel(context.Context, *connect.Request[v1.DeleteCloudflareTunnelRequest]) (*connect.Response[v1.DeleteCloudflareTunnelResponse], error)
+	DeleteCloudflareTunnel(context.Context, *v1.DeleteCloudflareTunnelRequest) (*v1.DeleteCloudflareTunnelResponse, error)
 	// GetCloudflareTunnelToken returns the credential cloudflared runs the
 	// Tunnel with. It is never stored or logged by Neo Box.
-	GetCloudflareTunnelToken(context.Context, *connect.Request[v1.GetCloudflareTunnelTokenRequest]) (*connect.Response[v1.GetCloudflareTunnelTokenResponse], error)
+	GetCloudflareTunnelToken(context.Context, *v1.GetCloudflareTunnelTokenRequest) (*v1.GetCloudflareTunnelTokenResponse, error)
 	// CleanupCloudflareTunnelConnections closes a Tunnel's stale connections.
-	CleanupCloudflareTunnelConnections(context.Context, *connect.Request[v1.CleanupCloudflareTunnelConnectionsRequest]) (*connect.Response[v1.CleanupCloudflareTunnelConnectionsResponse], error)
+	CleanupCloudflareTunnelConnections(context.Context, *v1.CleanupCloudflareTunnelConnectionsRequest) (*v1.CleanupCloudflareTunnelConnectionsResponse, error)
 	// AddCloudflareTunnelHostname routes a public hostname to a service of a
 	// remotely managed Tunnel, and can create its DNS record.
-	AddCloudflareTunnelHostname(context.Context, *connect.Request[v1.AddCloudflareTunnelHostnameRequest]) (*connect.Response[v1.AddCloudflareTunnelHostnameResponse], error)
+	AddCloudflareTunnelHostname(context.Context, *v1.AddCloudflareTunnelHostnameRequest) (*v1.AddCloudflareTunnelHostnameResponse, error)
 	// UpdateCloudflareTunnelHostname changes the path and service of a route;
 	// its other settings are kept.
-	UpdateCloudflareTunnelHostname(context.Context, *connect.Request[v1.UpdateCloudflareTunnelHostnameRequest]) (*connect.Response[v1.UpdateCloudflareTunnelHostnameResponse], error)
+	UpdateCloudflareTunnelHostname(context.Context, *v1.UpdateCloudflareTunnelHostnameRequest) (*v1.UpdateCloudflareTunnelHostnameResponse, error)
 	// DeleteCloudflareTunnelHostname removes a route, and can delete its DNS
 	// record when that is a CNAME to this Tunnel.
-	DeleteCloudflareTunnelHostname(context.Context, *connect.Request[v1.DeleteCloudflareTunnelHostnameRequest]) (*connect.Response[v1.DeleteCloudflareTunnelHostnameResponse], error)
+	DeleteCloudflareTunnelHostname(context.Context, *v1.DeleteCloudflareTunnelHostnameRequest) (*v1.DeleteCloudflareTunnelHostnameResponse, error)
 	// GetCloudflareWorker reads a Worker with its workers.dev switch, custom
 	// domains, routes, cron triggers, secret names, bindings, recent
 	// deployments and versions. A part that could not be read is reported in
 	// issues. Neo Box never uploads code.
-	GetCloudflareWorker(context.Context, *connect.Request[v1.GetCloudflareWorkerRequest]) (*connect.Response[v1.GetCloudflareWorkerResponse], error)
-	SetCloudflareWorkerWorkersDev(context.Context, *connect.Request[v1.SetCloudflareWorkerWorkersDevRequest]) (*connect.Response[v1.SetCloudflareWorkerWorkersDevResponse], error)
+	GetCloudflareWorker(context.Context, *v1.GetCloudflareWorkerRequest) (*v1.GetCloudflareWorkerResponse, error)
+	SetCloudflareWorkerWorkersDev(context.Context, *v1.SetCloudflareWorkerWorkersDevRequest) (*v1.SetCloudflareWorkerWorkersDevResponse, error)
 	// AttachCloudflareWorkerDomain refuses a hostname that belongs to another
 	// Worker (Cloudflare itself would move it).
-	AttachCloudflareWorkerDomain(context.Context, *connect.Request[v1.AttachCloudflareWorkerDomainRequest]) (*connect.Response[v1.AttachCloudflareWorkerDomainResponse], error)
-	DetachCloudflareWorkerDomain(context.Context, *connect.Request[v1.DetachCloudflareWorkerDomainRequest]) (*connect.Response[v1.DetachCloudflareWorkerDomainResponse], error)
+	AttachCloudflareWorkerDomain(context.Context, *v1.AttachCloudflareWorkerDomainRequest) (*v1.AttachCloudflareWorkerDomainResponse, error)
+	DetachCloudflareWorkerDomain(context.Context, *v1.DetachCloudflareWorkerDomainRequest) (*v1.DetachCloudflareWorkerDomainResponse, error)
 	// AddCloudflareWorkerRoute runs the Worker on a pattern such as
 	// example.com/*, in the Zone that holds its host.
-	AddCloudflareWorkerRoute(context.Context, *connect.Request[v1.AddCloudflareWorkerRouteRequest]) (*connect.Response[v1.AddCloudflareWorkerRouteResponse], error)
-	DeleteCloudflareWorkerRoute(context.Context, *connect.Request[v1.DeleteCloudflareWorkerRouteRequest]) (*connect.Response[v1.DeleteCloudflareWorkerRouteResponse], error)
-	AddCloudflareWorkerCron(context.Context, *connect.Request[v1.AddCloudflareWorkerCronRequest]) (*connect.Response[v1.AddCloudflareWorkerCronResponse], error)
-	DeleteCloudflareWorkerCron(context.Context, *connect.Request[v1.DeleteCloudflareWorkerCronRequest]) (*connect.Response[v1.DeleteCloudflareWorkerCronResponse], error)
+	AddCloudflareWorkerRoute(context.Context, *v1.AddCloudflareWorkerRouteRequest) (*v1.AddCloudflareWorkerRouteResponse, error)
+	DeleteCloudflareWorkerRoute(context.Context, *v1.DeleteCloudflareWorkerRouteRequest) (*v1.DeleteCloudflareWorkerRouteResponse, error)
+	AddCloudflareWorkerCron(context.Context, *v1.AddCloudflareWorkerCronRequest) (*v1.AddCloudflareWorkerCronResponse, error)
+	DeleteCloudflareWorkerCron(context.Context, *v1.DeleteCloudflareWorkerCronRequest) (*v1.DeleteCloudflareWorkerCronResponse, error)
 	// PutCloudflareWorkerSecret sets a secret. The value goes to Cloudflare
 	// only; it is never stored, logged or returned.
-	PutCloudflareWorkerSecret(context.Context, *connect.Request[v1.PutCloudflareWorkerSecretRequest]) (*connect.Response[v1.PutCloudflareWorkerSecretResponse], error)
-	DeleteCloudflareWorkerSecret(context.Context, *connect.Request[v1.DeleteCloudflareWorkerSecretRequest]) (*connect.Response[v1.DeleteCloudflareWorkerSecretResponse], error)
+	PutCloudflareWorkerSecret(context.Context, *v1.PutCloudflareWorkerSecretRequest) (*v1.PutCloudflareWorkerSecretResponse, error)
+	DeleteCloudflareWorkerSecret(context.Context, *v1.DeleteCloudflareWorkerSecretRequest) (*v1.DeleteCloudflareWorkerSecretResponse, error)
 	// RollbackCloudflareWorker serves an earlier version at 100% of traffic.
-	RollbackCloudflareWorker(context.Context, *connect.Request[v1.RollbackCloudflareWorkerRequest]) (*connect.Response[v1.RollbackCloudflareWorkerResponse], error)
-	DeleteCloudflareWorker(context.Context, *connect.Request[v1.DeleteCloudflareWorkerRequest]) (*connect.Response[v1.DeleteCloudflareWorkerResponse], error)
+	RollbackCloudflareWorker(context.Context, *v1.RollbackCloudflareWorkerRequest) (*v1.RollbackCloudflareWorkerResponse, error)
+	DeleteCloudflareWorker(context.Context, *v1.DeleteCloudflareWorkerRequest) (*v1.DeleteCloudflareWorkerResponse, error)
 	// GetCloudflarePagesProject reads a project with its build settings,
 	// environment variables (secrets without values) and custom domains.
-	GetCloudflarePagesProject(context.Context, *connect.Request[v1.GetCloudflarePagesProjectRequest]) (*connect.Response[v1.GetCloudflarePagesProjectResponse], error)
-	ListCloudflarePagesDeployments(context.Context, *connect.Request[v1.ListCloudflarePagesDeploymentsRequest]) (*connect.Response[v1.ListCloudflarePagesDeploymentsResponse], error)
+	GetCloudflarePagesProject(context.Context, *v1.GetCloudflarePagesProjectRequest) (*v1.GetCloudflarePagesProjectResponse, error)
+	ListCloudflarePagesDeployments(context.Context, *v1.ListCloudflarePagesDeploymentsRequest) (*v1.ListCloudflarePagesDeploymentsResponse, error)
 	// CreateCloudflarePagesProject creates an empty Direct Upload project;
 	// Neo Box does not upload files.
-	CreateCloudflarePagesProject(context.Context, *connect.Request[v1.CreateCloudflarePagesProjectRequest]) (*connect.Response[v1.CreateCloudflarePagesProjectResponse], error)
+	CreateCloudflarePagesProject(context.Context, *v1.CreateCloudflarePagesProjectRequest) (*v1.CreateCloudflarePagesProjectResponse, error)
 	// UpdateCloudflarePagesProject changes the fields that are set. The
 	// production branch of a Git project is refused.
-	UpdateCloudflarePagesProject(context.Context, *connect.Request[v1.UpdateCloudflarePagesProjectRequest]) (*connect.Response[v1.UpdateCloudflarePagesProjectResponse], error)
-	DeleteCloudflarePagesProject(context.Context, *connect.Request[v1.DeleteCloudflarePagesProjectRequest]) (*connect.Response[v1.DeleteCloudflarePagesProjectResponse], error)
-	RetryCloudflarePagesDeployment(context.Context, *connect.Request[v1.RetryCloudflarePagesDeploymentRequest]) (*connect.Response[v1.RetryCloudflarePagesDeploymentResponse], error)
-	RollbackCloudflarePagesDeployment(context.Context, *connect.Request[v1.RollbackCloudflarePagesDeploymentRequest]) (*connect.Response[v1.RollbackCloudflarePagesDeploymentResponse], error)
+	UpdateCloudflarePagesProject(context.Context, *v1.UpdateCloudflarePagesProjectRequest) (*v1.UpdateCloudflarePagesProjectResponse, error)
+	DeleteCloudflarePagesProject(context.Context, *v1.DeleteCloudflarePagesProjectRequest) (*v1.DeleteCloudflarePagesProjectResponse, error)
+	RetryCloudflarePagesDeployment(context.Context, *v1.RetryCloudflarePagesDeploymentRequest) (*v1.RetryCloudflarePagesDeploymentResponse, error)
+	RollbackCloudflarePagesDeployment(context.Context, *v1.RollbackCloudflarePagesDeploymentRequest) (*v1.RollbackCloudflarePagesDeploymentResponse, error)
 	// DeleteCloudflarePagesDeployment never forces: Cloudflare refuses the
 	// live production deployment.
-	DeleteCloudflarePagesDeployment(context.Context, *connect.Request[v1.DeleteCloudflarePagesDeploymentRequest]) (*connect.Response[v1.DeleteCloudflarePagesDeploymentResponse], error)
+	DeleteCloudflarePagesDeployment(context.Context, *v1.DeleteCloudflarePagesDeploymentRequest) (*v1.DeleteCloudflarePagesDeploymentResponse, error)
 	// AddCloudflarePagesDomain adds a custom domain and can create its CNAME.
-	AddCloudflarePagesDomain(context.Context, *connect.Request[v1.AddCloudflarePagesDomainRequest]) (*connect.Response[v1.AddCloudflarePagesDomainResponse], error)
-	DeleteCloudflarePagesDomain(context.Context, *connect.Request[v1.DeleteCloudflarePagesDomainRequest]) (*connect.Response[v1.DeleteCloudflarePagesDomainResponse], error)
+	AddCloudflarePagesDomain(context.Context, *v1.AddCloudflarePagesDomainRequest) (*v1.AddCloudflarePagesDomainResponse, error)
+	DeleteCloudflarePagesDomain(context.Context, *v1.DeleteCloudflarePagesDomainRequest) (*v1.DeleteCloudflarePagesDomainResponse, error)
 	// SetCloudflarePagesEnvVar sets one environment variable. A value goes
 	// to Cloudflare only; it is never stored or logged.
-	SetCloudflarePagesEnvVar(context.Context, *connect.Request[v1.SetCloudflarePagesEnvVarRequest]) (*connect.Response[v1.SetCloudflarePagesEnvVarResponse], error)
-	DeleteCloudflarePagesEnvVar(context.Context, *connect.Request[v1.DeleteCloudflarePagesEnvVarRequest]) (*connect.Response[v1.DeleteCloudflarePagesEnvVarResponse], error)
+	SetCloudflarePagesEnvVar(context.Context, *v1.SetCloudflarePagesEnvVarRequest) (*v1.SetCloudflarePagesEnvVarResponse, error)
+	DeleteCloudflarePagesEnvVar(context.Context, *v1.DeleteCloudflarePagesEnvVarRequest) (*v1.DeleteCloudflarePagesEnvVarResponse, error)
 	// ListCloudflareResourceOperations lists Worker, Pages, and Email Routing
 	// changes started from Neo Box for a connection, newest first.
-	ListCloudflareResourceOperations(context.Context, *connect.Request[v1.ListCloudflareResourceOperationsRequest]) (*connect.Response[v1.ListCloudflareResourceOperationsResponse], error)
+	ListCloudflareResourceOperations(context.Context, *v1.ListCloudflareResourceOperationsRequest) (*v1.ListCloudflareResourceOperationsResponse, error)
 	// GetCloudflareEmailRouting reads a Zone's Email Routing status, its
 	// rules and its catch-all. Each part that cannot be read is empty and
 	// named in issues. required_dns_records is filled only while Email
 	// Routing is not enabled.
-	GetCloudflareEmailRouting(context.Context, *connect.Request[v1.GetCloudflareEmailRoutingRequest]) (*connect.Response[v1.GetCloudflareEmailRoutingResponse], error)
+	GetCloudflareEmailRouting(context.Context, *v1.GetCloudflareEmailRoutingRequest) (*v1.GetCloudflareEmailRoutingResponse, error)
 	// ListCloudflareEmailAddresses lists the Account's destination addresses
 	// (shared by all its Zones).
-	ListCloudflareEmailAddresses(context.Context, *connect.Request[v1.ListCloudflareEmailAddressesRequest]) (*connect.Response[v1.ListCloudflareEmailAddressesResponse], error)
+	ListCloudflareEmailAddresses(context.Context, *v1.ListCloudflareEmailAddressesRequest) (*v1.ListCloudflareEmailAddressesResponse, error)
 	// EnableCloudflareEmailRouting enables Email Routing; Cloudflare adds and
 	// locks the MX and SPF records. There is no way to disable it here.
-	EnableCloudflareEmailRouting(context.Context, *connect.Request[v1.EnableCloudflareEmailRoutingRequest]) (*connect.Response[v1.EnableCloudflareEmailRoutingResponse], error)
+	EnableCloudflareEmailRouting(context.Context, *v1.EnableCloudflareEmailRoutingRequest) (*v1.EnableCloudflareEmailRoutingResponse, error)
 	// CreateCloudflareEmailRule adds a rule for one address. A forward needs
 	// a verified destination address (FailedPrecondition otherwise).
-	CreateCloudflareEmailRule(context.Context, *connect.Request[v1.CreateCloudflareEmailRuleRequest]) (*connect.Response[v1.CreateCloudflareEmailRuleResponse], error)
+	CreateCloudflareEmailRule(context.Context, *v1.CreateCloudflareEmailRuleRequest) (*v1.CreateCloudflareEmailRuleResponse, error)
 	// UpdateCloudflareEmailRule replaces a rule's fields, which includes
 	// enabling and disabling it. A rule managed by a Worker's wrangler
 	// configuration, or sending to a Worker, is FailedPrecondition.
-	UpdateCloudflareEmailRule(context.Context, *connect.Request[v1.UpdateCloudflareEmailRuleRequest]) (*connect.Response[v1.UpdateCloudflareEmailRuleResponse], error)
-	DeleteCloudflareEmailRule(context.Context, *connect.Request[v1.DeleteCloudflareEmailRuleRequest]) (*connect.Response[v1.DeleteCloudflareEmailRuleResponse], error)
+	UpdateCloudflareEmailRule(context.Context, *v1.UpdateCloudflareEmailRuleRequest) (*v1.UpdateCloudflareEmailRuleResponse, error)
+	DeleteCloudflareEmailRule(context.Context, *v1.DeleteCloudflareEmailRuleRequest) (*v1.DeleteCloudflareEmailRuleResponse, error)
 	// SetCloudflareEmailCatchAll sets the catch-all: off keeps its current
 	// action, drop discards, forward needs a verified destination address.
-	SetCloudflareEmailCatchAll(context.Context, *connect.Request[v1.SetCloudflareEmailCatchAllRequest]) (*connect.Response[v1.SetCloudflareEmailCatchAllResponse], error)
+	SetCloudflareEmailCatchAll(context.Context, *v1.SetCloudflareEmailCatchAllRequest) (*v1.SetCloudflareEmailCatchAllResponse, error)
 	// CreateCloudflareEmailAddress adds a destination address; Cloudflare
 	// emails it a link that verifies it.
-	CreateCloudflareEmailAddress(context.Context, *connect.Request[v1.CreateCloudflareEmailAddressRequest]) (*connect.Response[v1.CreateCloudflareEmailAddressResponse], error)
+	CreateCloudflareEmailAddress(context.Context, *v1.CreateCloudflareEmailAddressRequest) (*v1.CreateCloudflareEmailAddressResponse, error)
 	// DeleteCloudflareEmailAddress deletes a destination address, refused
 	// while a rule or the catch-all of zone_id still forwards to it.
-	DeleteCloudflareEmailAddress(context.Context, *connect.Request[v1.DeleteCloudflareEmailAddressRequest]) (*connect.Response[v1.DeleteCloudflareEmailAddressResponse], error)
+	DeleteCloudflareEmailAddress(context.Context, *v1.DeleteCloudflareEmailAddressRequest) (*v1.DeleteCloudflareEmailAddressResponse, error)
 	// ListCloudflareEmailLogs reads a Zone's Email Routing events (mail
 	// received, forwarded, dropped, rejected or failed), newest first, from
 	// Cloudflare's GraphQL Analytics API. Cloudflare keeps them 31 days. The
 	// token needs the Analytics Read permission (PermissionDenied otherwise).
 	// Nothing is stored.
-	ListCloudflareEmailLogs(context.Context, *connect.Request[v1.ListCloudflareEmailLogsRequest]) (*connect.Response[v1.ListCloudflareEmailLogsResponse], error)
+	ListCloudflareEmailLogs(context.Context, *v1.ListCloudflareEmailLogsRequest) (*v1.ListCloudflareEmailLogsResponse, error)
 }
 
-// NewCloudflareServiceClient constructs a client for the neobox.v1.CloudflareService service. By
-// default, it uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses,
-// and sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the
-// connect.WithGRPC() or connect.WithGRPCWeb() options.
-//
-// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
-// http://api.acme.com or https://acme.com/grpc).
-func NewCloudflareServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) CloudflareServiceClient {
-	baseURL = strings.TrimRight(baseURL, "/")
-	cloudflareServiceMethods := v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods()
-	return &cloudflareServiceClient{
-		listCloudflareZones: connect.NewClient[v1.ListCloudflareZonesRequest, v1.ListCloudflareZonesResponse](
-			httpClient,
-			baseURL+CloudflareServiceListCloudflareZonesProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareZones")),
-			connect.WithClientOptions(opts...),
-		),
-		getCloudflareZone: connect.NewClient[v1.GetCloudflareZoneRequest, v1.GetCloudflareZoneResponse](
-			httpClient,
-			baseURL+CloudflareServiceGetCloudflareZoneProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("GetCloudflareZone")),
-			connect.WithClientOptions(opts...),
-		),
-		listCloudflareDNSRecords: connect.NewClient[v1.ListCloudflareDNSRecordsRequest, v1.ListCloudflareDNSRecordsResponse](
-			httpClient,
-			baseURL+CloudflareServiceListCloudflareDNSRecordsProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareDNSRecords")),
-			connect.WithClientOptions(opts...),
-		),
-		createCloudflareDNSRecord: connect.NewClient[v1.CreateCloudflareDNSRecordRequest, v1.CreateCloudflareDNSRecordResponse](
-			httpClient,
-			baseURL+CloudflareServiceCreateCloudflareDNSRecordProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("CreateCloudflareDNSRecord")),
-			connect.WithClientOptions(opts...),
-		),
-		updateCloudflareDNSRecord: connect.NewClient[v1.UpdateCloudflareDNSRecordRequest, v1.UpdateCloudflareDNSRecordResponse](
-			httpClient,
-			baseURL+CloudflareServiceUpdateCloudflareDNSRecordProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("UpdateCloudflareDNSRecord")),
-			connect.WithClientOptions(opts...),
-		),
-		setCloudflareDNSRecordProxied: connect.NewClient[v1.SetCloudflareDNSRecordProxiedRequest, v1.SetCloudflareDNSRecordProxiedResponse](
-			httpClient,
-			baseURL+CloudflareServiceSetCloudflareDNSRecordProxiedProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("SetCloudflareDNSRecordProxied")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteCloudflareDNSRecord: connect.NewClient[v1.DeleteCloudflareDNSRecordRequest, v1.DeleteCloudflareDNSRecordResponse](
-			httpClient,
-			baseURL+CloudflareServiceDeleteCloudflareDNSRecordProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareDNSRecord")),
-			connect.WithClientOptions(opts...),
-		),
-		listCloudflareDNSOperations: connect.NewClient[v1.ListCloudflareDNSOperationsRequest, v1.ListCloudflareDNSOperationsResponse](
-			httpClient,
-			baseURL+CloudflareServiceListCloudflareDNSOperationsProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareDNSOperations")),
-			connect.WithClientOptions(opts...),
-		),
-		listCloudflareWorkers: connect.NewClient[v1.ListCloudflareWorkersRequest, v1.ListCloudflareWorkersResponse](
-			httpClient,
-			baseURL+CloudflareServiceListCloudflareWorkersProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareWorkers")),
-			connect.WithClientOptions(opts...),
-		),
-		listCloudflarePagesProjects: connect.NewClient[v1.ListCloudflarePagesProjectsRequest, v1.ListCloudflarePagesProjectsResponse](
-			httpClient,
-			baseURL+CloudflareServiceListCloudflarePagesProjectsProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflarePagesProjects")),
-			connect.WithClientOptions(opts...),
-		),
-		listCloudflareTunnels: connect.NewClient[v1.ListCloudflareTunnelsRequest, v1.ListCloudflareTunnelsResponse](
-			httpClient,
-			baseURL+CloudflareServiceListCloudflareTunnelsProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareTunnels")),
-			connect.WithClientOptions(opts...),
-		),
-		getCloudflareTunnel: connect.NewClient[v1.GetCloudflareTunnelRequest, v1.GetCloudflareTunnelResponse](
-			httpClient,
-			baseURL+CloudflareServiceGetCloudflareTunnelProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("GetCloudflareTunnel")),
-			connect.WithClientOptions(opts...),
-		),
-		createCloudflareTunnel: connect.NewClient[v1.CreateCloudflareTunnelRequest, v1.CreateCloudflareTunnelResponse](
-			httpClient,
-			baseURL+CloudflareServiceCreateCloudflareTunnelProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("CreateCloudflareTunnel")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteCloudflareTunnel: connect.NewClient[v1.DeleteCloudflareTunnelRequest, v1.DeleteCloudflareTunnelResponse](
-			httpClient,
-			baseURL+CloudflareServiceDeleteCloudflareTunnelProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareTunnel")),
-			connect.WithClientOptions(opts...),
-		),
-		getCloudflareTunnelToken: connect.NewClient[v1.GetCloudflareTunnelTokenRequest, v1.GetCloudflareTunnelTokenResponse](
-			httpClient,
-			baseURL+CloudflareServiceGetCloudflareTunnelTokenProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("GetCloudflareTunnelToken")),
-			connect.WithClientOptions(opts...),
-		),
-		cleanupCloudflareTunnelConnections: connect.NewClient[v1.CleanupCloudflareTunnelConnectionsRequest, v1.CleanupCloudflareTunnelConnectionsResponse](
-			httpClient,
-			baseURL+CloudflareServiceCleanupCloudflareTunnelConnectionsProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("CleanupCloudflareTunnelConnections")),
-			connect.WithClientOptions(opts...),
-		),
-		addCloudflareTunnelHostname: connect.NewClient[v1.AddCloudflareTunnelHostnameRequest, v1.AddCloudflareTunnelHostnameResponse](
-			httpClient,
-			baseURL+CloudflareServiceAddCloudflareTunnelHostnameProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("AddCloudflareTunnelHostname")),
-			connect.WithClientOptions(opts...),
-		),
-		updateCloudflareTunnelHostname: connect.NewClient[v1.UpdateCloudflareTunnelHostnameRequest, v1.UpdateCloudflareTunnelHostnameResponse](
-			httpClient,
-			baseURL+CloudflareServiceUpdateCloudflareTunnelHostnameProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("UpdateCloudflareTunnelHostname")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteCloudflareTunnelHostname: connect.NewClient[v1.DeleteCloudflareTunnelHostnameRequest, v1.DeleteCloudflareTunnelHostnameResponse](
-			httpClient,
-			baseURL+CloudflareServiceDeleteCloudflareTunnelHostnameProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareTunnelHostname")),
-			connect.WithClientOptions(opts...),
-		),
-		getCloudflareWorker: connect.NewClient[v1.GetCloudflareWorkerRequest, v1.GetCloudflareWorkerResponse](
-			httpClient,
-			baseURL+CloudflareServiceGetCloudflareWorkerProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("GetCloudflareWorker")),
-			connect.WithClientOptions(opts...),
-		),
-		setCloudflareWorkerWorkersDev: connect.NewClient[v1.SetCloudflareWorkerWorkersDevRequest, v1.SetCloudflareWorkerWorkersDevResponse](
-			httpClient,
-			baseURL+CloudflareServiceSetCloudflareWorkerWorkersDevProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("SetCloudflareWorkerWorkersDev")),
-			connect.WithClientOptions(opts...),
-		),
-		attachCloudflareWorkerDomain: connect.NewClient[v1.AttachCloudflareWorkerDomainRequest, v1.AttachCloudflareWorkerDomainResponse](
-			httpClient,
-			baseURL+CloudflareServiceAttachCloudflareWorkerDomainProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("AttachCloudflareWorkerDomain")),
-			connect.WithClientOptions(opts...),
-		),
-		detachCloudflareWorkerDomain: connect.NewClient[v1.DetachCloudflareWorkerDomainRequest, v1.DetachCloudflareWorkerDomainResponse](
-			httpClient,
-			baseURL+CloudflareServiceDetachCloudflareWorkerDomainProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("DetachCloudflareWorkerDomain")),
-			connect.WithClientOptions(opts...),
-		),
-		addCloudflareWorkerRoute: connect.NewClient[v1.AddCloudflareWorkerRouteRequest, v1.AddCloudflareWorkerRouteResponse](
-			httpClient,
-			baseURL+CloudflareServiceAddCloudflareWorkerRouteProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("AddCloudflareWorkerRoute")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteCloudflareWorkerRoute: connect.NewClient[v1.DeleteCloudflareWorkerRouteRequest, v1.DeleteCloudflareWorkerRouteResponse](
-			httpClient,
-			baseURL+CloudflareServiceDeleteCloudflareWorkerRouteProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareWorkerRoute")),
-			connect.WithClientOptions(opts...),
-		),
-		addCloudflareWorkerCron: connect.NewClient[v1.AddCloudflareWorkerCronRequest, v1.AddCloudflareWorkerCronResponse](
-			httpClient,
-			baseURL+CloudflareServiceAddCloudflareWorkerCronProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("AddCloudflareWorkerCron")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteCloudflareWorkerCron: connect.NewClient[v1.DeleteCloudflareWorkerCronRequest, v1.DeleteCloudflareWorkerCronResponse](
-			httpClient,
-			baseURL+CloudflareServiceDeleteCloudflareWorkerCronProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareWorkerCron")),
-			connect.WithClientOptions(opts...),
-		),
-		putCloudflareWorkerSecret: connect.NewClient[v1.PutCloudflareWorkerSecretRequest, v1.PutCloudflareWorkerSecretResponse](
-			httpClient,
-			baseURL+CloudflareServicePutCloudflareWorkerSecretProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("PutCloudflareWorkerSecret")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteCloudflareWorkerSecret: connect.NewClient[v1.DeleteCloudflareWorkerSecretRequest, v1.DeleteCloudflareWorkerSecretResponse](
-			httpClient,
-			baseURL+CloudflareServiceDeleteCloudflareWorkerSecretProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareWorkerSecret")),
-			connect.WithClientOptions(opts...),
-		),
-		rollbackCloudflareWorker: connect.NewClient[v1.RollbackCloudflareWorkerRequest, v1.RollbackCloudflareWorkerResponse](
-			httpClient,
-			baseURL+CloudflareServiceRollbackCloudflareWorkerProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("RollbackCloudflareWorker")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteCloudflareWorker: connect.NewClient[v1.DeleteCloudflareWorkerRequest, v1.DeleteCloudflareWorkerResponse](
-			httpClient,
-			baseURL+CloudflareServiceDeleteCloudflareWorkerProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareWorker")),
-			connect.WithClientOptions(opts...),
-		),
-		getCloudflarePagesProject: connect.NewClient[v1.GetCloudflarePagesProjectRequest, v1.GetCloudflarePagesProjectResponse](
-			httpClient,
-			baseURL+CloudflareServiceGetCloudflarePagesProjectProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("GetCloudflarePagesProject")),
-			connect.WithClientOptions(opts...),
-		),
-		listCloudflarePagesDeployments: connect.NewClient[v1.ListCloudflarePagesDeploymentsRequest, v1.ListCloudflarePagesDeploymentsResponse](
-			httpClient,
-			baseURL+CloudflareServiceListCloudflarePagesDeploymentsProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflarePagesDeployments")),
-			connect.WithClientOptions(opts...),
-		),
-		createCloudflarePagesProject: connect.NewClient[v1.CreateCloudflarePagesProjectRequest, v1.CreateCloudflarePagesProjectResponse](
-			httpClient,
-			baseURL+CloudflareServiceCreateCloudflarePagesProjectProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("CreateCloudflarePagesProject")),
-			connect.WithClientOptions(opts...),
-		),
-		updateCloudflarePagesProject: connect.NewClient[v1.UpdateCloudflarePagesProjectRequest, v1.UpdateCloudflarePagesProjectResponse](
-			httpClient,
-			baseURL+CloudflareServiceUpdateCloudflarePagesProjectProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("UpdateCloudflarePagesProject")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteCloudflarePagesProject: connect.NewClient[v1.DeleteCloudflarePagesProjectRequest, v1.DeleteCloudflarePagesProjectResponse](
-			httpClient,
-			baseURL+CloudflareServiceDeleteCloudflarePagesProjectProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflarePagesProject")),
-			connect.WithClientOptions(opts...),
-		),
-		retryCloudflarePagesDeployment: connect.NewClient[v1.RetryCloudflarePagesDeploymentRequest, v1.RetryCloudflarePagesDeploymentResponse](
-			httpClient,
-			baseURL+CloudflareServiceRetryCloudflarePagesDeploymentProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("RetryCloudflarePagesDeployment")),
-			connect.WithClientOptions(opts...),
-		),
-		rollbackCloudflarePagesDeployment: connect.NewClient[v1.RollbackCloudflarePagesDeploymentRequest, v1.RollbackCloudflarePagesDeploymentResponse](
-			httpClient,
-			baseURL+CloudflareServiceRollbackCloudflarePagesDeploymentProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("RollbackCloudflarePagesDeployment")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteCloudflarePagesDeployment: connect.NewClient[v1.DeleteCloudflarePagesDeploymentRequest, v1.DeleteCloudflarePagesDeploymentResponse](
-			httpClient,
-			baseURL+CloudflareServiceDeleteCloudflarePagesDeploymentProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflarePagesDeployment")),
-			connect.WithClientOptions(opts...),
-		),
-		addCloudflarePagesDomain: connect.NewClient[v1.AddCloudflarePagesDomainRequest, v1.AddCloudflarePagesDomainResponse](
-			httpClient,
-			baseURL+CloudflareServiceAddCloudflarePagesDomainProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("AddCloudflarePagesDomain")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteCloudflarePagesDomain: connect.NewClient[v1.DeleteCloudflarePagesDomainRequest, v1.DeleteCloudflarePagesDomainResponse](
-			httpClient,
-			baseURL+CloudflareServiceDeleteCloudflarePagesDomainProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflarePagesDomain")),
-			connect.WithClientOptions(opts...),
-		),
-		setCloudflarePagesEnvVar: connect.NewClient[v1.SetCloudflarePagesEnvVarRequest, v1.SetCloudflarePagesEnvVarResponse](
-			httpClient,
-			baseURL+CloudflareServiceSetCloudflarePagesEnvVarProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("SetCloudflarePagesEnvVar")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteCloudflarePagesEnvVar: connect.NewClient[v1.DeleteCloudflarePagesEnvVarRequest, v1.DeleteCloudflarePagesEnvVarResponse](
-			httpClient,
-			baseURL+CloudflareServiceDeleteCloudflarePagesEnvVarProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflarePagesEnvVar")),
-			connect.WithClientOptions(opts...),
-		),
-		listCloudflareResourceOperations: connect.NewClient[v1.ListCloudflareResourceOperationsRequest, v1.ListCloudflareResourceOperationsResponse](
-			httpClient,
-			baseURL+CloudflareServiceListCloudflareResourceOperationsProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareResourceOperations")),
-			connect.WithClientOptions(opts...),
-		),
-		getCloudflareEmailRouting: connect.NewClient[v1.GetCloudflareEmailRoutingRequest, v1.GetCloudflareEmailRoutingResponse](
-			httpClient,
-			baseURL+CloudflareServiceGetCloudflareEmailRoutingProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("GetCloudflareEmailRouting")),
-			connect.WithClientOptions(opts...),
-		),
-		listCloudflareEmailAddresses: connect.NewClient[v1.ListCloudflareEmailAddressesRequest, v1.ListCloudflareEmailAddressesResponse](
-			httpClient,
-			baseURL+CloudflareServiceListCloudflareEmailAddressesProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareEmailAddresses")),
-			connect.WithClientOptions(opts...),
-		),
-		enableCloudflareEmailRouting: connect.NewClient[v1.EnableCloudflareEmailRoutingRequest, v1.EnableCloudflareEmailRoutingResponse](
-			httpClient,
-			baseURL+CloudflareServiceEnableCloudflareEmailRoutingProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("EnableCloudflareEmailRouting")),
-			connect.WithClientOptions(opts...),
-		),
-		createCloudflareEmailRule: connect.NewClient[v1.CreateCloudflareEmailRuleRequest, v1.CreateCloudflareEmailRuleResponse](
-			httpClient,
-			baseURL+CloudflareServiceCreateCloudflareEmailRuleProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("CreateCloudflareEmailRule")),
-			connect.WithClientOptions(opts...),
-		),
-		updateCloudflareEmailRule: connect.NewClient[v1.UpdateCloudflareEmailRuleRequest, v1.UpdateCloudflareEmailRuleResponse](
-			httpClient,
-			baseURL+CloudflareServiceUpdateCloudflareEmailRuleProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("UpdateCloudflareEmailRule")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteCloudflareEmailRule: connect.NewClient[v1.DeleteCloudflareEmailRuleRequest, v1.DeleteCloudflareEmailRuleResponse](
-			httpClient,
-			baseURL+CloudflareServiceDeleteCloudflareEmailRuleProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareEmailRule")),
-			connect.WithClientOptions(opts...),
-		),
-		setCloudflareEmailCatchAll: connect.NewClient[v1.SetCloudflareEmailCatchAllRequest, v1.SetCloudflareEmailCatchAllResponse](
-			httpClient,
-			baseURL+CloudflareServiceSetCloudflareEmailCatchAllProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("SetCloudflareEmailCatchAll")),
-			connect.WithClientOptions(opts...),
-		),
-		createCloudflareEmailAddress: connect.NewClient[v1.CreateCloudflareEmailAddressRequest, v1.CreateCloudflareEmailAddressResponse](
-			httpClient,
-			baseURL+CloudflareServiceCreateCloudflareEmailAddressProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("CreateCloudflareEmailAddress")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteCloudflareEmailAddress: connect.NewClient[v1.DeleteCloudflareEmailAddressRequest, v1.DeleteCloudflareEmailAddressResponse](
-			httpClient,
-			baseURL+CloudflareServiceDeleteCloudflareEmailAddressProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareEmailAddress")),
-			connect.WithClientOptions(opts...),
-		),
-		listCloudflareEmailLogs: connect.NewClient[v1.ListCloudflareEmailLogsRequest, v1.ListCloudflareEmailLogsResponse](
-			httpClient,
-			baseURL+CloudflareServiceListCloudflareEmailLogsProcedure,
-			connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareEmailLogs")),
-			connect.WithClientOptions(opts...),
-		),
-	}
-}
-
-// cloudflareServiceClient implements CloudflareServiceClient.
-type cloudflareServiceClient struct {
-	listCloudflareZones                *connect.Client[v1.ListCloudflareZonesRequest, v1.ListCloudflareZonesResponse]
-	getCloudflareZone                  *connect.Client[v1.GetCloudflareZoneRequest, v1.GetCloudflareZoneResponse]
-	listCloudflareDNSRecords           *connect.Client[v1.ListCloudflareDNSRecordsRequest, v1.ListCloudflareDNSRecordsResponse]
-	createCloudflareDNSRecord          *connect.Client[v1.CreateCloudflareDNSRecordRequest, v1.CreateCloudflareDNSRecordResponse]
-	updateCloudflareDNSRecord          *connect.Client[v1.UpdateCloudflareDNSRecordRequest, v1.UpdateCloudflareDNSRecordResponse]
-	setCloudflareDNSRecordProxied      *connect.Client[v1.SetCloudflareDNSRecordProxiedRequest, v1.SetCloudflareDNSRecordProxiedResponse]
-	deleteCloudflareDNSRecord          *connect.Client[v1.DeleteCloudflareDNSRecordRequest, v1.DeleteCloudflareDNSRecordResponse]
-	listCloudflareDNSOperations        *connect.Client[v1.ListCloudflareDNSOperationsRequest, v1.ListCloudflareDNSOperationsResponse]
-	listCloudflareWorkers              *connect.Client[v1.ListCloudflareWorkersRequest, v1.ListCloudflareWorkersResponse]
-	listCloudflarePagesProjects        *connect.Client[v1.ListCloudflarePagesProjectsRequest, v1.ListCloudflarePagesProjectsResponse]
-	listCloudflareTunnels              *connect.Client[v1.ListCloudflareTunnelsRequest, v1.ListCloudflareTunnelsResponse]
-	getCloudflareTunnel                *connect.Client[v1.GetCloudflareTunnelRequest, v1.GetCloudflareTunnelResponse]
-	createCloudflareTunnel             *connect.Client[v1.CreateCloudflareTunnelRequest, v1.CreateCloudflareTunnelResponse]
-	deleteCloudflareTunnel             *connect.Client[v1.DeleteCloudflareTunnelRequest, v1.DeleteCloudflareTunnelResponse]
-	getCloudflareTunnelToken           *connect.Client[v1.GetCloudflareTunnelTokenRequest, v1.GetCloudflareTunnelTokenResponse]
-	cleanupCloudflareTunnelConnections *connect.Client[v1.CleanupCloudflareTunnelConnectionsRequest, v1.CleanupCloudflareTunnelConnectionsResponse]
-	addCloudflareTunnelHostname        *connect.Client[v1.AddCloudflareTunnelHostnameRequest, v1.AddCloudflareTunnelHostnameResponse]
-	updateCloudflareTunnelHostname     *connect.Client[v1.UpdateCloudflareTunnelHostnameRequest, v1.UpdateCloudflareTunnelHostnameResponse]
-	deleteCloudflareTunnelHostname     *connect.Client[v1.DeleteCloudflareTunnelHostnameRequest, v1.DeleteCloudflareTunnelHostnameResponse]
-	getCloudflareWorker                *connect.Client[v1.GetCloudflareWorkerRequest, v1.GetCloudflareWorkerResponse]
-	setCloudflareWorkerWorkersDev      *connect.Client[v1.SetCloudflareWorkerWorkersDevRequest, v1.SetCloudflareWorkerWorkersDevResponse]
-	attachCloudflareWorkerDomain       *connect.Client[v1.AttachCloudflareWorkerDomainRequest, v1.AttachCloudflareWorkerDomainResponse]
-	detachCloudflareWorkerDomain       *connect.Client[v1.DetachCloudflareWorkerDomainRequest, v1.DetachCloudflareWorkerDomainResponse]
-	addCloudflareWorkerRoute           *connect.Client[v1.AddCloudflareWorkerRouteRequest, v1.AddCloudflareWorkerRouteResponse]
-	deleteCloudflareWorkerRoute        *connect.Client[v1.DeleteCloudflareWorkerRouteRequest, v1.DeleteCloudflareWorkerRouteResponse]
-	addCloudflareWorkerCron            *connect.Client[v1.AddCloudflareWorkerCronRequest, v1.AddCloudflareWorkerCronResponse]
-	deleteCloudflareWorkerCron         *connect.Client[v1.DeleteCloudflareWorkerCronRequest, v1.DeleteCloudflareWorkerCronResponse]
-	putCloudflareWorkerSecret          *connect.Client[v1.PutCloudflareWorkerSecretRequest, v1.PutCloudflareWorkerSecretResponse]
-	deleteCloudflareWorkerSecret       *connect.Client[v1.DeleteCloudflareWorkerSecretRequest, v1.DeleteCloudflareWorkerSecretResponse]
-	rollbackCloudflareWorker           *connect.Client[v1.RollbackCloudflareWorkerRequest, v1.RollbackCloudflareWorkerResponse]
-	deleteCloudflareWorker             *connect.Client[v1.DeleteCloudflareWorkerRequest, v1.DeleteCloudflareWorkerResponse]
-	getCloudflarePagesProject          *connect.Client[v1.GetCloudflarePagesProjectRequest, v1.GetCloudflarePagesProjectResponse]
-	listCloudflarePagesDeployments     *connect.Client[v1.ListCloudflarePagesDeploymentsRequest, v1.ListCloudflarePagesDeploymentsResponse]
-	createCloudflarePagesProject       *connect.Client[v1.CreateCloudflarePagesProjectRequest, v1.CreateCloudflarePagesProjectResponse]
-	updateCloudflarePagesProject       *connect.Client[v1.UpdateCloudflarePagesProjectRequest, v1.UpdateCloudflarePagesProjectResponse]
-	deleteCloudflarePagesProject       *connect.Client[v1.DeleteCloudflarePagesProjectRequest, v1.DeleteCloudflarePagesProjectResponse]
-	retryCloudflarePagesDeployment     *connect.Client[v1.RetryCloudflarePagesDeploymentRequest, v1.RetryCloudflarePagesDeploymentResponse]
-	rollbackCloudflarePagesDeployment  *connect.Client[v1.RollbackCloudflarePagesDeploymentRequest, v1.RollbackCloudflarePagesDeploymentResponse]
-	deleteCloudflarePagesDeployment    *connect.Client[v1.DeleteCloudflarePagesDeploymentRequest, v1.DeleteCloudflarePagesDeploymentResponse]
-	addCloudflarePagesDomain           *connect.Client[v1.AddCloudflarePagesDomainRequest, v1.AddCloudflarePagesDomainResponse]
-	deleteCloudflarePagesDomain        *connect.Client[v1.DeleteCloudflarePagesDomainRequest, v1.DeleteCloudflarePagesDomainResponse]
-	setCloudflarePagesEnvVar           *connect.Client[v1.SetCloudflarePagesEnvVarRequest, v1.SetCloudflarePagesEnvVarResponse]
-	deleteCloudflarePagesEnvVar        *connect.Client[v1.DeleteCloudflarePagesEnvVarRequest, v1.DeleteCloudflarePagesEnvVarResponse]
-	listCloudflareResourceOperations   *connect.Client[v1.ListCloudflareResourceOperationsRequest, v1.ListCloudflareResourceOperationsResponse]
-	getCloudflareEmailRouting          *connect.Client[v1.GetCloudflareEmailRoutingRequest, v1.GetCloudflareEmailRoutingResponse]
-	listCloudflareEmailAddresses       *connect.Client[v1.ListCloudflareEmailAddressesRequest, v1.ListCloudflareEmailAddressesResponse]
-	enableCloudflareEmailRouting       *connect.Client[v1.EnableCloudflareEmailRoutingRequest, v1.EnableCloudflareEmailRoutingResponse]
-	createCloudflareEmailRule          *connect.Client[v1.CreateCloudflareEmailRuleRequest, v1.CreateCloudflareEmailRuleResponse]
-	updateCloudflareEmailRule          *connect.Client[v1.UpdateCloudflareEmailRuleRequest, v1.UpdateCloudflareEmailRuleResponse]
-	deleteCloudflareEmailRule          *connect.Client[v1.DeleteCloudflareEmailRuleRequest, v1.DeleteCloudflareEmailRuleResponse]
-	setCloudflareEmailCatchAll         *connect.Client[v1.SetCloudflareEmailCatchAllRequest, v1.SetCloudflareEmailCatchAllResponse]
-	createCloudflareEmailAddress       *connect.Client[v1.CreateCloudflareEmailAddressRequest, v1.CreateCloudflareEmailAddressResponse]
-	deleteCloudflareEmailAddress       *connect.Client[v1.DeleteCloudflareEmailAddressRequest, v1.DeleteCloudflareEmailAddressResponse]
-	listCloudflareEmailLogs            *connect.Client[v1.ListCloudflareEmailLogsRequest, v1.ListCloudflareEmailLogsResponse]
-}
-
-// ListCloudflareZones calls neobox.v1.CloudflareService.ListCloudflareZones.
-func (c *cloudflareServiceClient) ListCloudflareZones(ctx context.Context, req *connect.Request[v1.ListCloudflareZonesRequest]) (*connect.Response[v1.ListCloudflareZonesResponse], error) {
-	return c.listCloudflareZones.CallUnary(ctx, req)
-}
-
-// GetCloudflareZone calls neobox.v1.CloudflareService.GetCloudflareZone.
-func (c *cloudflareServiceClient) GetCloudflareZone(ctx context.Context, req *connect.Request[v1.GetCloudflareZoneRequest]) (*connect.Response[v1.GetCloudflareZoneResponse], error) {
-	return c.getCloudflareZone.CallUnary(ctx, req)
-}
-
-// ListCloudflareDNSRecords calls neobox.v1.CloudflareService.ListCloudflareDNSRecords.
-func (c *cloudflareServiceClient) ListCloudflareDNSRecords(ctx context.Context, req *connect.Request[v1.ListCloudflareDNSRecordsRequest]) (*connect.Response[v1.ListCloudflareDNSRecordsResponse], error) {
-	return c.listCloudflareDNSRecords.CallUnary(ctx, req)
-}
-
-// CreateCloudflareDNSRecord calls neobox.v1.CloudflareService.CreateCloudflareDNSRecord.
-func (c *cloudflareServiceClient) CreateCloudflareDNSRecord(ctx context.Context, req *connect.Request[v1.CreateCloudflareDNSRecordRequest]) (*connect.Response[v1.CreateCloudflareDNSRecordResponse], error) {
-	return c.createCloudflareDNSRecord.CallUnary(ctx, req)
-}
-
-// UpdateCloudflareDNSRecord calls neobox.v1.CloudflareService.UpdateCloudflareDNSRecord.
-func (c *cloudflareServiceClient) UpdateCloudflareDNSRecord(ctx context.Context, req *connect.Request[v1.UpdateCloudflareDNSRecordRequest]) (*connect.Response[v1.UpdateCloudflareDNSRecordResponse], error) {
-	return c.updateCloudflareDNSRecord.CallUnary(ctx, req)
-}
-
-// SetCloudflareDNSRecordProxied calls neobox.v1.CloudflareService.SetCloudflareDNSRecordProxied.
-func (c *cloudflareServiceClient) SetCloudflareDNSRecordProxied(ctx context.Context, req *connect.Request[v1.SetCloudflareDNSRecordProxiedRequest]) (*connect.Response[v1.SetCloudflareDNSRecordProxiedResponse], error) {
-	return c.setCloudflareDNSRecordProxied.CallUnary(ctx, req)
-}
-
-// DeleteCloudflareDNSRecord calls neobox.v1.CloudflareService.DeleteCloudflareDNSRecord.
-func (c *cloudflareServiceClient) DeleteCloudflareDNSRecord(ctx context.Context, req *connect.Request[v1.DeleteCloudflareDNSRecordRequest]) (*connect.Response[v1.DeleteCloudflareDNSRecordResponse], error) {
-	return c.deleteCloudflareDNSRecord.CallUnary(ctx, req)
-}
-
-// ListCloudflareDNSOperations calls neobox.v1.CloudflareService.ListCloudflareDNSOperations.
-func (c *cloudflareServiceClient) ListCloudflareDNSOperations(ctx context.Context, req *connect.Request[v1.ListCloudflareDNSOperationsRequest]) (*connect.Response[v1.ListCloudflareDNSOperationsResponse], error) {
-	return c.listCloudflareDNSOperations.CallUnary(ctx, req)
-}
-
-// ListCloudflareWorkers calls neobox.v1.CloudflareService.ListCloudflareWorkers.
-func (c *cloudflareServiceClient) ListCloudflareWorkers(ctx context.Context, req *connect.Request[v1.ListCloudflareWorkersRequest]) (*connect.Response[v1.ListCloudflareWorkersResponse], error) {
-	return c.listCloudflareWorkers.CallUnary(ctx, req)
-}
-
-// ListCloudflarePagesProjects calls neobox.v1.CloudflareService.ListCloudflarePagesProjects.
-func (c *cloudflareServiceClient) ListCloudflarePagesProjects(ctx context.Context, req *connect.Request[v1.ListCloudflarePagesProjectsRequest]) (*connect.Response[v1.ListCloudflarePagesProjectsResponse], error) {
-	return c.listCloudflarePagesProjects.CallUnary(ctx, req)
-}
-
-// ListCloudflareTunnels calls neobox.v1.CloudflareService.ListCloudflareTunnels.
-func (c *cloudflareServiceClient) ListCloudflareTunnels(ctx context.Context, req *connect.Request[v1.ListCloudflareTunnelsRequest]) (*connect.Response[v1.ListCloudflareTunnelsResponse], error) {
-	return c.listCloudflareTunnels.CallUnary(ctx, req)
-}
-
-// GetCloudflareTunnel calls neobox.v1.CloudflareService.GetCloudflareTunnel.
-func (c *cloudflareServiceClient) GetCloudflareTunnel(ctx context.Context, req *connect.Request[v1.GetCloudflareTunnelRequest]) (*connect.Response[v1.GetCloudflareTunnelResponse], error) {
-	return c.getCloudflareTunnel.CallUnary(ctx, req)
-}
-
-// CreateCloudflareTunnel calls neobox.v1.CloudflareService.CreateCloudflareTunnel.
-func (c *cloudflareServiceClient) CreateCloudflareTunnel(ctx context.Context, req *connect.Request[v1.CreateCloudflareTunnelRequest]) (*connect.Response[v1.CreateCloudflareTunnelResponse], error) {
-	return c.createCloudflareTunnel.CallUnary(ctx, req)
-}
-
-// DeleteCloudflareTunnel calls neobox.v1.CloudflareService.DeleteCloudflareTunnel.
-func (c *cloudflareServiceClient) DeleteCloudflareTunnel(ctx context.Context, req *connect.Request[v1.DeleteCloudflareTunnelRequest]) (*connect.Response[v1.DeleteCloudflareTunnelResponse], error) {
-	return c.deleteCloudflareTunnel.CallUnary(ctx, req)
-}
-
-// GetCloudflareTunnelToken calls neobox.v1.CloudflareService.GetCloudflareTunnelToken.
-func (c *cloudflareServiceClient) GetCloudflareTunnelToken(ctx context.Context, req *connect.Request[v1.GetCloudflareTunnelTokenRequest]) (*connect.Response[v1.GetCloudflareTunnelTokenResponse], error) {
-	return c.getCloudflareTunnelToken.CallUnary(ctx, req)
-}
-
-// CleanupCloudflareTunnelConnections calls
-// neobox.v1.CloudflareService.CleanupCloudflareTunnelConnections.
-func (c *cloudflareServiceClient) CleanupCloudflareTunnelConnections(ctx context.Context, req *connect.Request[v1.CleanupCloudflareTunnelConnectionsRequest]) (*connect.Response[v1.CleanupCloudflareTunnelConnectionsResponse], error) {
-	return c.cleanupCloudflareTunnelConnections.CallUnary(ctx, req)
-}
-
-// AddCloudflareTunnelHostname calls neobox.v1.CloudflareService.AddCloudflareTunnelHostname.
-func (c *cloudflareServiceClient) AddCloudflareTunnelHostname(ctx context.Context, req *connect.Request[v1.AddCloudflareTunnelHostnameRequest]) (*connect.Response[v1.AddCloudflareTunnelHostnameResponse], error) {
-	return c.addCloudflareTunnelHostname.CallUnary(ctx, req)
-}
-
-// UpdateCloudflareTunnelHostname calls neobox.v1.CloudflareService.UpdateCloudflareTunnelHostname.
-func (c *cloudflareServiceClient) UpdateCloudflareTunnelHostname(ctx context.Context, req *connect.Request[v1.UpdateCloudflareTunnelHostnameRequest]) (*connect.Response[v1.UpdateCloudflareTunnelHostnameResponse], error) {
-	return c.updateCloudflareTunnelHostname.CallUnary(ctx, req)
-}
-
-// DeleteCloudflareTunnelHostname calls neobox.v1.CloudflareService.DeleteCloudflareTunnelHostname.
-func (c *cloudflareServiceClient) DeleteCloudflareTunnelHostname(ctx context.Context, req *connect.Request[v1.DeleteCloudflareTunnelHostnameRequest]) (*connect.Response[v1.DeleteCloudflareTunnelHostnameResponse], error) {
-	return c.deleteCloudflareTunnelHostname.CallUnary(ctx, req)
-}
-
-// GetCloudflareWorker calls neobox.v1.CloudflareService.GetCloudflareWorker.
-func (c *cloudflareServiceClient) GetCloudflareWorker(ctx context.Context, req *connect.Request[v1.GetCloudflareWorkerRequest]) (*connect.Response[v1.GetCloudflareWorkerResponse], error) {
-	return c.getCloudflareWorker.CallUnary(ctx, req)
-}
-
-// SetCloudflareWorkerWorkersDev calls neobox.v1.CloudflareService.SetCloudflareWorkerWorkersDev.
-func (c *cloudflareServiceClient) SetCloudflareWorkerWorkersDev(ctx context.Context, req *connect.Request[v1.SetCloudflareWorkerWorkersDevRequest]) (*connect.Response[v1.SetCloudflareWorkerWorkersDevResponse], error) {
-	return c.setCloudflareWorkerWorkersDev.CallUnary(ctx, req)
-}
-
-// AttachCloudflareWorkerDomain calls neobox.v1.CloudflareService.AttachCloudflareWorkerDomain.
-func (c *cloudflareServiceClient) AttachCloudflareWorkerDomain(ctx context.Context, req *connect.Request[v1.AttachCloudflareWorkerDomainRequest]) (*connect.Response[v1.AttachCloudflareWorkerDomainResponse], error) {
-	return c.attachCloudflareWorkerDomain.CallUnary(ctx, req)
-}
-
-// DetachCloudflareWorkerDomain calls neobox.v1.CloudflareService.DetachCloudflareWorkerDomain.
-func (c *cloudflareServiceClient) DetachCloudflareWorkerDomain(ctx context.Context, req *connect.Request[v1.DetachCloudflareWorkerDomainRequest]) (*connect.Response[v1.DetachCloudflareWorkerDomainResponse], error) {
-	return c.detachCloudflareWorkerDomain.CallUnary(ctx, req)
-}
-
-// AddCloudflareWorkerRoute calls neobox.v1.CloudflareService.AddCloudflareWorkerRoute.
-func (c *cloudflareServiceClient) AddCloudflareWorkerRoute(ctx context.Context, req *connect.Request[v1.AddCloudflareWorkerRouteRequest]) (*connect.Response[v1.AddCloudflareWorkerRouteResponse], error) {
-	return c.addCloudflareWorkerRoute.CallUnary(ctx, req)
-}
-
-// DeleteCloudflareWorkerRoute calls neobox.v1.CloudflareService.DeleteCloudflareWorkerRoute.
-func (c *cloudflareServiceClient) DeleteCloudflareWorkerRoute(ctx context.Context, req *connect.Request[v1.DeleteCloudflareWorkerRouteRequest]) (*connect.Response[v1.DeleteCloudflareWorkerRouteResponse], error) {
-	return c.deleteCloudflareWorkerRoute.CallUnary(ctx, req)
-}
-
-// AddCloudflareWorkerCron calls neobox.v1.CloudflareService.AddCloudflareWorkerCron.
-func (c *cloudflareServiceClient) AddCloudflareWorkerCron(ctx context.Context, req *connect.Request[v1.AddCloudflareWorkerCronRequest]) (*connect.Response[v1.AddCloudflareWorkerCronResponse], error) {
-	return c.addCloudflareWorkerCron.CallUnary(ctx, req)
-}
-
-// DeleteCloudflareWorkerCron calls neobox.v1.CloudflareService.DeleteCloudflareWorkerCron.
-func (c *cloudflareServiceClient) DeleteCloudflareWorkerCron(ctx context.Context, req *connect.Request[v1.DeleteCloudflareWorkerCronRequest]) (*connect.Response[v1.DeleteCloudflareWorkerCronResponse], error) {
-	return c.deleteCloudflareWorkerCron.CallUnary(ctx, req)
-}
-
-// PutCloudflareWorkerSecret calls neobox.v1.CloudflareService.PutCloudflareWorkerSecret.
-func (c *cloudflareServiceClient) PutCloudflareWorkerSecret(ctx context.Context, req *connect.Request[v1.PutCloudflareWorkerSecretRequest]) (*connect.Response[v1.PutCloudflareWorkerSecretResponse], error) {
-	return c.putCloudflareWorkerSecret.CallUnary(ctx, req)
-}
-
-// DeleteCloudflareWorkerSecret calls neobox.v1.CloudflareService.DeleteCloudflareWorkerSecret.
-func (c *cloudflareServiceClient) DeleteCloudflareWorkerSecret(ctx context.Context, req *connect.Request[v1.DeleteCloudflareWorkerSecretRequest]) (*connect.Response[v1.DeleteCloudflareWorkerSecretResponse], error) {
-	return c.deleteCloudflareWorkerSecret.CallUnary(ctx, req)
-}
-
-// RollbackCloudflareWorker calls neobox.v1.CloudflareService.RollbackCloudflareWorker.
-func (c *cloudflareServiceClient) RollbackCloudflareWorker(ctx context.Context, req *connect.Request[v1.RollbackCloudflareWorkerRequest]) (*connect.Response[v1.RollbackCloudflareWorkerResponse], error) {
-	return c.rollbackCloudflareWorker.CallUnary(ctx, req)
-}
-
-// DeleteCloudflareWorker calls neobox.v1.CloudflareService.DeleteCloudflareWorker.
-func (c *cloudflareServiceClient) DeleteCloudflareWorker(ctx context.Context, req *connect.Request[v1.DeleteCloudflareWorkerRequest]) (*connect.Response[v1.DeleteCloudflareWorkerResponse], error) {
-	return c.deleteCloudflareWorker.CallUnary(ctx, req)
-}
-
-// GetCloudflarePagesProject calls neobox.v1.CloudflareService.GetCloudflarePagesProject.
-func (c *cloudflareServiceClient) GetCloudflarePagesProject(ctx context.Context, req *connect.Request[v1.GetCloudflarePagesProjectRequest]) (*connect.Response[v1.GetCloudflarePagesProjectResponse], error) {
-	return c.getCloudflarePagesProject.CallUnary(ctx, req)
-}
-
-// ListCloudflarePagesDeployments calls neobox.v1.CloudflareService.ListCloudflarePagesDeployments.
-func (c *cloudflareServiceClient) ListCloudflarePagesDeployments(ctx context.Context, req *connect.Request[v1.ListCloudflarePagesDeploymentsRequest]) (*connect.Response[v1.ListCloudflarePagesDeploymentsResponse], error) {
-	return c.listCloudflarePagesDeployments.CallUnary(ctx, req)
-}
-
-// CreateCloudflarePagesProject calls neobox.v1.CloudflareService.CreateCloudflarePagesProject.
-func (c *cloudflareServiceClient) CreateCloudflarePagesProject(ctx context.Context, req *connect.Request[v1.CreateCloudflarePagesProjectRequest]) (*connect.Response[v1.CreateCloudflarePagesProjectResponse], error) {
-	return c.createCloudflarePagesProject.CallUnary(ctx, req)
-}
-
-// UpdateCloudflarePagesProject calls neobox.v1.CloudflareService.UpdateCloudflarePagesProject.
-func (c *cloudflareServiceClient) UpdateCloudflarePagesProject(ctx context.Context, req *connect.Request[v1.UpdateCloudflarePagesProjectRequest]) (*connect.Response[v1.UpdateCloudflarePagesProjectResponse], error) {
-	return c.updateCloudflarePagesProject.CallUnary(ctx, req)
-}
-
-// DeleteCloudflarePagesProject calls neobox.v1.CloudflareService.DeleteCloudflarePagesProject.
-func (c *cloudflareServiceClient) DeleteCloudflarePagesProject(ctx context.Context, req *connect.Request[v1.DeleteCloudflarePagesProjectRequest]) (*connect.Response[v1.DeleteCloudflarePagesProjectResponse], error) {
-	return c.deleteCloudflarePagesProject.CallUnary(ctx, req)
-}
-
-// RetryCloudflarePagesDeployment calls neobox.v1.CloudflareService.RetryCloudflarePagesDeployment.
-func (c *cloudflareServiceClient) RetryCloudflarePagesDeployment(ctx context.Context, req *connect.Request[v1.RetryCloudflarePagesDeploymentRequest]) (*connect.Response[v1.RetryCloudflarePagesDeploymentResponse], error) {
-	return c.retryCloudflarePagesDeployment.CallUnary(ctx, req)
-}
-
-// RollbackCloudflarePagesDeployment calls
-// neobox.v1.CloudflareService.RollbackCloudflarePagesDeployment.
-func (c *cloudflareServiceClient) RollbackCloudflarePagesDeployment(ctx context.Context, req *connect.Request[v1.RollbackCloudflarePagesDeploymentRequest]) (*connect.Response[v1.RollbackCloudflarePagesDeploymentResponse], error) {
-	return c.rollbackCloudflarePagesDeployment.CallUnary(ctx, req)
-}
-
-// DeleteCloudflarePagesDeployment calls
-// neobox.v1.CloudflareService.DeleteCloudflarePagesDeployment.
-func (c *cloudflareServiceClient) DeleteCloudflarePagesDeployment(ctx context.Context, req *connect.Request[v1.DeleteCloudflarePagesDeploymentRequest]) (*connect.Response[v1.DeleteCloudflarePagesDeploymentResponse], error) {
-	return c.deleteCloudflarePagesDeployment.CallUnary(ctx, req)
-}
-
-// AddCloudflarePagesDomain calls neobox.v1.CloudflareService.AddCloudflarePagesDomain.
-func (c *cloudflareServiceClient) AddCloudflarePagesDomain(ctx context.Context, req *connect.Request[v1.AddCloudflarePagesDomainRequest]) (*connect.Response[v1.AddCloudflarePagesDomainResponse], error) {
-	return c.addCloudflarePagesDomain.CallUnary(ctx, req)
-}
-
-// DeleteCloudflarePagesDomain calls neobox.v1.CloudflareService.DeleteCloudflarePagesDomain.
-func (c *cloudflareServiceClient) DeleteCloudflarePagesDomain(ctx context.Context, req *connect.Request[v1.DeleteCloudflarePagesDomainRequest]) (*connect.Response[v1.DeleteCloudflarePagesDomainResponse], error) {
-	return c.deleteCloudflarePagesDomain.CallUnary(ctx, req)
-}
-
-// SetCloudflarePagesEnvVar calls neobox.v1.CloudflareService.SetCloudflarePagesEnvVar.
-func (c *cloudflareServiceClient) SetCloudflarePagesEnvVar(ctx context.Context, req *connect.Request[v1.SetCloudflarePagesEnvVarRequest]) (*connect.Response[v1.SetCloudflarePagesEnvVarResponse], error) {
-	return c.setCloudflarePagesEnvVar.CallUnary(ctx, req)
-}
-
-// DeleteCloudflarePagesEnvVar calls neobox.v1.CloudflareService.DeleteCloudflarePagesEnvVar.
-func (c *cloudflareServiceClient) DeleteCloudflarePagesEnvVar(ctx context.Context, req *connect.Request[v1.DeleteCloudflarePagesEnvVarRequest]) (*connect.Response[v1.DeleteCloudflarePagesEnvVarResponse], error) {
-	return c.deleteCloudflarePagesEnvVar.CallUnary(ctx, req)
-}
-
-// ListCloudflareResourceOperations calls
-// neobox.v1.CloudflareService.ListCloudflareResourceOperations.
-func (c *cloudflareServiceClient) ListCloudflareResourceOperations(ctx context.Context, req *connect.Request[v1.ListCloudflareResourceOperationsRequest]) (*connect.Response[v1.ListCloudflareResourceOperationsResponse], error) {
-	return c.listCloudflareResourceOperations.CallUnary(ctx, req)
-}
-
-// GetCloudflareEmailRouting calls neobox.v1.CloudflareService.GetCloudflareEmailRouting.
-func (c *cloudflareServiceClient) GetCloudflareEmailRouting(ctx context.Context, req *connect.Request[v1.GetCloudflareEmailRoutingRequest]) (*connect.Response[v1.GetCloudflareEmailRoutingResponse], error) {
-	return c.getCloudflareEmailRouting.CallUnary(ctx, req)
-}
-
-// ListCloudflareEmailAddresses calls neobox.v1.CloudflareService.ListCloudflareEmailAddresses.
-func (c *cloudflareServiceClient) ListCloudflareEmailAddresses(ctx context.Context, req *connect.Request[v1.ListCloudflareEmailAddressesRequest]) (*connect.Response[v1.ListCloudflareEmailAddressesResponse], error) {
-	return c.listCloudflareEmailAddresses.CallUnary(ctx, req)
-}
-
-// EnableCloudflareEmailRouting calls neobox.v1.CloudflareService.EnableCloudflareEmailRouting.
-func (c *cloudflareServiceClient) EnableCloudflareEmailRouting(ctx context.Context, req *connect.Request[v1.EnableCloudflareEmailRoutingRequest]) (*connect.Response[v1.EnableCloudflareEmailRoutingResponse], error) {
-	return c.enableCloudflareEmailRouting.CallUnary(ctx, req)
-}
-
-// CreateCloudflareEmailRule calls neobox.v1.CloudflareService.CreateCloudflareEmailRule.
-func (c *cloudflareServiceClient) CreateCloudflareEmailRule(ctx context.Context, req *connect.Request[v1.CreateCloudflareEmailRuleRequest]) (*connect.Response[v1.CreateCloudflareEmailRuleResponse], error) {
-	return c.createCloudflareEmailRule.CallUnary(ctx, req)
-}
-
-// UpdateCloudflareEmailRule calls neobox.v1.CloudflareService.UpdateCloudflareEmailRule.
-func (c *cloudflareServiceClient) UpdateCloudflareEmailRule(ctx context.Context, req *connect.Request[v1.UpdateCloudflareEmailRuleRequest]) (*connect.Response[v1.UpdateCloudflareEmailRuleResponse], error) {
-	return c.updateCloudflareEmailRule.CallUnary(ctx, req)
-}
-
-// DeleteCloudflareEmailRule calls neobox.v1.CloudflareService.DeleteCloudflareEmailRule.
-func (c *cloudflareServiceClient) DeleteCloudflareEmailRule(ctx context.Context, req *connect.Request[v1.DeleteCloudflareEmailRuleRequest]) (*connect.Response[v1.DeleteCloudflareEmailRuleResponse], error) {
-	return c.deleteCloudflareEmailRule.CallUnary(ctx, req)
-}
-
-// SetCloudflareEmailCatchAll calls neobox.v1.CloudflareService.SetCloudflareEmailCatchAll.
-func (c *cloudflareServiceClient) SetCloudflareEmailCatchAll(ctx context.Context, req *connect.Request[v1.SetCloudflareEmailCatchAllRequest]) (*connect.Response[v1.SetCloudflareEmailCatchAllResponse], error) {
-	return c.setCloudflareEmailCatchAll.CallUnary(ctx, req)
-}
-
-// CreateCloudflareEmailAddress calls neobox.v1.CloudflareService.CreateCloudflareEmailAddress.
-func (c *cloudflareServiceClient) CreateCloudflareEmailAddress(ctx context.Context, req *connect.Request[v1.CreateCloudflareEmailAddressRequest]) (*connect.Response[v1.CreateCloudflareEmailAddressResponse], error) {
-	return c.createCloudflareEmailAddress.CallUnary(ctx, req)
-}
-
-// DeleteCloudflareEmailAddress calls neobox.v1.CloudflareService.DeleteCloudflareEmailAddress.
-func (c *cloudflareServiceClient) DeleteCloudflareEmailAddress(ctx context.Context, req *connect.Request[v1.DeleteCloudflareEmailAddressRequest]) (*connect.Response[v1.DeleteCloudflareEmailAddressResponse], error) {
-	return c.deleteCloudflareEmailAddress.CallUnary(ctx, req)
-}
-
-// ListCloudflareEmailLogs calls neobox.v1.CloudflareService.ListCloudflareEmailLogs.
-func (c *cloudflareServiceClient) ListCloudflareEmailLogs(ctx context.Context, req *connect.Request[v1.ListCloudflareEmailLogsRequest]) (*connect.Response[v1.ListCloudflareEmailLogsResponse], error) {
-	return c.listCloudflareEmailLogs.CallUnary(ctx, req)
+// NewCloudflareServiceClient constructs a client for the neobox.v1.CloudflareService service.
+// Multiple service clients may share a single connect.Client.
+func NewCloudflareServiceClient(client *connect.Client) CloudflareServiceClient {
+	return &cloudflareServiceClient{client: client}
 }
 
 // CloudflareServiceHandler is an implementation of the neobox.v1.CloudflareService service.
 type CloudflareServiceHandler interface {
 	// ListCloudflareZones pages through the Account's Zones, optionally those
 	// whose name contains query.
-	ListCloudflareZones(context.Context, *connect.Request[v1.ListCloudflareZonesRequest]) (*connect.Response[v1.ListCloudflareZonesResponse], error)
-	GetCloudflareZone(context.Context, *connect.Request[v1.GetCloudflareZoneRequest]) (*connect.Response[v1.GetCloudflareZoneResponse], error)
+	ListCloudflareZones(context.Context, *v1.ListCloudflareZonesRequest) (*v1.ListCloudflareZonesResponse, error)
+	GetCloudflareZone(context.Context, *v1.GetCloudflareZoneRequest) (*v1.GetCloudflareZoneResponse, error)
 	// ListCloudflareDNSRecords pages through a Zone's DNS records, optionally
 	// those matching query.
-	ListCloudflareDNSRecords(context.Context, *connect.Request[v1.ListCloudflareDNSRecordsRequest]) (*connect.Response[v1.ListCloudflareDNSRecordsResponse], error)
-	CreateCloudflareDNSRecord(context.Context, *connect.Request[v1.CreateCloudflareDNSRecordRequest]) (*connect.Response[v1.CreateCloudflareDNSRecordResponse], error)
+	ListCloudflareDNSRecords(context.Context, *v1.ListCloudflareDNSRecordsRequest) (*v1.ListCloudflareDNSRecordsResponse, error)
+	CreateCloudflareDNSRecord(context.Context, *v1.CreateCloudflareDNSRecordRequest) (*v1.CreateCloudflareDNSRecordResponse, error)
 	// UpdateCloudflareDNSRecord changes the fields the form shows and keeps
 	// every other attribute of the record (comment, tags, settings, ...).
-	UpdateCloudflareDNSRecord(context.Context, *connect.Request[v1.UpdateCloudflareDNSRecordRequest]) (*connect.Response[v1.UpdateCloudflareDNSRecordResponse], error)
+	UpdateCloudflareDNSRecord(context.Context, *v1.UpdateCloudflareDNSRecordRequest) (*v1.UpdateCloudflareDNSRecordResponse, error)
 	// SetCloudflareDNSRecordProxied changes only the proxy status.
-	SetCloudflareDNSRecordProxied(context.Context, *connect.Request[v1.SetCloudflareDNSRecordProxiedRequest]) (*connect.Response[v1.SetCloudflareDNSRecordProxiedResponse], error)
-	DeleteCloudflareDNSRecord(context.Context, *connect.Request[v1.DeleteCloudflareDNSRecordRequest]) (*connect.Response[v1.DeleteCloudflareDNSRecordResponse], error)
+	SetCloudflareDNSRecordProxied(context.Context, *v1.SetCloudflareDNSRecordProxiedRequest) (*v1.SetCloudflareDNSRecordProxiedResponse, error)
+	DeleteCloudflareDNSRecord(context.Context, *v1.DeleteCloudflareDNSRecordRequest) (*v1.DeleteCloudflareDNSRecordResponse, error)
 	// ListCloudflareDNSOperations lists the DNS changes started from Neo Box
 	// for a connection (and Zone), newest first.
-	ListCloudflareDNSOperations(context.Context, *connect.Request[v1.ListCloudflareDNSOperationsRequest]) (*connect.Response[v1.ListCloudflareDNSOperationsResponse], error)
-	ListCloudflareWorkers(context.Context, *connect.Request[v1.ListCloudflareWorkersRequest]) (*connect.Response[v1.ListCloudflareWorkersResponse], error)
-	ListCloudflarePagesProjects(context.Context, *connect.Request[v1.ListCloudflarePagesProjectsRequest]) (*connect.Response[v1.ListCloudflarePagesProjectsResponse], error)
+	ListCloudflareDNSOperations(context.Context, *v1.ListCloudflareDNSOperationsRequest) (*v1.ListCloudflareDNSOperationsResponse, error)
+	ListCloudflareWorkers(context.Context, *v1.ListCloudflareWorkersRequest) (*v1.ListCloudflareWorkersResponse, error)
+	ListCloudflarePagesProjects(context.Context, *v1.ListCloudflarePagesProjectsRequest) (*v1.ListCloudflarePagesProjectsResponse, error)
 	// ListCloudflareTunnels pages through the Account's cloudflared Tunnels,
 	// optionally those whose name contains query.
-	ListCloudflareTunnels(context.Context, *connect.Request[v1.ListCloudflareTunnelsRequest]) (*connect.Response[v1.ListCloudflareTunnelsResponse], error)
+	ListCloudflareTunnels(context.Context, *v1.ListCloudflareTunnelsRequest) (*v1.ListCloudflareTunnelsResponse, error)
 	// GetCloudflareTunnel reads a Tunnel with its connectors and public
 	// hostnames. A part that could not be read is reported in issues.
-	GetCloudflareTunnel(context.Context, *connect.Request[v1.GetCloudflareTunnelRequest]) (*connect.Response[v1.GetCloudflareTunnelResponse], error)
+	GetCloudflareTunnel(context.Context, *v1.GetCloudflareTunnelRequest) (*v1.GetCloudflareTunnelResponse, error)
 	// CreateCloudflareTunnel creates a remotely managed Tunnel, whose
 	// hostnames are edited here and whose cloudflared runs with a token.
-	CreateCloudflareTunnel(context.Context, *connect.Request[v1.CreateCloudflareTunnelRequest]) (*connect.Response[v1.CreateCloudflareTunnelResponse], error)
+	CreateCloudflareTunnel(context.Context, *v1.CreateCloudflareTunnelRequest) (*v1.CreateCloudflareTunnelResponse, error)
 	// DeleteCloudflareTunnel deletes a Tunnel. Cloudflare refuses while
 	// cloudflared is connected. DNS records pointing at it are left alone.
-	DeleteCloudflareTunnel(context.Context, *connect.Request[v1.DeleteCloudflareTunnelRequest]) (*connect.Response[v1.DeleteCloudflareTunnelResponse], error)
+	DeleteCloudflareTunnel(context.Context, *v1.DeleteCloudflareTunnelRequest) (*v1.DeleteCloudflareTunnelResponse, error)
 	// GetCloudflareTunnelToken returns the credential cloudflared runs the
 	// Tunnel with. It is never stored or logged by Neo Box.
-	GetCloudflareTunnelToken(context.Context, *connect.Request[v1.GetCloudflareTunnelTokenRequest]) (*connect.Response[v1.GetCloudflareTunnelTokenResponse], error)
+	GetCloudflareTunnelToken(context.Context, *v1.GetCloudflareTunnelTokenRequest) (*v1.GetCloudflareTunnelTokenResponse, error)
 	// CleanupCloudflareTunnelConnections closes a Tunnel's stale connections.
-	CleanupCloudflareTunnelConnections(context.Context, *connect.Request[v1.CleanupCloudflareTunnelConnectionsRequest]) (*connect.Response[v1.CleanupCloudflareTunnelConnectionsResponse], error)
+	CleanupCloudflareTunnelConnections(context.Context, *v1.CleanupCloudflareTunnelConnectionsRequest) (*v1.CleanupCloudflareTunnelConnectionsResponse, error)
 	// AddCloudflareTunnelHostname routes a public hostname to a service of a
 	// remotely managed Tunnel, and can create its DNS record.
-	AddCloudflareTunnelHostname(context.Context, *connect.Request[v1.AddCloudflareTunnelHostnameRequest]) (*connect.Response[v1.AddCloudflareTunnelHostnameResponse], error)
+	AddCloudflareTunnelHostname(context.Context, *v1.AddCloudflareTunnelHostnameRequest) (*v1.AddCloudflareTunnelHostnameResponse, error)
 	// UpdateCloudflareTunnelHostname changes the path and service of a route;
 	// its other settings are kept.
-	UpdateCloudflareTunnelHostname(context.Context, *connect.Request[v1.UpdateCloudflareTunnelHostnameRequest]) (*connect.Response[v1.UpdateCloudflareTunnelHostnameResponse], error)
+	UpdateCloudflareTunnelHostname(context.Context, *v1.UpdateCloudflareTunnelHostnameRequest) (*v1.UpdateCloudflareTunnelHostnameResponse, error)
 	// DeleteCloudflareTunnelHostname removes a route, and can delete its DNS
 	// record when that is a CNAME to this Tunnel.
-	DeleteCloudflareTunnelHostname(context.Context, *connect.Request[v1.DeleteCloudflareTunnelHostnameRequest]) (*connect.Response[v1.DeleteCloudflareTunnelHostnameResponse], error)
+	DeleteCloudflareTunnelHostname(context.Context, *v1.DeleteCloudflareTunnelHostnameRequest) (*v1.DeleteCloudflareTunnelHostnameResponse, error)
 	// GetCloudflareWorker reads a Worker with its workers.dev switch, custom
 	// domains, routes, cron triggers, secret names, bindings, recent
 	// deployments and versions. A part that could not be read is reported in
 	// issues. Neo Box never uploads code.
-	GetCloudflareWorker(context.Context, *connect.Request[v1.GetCloudflareWorkerRequest]) (*connect.Response[v1.GetCloudflareWorkerResponse], error)
-	SetCloudflareWorkerWorkersDev(context.Context, *connect.Request[v1.SetCloudflareWorkerWorkersDevRequest]) (*connect.Response[v1.SetCloudflareWorkerWorkersDevResponse], error)
+	GetCloudflareWorker(context.Context, *v1.GetCloudflareWorkerRequest) (*v1.GetCloudflareWorkerResponse, error)
+	SetCloudflareWorkerWorkersDev(context.Context, *v1.SetCloudflareWorkerWorkersDevRequest) (*v1.SetCloudflareWorkerWorkersDevResponse, error)
 	// AttachCloudflareWorkerDomain refuses a hostname that belongs to another
 	// Worker (Cloudflare itself would move it).
-	AttachCloudflareWorkerDomain(context.Context, *connect.Request[v1.AttachCloudflareWorkerDomainRequest]) (*connect.Response[v1.AttachCloudflareWorkerDomainResponse], error)
-	DetachCloudflareWorkerDomain(context.Context, *connect.Request[v1.DetachCloudflareWorkerDomainRequest]) (*connect.Response[v1.DetachCloudflareWorkerDomainResponse], error)
+	AttachCloudflareWorkerDomain(context.Context, *v1.AttachCloudflareWorkerDomainRequest) (*v1.AttachCloudflareWorkerDomainResponse, error)
+	DetachCloudflareWorkerDomain(context.Context, *v1.DetachCloudflareWorkerDomainRequest) (*v1.DetachCloudflareWorkerDomainResponse, error)
 	// AddCloudflareWorkerRoute runs the Worker on a pattern such as
 	// example.com/*, in the Zone that holds its host.
-	AddCloudflareWorkerRoute(context.Context, *connect.Request[v1.AddCloudflareWorkerRouteRequest]) (*connect.Response[v1.AddCloudflareWorkerRouteResponse], error)
-	DeleteCloudflareWorkerRoute(context.Context, *connect.Request[v1.DeleteCloudflareWorkerRouteRequest]) (*connect.Response[v1.DeleteCloudflareWorkerRouteResponse], error)
-	AddCloudflareWorkerCron(context.Context, *connect.Request[v1.AddCloudflareWorkerCronRequest]) (*connect.Response[v1.AddCloudflareWorkerCronResponse], error)
-	DeleteCloudflareWorkerCron(context.Context, *connect.Request[v1.DeleteCloudflareWorkerCronRequest]) (*connect.Response[v1.DeleteCloudflareWorkerCronResponse], error)
+	AddCloudflareWorkerRoute(context.Context, *v1.AddCloudflareWorkerRouteRequest) (*v1.AddCloudflareWorkerRouteResponse, error)
+	DeleteCloudflareWorkerRoute(context.Context, *v1.DeleteCloudflareWorkerRouteRequest) (*v1.DeleteCloudflareWorkerRouteResponse, error)
+	AddCloudflareWorkerCron(context.Context, *v1.AddCloudflareWorkerCronRequest) (*v1.AddCloudflareWorkerCronResponse, error)
+	DeleteCloudflareWorkerCron(context.Context, *v1.DeleteCloudflareWorkerCronRequest) (*v1.DeleteCloudflareWorkerCronResponse, error)
 	// PutCloudflareWorkerSecret sets a secret. The value goes to Cloudflare
 	// only; it is never stored, logged or returned.
-	PutCloudflareWorkerSecret(context.Context, *connect.Request[v1.PutCloudflareWorkerSecretRequest]) (*connect.Response[v1.PutCloudflareWorkerSecretResponse], error)
-	DeleteCloudflareWorkerSecret(context.Context, *connect.Request[v1.DeleteCloudflareWorkerSecretRequest]) (*connect.Response[v1.DeleteCloudflareWorkerSecretResponse], error)
+	PutCloudflareWorkerSecret(context.Context, *v1.PutCloudflareWorkerSecretRequest) (*v1.PutCloudflareWorkerSecretResponse, error)
+	DeleteCloudflareWorkerSecret(context.Context, *v1.DeleteCloudflareWorkerSecretRequest) (*v1.DeleteCloudflareWorkerSecretResponse, error)
 	// RollbackCloudflareWorker serves an earlier version at 100% of traffic.
-	RollbackCloudflareWorker(context.Context, *connect.Request[v1.RollbackCloudflareWorkerRequest]) (*connect.Response[v1.RollbackCloudflareWorkerResponse], error)
-	DeleteCloudflareWorker(context.Context, *connect.Request[v1.DeleteCloudflareWorkerRequest]) (*connect.Response[v1.DeleteCloudflareWorkerResponse], error)
+	RollbackCloudflareWorker(context.Context, *v1.RollbackCloudflareWorkerRequest) (*v1.RollbackCloudflareWorkerResponse, error)
+	DeleteCloudflareWorker(context.Context, *v1.DeleteCloudflareWorkerRequest) (*v1.DeleteCloudflareWorkerResponse, error)
 	// GetCloudflarePagesProject reads a project with its build settings,
 	// environment variables (secrets without values) and custom domains.
-	GetCloudflarePagesProject(context.Context, *connect.Request[v1.GetCloudflarePagesProjectRequest]) (*connect.Response[v1.GetCloudflarePagesProjectResponse], error)
-	ListCloudflarePagesDeployments(context.Context, *connect.Request[v1.ListCloudflarePagesDeploymentsRequest]) (*connect.Response[v1.ListCloudflarePagesDeploymentsResponse], error)
+	GetCloudflarePagesProject(context.Context, *v1.GetCloudflarePagesProjectRequest) (*v1.GetCloudflarePagesProjectResponse, error)
+	ListCloudflarePagesDeployments(context.Context, *v1.ListCloudflarePagesDeploymentsRequest) (*v1.ListCloudflarePagesDeploymentsResponse, error)
 	// CreateCloudflarePagesProject creates an empty Direct Upload project;
 	// Neo Box does not upload files.
-	CreateCloudflarePagesProject(context.Context, *connect.Request[v1.CreateCloudflarePagesProjectRequest]) (*connect.Response[v1.CreateCloudflarePagesProjectResponse], error)
+	CreateCloudflarePagesProject(context.Context, *v1.CreateCloudflarePagesProjectRequest) (*v1.CreateCloudflarePagesProjectResponse, error)
 	// UpdateCloudflarePagesProject changes the fields that are set. The
 	// production branch of a Git project is refused.
-	UpdateCloudflarePagesProject(context.Context, *connect.Request[v1.UpdateCloudflarePagesProjectRequest]) (*connect.Response[v1.UpdateCloudflarePagesProjectResponse], error)
-	DeleteCloudflarePagesProject(context.Context, *connect.Request[v1.DeleteCloudflarePagesProjectRequest]) (*connect.Response[v1.DeleteCloudflarePagesProjectResponse], error)
-	RetryCloudflarePagesDeployment(context.Context, *connect.Request[v1.RetryCloudflarePagesDeploymentRequest]) (*connect.Response[v1.RetryCloudflarePagesDeploymentResponse], error)
-	RollbackCloudflarePagesDeployment(context.Context, *connect.Request[v1.RollbackCloudflarePagesDeploymentRequest]) (*connect.Response[v1.RollbackCloudflarePagesDeploymentResponse], error)
+	UpdateCloudflarePagesProject(context.Context, *v1.UpdateCloudflarePagesProjectRequest) (*v1.UpdateCloudflarePagesProjectResponse, error)
+	DeleteCloudflarePagesProject(context.Context, *v1.DeleteCloudflarePagesProjectRequest) (*v1.DeleteCloudflarePagesProjectResponse, error)
+	RetryCloudflarePagesDeployment(context.Context, *v1.RetryCloudflarePagesDeploymentRequest) (*v1.RetryCloudflarePagesDeploymentResponse, error)
+	RollbackCloudflarePagesDeployment(context.Context, *v1.RollbackCloudflarePagesDeploymentRequest) (*v1.RollbackCloudflarePagesDeploymentResponse, error)
 	// DeleteCloudflarePagesDeployment never forces: Cloudflare refuses the
 	// live production deployment.
-	DeleteCloudflarePagesDeployment(context.Context, *connect.Request[v1.DeleteCloudflarePagesDeploymentRequest]) (*connect.Response[v1.DeleteCloudflarePagesDeploymentResponse], error)
+	DeleteCloudflarePagesDeployment(context.Context, *v1.DeleteCloudflarePagesDeploymentRequest) (*v1.DeleteCloudflarePagesDeploymentResponse, error)
 	// AddCloudflarePagesDomain adds a custom domain and can create its CNAME.
-	AddCloudflarePagesDomain(context.Context, *connect.Request[v1.AddCloudflarePagesDomainRequest]) (*connect.Response[v1.AddCloudflarePagesDomainResponse], error)
-	DeleteCloudflarePagesDomain(context.Context, *connect.Request[v1.DeleteCloudflarePagesDomainRequest]) (*connect.Response[v1.DeleteCloudflarePagesDomainResponse], error)
+	AddCloudflarePagesDomain(context.Context, *v1.AddCloudflarePagesDomainRequest) (*v1.AddCloudflarePagesDomainResponse, error)
+	DeleteCloudflarePagesDomain(context.Context, *v1.DeleteCloudflarePagesDomainRequest) (*v1.DeleteCloudflarePagesDomainResponse, error)
 	// SetCloudflarePagesEnvVar sets one environment variable. A value goes
 	// to Cloudflare only; it is never stored or logged.
-	SetCloudflarePagesEnvVar(context.Context, *connect.Request[v1.SetCloudflarePagesEnvVarRequest]) (*connect.Response[v1.SetCloudflarePagesEnvVarResponse], error)
-	DeleteCloudflarePagesEnvVar(context.Context, *connect.Request[v1.DeleteCloudflarePagesEnvVarRequest]) (*connect.Response[v1.DeleteCloudflarePagesEnvVarResponse], error)
+	SetCloudflarePagesEnvVar(context.Context, *v1.SetCloudflarePagesEnvVarRequest) (*v1.SetCloudflarePagesEnvVarResponse, error)
+	DeleteCloudflarePagesEnvVar(context.Context, *v1.DeleteCloudflarePagesEnvVarRequest) (*v1.DeleteCloudflarePagesEnvVarResponse, error)
 	// ListCloudflareResourceOperations lists Worker, Pages, and Email Routing
 	// changes started from Neo Box for a connection, newest first.
-	ListCloudflareResourceOperations(context.Context, *connect.Request[v1.ListCloudflareResourceOperationsRequest]) (*connect.Response[v1.ListCloudflareResourceOperationsResponse], error)
+	ListCloudflareResourceOperations(context.Context, *v1.ListCloudflareResourceOperationsRequest) (*v1.ListCloudflareResourceOperationsResponse, error)
 	// GetCloudflareEmailRouting reads a Zone's Email Routing status, its
 	// rules and its catch-all. Each part that cannot be read is empty and
 	// named in issues. required_dns_records is filled only while Email
 	// Routing is not enabled.
-	GetCloudflareEmailRouting(context.Context, *connect.Request[v1.GetCloudflareEmailRoutingRequest]) (*connect.Response[v1.GetCloudflareEmailRoutingResponse], error)
+	GetCloudflareEmailRouting(context.Context, *v1.GetCloudflareEmailRoutingRequest) (*v1.GetCloudflareEmailRoutingResponse, error)
 	// ListCloudflareEmailAddresses lists the Account's destination addresses
 	// (shared by all its Zones).
-	ListCloudflareEmailAddresses(context.Context, *connect.Request[v1.ListCloudflareEmailAddressesRequest]) (*connect.Response[v1.ListCloudflareEmailAddressesResponse], error)
+	ListCloudflareEmailAddresses(context.Context, *v1.ListCloudflareEmailAddressesRequest) (*v1.ListCloudflareEmailAddressesResponse, error)
 	// EnableCloudflareEmailRouting enables Email Routing; Cloudflare adds and
 	// locks the MX and SPF records. There is no way to disable it here.
-	EnableCloudflareEmailRouting(context.Context, *connect.Request[v1.EnableCloudflareEmailRoutingRequest]) (*connect.Response[v1.EnableCloudflareEmailRoutingResponse], error)
+	EnableCloudflareEmailRouting(context.Context, *v1.EnableCloudflareEmailRoutingRequest) (*v1.EnableCloudflareEmailRoutingResponse, error)
 	// CreateCloudflareEmailRule adds a rule for one address. A forward needs
 	// a verified destination address (FailedPrecondition otherwise).
-	CreateCloudflareEmailRule(context.Context, *connect.Request[v1.CreateCloudflareEmailRuleRequest]) (*connect.Response[v1.CreateCloudflareEmailRuleResponse], error)
+	CreateCloudflareEmailRule(context.Context, *v1.CreateCloudflareEmailRuleRequest) (*v1.CreateCloudflareEmailRuleResponse, error)
 	// UpdateCloudflareEmailRule replaces a rule's fields, which includes
 	// enabling and disabling it. A rule managed by a Worker's wrangler
 	// configuration, or sending to a Worker, is FailedPrecondition.
-	UpdateCloudflareEmailRule(context.Context, *connect.Request[v1.UpdateCloudflareEmailRuleRequest]) (*connect.Response[v1.UpdateCloudflareEmailRuleResponse], error)
-	DeleteCloudflareEmailRule(context.Context, *connect.Request[v1.DeleteCloudflareEmailRuleRequest]) (*connect.Response[v1.DeleteCloudflareEmailRuleResponse], error)
+	UpdateCloudflareEmailRule(context.Context, *v1.UpdateCloudflareEmailRuleRequest) (*v1.UpdateCloudflareEmailRuleResponse, error)
+	DeleteCloudflareEmailRule(context.Context, *v1.DeleteCloudflareEmailRuleRequest) (*v1.DeleteCloudflareEmailRuleResponse, error)
 	// SetCloudflareEmailCatchAll sets the catch-all: off keeps its current
 	// action, drop discards, forward needs a verified destination address.
-	SetCloudflareEmailCatchAll(context.Context, *connect.Request[v1.SetCloudflareEmailCatchAllRequest]) (*connect.Response[v1.SetCloudflareEmailCatchAllResponse], error)
+	SetCloudflareEmailCatchAll(context.Context, *v1.SetCloudflareEmailCatchAllRequest) (*v1.SetCloudflareEmailCatchAllResponse, error)
 	// CreateCloudflareEmailAddress adds a destination address; Cloudflare
 	// emails it a link that verifies it.
-	CreateCloudflareEmailAddress(context.Context, *connect.Request[v1.CreateCloudflareEmailAddressRequest]) (*connect.Response[v1.CreateCloudflareEmailAddressResponse], error)
+	CreateCloudflareEmailAddress(context.Context, *v1.CreateCloudflareEmailAddressRequest) (*v1.CreateCloudflareEmailAddressResponse, error)
 	// DeleteCloudflareEmailAddress deletes a destination address, refused
 	// while a rule or the catch-all of zone_id still forwards to it.
-	DeleteCloudflareEmailAddress(context.Context, *connect.Request[v1.DeleteCloudflareEmailAddressRequest]) (*connect.Response[v1.DeleteCloudflareEmailAddressResponse], error)
+	DeleteCloudflareEmailAddress(context.Context, *v1.DeleteCloudflareEmailAddressRequest) (*v1.DeleteCloudflareEmailAddressResponse, error)
 	// ListCloudflareEmailLogs reads a Zone's Email Routing events (mail
 	// received, forwarded, dropped, rejected or failed), newest first, from
 	// Cloudflare's GraphQL Analytics API. Cloudflare keeps them 31 days. The
 	// token needs the Analytics Read permission (PermissionDenied otherwise).
 	// Nothing is stored.
-	ListCloudflareEmailLogs(context.Context, *connect.Request[v1.ListCloudflareEmailLogsRequest]) (*connect.Response[v1.ListCloudflareEmailLogsResponse], error)
+	ListCloudflareEmailLogs(context.Context, *v1.ListCloudflareEmailLogsRequest) (*v1.ListCloudflareEmailLogsResponse, error)
 }
 
-// NewCloudflareServiceHandler builds an HTTP handler from the service implementation. It returns
-// the path on which to mount the handler and the handler itself.
-//
-// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
-// and JSON codecs. They also support gzip compression.
-func NewCloudflareServiceHandler(svc CloudflareServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
-	cloudflareServiceMethods := v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods()
-	cloudflareServiceListCloudflareZonesHandler := connect.NewUnaryHandler(
-		CloudflareServiceListCloudflareZonesProcedure,
-		svc.ListCloudflareZones,
-		connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareZones")),
-		connect.WithHandlerOptions(opts...),
+// RegisterCloudflareServiceHandler registers svc as the neobox.v1.CloudflareService implementation
+// on server.
+func RegisterCloudflareServiceHandler(server *connect.Server, svc CloudflareServiceHandler) {
+	adapter := cloudflareServiceHandler{svc: svc}
+	server.Register(
+		connect.Method{Spec: cloudflareServiceListCloudflareZonesSpec(), Handler: adapter.listCloudflareZones},
+		connect.Method{Spec: cloudflareServiceGetCloudflareZoneSpec(), Handler: adapter.getCloudflareZone},
+		connect.Method{Spec: cloudflareServiceListCloudflareDNSRecordsSpec(), Handler: adapter.listCloudflareDNSRecords},
+		connect.Method{Spec: cloudflareServiceCreateCloudflareDNSRecordSpec(), Handler: adapter.createCloudflareDNSRecord},
+		connect.Method{Spec: cloudflareServiceUpdateCloudflareDNSRecordSpec(), Handler: adapter.updateCloudflareDNSRecord},
+		connect.Method{Spec: cloudflareServiceSetCloudflareDNSRecordProxiedSpec(), Handler: adapter.setCloudflareDNSRecordProxied},
+		connect.Method{Spec: cloudflareServiceDeleteCloudflareDNSRecordSpec(), Handler: adapter.deleteCloudflareDNSRecord},
+		connect.Method{Spec: cloudflareServiceListCloudflareDNSOperationsSpec(), Handler: adapter.listCloudflareDNSOperations},
+		connect.Method{Spec: cloudflareServiceListCloudflareWorkersSpec(), Handler: adapter.listCloudflareWorkers},
+		connect.Method{Spec: cloudflareServiceListCloudflarePagesProjectsSpec(), Handler: adapter.listCloudflarePagesProjects},
+		connect.Method{Spec: cloudflareServiceListCloudflareTunnelsSpec(), Handler: adapter.listCloudflareTunnels},
+		connect.Method{Spec: cloudflareServiceGetCloudflareTunnelSpec(), Handler: adapter.getCloudflareTunnel},
+		connect.Method{Spec: cloudflareServiceCreateCloudflareTunnelSpec(), Handler: adapter.createCloudflareTunnel},
+		connect.Method{Spec: cloudflareServiceDeleteCloudflareTunnelSpec(), Handler: adapter.deleteCloudflareTunnel},
+		connect.Method{Spec: cloudflareServiceGetCloudflareTunnelTokenSpec(), Handler: adapter.getCloudflareTunnelToken},
+		connect.Method{Spec: cloudflareServiceCleanupCloudflareTunnelConnectionsSpec(), Handler: adapter.cleanupCloudflareTunnelConnections},
+		connect.Method{Spec: cloudflareServiceAddCloudflareTunnelHostnameSpec(), Handler: adapter.addCloudflareTunnelHostname},
+		connect.Method{Spec: cloudflareServiceUpdateCloudflareTunnelHostnameSpec(), Handler: adapter.updateCloudflareTunnelHostname},
+		connect.Method{Spec: cloudflareServiceDeleteCloudflareTunnelHostnameSpec(), Handler: adapter.deleteCloudflareTunnelHostname},
+		connect.Method{Spec: cloudflareServiceGetCloudflareWorkerSpec(), Handler: adapter.getCloudflareWorker},
+		connect.Method{Spec: cloudflareServiceSetCloudflareWorkerWorkersDevSpec(), Handler: adapter.setCloudflareWorkerWorkersDev},
+		connect.Method{Spec: cloudflareServiceAttachCloudflareWorkerDomainSpec(), Handler: adapter.attachCloudflareWorkerDomain},
+		connect.Method{Spec: cloudflareServiceDetachCloudflareWorkerDomainSpec(), Handler: adapter.detachCloudflareWorkerDomain},
+		connect.Method{Spec: cloudflareServiceAddCloudflareWorkerRouteSpec(), Handler: adapter.addCloudflareWorkerRoute},
+		connect.Method{Spec: cloudflareServiceDeleteCloudflareWorkerRouteSpec(), Handler: adapter.deleteCloudflareWorkerRoute},
+		connect.Method{Spec: cloudflareServiceAddCloudflareWorkerCronSpec(), Handler: adapter.addCloudflareWorkerCron},
+		connect.Method{Spec: cloudflareServiceDeleteCloudflareWorkerCronSpec(), Handler: adapter.deleteCloudflareWorkerCron},
+		connect.Method{Spec: cloudflareServicePutCloudflareWorkerSecretSpec(), Handler: adapter.putCloudflareWorkerSecret},
+		connect.Method{Spec: cloudflareServiceDeleteCloudflareWorkerSecretSpec(), Handler: adapter.deleteCloudflareWorkerSecret},
+		connect.Method{Spec: cloudflareServiceRollbackCloudflareWorkerSpec(), Handler: adapter.rollbackCloudflareWorker},
+		connect.Method{Spec: cloudflareServiceDeleteCloudflareWorkerSpec(), Handler: adapter.deleteCloudflareWorker},
+		connect.Method{Spec: cloudflareServiceGetCloudflarePagesProjectSpec(), Handler: adapter.getCloudflarePagesProject},
+		connect.Method{Spec: cloudflareServiceListCloudflarePagesDeploymentsSpec(), Handler: adapter.listCloudflarePagesDeployments},
+		connect.Method{Spec: cloudflareServiceCreateCloudflarePagesProjectSpec(), Handler: adapter.createCloudflarePagesProject},
+		connect.Method{Spec: cloudflareServiceUpdateCloudflarePagesProjectSpec(), Handler: adapter.updateCloudflarePagesProject},
+		connect.Method{Spec: cloudflareServiceDeleteCloudflarePagesProjectSpec(), Handler: adapter.deleteCloudflarePagesProject},
+		connect.Method{Spec: cloudflareServiceRetryCloudflarePagesDeploymentSpec(), Handler: adapter.retryCloudflarePagesDeployment},
+		connect.Method{Spec: cloudflareServiceRollbackCloudflarePagesDeploymentSpec(), Handler: adapter.rollbackCloudflarePagesDeployment},
+		connect.Method{Spec: cloudflareServiceDeleteCloudflarePagesDeploymentSpec(), Handler: adapter.deleteCloudflarePagesDeployment},
+		connect.Method{Spec: cloudflareServiceAddCloudflarePagesDomainSpec(), Handler: adapter.addCloudflarePagesDomain},
+		connect.Method{Spec: cloudflareServiceDeleteCloudflarePagesDomainSpec(), Handler: adapter.deleteCloudflarePagesDomain},
+		connect.Method{Spec: cloudflareServiceSetCloudflarePagesEnvVarSpec(), Handler: adapter.setCloudflarePagesEnvVar},
+		connect.Method{Spec: cloudflareServiceDeleteCloudflarePagesEnvVarSpec(), Handler: adapter.deleteCloudflarePagesEnvVar},
+		connect.Method{Spec: cloudflareServiceListCloudflareResourceOperationsSpec(), Handler: adapter.listCloudflareResourceOperations},
+		connect.Method{Spec: cloudflareServiceGetCloudflareEmailRoutingSpec(), Handler: adapter.getCloudflareEmailRouting},
+		connect.Method{Spec: cloudflareServiceListCloudflareEmailAddressesSpec(), Handler: adapter.listCloudflareEmailAddresses},
+		connect.Method{Spec: cloudflareServiceEnableCloudflareEmailRoutingSpec(), Handler: adapter.enableCloudflareEmailRouting},
+		connect.Method{Spec: cloudflareServiceCreateCloudflareEmailRuleSpec(), Handler: adapter.createCloudflareEmailRule},
+		connect.Method{Spec: cloudflareServiceUpdateCloudflareEmailRuleSpec(), Handler: adapter.updateCloudflareEmailRule},
+		connect.Method{Spec: cloudflareServiceDeleteCloudflareEmailRuleSpec(), Handler: adapter.deleteCloudflareEmailRule},
+		connect.Method{Spec: cloudflareServiceSetCloudflareEmailCatchAllSpec(), Handler: adapter.setCloudflareEmailCatchAll},
+		connect.Method{Spec: cloudflareServiceCreateCloudflareEmailAddressSpec(), Handler: adapter.createCloudflareEmailAddress},
+		connect.Method{Spec: cloudflareServiceDeleteCloudflareEmailAddressSpec(), Handler: adapter.deleteCloudflareEmailAddress},
+		connect.Method{Spec: cloudflareServiceListCloudflareEmailLogsSpec(), Handler: adapter.listCloudflareEmailLogs},
 	)
-	cloudflareServiceGetCloudflareZoneHandler := connect.NewUnaryHandler(
-		CloudflareServiceGetCloudflareZoneProcedure,
-		svc.GetCloudflareZone,
-		connect.WithSchema(cloudflareServiceMethods.ByName("GetCloudflareZone")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceListCloudflareDNSRecordsHandler := connect.NewUnaryHandler(
-		CloudflareServiceListCloudflareDNSRecordsProcedure,
-		svc.ListCloudflareDNSRecords,
-		connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareDNSRecords")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceCreateCloudflareDNSRecordHandler := connect.NewUnaryHandler(
-		CloudflareServiceCreateCloudflareDNSRecordProcedure,
-		svc.CreateCloudflareDNSRecord,
-		connect.WithSchema(cloudflareServiceMethods.ByName("CreateCloudflareDNSRecord")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceUpdateCloudflareDNSRecordHandler := connect.NewUnaryHandler(
-		CloudflareServiceUpdateCloudflareDNSRecordProcedure,
-		svc.UpdateCloudflareDNSRecord,
-		connect.WithSchema(cloudflareServiceMethods.ByName("UpdateCloudflareDNSRecord")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceSetCloudflareDNSRecordProxiedHandler := connect.NewUnaryHandler(
-		CloudflareServiceSetCloudflareDNSRecordProxiedProcedure,
-		svc.SetCloudflareDNSRecordProxied,
-		connect.WithSchema(cloudflareServiceMethods.ByName("SetCloudflareDNSRecordProxied")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceDeleteCloudflareDNSRecordHandler := connect.NewUnaryHandler(
-		CloudflareServiceDeleteCloudflareDNSRecordProcedure,
-		svc.DeleteCloudflareDNSRecord,
-		connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareDNSRecord")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceListCloudflareDNSOperationsHandler := connect.NewUnaryHandler(
-		CloudflareServiceListCloudflareDNSOperationsProcedure,
-		svc.ListCloudflareDNSOperations,
-		connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareDNSOperations")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceListCloudflareWorkersHandler := connect.NewUnaryHandler(
-		CloudflareServiceListCloudflareWorkersProcedure,
-		svc.ListCloudflareWorkers,
-		connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareWorkers")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceListCloudflarePagesProjectsHandler := connect.NewUnaryHandler(
-		CloudflareServiceListCloudflarePagesProjectsProcedure,
-		svc.ListCloudflarePagesProjects,
-		connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflarePagesProjects")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceListCloudflareTunnelsHandler := connect.NewUnaryHandler(
-		CloudflareServiceListCloudflareTunnelsProcedure,
-		svc.ListCloudflareTunnels,
-		connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareTunnels")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceGetCloudflareTunnelHandler := connect.NewUnaryHandler(
-		CloudflareServiceGetCloudflareTunnelProcedure,
-		svc.GetCloudflareTunnel,
-		connect.WithSchema(cloudflareServiceMethods.ByName("GetCloudflareTunnel")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceCreateCloudflareTunnelHandler := connect.NewUnaryHandler(
-		CloudflareServiceCreateCloudflareTunnelProcedure,
-		svc.CreateCloudflareTunnel,
-		connect.WithSchema(cloudflareServiceMethods.ByName("CreateCloudflareTunnel")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceDeleteCloudflareTunnelHandler := connect.NewUnaryHandler(
-		CloudflareServiceDeleteCloudflareTunnelProcedure,
-		svc.DeleteCloudflareTunnel,
-		connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareTunnel")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceGetCloudflareTunnelTokenHandler := connect.NewUnaryHandler(
-		CloudflareServiceGetCloudflareTunnelTokenProcedure,
-		svc.GetCloudflareTunnelToken,
-		connect.WithSchema(cloudflareServiceMethods.ByName("GetCloudflareTunnelToken")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceCleanupCloudflareTunnelConnectionsHandler := connect.NewUnaryHandler(
-		CloudflareServiceCleanupCloudflareTunnelConnectionsProcedure,
-		svc.CleanupCloudflareTunnelConnections,
-		connect.WithSchema(cloudflareServiceMethods.ByName("CleanupCloudflareTunnelConnections")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceAddCloudflareTunnelHostnameHandler := connect.NewUnaryHandler(
-		CloudflareServiceAddCloudflareTunnelHostnameProcedure,
-		svc.AddCloudflareTunnelHostname,
-		connect.WithSchema(cloudflareServiceMethods.ByName("AddCloudflareTunnelHostname")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceUpdateCloudflareTunnelHostnameHandler := connect.NewUnaryHandler(
-		CloudflareServiceUpdateCloudflareTunnelHostnameProcedure,
-		svc.UpdateCloudflareTunnelHostname,
-		connect.WithSchema(cloudflareServiceMethods.ByName("UpdateCloudflareTunnelHostname")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceDeleteCloudflareTunnelHostnameHandler := connect.NewUnaryHandler(
-		CloudflareServiceDeleteCloudflareTunnelHostnameProcedure,
-		svc.DeleteCloudflareTunnelHostname,
-		connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareTunnelHostname")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceGetCloudflareWorkerHandler := connect.NewUnaryHandler(
-		CloudflareServiceGetCloudflareWorkerProcedure,
-		svc.GetCloudflareWorker,
-		connect.WithSchema(cloudflareServiceMethods.ByName("GetCloudflareWorker")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceSetCloudflareWorkerWorkersDevHandler := connect.NewUnaryHandler(
-		CloudflareServiceSetCloudflareWorkerWorkersDevProcedure,
-		svc.SetCloudflareWorkerWorkersDev,
-		connect.WithSchema(cloudflareServiceMethods.ByName("SetCloudflareWorkerWorkersDev")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceAttachCloudflareWorkerDomainHandler := connect.NewUnaryHandler(
-		CloudflareServiceAttachCloudflareWorkerDomainProcedure,
-		svc.AttachCloudflareWorkerDomain,
-		connect.WithSchema(cloudflareServiceMethods.ByName("AttachCloudflareWorkerDomain")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceDetachCloudflareWorkerDomainHandler := connect.NewUnaryHandler(
-		CloudflareServiceDetachCloudflareWorkerDomainProcedure,
-		svc.DetachCloudflareWorkerDomain,
-		connect.WithSchema(cloudflareServiceMethods.ByName("DetachCloudflareWorkerDomain")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceAddCloudflareWorkerRouteHandler := connect.NewUnaryHandler(
-		CloudflareServiceAddCloudflareWorkerRouteProcedure,
-		svc.AddCloudflareWorkerRoute,
-		connect.WithSchema(cloudflareServiceMethods.ByName("AddCloudflareWorkerRoute")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceDeleteCloudflareWorkerRouteHandler := connect.NewUnaryHandler(
-		CloudflareServiceDeleteCloudflareWorkerRouteProcedure,
-		svc.DeleteCloudflareWorkerRoute,
-		connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareWorkerRoute")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceAddCloudflareWorkerCronHandler := connect.NewUnaryHandler(
-		CloudflareServiceAddCloudflareWorkerCronProcedure,
-		svc.AddCloudflareWorkerCron,
-		connect.WithSchema(cloudflareServiceMethods.ByName("AddCloudflareWorkerCron")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceDeleteCloudflareWorkerCronHandler := connect.NewUnaryHandler(
-		CloudflareServiceDeleteCloudflareWorkerCronProcedure,
-		svc.DeleteCloudflareWorkerCron,
-		connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareWorkerCron")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServicePutCloudflareWorkerSecretHandler := connect.NewUnaryHandler(
-		CloudflareServicePutCloudflareWorkerSecretProcedure,
-		svc.PutCloudflareWorkerSecret,
-		connect.WithSchema(cloudflareServiceMethods.ByName("PutCloudflareWorkerSecret")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceDeleteCloudflareWorkerSecretHandler := connect.NewUnaryHandler(
-		CloudflareServiceDeleteCloudflareWorkerSecretProcedure,
-		svc.DeleteCloudflareWorkerSecret,
-		connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareWorkerSecret")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceRollbackCloudflareWorkerHandler := connect.NewUnaryHandler(
-		CloudflareServiceRollbackCloudflareWorkerProcedure,
-		svc.RollbackCloudflareWorker,
-		connect.WithSchema(cloudflareServiceMethods.ByName("RollbackCloudflareWorker")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceDeleteCloudflareWorkerHandler := connect.NewUnaryHandler(
-		CloudflareServiceDeleteCloudflareWorkerProcedure,
-		svc.DeleteCloudflareWorker,
-		connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareWorker")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceGetCloudflarePagesProjectHandler := connect.NewUnaryHandler(
-		CloudflareServiceGetCloudflarePagesProjectProcedure,
-		svc.GetCloudflarePagesProject,
-		connect.WithSchema(cloudflareServiceMethods.ByName("GetCloudflarePagesProject")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceListCloudflarePagesDeploymentsHandler := connect.NewUnaryHandler(
-		CloudflareServiceListCloudflarePagesDeploymentsProcedure,
-		svc.ListCloudflarePagesDeployments,
-		connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflarePagesDeployments")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceCreateCloudflarePagesProjectHandler := connect.NewUnaryHandler(
-		CloudflareServiceCreateCloudflarePagesProjectProcedure,
-		svc.CreateCloudflarePagesProject,
-		connect.WithSchema(cloudflareServiceMethods.ByName("CreateCloudflarePagesProject")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceUpdateCloudflarePagesProjectHandler := connect.NewUnaryHandler(
-		CloudflareServiceUpdateCloudflarePagesProjectProcedure,
-		svc.UpdateCloudflarePagesProject,
-		connect.WithSchema(cloudflareServiceMethods.ByName("UpdateCloudflarePagesProject")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceDeleteCloudflarePagesProjectHandler := connect.NewUnaryHandler(
-		CloudflareServiceDeleteCloudflarePagesProjectProcedure,
-		svc.DeleteCloudflarePagesProject,
-		connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflarePagesProject")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceRetryCloudflarePagesDeploymentHandler := connect.NewUnaryHandler(
-		CloudflareServiceRetryCloudflarePagesDeploymentProcedure,
-		svc.RetryCloudflarePagesDeployment,
-		connect.WithSchema(cloudflareServiceMethods.ByName("RetryCloudflarePagesDeployment")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceRollbackCloudflarePagesDeploymentHandler := connect.NewUnaryHandler(
-		CloudflareServiceRollbackCloudflarePagesDeploymentProcedure,
-		svc.RollbackCloudflarePagesDeployment,
-		connect.WithSchema(cloudflareServiceMethods.ByName("RollbackCloudflarePagesDeployment")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceDeleteCloudflarePagesDeploymentHandler := connect.NewUnaryHandler(
-		CloudflareServiceDeleteCloudflarePagesDeploymentProcedure,
-		svc.DeleteCloudflarePagesDeployment,
-		connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflarePagesDeployment")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceAddCloudflarePagesDomainHandler := connect.NewUnaryHandler(
-		CloudflareServiceAddCloudflarePagesDomainProcedure,
-		svc.AddCloudflarePagesDomain,
-		connect.WithSchema(cloudflareServiceMethods.ByName("AddCloudflarePagesDomain")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceDeleteCloudflarePagesDomainHandler := connect.NewUnaryHandler(
-		CloudflareServiceDeleteCloudflarePagesDomainProcedure,
-		svc.DeleteCloudflarePagesDomain,
-		connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflarePagesDomain")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceSetCloudflarePagesEnvVarHandler := connect.NewUnaryHandler(
-		CloudflareServiceSetCloudflarePagesEnvVarProcedure,
-		svc.SetCloudflarePagesEnvVar,
-		connect.WithSchema(cloudflareServiceMethods.ByName("SetCloudflarePagesEnvVar")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceDeleteCloudflarePagesEnvVarHandler := connect.NewUnaryHandler(
-		CloudflareServiceDeleteCloudflarePagesEnvVarProcedure,
-		svc.DeleteCloudflarePagesEnvVar,
-		connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflarePagesEnvVar")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceListCloudflareResourceOperationsHandler := connect.NewUnaryHandler(
-		CloudflareServiceListCloudflareResourceOperationsProcedure,
-		svc.ListCloudflareResourceOperations,
-		connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareResourceOperations")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceGetCloudflareEmailRoutingHandler := connect.NewUnaryHandler(
-		CloudflareServiceGetCloudflareEmailRoutingProcedure,
-		svc.GetCloudflareEmailRouting,
-		connect.WithSchema(cloudflareServiceMethods.ByName("GetCloudflareEmailRouting")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceListCloudflareEmailAddressesHandler := connect.NewUnaryHandler(
-		CloudflareServiceListCloudflareEmailAddressesProcedure,
-		svc.ListCloudflareEmailAddresses,
-		connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareEmailAddresses")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceEnableCloudflareEmailRoutingHandler := connect.NewUnaryHandler(
-		CloudflareServiceEnableCloudflareEmailRoutingProcedure,
-		svc.EnableCloudflareEmailRouting,
-		connect.WithSchema(cloudflareServiceMethods.ByName("EnableCloudflareEmailRouting")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceCreateCloudflareEmailRuleHandler := connect.NewUnaryHandler(
-		CloudflareServiceCreateCloudflareEmailRuleProcedure,
-		svc.CreateCloudflareEmailRule,
-		connect.WithSchema(cloudflareServiceMethods.ByName("CreateCloudflareEmailRule")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceUpdateCloudflareEmailRuleHandler := connect.NewUnaryHandler(
-		CloudflareServiceUpdateCloudflareEmailRuleProcedure,
-		svc.UpdateCloudflareEmailRule,
-		connect.WithSchema(cloudflareServiceMethods.ByName("UpdateCloudflareEmailRule")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceDeleteCloudflareEmailRuleHandler := connect.NewUnaryHandler(
-		CloudflareServiceDeleteCloudflareEmailRuleProcedure,
-		svc.DeleteCloudflareEmailRule,
-		connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareEmailRule")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceSetCloudflareEmailCatchAllHandler := connect.NewUnaryHandler(
-		CloudflareServiceSetCloudflareEmailCatchAllProcedure,
-		svc.SetCloudflareEmailCatchAll,
-		connect.WithSchema(cloudflareServiceMethods.ByName("SetCloudflareEmailCatchAll")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceCreateCloudflareEmailAddressHandler := connect.NewUnaryHandler(
-		CloudflareServiceCreateCloudflareEmailAddressProcedure,
-		svc.CreateCloudflareEmailAddress,
-		connect.WithSchema(cloudflareServiceMethods.ByName("CreateCloudflareEmailAddress")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceDeleteCloudflareEmailAddressHandler := connect.NewUnaryHandler(
-		CloudflareServiceDeleteCloudflareEmailAddressProcedure,
-		svc.DeleteCloudflareEmailAddress,
-		connect.WithSchema(cloudflareServiceMethods.ByName("DeleteCloudflareEmailAddress")),
-		connect.WithHandlerOptions(opts...),
-	)
-	cloudflareServiceListCloudflareEmailLogsHandler := connect.NewUnaryHandler(
-		CloudflareServiceListCloudflareEmailLogsProcedure,
-		svc.ListCloudflareEmailLogs,
-		connect.WithSchema(cloudflareServiceMethods.ByName("ListCloudflareEmailLogs")),
-		connect.WithHandlerOptions(opts...),
-	)
-	return "/neobox.v1.CloudflareService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case CloudflareServiceListCloudflareZonesProcedure:
-			cloudflareServiceListCloudflareZonesHandler.ServeHTTP(w, r)
-		case CloudflareServiceGetCloudflareZoneProcedure:
-			cloudflareServiceGetCloudflareZoneHandler.ServeHTTP(w, r)
-		case CloudflareServiceListCloudflareDNSRecordsProcedure:
-			cloudflareServiceListCloudflareDNSRecordsHandler.ServeHTTP(w, r)
-		case CloudflareServiceCreateCloudflareDNSRecordProcedure:
-			cloudflareServiceCreateCloudflareDNSRecordHandler.ServeHTTP(w, r)
-		case CloudflareServiceUpdateCloudflareDNSRecordProcedure:
-			cloudflareServiceUpdateCloudflareDNSRecordHandler.ServeHTTP(w, r)
-		case CloudflareServiceSetCloudflareDNSRecordProxiedProcedure:
-			cloudflareServiceSetCloudflareDNSRecordProxiedHandler.ServeHTTP(w, r)
-		case CloudflareServiceDeleteCloudflareDNSRecordProcedure:
-			cloudflareServiceDeleteCloudflareDNSRecordHandler.ServeHTTP(w, r)
-		case CloudflareServiceListCloudflareDNSOperationsProcedure:
-			cloudflareServiceListCloudflareDNSOperationsHandler.ServeHTTP(w, r)
-		case CloudflareServiceListCloudflareWorkersProcedure:
-			cloudflareServiceListCloudflareWorkersHandler.ServeHTTP(w, r)
-		case CloudflareServiceListCloudflarePagesProjectsProcedure:
-			cloudflareServiceListCloudflarePagesProjectsHandler.ServeHTTP(w, r)
-		case CloudflareServiceListCloudflareTunnelsProcedure:
-			cloudflareServiceListCloudflareTunnelsHandler.ServeHTTP(w, r)
-		case CloudflareServiceGetCloudflareTunnelProcedure:
-			cloudflareServiceGetCloudflareTunnelHandler.ServeHTTP(w, r)
-		case CloudflareServiceCreateCloudflareTunnelProcedure:
-			cloudflareServiceCreateCloudflareTunnelHandler.ServeHTTP(w, r)
-		case CloudflareServiceDeleteCloudflareTunnelProcedure:
-			cloudflareServiceDeleteCloudflareTunnelHandler.ServeHTTP(w, r)
-		case CloudflareServiceGetCloudflareTunnelTokenProcedure:
-			cloudflareServiceGetCloudflareTunnelTokenHandler.ServeHTTP(w, r)
-		case CloudflareServiceCleanupCloudflareTunnelConnectionsProcedure:
-			cloudflareServiceCleanupCloudflareTunnelConnectionsHandler.ServeHTTP(w, r)
-		case CloudflareServiceAddCloudflareTunnelHostnameProcedure:
-			cloudflareServiceAddCloudflareTunnelHostnameHandler.ServeHTTP(w, r)
-		case CloudflareServiceUpdateCloudflareTunnelHostnameProcedure:
-			cloudflareServiceUpdateCloudflareTunnelHostnameHandler.ServeHTTP(w, r)
-		case CloudflareServiceDeleteCloudflareTunnelHostnameProcedure:
-			cloudflareServiceDeleteCloudflareTunnelHostnameHandler.ServeHTTP(w, r)
-		case CloudflareServiceGetCloudflareWorkerProcedure:
-			cloudflareServiceGetCloudflareWorkerHandler.ServeHTTP(w, r)
-		case CloudflareServiceSetCloudflareWorkerWorkersDevProcedure:
-			cloudflareServiceSetCloudflareWorkerWorkersDevHandler.ServeHTTP(w, r)
-		case CloudflareServiceAttachCloudflareWorkerDomainProcedure:
-			cloudflareServiceAttachCloudflareWorkerDomainHandler.ServeHTTP(w, r)
-		case CloudflareServiceDetachCloudflareWorkerDomainProcedure:
-			cloudflareServiceDetachCloudflareWorkerDomainHandler.ServeHTTP(w, r)
-		case CloudflareServiceAddCloudflareWorkerRouteProcedure:
-			cloudflareServiceAddCloudflareWorkerRouteHandler.ServeHTTP(w, r)
-		case CloudflareServiceDeleteCloudflareWorkerRouteProcedure:
-			cloudflareServiceDeleteCloudflareWorkerRouteHandler.ServeHTTP(w, r)
-		case CloudflareServiceAddCloudflareWorkerCronProcedure:
-			cloudflareServiceAddCloudflareWorkerCronHandler.ServeHTTP(w, r)
-		case CloudflareServiceDeleteCloudflareWorkerCronProcedure:
-			cloudflareServiceDeleteCloudflareWorkerCronHandler.ServeHTTP(w, r)
-		case CloudflareServicePutCloudflareWorkerSecretProcedure:
-			cloudflareServicePutCloudflareWorkerSecretHandler.ServeHTTP(w, r)
-		case CloudflareServiceDeleteCloudflareWorkerSecretProcedure:
-			cloudflareServiceDeleteCloudflareWorkerSecretHandler.ServeHTTP(w, r)
-		case CloudflareServiceRollbackCloudflareWorkerProcedure:
-			cloudflareServiceRollbackCloudflareWorkerHandler.ServeHTTP(w, r)
-		case CloudflareServiceDeleteCloudflareWorkerProcedure:
-			cloudflareServiceDeleteCloudflareWorkerHandler.ServeHTTP(w, r)
-		case CloudflareServiceGetCloudflarePagesProjectProcedure:
-			cloudflareServiceGetCloudflarePagesProjectHandler.ServeHTTP(w, r)
-		case CloudflareServiceListCloudflarePagesDeploymentsProcedure:
-			cloudflareServiceListCloudflarePagesDeploymentsHandler.ServeHTTP(w, r)
-		case CloudflareServiceCreateCloudflarePagesProjectProcedure:
-			cloudflareServiceCreateCloudflarePagesProjectHandler.ServeHTTP(w, r)
-		case CloudflareServiceUpdateCloudflarePagesProjectProcedure:
-			cloudflareServiceUpdateCloudflarePagesProjectHandler.ServeHTTP(w, r)
-		case CloudflareServiceDeleteCloudflarePagesProjectProcedure:
-			cloudflareServiceDeleteCloudflarePagesProjectHandler.ServeHTTP(w, r)
-		case CloudflareServiceRetryCloudflarePagesDeploymentProcedure:
-			cloudflareServiceRetryCloudflarePagesDeploymentHandler.ServeHTTP(w, r)
-		case CloudflareServiceRollbackCloudflarePagesDeploymentProcedure:
-			cloudflareServiceRollbackCloudflarePagesDeploymentHandler.ServeHTTP(w, r)
-		case CloudflareServiceDeleteCloudflarePagesDeploymentProcedure:
-			cloudflareServiceDeleteCloudflarePagesDeploymentHandler.ServeHTTP(w, r)
-		case CloudflareServiceAddCloudflarePagesDomainProcedure:
-			cloudflareServiceAddCloudflarePagesDomainHandler.ServeHTTP(w, r)
-		case CloudflareServiceDeleteCloudflarePagesDomainProcedure:
-			cloudflareServiceDeleteCloudflarePagesDomainHandler.ServeHTTP(w, r)
-		case CloudflareServiceSetCloudflarePagesEnvVarProcedure:
-			cloudflareServiceSetCloudflarePagesEnvVarHandler.ServeHTTP(w, r)
-		case CloudflareServiceDeleteCloudflarePagesEnvVarProcedure:
-			cloudflareServiceDeleteCloudflarePagesEnvVarHandler.ServeHTTP(w, r)
-		case CloudflareServiceListCloudflareResourceOperationsProcedure:
-			cloudflareServiceListCloudflareResourceOperationsHandler.ServeHTTP(w, r)
-		case CloudflareServiceGetCloudflareEmailRoutingProcedure:
-			cloudflareServiceGetCloudflareEmailRoutingHandler.ServeHTTP(w, r)
-		case CloudflareServiceListCloudflareEmailAddressesProcedure:
-			cloudflareServiceListCloudflareEmailAddressesHandler.ServeHTTP(w, r)
-		case CloudflareServiceEnableCloudflareEmailRoutingProcedure:
-			cloudflareServiceEnableCloudflareEmailRoutingHandler.ServeHTTP(w, r)
-		case CloudflareServiceCreateCloudflareEmailRuleProcedure:
-			cloudflareServiceCreateCloudflareEmailRuleHandler.ServeHTTP(w, r)
-		case CloudflareServiceUpdateCloudflareEmailRuleProcedure:
-			cloudflareServiceUpdateCloudflareEmailRuleHandler.ServeHTTP(w, r)
-		case CloudflareServiceDeleteCloudflareEmailRuleProcedure:
-			cloudflareServiceDeleteCloudflareEmailRuleHandler.ServeHTTP(w, r)
-		case CloudflareServiceSetCloudflareEmailCatchAllProcedure:
-			cloudflareServiceSetCloudflareEmailCatchAllHandler.ServeHTTP(w, r)
-		case CloudflareServiceCreateCloudflareEmailAddressProcedure:
-			cloudflareServiceCreateCloudflareEmailAddressHandler.ServeHTTP(w, r)
-		case CloudflareServiceDeleteCloudflareEmailAddressProcedure:
-			cloudflareServiceDeleteCloudflareEmailAddressHandler.ServeHTTP(w, r)
-		case CloudflareServiceListCloudflareEmailLogsProcedure:
-			cloudflareServiceListCloudflareEmailLogsHandler.ServeHTTP(w, r)
-		default:
-			http.NotFound(w, r)
-		}
-	})
 }
 
 // UnimplementedCloudflareServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedCloudflareServiceHandler struct{}
 
-func (UnimplementedCloudflareServiceHandler) ListCloudflareZones(context.Context, *connect.Request[v1.ListCloudflareZonesRequest]) (*connect.Response[v1.ListCloudflareZonesResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.ListCloudflareZones is not implemented"))
+func (UnimplementedCloudflareServiceHandler) ListCloudflareZones(context.Context, *v1.ListCloudflareZonesRequest) (*v1.ListCloudflareZonesResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.ListCloudflareZones is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) GetCloudflareZone(context.Context, *connect.Request[v1.GetCloudflareZoneRequest]) (*connect.Response[v1.GetCloudflareZoneResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.GetCloudflareZone is not implemented"))
+func (UnimplementedCloudflareServiceHandler) GetCloudflareZone(context.Context, *v1.GetCloudflareZoneRequest) (*v1.GetCloudflareZoneResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.GetCloudflareZone is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) ListCloudflareDNSRecords(context.Context, *connect.Request[v1.ListCloudflareDNSRecordsRequest]) (*connect.Response[v1.ListCloudflareDNSRecordsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.ListCloudflareDNSRecords is not implemented"))
+func (UnimplementedCloudflareServiceHandler) ListCloudflareDNSRecords(context.Context, *v1.ListCloudflareDNSRecordsRequest) (*v1.ListCloudflareDNSRecordsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.ListCloudflareDNSRecords is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) CreateCloudflareDNSRecord(context.Context, *connect.Request[v1.CreateCloudflareDNSRecordRequest]) (*connect.Response[v1.CreateCloudflareDNSRecordResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.CreateCloudflareDNSRecord is not implemented"))
+func (UnimplementedCloudflareServiceHandler) CreateCloudflareDNSRecord(context.Context, *v1.CreateCloudflareDNSRecordRequest) (*v1.CreateCloudflareDNSRecordResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.CreateCloudflareDNSRecord is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) UpdateCloudflareDNSRecord(context.Context, *connect.Request[v1.UpdateCloudflareDNSRecordRequest]) (*connect.Response[v1.UpdateCloudflareDNSRecordResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.UpdateCloudflareDNSRecord is not implemented"))
+func (UnimplementedCloudflareServiceHandler) UpdateCloudflareDNSRecord(context.Context, *v1.UpdateCloudflareDNSRecordRequest) (*v1.UpdateCloudflareDNSRecordResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.UpdateCloudflareDNSRecord is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) SetCloudflareDNSRecordProxied(context.Context, *connect.Request[v1.SetCloudflareDNSRecordProxiedRequest]) (*connect.Response[v1.SetCloudflareDNSRecordProxiedResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.SetCloudflareDNSRecordProxied is not implemented"))
+func (UnimplementedCloudflareServiceHandler) SetCloudflareDNSRecordProxied(context.Context, *v1.SetCloudflareDNSRecordProxiedRequest) (*v1.SetCloudflareDNSRecordProxiedResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.SetCloudflareDNSRecordProxied is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) DeleteCloudflareDNSRecord(context.Context, *connect.Request[v1.DeleteCloudflareDNSRecordRequest]) (*connect.Response[v1.DeleteCloudflareDNSRecordResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.DeleteCloudflareDNSRecord is not implemented"))
+func (UnimplementedCloudflareServiceHandler) DeleteCloudflareDNSRecord(context.Context, *v1.DeleteCloudflareDNSRecordRequest) (*v1.DeleteCloudflareDNSRecordResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.DeleteCloudflareDNSRecord is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) ListCloudflareDNSOperations(context.Context, *connect.Request[v1.ListCloudflareDNSOperationsRequest]) (*connect.Response[v1.ListCloudflareDNSOperationsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.ListCloudflareDNSOperations is not implemented"))
+func (UnimplementedCloudflareServiceHandler) ListCloudflareDNSOperations(context.Context, *v1.ListCloudflareDNSOperationsRequest) (*v1.ListCloudflareDNSOperationsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.ListCloudflareDNSOperations is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) ListCloudflareWorkers(context.Context, *connect.Request[v1.ListCloudflareWorkersRequest]) (*connect.Response[v1.ListCloudflareWorkersResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.ListCloudflareWorkers is not implemented"))
+func (UnimplementedCloudflareServiceHandler) ListCloudflareWorkers(context.Context, *v1.ListCloudflareWorkersRequest) (*v1.ListCloudflareWorkersResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.ListCloudflareWorkers is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) ListCloudflarePagesProjects(context.Context, *connect.Request[v1.ListCloudflarePagesProjectsRequest]) (*connect.Response[v1.ListCloudflarePagesProjectsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.ListCloudflarePagesProjects is not implemented"))
+func (UnimplementedCloudflareServiceHandler) ListCloudflarePagesProjects(context.Context, *v1.ListCloudflarePagesProjectsRequest) (*v1.ListCloudflarePagesProjectsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.ListCloudflarePagesProjects is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) ListCloudflareTunnels(context.Context, *connect.Request[v1.ListCloudflareTunnelsRequest]) (*connect.Response[v1.ListCloudflareTunnelsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.ListCloudflareTunnels is not implemented"))
+func (UnimplementedCloudflareServiceHandler) ListCloudflareTunnels(context.Context, *v1.ListCloudflareTunnelsRequest) (*v1.ListCloudflareTunnelsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.ListCloudflareTunnels is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) GetCloudflareTunnel(context.Context, *connect.Request[v1.GetCloudflareTunnelRequest]) (*connect.Response[v1.GetCloudflareTunnelResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.GetCloudflareTunnel is not implemented"))
+func (UnimplementedCloudflareServiceHandler) GetCloudflareTunnel(context.Context, *v1.GetCloudflareTunnelRequest) (*v1.GetCloudflareTunnelResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.GetCloudflareTunnel is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) CreateCloudflareTunnel(context.Context, *connect.Request[v1.CreateCloudflareTunnelRequest]) (*connect.Response[v1.CreateCloudflareTunnelResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.CreateCloudflareTunnel is not implemented"))
+func (UnimplementedCloudflareServiceHandler) CreateCloudflareTunnel(context.Context, *v1.CreateCloudflareTunnelRequest) (*v1.CreateCloudflareTunnelResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.CreateCloudflareTunnel is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) DeleteCloudflareTunnel(context.Context, *connect.Request[v1.DeleteCloudflareTunnelRequest]) (*connect.Response[v1.DeleteCloudflareTunnelResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.DeleteCloudflareTunnel is not implemented"))
+func (UnimplementedCloudflareServiceHandler) DeleteCloudflareTunnel(context.Context, *v1.DeleteCloudflareTunnelRequest) (*v1.DeleteCloudflareTunnelResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.DeleteCloudflareTunnel is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) GetCloudflareTunnelToken(context.Context, *connect.Request[v1.GetCloudflareTunnelTokenRequest]) (*connect.Response[v1.GetCloudflareTunnelTokenResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.GetCloudflareTunnelToken is not implemented"))
+func (UnimplementedCloudflareServiceHandler) GetCloudflareTunnelToken(context.Context, *v1.GetCloudflareTunnelTokenRequest) (*v1.GetCloudflareTunnelTokenResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.GetCloudflareTunnelToken is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) CleanupCloudflareTunnelConnections(context.Context, *connect.Request[v1.CleanupCloudflareTunnelConnectionsRequest]) (*connect.Response[v1.CleanupCloudflareTunnelConnectionsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.CleanupCloudflareTunnelConnections is not implemented"))
+func (UnimplementedCloudflareServiceHandler) CleanupCloudflareTunnelConnections(context.Context, *v1.CleanupCloudflareTunnelConnectionsRequest) (*v1.CleanupCloudflareTunnelConnectionsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.CleanupCloudflareTunnelConnections is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) AddCloudflareTunnelHostname(context.Context, *connect.Request[v1.AddCloudflareTunnelHostnameRequest]) (*connect.Response[v1.AddCloudflareTunnelHostnameResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.AddCloudflareTunnelHostname is not implemented"))
+func (UnimplementedCloudflareServiceHandler) AddCloudflareTunnelHostname(context.Context, *v1.AddCloudflareTunnelHostnameRequest) (*v1.AddCloudflareTunnelHostnameResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.AddCloudflareTunnelHostname is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) UpdateCloudflareTunnelHostname(context.Context, *connect.Request[v1.UpdateCloudflareTunnelHostnameRequest]) (*connect.Response[v1.UpdateCloudflareTunnelHostnameResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.UpdateCloudflareTunnelHostname is not implemented"))
+func (UnimplementedCloudflareServiceHandler) UpdateCloudflareTunnelHostname(context.Context, *v1.UpdateCloudflareTunnelHostnameRequest) (*v1.UpdateCloudflareTunnelHostnameResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.UpdateCloudflareTunnelHostname is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) DeleteCloudflareTunnelHostname(context.Context, *connect.Request[v1.DeleteCloudflareTunnelHostnameRequest]) (*connect.Response[v1.DeleteCloudflareTunnelHostnameResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.DeleteCloudflareTunnelHostname is not implemented"))
+func (UnimplementedCloudflareServiceHandler) DeleteCloudflareTunnelHostname(context.Context, *v1.DeleteCloudflareTunnelHostnameRequest) (*v1.DeleteCloudflareTunnelHostnameResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.DeleteCloudflareTunnelHostname is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) GetCloudflareWorker(context.Context, *connect.Request[v1.GetCloudflareWorkerRequest]) (*connect.Response[v1.GetCloudflareWorkerResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.GetCloudflareWorker is not implemented"))
+func (UnimplementedCloudflareServiceHandler) GetCloudflareWorker(context.Context, *v1.GetCloudflareWorkerRequest) (*v1.GetCloudflareWorkerResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.GetCloudflareWorker is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) SetCloudflareWorkerWorkersDev(context.Context, *connect.Request[v1.SetCloudflareWorkerWorkersDevRequest]) (*connect.Response[v1.SetCloudflareWorkerWorkersDevResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.SetCloudflareWorkerWorkersDev is not implemented"))
+func (UnimplementedCloudflareServiceHandler) SetCloudflareWorkerWorkersDev(context.Context, *v1.SetCloudflareWorkerWorkersDevRequest) (*v1.SetCloudflareWorkerWorkersDevResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.SetCloudflareWorkerWorkersDev is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) AttachCloudflareWorkerDomain(context.Context, *connect.Request[v1.AttachCloudflareWorkerDomainRequest]) (*connect.Response[v1.AttachCloudflareWorkerDomainResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.AttachCloudflareWorkerDomain is not implemented"))
+func (UnimplementedCloudflareServiceHandler) AttachCloudflareWorkerDomain(context.Context, *v1.AttachCloudflareWorkerDomainRequest) (*v1.AttachCloudflareWorkerDomainResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.AttachCloudflareWorkerDomain is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) DetachCloudflareWorkerDomain(context.Context, *connect.Request[v1.DetachCloudflareWorkerDomainRequest]) (*connect.Response[v1.DetachCloudflareWorkerDomainResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.DetachCloudflareWorkerDomain is not implemented"))
+func (UnimplementedCloudflareServiceHandler) DetachCloudflareWorkerDomain(context.Context, *v1.DetachCloudflareWorkerDomainRequest) (*v1.DetachCloudflareWorkerDomainResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.DetachCloudflareWorkerDomain is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) AddCloudflareWorkerRoute(context.Context, *connect.Request[v1.AddCloudflareWorkerRouteRequest]) (*connect.Response[v1.AddCloudflareWorkerRouteResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.AddCloudflareWorkerRoute is not implemented"))
+func (UnimplementedCloudflareServiceHandler) AddCloudflareWorkerRoute(context.Context, *v1.AddCloudflareWorkerRouteRequest) (*v1.AddCloudflareWorkerRouteResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.AddCloudflareWorkerRoute is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) DeleteCloudflareWorkerRoute(context.Context, *connect.Request[v1.DeleteCloudflareWorkerRouteRequest]) (*connect.Response[v1.DeleteCloudflareWorkerRouteResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.DeleteCloudflareWorkerRoute is not implemented"))
+func (UnimplementedCloudflareServiceHandler) DeleteCloudflareWorkerRoute(context.Context, *v1.DeleteCloudflareWorkerRouteRequest) (*v1.DeleteCloudflareWorkerRouteResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.DeleteCloudflareWorkerRoute is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) AddCloudflareWorkerCron(context.Context, *connect.Request[v1.AddCloudflareWorkerCronRequest]) (*connect.Response[v1.AddCloudflareWorkerCronResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.AddCloudflareWorkerCron is not implemented"))
+func (UnimplementedCloudflareServiceHandler) AddCloudflareWorkerCron(context.Context, *v1.AddCloudflareWorkerCronRequest) (*v1.AddCloudflareWorkerCronResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.AddCloudflareWorkerCron is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) DeleteCloudflareWorkerCron(context.Context, *connect.Request[v1.DeleteCloudflareWorkerCronRequest]) (*connect.Response[v1.DeleteCloudflareWorkerCronResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.DeleteCloudflareWorkerCron is not implemented"))
+func (UnimplementedCloudflareServiceHandler) DeleteCloudflareWorkerCron(context.Context, *v1.DeleteCloudflareWorkerCronRequest) (*v1.DeleteCloudflareWorkerCronResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.DeleteCloudflareWorkerCron is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) PutCloudflareWorkerSecret(context.Context, *connect.Request[v1.PutCloudflareWorkerSecretRequest]) (*connect.Response[v1.PutCloudflareWorkerSecretResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.PutCloudflareWorkerSecret is not implemented"))
+func (UnimplementedCloudflareServiceHandler) PutCloudflareWorkerSecret(context.Context, *v1.PutCloudflareWorkerSecretRequest) (*v1.PutCloudflareWorkerSecretResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.PutCloudflareWorkerSecret is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) DeleteCloudflareWorkerSecret(context.Context, *connect.Request[v1.DeleteCloudflareWorkerSecretRequest]) (*connect.Response[v1.DeleteCloudflareWorkerSecretResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.DeleteCloudflareWorkerSecret is not implemented"))
+func (UnimplementedCloudflareServiceHandler) DeleteCloudflareWorkerSecret(context.Context, *v1.DeleteCloudflareWorkerSecretRequest) (*v1.DeleteCloudflareWorkerSecretResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.DeleteCloudflareWorkerSecret is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) RollbackCloudflareWorker(context.Context, *connect.Request[v1.RollbackCloudflareWorkerRequest]) (*connect.Response[v1.RollbackCloudflareWorkerResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.RollbackCloudflareWorker is not implemented"))
+func (UnimplementedCloudflareServiceHandler) RollbackCloudflareWorker(context.Context, *v1.RollbackCloudflareWorkerRequest) (*v1.RollbackCloudflareWorkerResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.RollbackCloudflareWorker is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) DeleteCloudflareWorker(context.Context, *connect.Request[v1.DeleteCloudflareWorkerRequest]) (*connect.Response[v1.DeleteCloudflareWorkerResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.DeleteCloudflareWorker is not implemented"))
+func (UnimplementedCloudflareServiceHandler) DeleteCloudflareWorker(context.Context, *v1.DeleteCloudflareWorkerRequest) (*v1.DeleteCloudflareWorkerResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.DeleteCloudflareWorker is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) GetCloudflarePagesProject(context.Context, *connect.Request[v1.GetCloudflarePagesProjectRequest]) (*connect.Response[v1.GetCloudflarePagesProjectResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.GetCloudflarePagesProject is not implemented"))
+func (UnimplementedCloudflareServiceHandler) GetCloudflarePagesProject(context.Context, *v1.GetCloudflarePagesProjectRequest) (*v1.GetCloudflarePagesProjectResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.GetCloudflarePagesProject is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) ListCloudflarePagesDeployments(context.Context, *connect.Request[v1.ListCloudflarePagesDeploymentsRequest]) (*connect.Response[v1.ListCloudflarePagesDeploymentsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.ListCloudflarePagesDeployments is not implemented"))
+func (UnimplementedCloudflareServiceHandler) ListCloudflarePagesDeployments(context.Context, *v1.ListCloudflarePagesDeploymentsRequest) (*v1.ListCloudflarePagesDeploymentsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.ListCloudflarePagesDeployments is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) CreateCloudflarePagesProject(context.Context, *connect.Request[v1.CreateCloudflarePagesProjectRequest]) (*connect.Response[v1.CreateCloudflarePagesProjectResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.CreateCloudflarePagesProject is not implemented"))
+func (UnimplementedCloudflareServiceHandler) CreateCloudflarePagesProject(context.Context, *v1.CreateCloudflarePagesProjectRequest) (*v1.CreateCloudflarePagesProjectResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.CreateCloudflarePagesProject is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) UpdateCloudflarePagesProject(context.Context, *connect.Request[v1.UpdateCloudflarePagesProjectRequest]) (*connect.Response[v1.UpdateCloudflarePagesProjectResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.UpdateCloudflarePagesProject is not implemented"))
+func (UnimplementedCloudflareServiceHandler) UpdateCloudflarePagesProject(context.Context, *v1.UpdateCloudflarePagesProjectRequest) (*v1.UpdateCloudflarePagesProjectResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.UpdateCloudflarePagesProject is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) DeleteCloudflarePagesProject(context.Context, *connect.Request[v1.DeleteCloudflarePagesProjectRequest]) (*connect.Response[v1.DeleteCloudflarePagesProjectResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.DeleteCloudflarePagesProject is not implemented"))
+func (UnimplementedCloudflareServiceHandler) DeleteCloudflarePagesProject(context.Context, *v1.DeleteCloudflarePagesProjectRequest) (*v1.DeleteCloudflarePagesProjectResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.DeleteCloudflarePagesProject is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) RetryCloudflarePagesDeployment(context.Context, *connect.Request[v1.RetryCloudflarePagesDeploymentRequest]) (*connect.Response[v1.RetryCloudflarePagesDeploymentResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.RetryCloudflarePagesDeployment is not implemented"))
+func (UnimplementedCloudflareServiceHandler) RetryCloudflarePagesDeployment(context.Context, *v1.RetryCloudflarePagesDeploymentRequest) (*v1.RetryCloudflarePagesDeploymentResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.RetryCloudflarePagesDeployment is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) RollbackCloudflarePagesDeployment(context.Context, *connect.Request[v1.RollbackCloudflarePagesDeploymentRequest]) (*connect.Response[v1.RollbackCloudflarePagesDeploymentResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.RollbackCloudflarePagesDeployment is not implemented"))
+func (UnimplementedCloudflareServiceHandler) RollbackCloudflarePagesDeployment(context.Context, *v1.RollbackCloudflarePagesDeploymentRequest) (*v1.RollbackCloudflarePagesDeploymentResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.RollbackCloudflarePagesDeployment is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) DeleteCloudflarePagesDeployment(context.Context, *connect.Request[v1.DeleteCloudflarePagesDeploymentRequest]) (*connect.Response[v1.DeleteCloudflarePagesDeploymentResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.DeleteCloudflarePagesDeployment is not implemented"))
+func (UnimplementedCloudflareServiceHandler) DeleteCloudflarePagesDeployment(context.Context, *v1.DeleteCloudflarePagesDeploymentRequest) (*v1.DeleteCloudflarePagesDeploymentResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.DeleteCloudflarePagesDeployment is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) AddCloudflarePagesDomain(context.Context, *connect.Request[v1.AddCloudflarePagesDomainRequest]) (*connect.Response[v1.AddCloudflarePagesDomainResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.AddCloudflarePagesDomain is not implemented"))
+func (UnimplementedCloudflareServiceHandler) AddCloudflarePagesDomain(context.Context, *v1.AddCloudflarePagesDomainRequest) (*v1.AddCloudflarePagesDomainResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.AddCloudflarePagesDomain is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) DeleteCloudflarePagesDomain(context.Context, *connect.Request[v1.DeleteCloudflarePagesDomainRequest]) (*connect.Response[v1.DeleteCloudflarePagesDomainResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.DeleteCloudflarePagesDomain is not implemented"))
+func (UnimplementedCloudflareServiceHandler) DeleteCloudflarePagesDomain(context.Context, *v1.DeleteCloudflarePagesDomainRequest) (*v1.DeleteCloudflarePagesDomainResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.DeleteCloudflarePagesDomain is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) SetCloudflarePagesEnvVar(context.Context, *connect.Request[v1.SetCloudflarePagesEnvVarRequest]) (*connect.Response[v1.SetCloudflarePagesEnvVarResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.SetCloudflarePagesEnvVar is not implemented"))
+func (UnimplementedCloudflareServiceHandler) SetCloudflarePagesEnvVar(context.Context, *v1.SetCloudflarePagesEnvVarRequest) (*v1.SetCloudflarePagesEnvVarResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.SetCloudflarePagesEnvVar is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) DeleteCloudflarePagesEnvVar(context.Context, *connect.Request[v1.DeleteCloudflarePagesEnvVarRequest]) (*connect.Response[v1.DeleteCloudflarePagesEnvVarResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.DeleteCloudflarePagesEnvVar is not implemented"))
+func (UnimplementedCloudflareServiceHandler) DeleteCloudflarePagesEnvVar(context.Context, *v1.DeleteCloudflarePagesEnvVarRequest) (*v1.DeleteCloudflarePagesEnvVarResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.DeleteCloudflarePagesEnvVar is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) ListCloudflareResourceOperations(context.Context, *connect.Request[v1.ListCloudflareResourceOperationsRequest]) (*connect.Response[v1.ListCloudflareResourceOperationsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.ListCloudflareResourceOperations is not implemented"))
+func (UnimplementedCloudflareServiceHandler) ListCloudflareResourceOperations(context.Context, *v1.ListCloudflareResourceOperationsRequest) (*v1.ListCloudflareResourceOperationsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.ListCloudflareResourceOperations is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) GetCloudflareEmailRouting(context.Context, *connect.Request[v1.GetCloudflareEmailRoutingRequest]) (*connect.Response[v1.GetCloudflareEmailRoutingResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.GetCloudflareEmailRouting is not implemented"))
+func (UnimplementedCloudflareServiceHandler) GetCloudflareEmailRouting(context.Context, *v1.GetCloudflareEmailRoutingRequest) (*v1.GetCloudflareEmailRoutingResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.GetCloudflareEmailRouting is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) ListCloudflareEmailAddresses(context.Context, *connect.Request[v1.ListCloudflareEmailAddressesRequest]) (*connect.Response[v1.ListCloudflareEmailAddressesResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.ListCloudflareEmailAddresses is not implemented"))
+func (UnimplementedCloudflareServiceHandler) ListCloudflareEmailAddresses(context.Context, *v1.ListCloudflareEmailAddressesRequest) (*v1.ListCloudflareEmailAddressesResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.ListCloudflareEmailAddresses is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) EnableCloudflareEmailRouting(context.Context, *connect.Request[v1.EnableCloudflareEmailRoutingRequest]) (*connect.Response[v1.EnableCloudflareEmailRoutingResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.EnableCloudflareEmailRouting is not implemented"))
+func (UnimplementedCloudflareServiceHandler) EnableCloudflareEmailRouting(context.Context, *v1.EnableCloudflareEmailRoutingRequest) (*v1.EnableCloudflareEmailRoutingResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.EnableCloudflareEmailRouting is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) CreateCloudflareEmailRule(context.Context, *connect.Request[v1.CreateCloudflareEmailRuleRequest]) (*connect.Response[v1.CreateCloudflareEmailRuleResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.CreateCloudflareEmailRule is not implemented"))
+func (UnimplementedCloudflareServiceHandler) CreateCloudflareEmailRule(context.Context, *v1.CreateCloudflareEmailRuleRequest) (*v1.CreateCloudflareEmailRuleResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.CreateCloudflareEmailRule is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) UpdateCloudflareEmailRule(context.Context, *connect.Request[v1.UpdateCloudflareEmailRuleRequest]) (*connect.Response[v1.UpdateCloudflareEmailRuleResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.UpdateCloudflareEmailRule is not implemented"))
+func (UnimplementedCloudflareServiceHandler) UpdateCloudflareEmailRule(context.Context, *v1.UpdateCloudflareEmailRuleRequest) (*v1.UpdateCloudflareEmailRuleResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.UpdateCloudflareEmailRule is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) DeleteCloudflareEmailRule(context.Context, *connect.Request[v1.DeleteCloudflareEmailRuleRequest]) (*connect.Response[v1.DeleteCloudflareEmailRuleResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.DeleteCloudflareEmailRule is not implemented"))
+func (UnimplementedCloudflareServiceHandler) DeleteCloudflareEmailRule(context.Context, *v1.DeleteCloudflareEmailRuleRequest) (*v1.DeleteCloudflareEmailRuleResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.DeleteCloudflareEmailRule is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) SetCloudflareEmailCatchAll(context.Context, *connect.Request[v1.SetCloudflareEmailCatchAllRequest]) (*connect.Response[v1.SetCloudflareEmailCatchAllResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.SetCloudflareEmailCatchAll is not implemented"))
+func (UnimplementedCloudflareServiceHandler) SetCloudflareEmailCatchAll(context.Context, *v1.SetCloudflareEmailCatchAllRequest) (*v1.SetCloudflareEmailCatchAllResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.SetCloudflareEmailCatchAll is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) CreateCloudflareEmailAddress(context.Context, *connect.Request[v1.CreateCloudflareEmailAddressRequest]) (*connect.Response[v1.CreateCloudflareEmailAddressResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.CreateCloudflareEmailAddress is not implemented"))
+func (UnimplementedCloudflareServiceHandler) CreateCloudflareEmailAddress(context.Context, *v1.CreateCloudflareEmailAddressRequest) (*v1.CreateCloudflareEmailAddressResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.CreateCloudflareEmailAddress is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) DeleteCloudflareEmailAddress(context.Context, *connect.Request[v1.DeleteCloudflareEmailAddressRequest]) (*connect.Response[v1.DeleteCloudflareEmailAddressResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.DeleteCloudflareEmailAddress is not implemented"))
+func (UnimplementedCloudflareServiceHandler) DeleteCloudflareEmailAddress(context.Context, *v1.DeleteCloudflareEmailAddressRequest) (*v1.DeleteCloudflareEmailAddressResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.DeleteCloudflareEmailAddress is not implemented")
 }
 
-func (UnimplementedCloudflareServiceHandler) ListCloudflareEmailLogs(context.Context, *connect.Request[v1.ListCloudflareEmailLogsRequest]) (*connect.Response[v1.ListCloudflareEmailLogsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.CloudflareService.ListCloudflareEmailLogs is not implemented"))
+func (UnimplementedCloudflareServiceHandler) ListCloudflareEmailLogs(context.Context, *v1.ListCloudflareEmailLogsRequest) (*v1.ListCloudflareEmailLogsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.ListCloudflareEmailLogs is not implemented")
+}
+
+type cloudflareServiceClient struct {
+	client *connect.Client
+}
+
+func (c *cloudflareServiceClient) ListCloudflareZones(ctx context.Context, req *v1.ListCloudflareZonesRequest) (*v1.ListCloudflareZonesResponse, error) {
+	var res v1.ListCloudflareZonesResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceListCloudflareZonesSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) GetCloudflareZone(ctx context.Context, req *v1.GetCloudflareZoneRequest) (*v1.GetCloudflareZoneResponse, error) {
+	var res v1.GetCloudflareZoneResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceGetCloudflareZoneSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) ListCloudflareDNSRecords(ctx context.Context, req *v1.ListCloudflareDNSRecordsRequest) (*v1.ListCloudflareDNSRecordsResponse, error) {
+	var res v1.ListCloudflareDNSRecordsResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceListCloudflareDNSRecordsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) CreateCloudflareDNSRecord(ctx context.Context, req *v1.CreateCloudflareDNSRecordRequest) (*v1.CreateCloudflareDNSRecordResponse, error) {
+	var res v1.CreateCloudflareDNSRecordResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceCreateCloudflareDNSRecordSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) UpdateCloudflareDNSRecord(ctx context.Context, req *v1.UpdateCloudflareDNSRecordRequest) (*v1.UpdateCloudflareDNSRecordResponse, error) {
+	var res v1.UpdateCloudflareDNSRecordResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceUpdateCloudflareDNSRecordSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) SetCloudflareDNSRecordProxied(ctx context.Context, req *v1.SetCloudflareDNSRecordProxiedRequest) (*v1.SetCloudflareDNSRecordProxiedResponse, error) {
+	var res v1.SetCloudflareDNSRecordProxiedResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceSetCloudflareDNSRecordProxiedSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) DeleteCloudflareDNSRecord(ctx context.Context, req *v1.DeleteCloudflareDNSRecordRequest) (*v1.DeleteCloudflareDNSRecordResponse, error) {
+	var res v1.DeleteCloudflareDNSRecordResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceDeleteCloudflareDNSRecordSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) ListCloudflareDNSOperations(ctx context.Context, req *v1.ListCloudflareDNSOperationsRequest) (*v1.ListCloudflareDNSOperationsResponse, error) {
+	var res v1.ListCloudflareDNSOperationsResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceListCloudflareDNSOperationsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) ListCloudflareWorkers(ctx context.Context, req *v1.ListCloudflareWorkersRequest) (*v1.ListCloudflareWorkersResponse, error) {
+	var res v1.ListCloudflareWorkersResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceListCloudflareWorkersSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) ListCloudflarePagesProjects(ctx context.Context, req *v1.ListCloudflarePagesProjectsRequest) (*v1.ListCloudflarePagesProjectsResponse, error) {
+	var res v1.ListCloudflarePagesProjectsResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceListCloudflarePagesProjectsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) ListCloudflareTunnels(ctx context.Context, req *v1.ListCloudflareTunnelsRequest) (*v1.ListCloudflareTunnelsResponse, error) {
+	var res v1.ListCloudflareTunnelsResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceListCloudflareTunnelsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) GetCloudflareTunnel(ctx context.Context, req *v1.GetCloudflareTunnelRequest) (*v1.GetCloudflareTunnelResponse, error) {
+	var res v1.GetCloudflareTunnelResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceGetCloudflareTunnelSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) CreateCloudflareTunnel(ctx context.Context, req *v1.CreateCloudflareTunnelRequest) (*v1.CreateCloudflareTunnelResponse, error) {
+	var res v1.CreateCloudflareTunnelResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceCreateCloudflareTunnelSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) DeleteCloudflareTunnel(ctx context.Context, req *v1.DeleteCloudflareTunnelRequest) (*v1.DeleteCloudflareTunnelResponse, error) {
+	var res v1.DeleteCloudflareTunnelResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceDeleteCloudflareTunnelSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) GetCloudflareTunnelToken(ctx context.Context, req *v1.GetCloudflareTunnelTokenRequest) (*v1.GetCloudflareTunnelTokenResponse, error) {
+	var res v1.GetCloudflareTunnelTokenResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceGetCloudflareTunnelTokenSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) CleanupCloudflareTunnelConnections(ctx context.Context, req *v1.CleanupCloudflareTunnelConnectionsRequest) (*v1.CleanupCloudflareTunnelConnectionsResponse, error) {
+	var res v1.CleanupCloudflareTunnelConnectionsResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceCleanupCloudflareTunnelConnectionsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) AddCloudflareTunnelHostname(ctx context.Context, req *v1.AddCloudflareTunnelHostnameRequest) (*v1.AddCloudflareTunnelHostnameResponse, error) {
+	var res v1.AddCloudflareTunnelHostnameResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceAddCloudflareTunnelHostnameSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) UpdateCloudflareTunnelHostname(ctx context.Context, req *v1.UpdateCloudflareTunnelHostnameRequest) (*v1.UpdateCloudflareTunnelHostnameResponse, error) {
+	var res v1.UpdateCloudflareTunnelHostnameResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceUpdateCloudflareTunnelHostnameSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) DeleteCloudflareTunnelHostname(ctx context.Context, req *v1.DeleteCloudflareTunnelHostnameRequest) (*v1.DeleteCloudflareTunnelHostnameResponse, error) {
+	var res v1.DeleteCloudflareTunnelHostnameResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceDeleteCloudflareTunnelHostnameSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) GetCloudflareWorker(ctx context.Context, req *v1.GetCloudflareWorkerRequest) (*v1.GetCloudflareWorkerResponse, error) {
+	var res v1.GetCloudflareWorkerResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceGetCloudflareWorkerSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) SetCloudflareWorkerWorkersDev(ctx context.Context, req *v1.SetCloudflareWorkerWorkersDevRequest) (*v1.SetCloudflareWorkerWorkersDevResponse, error) {
+	var res v1.SetCloudflareWorkerWorkersDevResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceSetCloudflareWorkerWorkersDevSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) AttachCloudflareWorkerDomain(ctx context.Context, req *v1.AttachCloudflareWorkerDomainRequest) (*v1.AttachCloudflareWorkerDomainResponse, error) {
+	var res v1.AttachCloudflareWorkerDomainResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceAttachCloudflareWorkerDomainSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) DetachCloudflareWorkerDomain(ctx context.Context, req *v1.DetachCloudflareWorkerDomainRequest) (*v1.DetachCloudflareWorkerDomainResponse, error) {
+	var res v1.DetachCloudflareWorkerDomainResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceDetachCloudflareWorkerDomainSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) AddCloudflareWorkerRoute(ctx context.Context, req *v1.AddCloudflareWorkerRouteRequest) (*v1.AddCloudflareWorkerRouteResponse, error) {
+	var res v1.AddCloudflareWorkerRouteResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceAddCloudflareWorkerRouteSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) DeleteCloudflareWorkerRoute(ctx context.Context, req *v1.DeleteCloudflareWorkerRouteRequest) (*v1.DeleteCloudflareWorkerRouteResponse, error) {
+	var res v1.DeleteCloudflareWorkerRouteResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceDeleteCloudflareWorkerRouteSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) AddCloudflareWorkerCron(ctx context.Context, req *v1.AddCloudflareWorkerCronRequest) (*v1.AddCloudflareWorkerCronResponse, error) {
+	var res v1.AddCloudflareWorkerCronResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceAddCloudflareWorkerCronSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) DeleteCloudflareWorkerCron(ctx context.Context, req *v1.DeleteCloudflareWorkerCronRequest) (*v1.DeleteCloudflareWorkerCronResponse, error) {
+	var res v1.DeleteCloudflareWorkerCronResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceDeleteCloudflareWorkerCronSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) PutCloudflareWorkerSecret(ctx context.Context, req *v1.PutCloudflareWorkerSecretRequest) (*v1.PutCloudflareWorkerSecretResponse, error) {
+	var res v1.PutCloudflareWorkerSecretResponse
+	if err := c.client.CallUnary(ctx, cloudflareServicePutCloudflareWorkerSecretSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) DeleteCloudflareWorkerSecret(ctx context.Context, req *v1.DeleteCloudflareWorkerSecretRequest) (*v1.DeleteCloudflareWorkerSecretResponse, error) {
+	var res v1.DeleteCloudflareWorkerSecretResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceDeleteCloudflareWorkerSecretSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) RollbackCloudflareWorker(ctx context.Context, req *v1.RollbackCloudflareWorkerRequest) (*v1.RollbackCloudflareWorkerResponse, error) {
+	var res v1.RollbackCloudflareWorkerResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceRollbackCloudflareWorkerSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) DeleteCloudflareWorker(ctx context.Context, req *v1.DeleteCloudflareWorkerRequest) (*v1.DeleteCloudflareWorkerResponse, error) {
+	var res v1.DeleteCloudflareWorkerResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceDeleteCloudflareWorkerSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) GetCloudflarePagesProject(ctx context.Context, req *v1.GetCloudflarePagesProjectRequest) (*v1.GetCloudflarePagesProjectResponse, error) {
+	var res v1.GetCloudflarePagesProjectResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceGetCloudflarePagesProjectSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) ListCloudflarePagesDeployments(ctx context.Context, req *v1.ListCloudflarePagesDeploymentsRequest) (*v1.ListCloudflarePagesDeploymentsResponse, error) {
+	var res v1.ListCloudflarePagesDeploymentsResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceListCloudflarePagesDeploymentsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) CreateCloudflarePagesProject(ctx context.Context, req *v1.CreateCloudflarePagesProjectRequest) (*v1.CreateCloudflarePagesProjectResponse, error) {
+	var res v1.CreateCloudflarePagesProjectResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceCreateCloudflarePagesProjectSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) UpdateCloudflarePagesProject(ctx context.Context, req *v1.UpdateCloudflarePagesProjectRequest) (*v1.UpdateCloudflarePagesProjectResponse, error) {
+	var res v1.UpdateCloudflarePagesProjectResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceUpdateCloudflarePagesProjectSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) DeleteCloudflarePagesProject(ctx context.Context, req *v1.DeleteCloudflarePagesProjectRequest) (*v1.DeleteCloudflarePagesProjectResponse, error) {
+	var res v1.DeleteCloudflarePagesProjectResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceDeleteCloudflarePagesProjectSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) RetryCloudflarePagesDeployment(ctx context.Context, req *v1.RetryCloudflarePagesDeploymentRequest) (*v1.RetryCloudflarePagesDeploymentResponse, error) {
+	var res v1.RetryCloudflarePagesDeploymentResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceRetryCloudflarePagesDeploymentSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) RollbackCloudflarePagesDeployment(ctx context.Context, req *v1.RollbackCloudflarePagesDeploymentRequest) (*v1.RollbackCloudflarePagesDeploymentResponse, error) {
+	var res v1.RollbackCloudflarePagesDeploymentResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceRollbackCloudflarePagesDeploymentSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) DeleteCloudflarePagesDeployment(ctx context.Context, req *v1.DeleteCloudflarePagesDeploymentRequest) (*v1.DeleteCloudflarePagesDeploymentResponse, error) {
+	var res v1.DeleteCloudflarePagesDeploymentResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceDeleteCloudflarePagesDeploymentSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) AddCloudflarePagesDomain(ctx context.Context, req *v1.AddCloudflarePagesDomainRequest) (*v1.AddCloudflarePagesDomainResponse, error) {
+	var res v1.AddCloudflarePagesDomainResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceAddCloudflarePagesDomainSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) DeleteCloudflarePagesDomain(ctx context.Context, req *v1.DeleteCloudflarePagesDomainRequest) (*v1.DeleteCloudflarePagesDomainResponse, error) {
+	var res v1.DeleteCloudflarePagesDomainResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceDeleteCloudflarePagesDomainSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) SetCloudflarePagesEnvVar(ctx context.Context, req *v1.SetCloudflarePagesEnvVarRequest) (*v1.SetCloudflarePagesEnvVarResponse, error) {
+	var res v1.SetCloudflarePagesEnvVarResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceSetCloudflarePagesEnvVarSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) DeleteCloudflarePagesEnvVar(ctx context.Context, req *v1.DeleteCloudflarePagesEnvVarRequest) (*v1.DeleteCloudflarePagesEnvVarResponse, error) {
+	var res v1.DeleteCloudflarePagesEnvVarResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceDeleteCloudflarePagesEnvVarSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) ListCloudflareResourceOperations(ctx context.Context, req *v1.ListCloudflareResourceOperationsRequest) (*v1.ListCloudflareResourceOperationsResponse, error) {
+	var res v1.ListCloudflareResourceOperationsResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceListCloudflareResourceOperationsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) GetCloudflareEmailRouting(ctx context.Context, req *v1.GetCloudflareEmailRoutingRequest) (*v1.GetCloudflareEmailRoutingResponse, error) {
+	var res v1.GetCloudflareEmailRoutingResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceGetCloudflareEmailRoutingSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) ListCloudflareEmailAddresses(ctx context.Context, req *v1.ListCloudflareEmailAddressesRequest) (*v1.ListCloudflareEmailAddressesResponse, error) {
+	var res v1.ListCloudflareEmailAddressesResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceListCloudflareEmailAddressesSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) EnableCloudflareEmailRouting(ctx context.Context, req *v1.EnableCloudflareEmailRoutingRequest) (*v1.EnableCloudflareEmailRoutingResponse, error) {
+	var res v1.EnableCloudflareEmailRoutingResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceEnableCloudflareEmailRoutingSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) CreateCloudflareEmailRule(ctx context.Context, req *v1.CreateCloudflareEmailRuleRequest) (*v1.CreateCloudflareEmailRuleResponse, error) {
+	var res v1.CreateCloudflareEmailRuleResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceCreateCloudflareEmailRuleSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) UpdateCloudflareEmailRule(ctx context.Context, req *v1.UpdateCloudflareEmailRuleRequest) (*v1.UpdateCloudflareEmailRuleResponse, error) {
+	var res v1.UpdateCloudflareEmailRuleResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceUpdateCloudflareEmailRuleSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) DeleteCloudflareEmailRule(ctx context.Context, req *v1.DeleteCloudflareEmailRuleRequest) (*v1.DeleteCloudflareEmailRuleResponse, error) {
+	var res v1.DeleteCloudflareEmailRuleResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceDeleteCloudflareEmailRuleSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) SetCloudflareEmailCatchAll(ctx context.Context, req *v1.SetCloudflareEmailCatchAllRequest) (*v1.SetCloudflareEmailCatchAllResponse, error) {
+	var res v1.SetCloudflareEmailCatchAllResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceSetCloudflareEmailCatchAllSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) CreateCloudflareEmailAddress(ctx context.Context, req *v1.CreateCloudflareEmailAddressRequest) (*v1.CreateCloudflareEmailAddressResponse, error) {
+	var res v1.CreateCloudflareEmailAddressResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceCreateCloudflareEmailAddressSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) DeleteCloudflareEmailAddress(ctx context.Context, req *v1.DeleteCloudflareEmailAddressRequest) (*v1.DeleteCloudflareEmailAddressResponse, error) {
+	var res v1.DeleteCloudflareEmailAddressResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceDeleteCloudflareEmailAddressSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) ListCloudflareEmailLogs(ctx context.Context, req *v1.ListCloudflareEmailLogsRequest) (*v1.ListCloudflareEmailLogsResponse, error) {
+	var res v1.ListCloudflareEmailLogsResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceListCloudflareEmailLogsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+type cloudflareServiceHandler struct{ svc CloudflareServiceHandler }
+
+func (h cloudflareServiceHandler) listCloudflareZones(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListCloudflareZonesRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListCloudflareZones(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) getCloudflareZone(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.GetCloudflareZoneRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.GetCloudflareZone(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) listCloudflareDNSRecords(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListCloudflareDNSRecordsRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListCloudflareDNSRecords(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) createCloudflareDNSRecord(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.CreateCloudflareDNSRecordRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.CreateCloudflareDNSRecord(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) updateCloudflareDNSRecord(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.UpdateCloudflareDNSRecordRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.UpdateCloudflareDNSRecord(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) setCloudflareDNSRecordProxied(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.SetCloudflareDNSRecordProxiedRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.SetCloudflareDNSRecordProxied(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) deleteCloudflareDNSRecord(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteCloudflareDNSRecordRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteCloudflareDNSRecord(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) listCloudflareDNSOperations(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListCloudflareDNSOperationsRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListCloudflareDNSOperations(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) listCloudflareWorkers(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListCloudflareWorkersRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListCloudflareWorkers(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) listCloudflarePagesProjects(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListCloudflarePagesProjectsRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListCloudflarePagesProjects(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) listCloudflareTunnels(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListCloudflareTunnelsRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListCloudflareTunnels(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) getCloudflareTunnel(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.GetCloudflareTunnelRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.GetCloudflareTunnel(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) createCloudflareTunnel(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.CreateCloudflareTunnelRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.CreateCloudflareTunnel(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) deleteCloudflareTunnel(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteCloudflareTunnelRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteCloudflareTunnel(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) getCloudflareTunnelToken(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.GetCloudflareTunnelTokenRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.GetCloudflareTunnelToken(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) cleanupCloudflareTunnelConnections(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.CleanupCloudflareTunnelConnectionsRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.CleanupCloudflareTunnelConnections(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) addCloudflareTunnelHostname(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.AddCloudflareTunnelHostnameRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.AddCloudflareTunnelHostname(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) updateCloudflareTunnelHostname(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.UpdateCloudflareTunnelHostnameRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.UpdateCloudflareTunnelHostname(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) deleteCloudflareTunnelHostname(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteCloudflareTunnelHostnameRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteCloudflareTunnelHostname(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) getCloudflareWorker(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.GetCloudflareWorkerRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.GetCloudflareWorker(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) setCloudflareWorkerWorkersDev(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.SetCloudflareWorkerWorkersDevRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.SetCloudflareWorkerWorkersDev(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) attachCloudflareWorkerDomain(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.AttachCloudflareWorkerDomainRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.AttachCloudflareWorkerDomain(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) detachCloudflareWorkerDomain(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DetachCloudflareWorkerDomainRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DetachCloudflareWorkerDomain(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) addCloudflareWorkerRoute(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.AddCloudflareWorkerRouteRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.AddCloudflareWorkerRoute(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) deleteCloudflareWorkerRoute(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteCloudflareWorkerRouteRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteCloudflareWorkerRoute(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) addCloudflareWorkerCron(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.AddCloudflareWorkerCronRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.AddCloudflareWorkerCron(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) deleteCloudflareWorkerCron(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteCloudflareWorkerCronRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteCloudflareWorkerCron(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) putCloudflareWorkerSecret(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.PutCloudflareWorkerSecretRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.PutCloudflareWorkerSecret(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) deleteCloudflareWorkerSecret(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteCloudflareWorkerSecretRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteCloudflareWorkerSecret(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) rollbackCloudflareWorker(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.RollbackCloudflareWorkerRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.RollbackCloudflareWorker(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) deleteCloudflareWorker(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteCloudflareWorkerRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteCloudflareWorker(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) getCloudflarePagesProject(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.GetCloudflarePagesProjectRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.GetCloudflarePagesProject(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) listCloudflarePagesDeployments(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListCloudflarePagesDeploymentsRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListCloudflarePagesDeployments(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) createCloudflarePagesProject(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.CreateCloudflarePagesProjectRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.CreateCloudflarePagesProject(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) updateCloudflarePagesProject(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.UpdateCloudflarePagesProjectRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.UpdateCloudflarePagesProject(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) deleteCloudflarePagesProject(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteCloudflarePagesProjectRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteCloudflarePagesProject(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) retryCloudflarePagesDeployment(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.RetryCloudflarePagesDeploymentRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.RetryCloudflarePagesDeployment(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) rollbackCloudflarePagesDeployment(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.RollbackCloudflarePagesDeploymentRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.RollbackCloudflarePagesDeployment(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) deleteCloudflarePagesDeployment(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteCloudflarePagesDeploymentRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteCloudflarePagesDeployment(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) addCloudflarePagesDomain(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.AddCloudflarePagesDomainRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.AddCloudflarePagesDomain(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) deleteCloudflarePagesDomain(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteCloudflarePagesDomainRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteCloudflarePagesDomain(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) setCloudflarePagesEnvVar(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.SetCloudflarePagesEnvVarRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.SetCloudflarePagesEnvVar(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) deleteCloudflarePagesEnvVar(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteCloudflarePagesEnvVarRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteCloudflarePagesEnvVar(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) listCloudflareResourceOperations(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListCloudflareResourceOperationsRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListCloudflareResourceOperations(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) getCloudflareEmailRouting(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.GetCloudflareEmailRoutingRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.GetCloudflareEmailRouting(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) listCloudflareEmailAddresses(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListCloudflareEmailAddressesRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListCloudflareEmailAddresses(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) enableCloudflareEmailRouting(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.EnableCloudflareEmailRoutingRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.EnableCloudflareEmailRouting(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) createCloudflareEmailRule(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.CreateCloudflareEmailRuleRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.CreateCloudflareEmailRule(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) updateCloudflareEmailRule(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.UpdateCloudflareEmailRuleRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.UpdateCloudflareEmailRule(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) deleteCloudflareEmailRule(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteCloudflareEmailRuleRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteCloudflareEmailRule(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) setCloudflareEmailCatchAll(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.SetCloudflareEmailCatchAllRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.SetCloudflareEmailCatchAll(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) createCloudflareEmailAddress(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.CreateCloudflareEmailAddressRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.CreateCloudflareEmailAddress(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) deleteCloudflareEmailAddress(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteCloudflareEmailAddressRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteCloudflareEmailAddress(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) listCloudflareEmailLogs(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListCloudflareEmailLogsRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListCloudflareEmailLogs(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
 }

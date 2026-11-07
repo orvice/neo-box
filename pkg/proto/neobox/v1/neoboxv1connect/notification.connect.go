@@ -5,256 +5,285 @@
 package neoboxv1connect
 
 import (
-	connect "connectrpc.com/connect"
+	connect "connectrpc.com/connect/v2"
 	context "context"
-	errors "errors"
 	v1 "go.orx.me/apps/neo-box/pkg/proto/neobox/v1"
-	http "net/http"
-	strings "strings"
+	sync "sync"
 )
-
-// This is a compile-time assertion to ensure that this generated file and the connect package are
-// compatible. If you get a compiler error that this constant is not defined, this code was
-// generated with a version of connect newer than the one compiled into your binary. You can fix the
-// problem by either regenerating this code with an older version of connect or updating the connect
-// version compiled into your binary.
-const _ = connect.IsAtLeastVersion1_13_0
 
 const (
 	// NotificationServiceName is the fully-qualified name of the NotificationService service.
 	NotificationServiceName = "neobox.v1.NotificationService"
 )
 
-// These constants are the fully-qualified names of the RPCs defined in this package. They're
-// exposed at runtime as Spec.Procedure and as the final two segments of the HTTP route.
+// These constants are the procedure names of the RPCs defined in this package. They're exposed at
+// runtime as Spec.Procedure and as the final two segments of the HTTP route.
 //
 // Note that these are different from the fully-qualified method names used by
 // google.golang.org/protobuf/reflect/protoreflect. To convert from these constants to
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// NotificationServiceListNotificationChannelsProcedure is the fully-qualified name of the
+	// NotificationServiceListNotificationChannelsProcedure is the procedure name of the
 	// NotificationService's ListNotificationChannels RPC.
 	NotificationServiceListNotificationChannelsProcedure = "/neobox.v1.NotificationService/ListNotificationChannels"
-	// NotificationServiceCreateNotificationChannelProcedure is the fully-qualified name of the
+	// NotificationServiceCreateNotificationChannelProcedure is the procedure name of the
 	// NotificationService's CreateNotificationChannel RPC.
 	NotificationServiceCreateNotificationChannelProcedure = "/neobox.v1.NotificationService/CreateNotificationChannel"
-	// NotificationServiceUpdateNotificationChannelProcedure is the fully-qualified name of the
+	// NotificationServiceUpdateNotificationChannelProcedure is the procedure name of the
 	// NotificationService's UpdateNotificationChannel RPC.
 	NotificationServiceUpdateNotificationChannelProcedure = "/neobox.v1.NotificationService/UpdateNotificationChannel"
-	// NotificationServiceDeleteNotificationChannelProcedure is the fully-qualified name of the
+	// NotificationServiceDeleteNotificationChannelProcedure is the procedure name of the
 	// NotificationService's DeleteNotificationChannel RPC.
 	NotificationServiceDeleteNotificationChannelProcedure = "/neobox.v1.NotificationService/DeleteNotificationChannel"
-	// NotificationServiceTestNotificationChannelProcedure is the fully-qualified name of the
+	// NotificationServiceTestNotificationChannelProcedure is the procedure name of the
 	// NotificationService's TestNotificationChannel RPC.
 	NotificationServiceTestNotificationChannelProcedure = "/neobox.v1.NotificationService/TestNotificationChannel"
-	// NotificationServiceListAlertsProcedure is the fully-qualified name of the NotificationService's
+	// NotificationServiceListAlertsProcedure is the procedure name of the NotificationService's
 	// ListAlerts RPC.
 	NotificationServiceListAlertsProcedure = "/neobox.v1.NotificationService/ListAlerts"
 )
 
+var (
+	notificationServiceListNotificationChannelsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_notification_proto.Services().ByName("NotificationService").Methods().ByName("ListNotificationChannels"),
+			Procedure:  NotificationServiceListNotificationChannelsProcedure,
+		}
+	})
+	notificationServiceCreateNotificationChannelSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_notification_proto.Services().ByName("NotificationService").Methods().ByName("CreateNotificationChannel"),
+			Procedure:  NotificationServiceCreateNotificationChannelProcedure,
+		}
+	})
+	notificationServiceUpdateNotificationChannelSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_notification_proto.Services().ByName("NotificationService").Methods().ByName("UpdateNotificationChannel"),
+			Procedure:  NotificationServiceUpdateNotificationChannelProcedure,
+		}
+	})
+	notificationServiceDeleteNotificationChannelSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_notification_proto.Services().ByName("NotificationService").Methods().ByName("DeleteNotificationChannel"),
+			Procedure:  NotificationServiceDeleteNotificationChannelProcedure,
+		}
+	})
+	notificationServiceTestNotificationChannelSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_notification_proto.Services().ByName("NotificationService").Methods().ByName("TestNotificationChannel"),
+			Procedure:  NotificationServiceTestNotificationChannelProcedure,
+		}
+	})
+	notificationServiceListAlertsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_notification_proto.Services().ByName("NotificationService").Methods().ByName("ListAlerts"),
+			Procedure:  NotificationServiceListAlertsProcedure,
+		}
+	})
+)
+
 // NotificationServiceClient is a client for the neobox.v1.NotificationService service.
 type NotificationServiceClient interface {
-	ListNotificationChannels(context.Context, *connect.Request[v1.ListNotificationChannelsRequest]) (*connect.Response[v1.ListNotificationChannelsResponse], error)
-	CreateNotificationChannel(context.Context, *connect.Request[v1.CreateNotificationChannelRequest]) (*connect.Response[v1.CreateNotificationChannelResponse], error)
-	UpdateNotificationChannel(context.Context, *connect.Request[v1.UpdateNotificationChannelRequest]) (*connect.Response[v1.UpdateNotificationChannelResponse], error)
-	DeleteNotificationChannel(context.Context, *connect.Request[v1.DeleteNotificationChannelRequest]) (*connect.Response[v1.DeleteNotificationChannelResponse], error)
+	ListNotificationChannels(context.Context, *v1.ListNotificationChannelsRequest) (*v1.ListNotificationChannelsResponse, error)
+	CreateNotificationChannel(context.Context, *v1.CreateNotificationChannelRequest) (*v1.CreateNotificationChannelResponse, error)
+	UpdateNotificationChannel(context.Context, *v1.UpdateNotificationChannelRequest) (*v1.UpdateNotificationChannelResponse, error)
+	DeleteNotificationChannel(context.Context, *v1.DeleteNotificationChannelRequest) (*v1.DeleteNotificationChannelResponse, error)
 	// TestNotificationChannel sends a test message now and returns the
 	// channel with the outcome recorded.
-	TestNotificationChannel(context.Context, *connect.Request[v1.TestNotificationChannelRequest]) (*connect.Response[v1.TestNotificationChannelResponse], error)
+	TestNotificationChannel(context.Context, *v1.TestNotificationChannelRequest) (*v1.TestNotificationChannelResponse, error)
 	// ListAlerts lists the user's alerts, newest first.
-	ListAlerts(context.Context, *connect.Request[v1.ListAlertsRequest]) (*connect.Response[v1.ListAlertsResponse], error)
+	ListAlerts(context.Context, *v1.ListAlertsRequest) (*v1.ListAlertsResponse, error)
 }
 
 // NewNotificationServiceClient constructs a client for the neobox.v1.NotificationService service.
-// By default, it uses the Connect protocol with the binary Protobuf Codec, asks for gzipped
-// responses, and sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the
-// connect.WithGRPC() or connect.WithGRPCWeb() options.
-//
-// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
-// http://api.acme.com or https://acme.com/grpc).
-func NewNotificationServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) NotificationServiceClient {
-	baseURL = strings.TrimRight(baseURL, "/")
-	notificationServiceMethods := v1.File_neobox_v1_notification_proto.Services().ByName("NotificationService").Methods()
-	return &notificationServiceClient{
-		listNotificationChannels: connect.NewClient[v1.ListNotificationChannelsRequest, v1.ListNotificationChannelsResponse](
-			httpClient,
-			baseURL+NotificationServiceListNotificationChannelsProcedure,
-			connect.WithSchema(notificationServiceMethods.ByName("ListNotificationChannels")),
-			connect.WithClientOptions(opts...),
-		),
-		createNotificationChannel: connect.NewClient[v1.CreateNotificationChannelRequest, v1.CreateNotificationChannelResponse](
-			httpClient,
-			baseURL+NotificationServiceCreateNotificationChannelProcedure,
-			connect.WithSchema(notificationServiceMethods.ByName("CreateNotificationChannel")),
-			connect.WithClientOptions(opts...),
-		),
-		updateNotificationChannel: connect.NewClient[v1.UpdateNotificationChannelRequest, v1.UpdateNotificationChannelResponse](
-			httpClient,
-			baseURL+NotificationServiceUpdateNotificationChannelProcedure,
-			connect.WithSchema(notificationServiceMethods.ByName("UpdateNotificationChannel")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteNotificationChannel: connect.NewClient[v1.DeleteNotificationChannelRequest, v1.DeleteNotificationChannelResponse](
-			httpClient,
-			baseURL+NotificationServiceDeleteNotificationChannelProcedure,
-			connect.WithSchema(notificationServiceMethods.ByName("DeleteNotificationChannel")),
-			connect.WithClientOptions(opts...),
-		),
-		testNotificationChannel: connect.NewClient[v1.TestNotificationChannelRequest, v1.TestNotificationChannelResponse](
-			httpClient,
-			baseURL+NotificationServiceTestNotificationChannelProcedure,
-			connect.WithSchema(notificationServiceMethods.ByName("TestNotificationChannel")),
-			connect.WithClientOptions(opts...),
-		),
-		listAlerts: connect.NewClient[v1.ListAlertsRequest, v1.ListAlertsResponse](
-			httpClient,
-			baseURL+NotificationServiceListAlertsProcedure,
-			connect.WithSchema(notificationServiceMethods.ByName("ListAlerts")),
-			connect.WithClientOptions(opts...),
-		),
-	}
-}
-
-// notificationServiceClient implements NotificationServiceClient.
-type notificationServiceClient struct {
-	listNotificationChannels  *connect.Client[v1.ListNotificationChannelsRequest, v1.ListNotificationChannelsResponse]
-	createNotificationChannel *connect.Client[v1.CreateNotificationChannelRequest, v1.CreateNotificationChannelResponse]
-	updateNotificationChannel *connect.Client[v1.UpdateNotificationChannelRequest, v1.UpdateNotificationChannelResponse]
-	deleteNotificationChannel *connect.Client[v1.DeleteNotificationChannelRequest, v1.DeleteNotificationChannelResponse]
-	testNotificationChannel   *connect.Client[v1.TestNotificationChannelRequest, v1.TestNotificationChannelResponse]
-	listAlerts                *connect.Client[v1.ListAlertsRequest, v1.ListAlertsResponse]
-}
-
-// ListNotificationChannels calls neobox.v1.NotificationService.ListNotificationChannels.
-func (c *notificationServiceClient) ListNotificationChannels(ctx context.Context, req *connect.Request[v1.ListNotificationChannelsRequest]) (*connect.Response[v1.ListNotificationChannelsResponse], error) {
-	return c.listNotificationChannels.CallUnary(ctx, req)
-}
-
-// CreateNotificationChannel calls neobox.v1.NotificationService.CreateNotificationChannel.
-func (c *notificationServiceClient) CreateNotificationChannel(ctx context.Context, req *connect.Request[v1.CreateNotificationChannelRequest]) (*connect.Response[v1.CreateNotificationChannelResponse], error) {
-	return c.createNotificationChannel.CallUnary(ctx, req)
-}
-
-// UpdateNotificationChannel calls neobox.v1.NotificationService.UpdateNotificationChannel.
-func (c *notificationServiceClient) UpdateNotificationChannel(ctx context.Context, req *connect.Request[v1.UpdateNotificationChannelRequest]) (*connect.Response[v1.UpdateNotificationChannelResponse], error) {
-	return c.updateNotificationChannel.CallUnary(ctx, req)
-}
-
-// DeleteNotificationChannel calls neobox.v1.NotificationService.DeleteNotificationChannel.
-func (c *notificationServiceClient) DeleteNotificationChannel(ctx context.Context, req *connect.Request[v1.DeleteNotificationChannelRequest]) (*connect.Response[v1.DeleteNotificationChannelResponse], error) {
-	return c.deleteNotificationChannel.CallUnary(ctx, req)
-}
-
-// TestNotificationChannel calls neobox.v1.NotificationService.TestNotificationChannel.
-func (c *notificationServiceClient) TestNotificationChannel(ctx context.Context, req *connect.Request[v1.TestNotificationChannelRequest]) (*connect.Response[v1.TestNotificationChannelResponse], error) {
-	return c.testNotificationChannel.CallUnary(ctx, req)
-}
-
-// ListAlerts calls neobox.v1.NotificationService.ListAlerts.
-func (c *notificationServiceClient) ListAlerts(ctx context.Context, req *connect.Request[v1.ListAlertsRequest]) (*connect.Response[v1.ListAlertsResponse], error) {
-	return c.listAlerts.CallUnary(ctx, req)
+// Multiple service clients may share a single connect.Client.
+func NewNotificationServiceClient(client *connect.Client) NotificationServiceClient {
+	return &notificationServiceClient{client: client}
 }
 
 // NotificationServiceHandler is an implementation of the neobox.v1.NotificationService service.
 type NotificationServiceHandler interface {
-	ListNotificationChannels(context.Context, *connect.Request[v1.ListNotificationChannelsRequest]) (*connect.Response[v1.ListNotificationChannelsResponse], error)
-	CreateNotificationChannel(context.Context, *connect.Request[v1.CreateNotificationChannelRequest]) (*connect.Response[v1.CreateNotificationChannelResponse], error)
-	UpdateNotificationChannel(context.Context, *connect.Request[v1.UpdateNotificationChannelRequest]) (*connect.Response[v1.UpdateNotificationChannelResponse], error)
-	DeleteNotificationChannel(context.Context, *connect.Request[v1.DeleteNotificationChannelRequest]) (*connect.Response[v1.DeleteNotificationChannelResponse], error)
+	ListNotificationChannels(context.Context, *v1.ListNotificationChannelsRequest) (*v1.ListNotificationChannelsResponse, error)
+	CreateNotificationChannel(context.Context, *v1.CreateNotificationChannelRequest) (*v1.CreateNotificationChannelResponse, error)
+	UpdateNotificationChannel(context.Context, *v1.UpdateNotificationChannelRequest) (*v1.UpdateNotificationChannelResponse, error)
+	DeleteNotificationChannel(context.Context, *v1.DeleteNotificationChannelRequest) (*v1.DeleteNotificationChannelResponse, error)
 	// TestNotificationChannel sends a test message now and returns the
 	// channel with the outcome recorded.
-	TestNotificationChannel(context.Context, *connect.Request[v1.TestNotificationChannelRequest]) (*connect.Response[v1.TestNotificationChannelResponse], error)
+	TestNotificationChannel(context.Context, *v1.TestNotificationChannelRequest) (*v1.TestNotificationChannelResponse, error)
 	// ListAlerts lists the user's alerts, newest first.
-	ListAlerts(context.Context, *connect.Request[v1.ListAlertsRequest]) (*connect.Response[v1.ListAlertsResponse], error)
+	ListAlerts(context.Context, *v1.ListAlertsRequest) (*v1.ListAlertsResponse, error)
 }
 
-// NewNotificationServiceHandler builds an HTTP handler from the service implementation. It returns
-// the path on which to mount the handler and the handler itself.
-//
-// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
-// and JSON codecs. They also support gzip compression.
-func NewNotificationServiceHandler(svc NotificationServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
-	notificationServiceMethods := v1.File_neobox_v1_notification_proto.Services().ByName("NotificationService").Methods()
-	notificationServiceListNotificationChannelsHandler := connect.NewUnaryHandler(
-		NotificationServiceListNotificationChannelsProcedure,
-		svc.ListNotificationChannels,
-		connect.WithSchema(notificationServiceMethods.ByName("ListNotificationChannels")),
-		connect.WithHandlerOptions(opts...),
+// RegisterNotificationServiceHandler registers svc as the neobox.v1.NotificationService
+// implementation on server.
+func RegisterNotificationServiceHandler(server *connect.Server, svc NotificationServiceHandler) {
+	adapter := notificationServiceHandler{svc: svc}
+	server.Register(
+		connect.Method{Spec: notificationServiceListNotificationChannelsSpec(), Handler: adapter.listNotificationChannels},
+		connect.Method{Spec: notificationServiceCreateNotificationChannelSpec(), Handler: adapter.createNotificationChannel},
+		connect.Method{Spec: notificationServiceUpdateNotificationChannelSpec(), Handler: adapter.updateNotificationChannel},
+		connect.Method{Spec: notificationServiceDeleteNotificationChannelSpec(), Handler: adapter.deleteNotificationChannel},
+		connect.Method{Spec: notificationServiceTestNotificationChannelSpec(), Handler: adapter.testNotificationChannel},
+		connect.Method{Spec: notificationServiceListAlertsSpec(), Handler: adapter.listAlerts},
 	)
-	notificationServiceCreateNotificationChannelHandler := connect.NewUnaryHandler(
-		NotificationServiceCreateNotificationChannelProcedure,
-		svc.CreateNotificationChannel,
-		connect.WithSchema(notificationServiceMethods.ByName("CreateNotificationChannel")),
-		connect.WithHandlerOptions(opts...),
-	)
-	notificationServiceUpdateNotificationChannelHandler := connect.NewUnaryHandler(
-		NotificationServiceUpdateNotificationChannelProcedure,
-		svc.UpdateNotificationChannel,
-		connect.WithSchema(notificationServiceMethods.ByName("UpdateNotificationChannel")),
-		connect.WithHandlerOptions(opts...),
-	)
-	notificationServiceDeleteNotificationChannelHandler := connect.NewUnaryHandler(
-		NotificationServiceDeleteNotificationChannelProcedure,
-		svc.DeleteNotificationChannel,
-		connect.WithSchema(notificationServiceMethods.ByName("DeleteNotificationChannel")),
-		connect.WithHandlerOptions(opts...),
-	)
-	notificationServiceTestNotificationChannelHandler := connect.NewUnaryHandler(
-		NotificationServiceTestNotificationChannelProcedure,
-		svc.TestNotificationChannel,
-		connect.WithSchema(notificationServiceMethods.ByName("TestNotificationChannel")),
-		connect.WithHandlerOptions(opts...),
-	)
-	notificationServiceListAlertsHandler := connect.NewUnaryHandler(
-		NotificationServiceListAlertsProcedure,
-		svc.ListAlerts,
-		connect.WithSchema(notificationServiceMethods.ByName("ListAlerts")),
-		connect.WithHandlerOptions(opts...),
-	)
-	return "/neobox.v1.NotificationService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case NotificationServiceListNotificationChannelsProcedure:
-			notificationServiceListNotificationChannelsHandler.ServeHTTP(w, r)
-		case NotificationServiceCreateNotificationChannelProcedure:
-			notificationServiceCreateNotificationChannelHandler.ServeHTTP(w, r)
-		case NotificationServiceUpdateNotificationChannelProcedure:
-			notificationServiceUpdateNotificationChannelHandler.ServeHTTP(w, r)
-		case NotificationServiceDeleteNotificationChannelProcedure:
-			notificationServiceDeleteNotificationChannelHandler.ServeHTTP(w, r)
-		case NotificationServiceTestNotificationChannelProcedure:
-			notificationServiceTestNotificationChannelHandler.ServeHTTP(w, r)
-		case NotificationServiceListAlertsProcedure:
-			notificationServiceListAlertsHandler.ServeHTTP(w, r)
-		default:
-			http.NotFound(w, r)
-		}
-	})
 }
 
 // UnimplementedNotificationServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedNotificationServiceHandler struct{}
 
-func (UnimplementedNotificationServiceHandler) ListNotificationChannels(context.Context, *connect.Request[v1.ListNotificationChannelsRequest]) (*connect.Response[v1.ListNotificationChannelsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.NotificationService.ListNotificationChannels is not implemented"))
+func (UnimplementedNotificationServiceHandler) ListNotificationChannels(context.Context, *v1.ListNotificationChannelsRequest) (*v1.ListNotificationChannelsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.NotificationService.ListNotificationChannels is not implemented")
 }
 
-func (UnimplementedNotificationServiceHandler) CreateNotificationChannel(context.Context, *connect.Request[v1.CreateNotificationChannelRequest]) (*connect.Response[v1.CreateNotificationChannelResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.NotificationService.CreateNotificationChannel is not implemented"))
+func (UnimplementedNotificationServiceHandler) CreateNotificationChannel(context.Context, *v1.CreateNotificationChannelRequest) (*v1.CreateNotificationChannelResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.NotificationService.CreateNotificationChannel is not implemented")
 }
 
-func (UnimplementedNotificationServiceHandler) UpdateNotificationChannel(context.Context, *connect.Request[v1.UpdateNotificationChannelRequest]) (*connect.Response[v1.UpdateNotificationChannelResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.NotificationService.UpdateNotificationChannel is not implemented"))
+func (UnimplementedNotificationServiceHandler) UpdateNotificationChannel(context.Context, *v1.UpdateNotificationChannelRequest) (*v1.UpdateNotificationChannelResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.NotificationService.UpdateNotificationChannel is not implemented")
 }
 
-func (UnimplementedNotificationServiceHandler) DeleteNotificationChannel(context.Context, *connect.Request[v1.DeleteNotificationChannelRequest]) (*connect.Response[v1.DeleteNotificationChannelResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.NotificationService.DeleteNotificationChannel is not implemented"))
+func (UnimplementedNotificationServiceHandler) DeleteNotificationChannel(context.Context, *v1.DeleteNotificationChannelRequest) (*v1.DeleteNotificationChannelResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.NotificationService.DeleteNotificationChannel is not implemented")
 }
 
-func (UnimplementedNotificationServiceHandler) TestNotificationChannel(context.Context, *connect.Request[v1.TestNotificationChannelRequest]) (*connect.Response[v1.TestNotificationChannelResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.NotificationService.TestNotificationChannel is not implemented"))
+func (UnimplementedNotificationServiceHandler) TestNotificationChannel(context.Context, *v1.TestNotificationChannelRequest) (*v1.TestNotificationChannelResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.NotificationService.TestNotificationChannel is not implemented")
 }
 
-func (UnimplementedNotificationServiceHandler) ListAlerts(context.Context, *connect.Request[v1.ListAlertsRequest]) (*connect.Response[v1.ListAlertsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.NotificationService.ListAlerts is not implemented"))
+func (UnimplementedNotificationServiceHandler) ListAlerts(context.Context, *v1.ListAlertsRequest) (*v1.ListAlertsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.NotificationService.ListAlerts is not implemented")
+}
+
+type notificationServiceClient struct {
+	client *connect.Client
+}
+
+func (c *notificationServiceClient) ListNotificationChannels(ctx context.Context, req *v1.ListNotificationChannelsRequest) (*v1.ListNotificationChannelsResponse, error) {
+	var res v1.ListNotificationChannelsResponse
+	if err := c.client.CallUnary(ctx, notificationServiceListNotificationChannelsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *notificationServiceClient) CreateNotificationChannel(ctx context.Context, req *v1.CreateNotificationChannelRequest) (*v1.CreateNotificationChannelResponse, error) {
+	var res v1.CreateNotificationChannelResponse
+	if err := c.client.CallUnary(ctx, notificationServiceCreateNotificationChannelSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *notificationServiceClient) UpdateNotificationChannel(ctx context.Context, req *v1.UpdateNotificationChannelRequest) (*v1.UpdateNotificationChannelResponse, error) {
+	var res v1.UpdateNotificationChannelResponse
+	if err := c.client.CallUnary(ctx, notificationServiceUpdateNotificationChannelSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *notificationServiceClient) DeleteNotificationChannel(ctx context.Context, req *v1.DeleteNotificationChannelRequest) (*v1.DeleteNotificationChannelResponse, error) {
+	var res v1.DeleteNotificationChannelResponse
+	if err := c.client.CallUnary(ctx, notificationServiceDeleteNotificationChannelSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *notificationServiceClient) TestNotificationChannel(ctx context.Context, req *v1.TestNotificationChannelRequest) (*v1.TestNotificationChannelResponse, error) {
+	var res v1.TestNotificationChannelResponse
+	if err := c.client.CallUnary(ctx, notificationServiceTestNotificationChannelSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *notificationServiceClient) ListAlerts(ctx context.Context, req *v1.ListAlertsRequest) (*v1.ListAlertsResponse, error) {
+	var res v1.ListAlertsResponse
+	if err := c.client.CallUnary(ctx, notificationServiceListAlertsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+type notificationServiceHandler struct{ svc NotificationServiceHandler }
+
+func (h notificationServiceHandler) listNotificationChannels(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListNotificationChannelsRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListNotificationChannels(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h notificationServiceHandler) createNotificationChannel(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.CreateNotificationChannelRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.CreateNotificationChannel(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h notificationServiceHandler) updateNotificationChannel(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.UpdateNotificationChannelRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.UpdateNotificationChannel(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h notificationServiceHandler) deleteNotificationChannel(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteNotificationChannelRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteNotificationChannel(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h notificationServiceHandler) testNotificationChannel(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.TestNotificationChannelRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.TestNotificationChannel(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h notificationServiceHandler) listAlerts(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListAlertsRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListAlerts(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
 }

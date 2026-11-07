@@ -4,7 +4,7 @@ go 1.26.5
 
 require (
 	butterfly.orx.me/core v0.0.0-20260430072052-a6971e20cd35
-	connectrpc.com/connect v1.21.0
+	connectrpc.com/connect/v2 v2.0.2
 	entgo.io/ent v0.14.6
 	github.com/aws/aws-sdk-go-v2 v1.47.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.12

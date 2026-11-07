@@ -4,7 +4,7 @@ plugins:
     out: pkg/proto
     opt:
       - paths=source_relative
-  - remote: buf.build/connectrpc/go:v1.18.1
+  - remote: buf.build/connectrpc/go:v2.0.2
     out: pkg/proto
     opt:
       - paths=source_relative

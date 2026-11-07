@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"butterfly.orx.me/core/log"
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -50,18 +50,18 @@ func (s *AuthServiceServer) SetSessionTTL(ttl time.Duration) {
 	}
 }
 
-func (s *AuthServiceServer) Login(ctx context.Context, req *connect.Request[neoboxv1.LoginRequest]) (*connect.Response[neoboxv1.LoginResponse], error) {
+func (s *AuthServiceServer) Login(ctx context.Context, req *neoboxv1.LoginRequest) (*neoboxv1.LoginResponse, error) {
 	logger := log.FromContext(ctx)
 	if s.repo == nil {
 		logger.Warn("login rejected: auth store not available")
-		return nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("auth store not available"))
+		return nil, connect.NewError(connect.CodeFailedPrecondition, "auth store not available")
 	}
-	username := strings.TrimSpace(req.Msg.GetUsername())
+	username := strings.TrimSpace(req.GetUsername())
 	if username == "" {
-		return nil, connectx.RequiredArgument("username")
+		return nil, connectx.RequiredArgument(ctx, "username")
 	}
-	if req.Msg.GetPassword() == "" {
-		return nil, connectx.RequiredArgument("password")
+	if req.GetPassword() == "" {
+		return nil, connectx.RequiredArgument(ctx, "password")
 	}
 
 	logger.Debug("login attempt", "username", username)
@@ -70,18 +70,18 @@ func (s *AuthServiceServer) Login(ctx context.Context, req *connect.Request[neob
 	if err != nil {
 		if errors.Is(err, auth.ErrUserNotFound) {
 			logger.Info("login failed: unknown user", "username", username)
-			return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("invalid username or password"))
+			return nil, connect.NewError(connect.CodeUnauthenticated, "invalid username or password")
 		}
 		logger.Error("login failed: user lookup error", "username", username, "err", err)
 		return nil, connectx.InternalWith(err)
 	}
 	if user.GetDisabled() {
 		logger.Info("login rejected: user disabled", "username", username, "user_id", user.GetId())
-		return nil, connect.NewError(connect.CodePermissionDenied, errors.New("user disabled"))
+		return nil, connect.NewError(connect.CodePermissionDenied, "user disabled")
 	}
-	if err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(req.Msg.GetPassword())); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(req.GetPassword())); err != nil {
 		logger.Info("login failed: password mismatch", "username", username, "user_id", user.GetId())
-		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("invalid username or password"))
+		return nil, connect.NewError(connect.CodeUnauthenticated, "invalid username or password")
 	}
 
 	secret, err := generateSessionSecret()
@@ -109,39 +109,39 @@ func (s *AuthServiceServer) Login(ctx context.Context, req *connect.Request[neob
 		"role", user.GetRole(),
 		"session_id", session.ID,
 	)
-	return connect.NewResponse(&neoboxv1.LoginResponse{
+	return &neoboxv1.LoginResponse{
 		Token:     secret,
 		User:      user,
 		ExpiresAt: timestamppb.New(expiresAt),
-	}), nil
+	}, nil
 }
 
-func (s *AuthServiceServer) Me(ctx context.Context, _ *connect.Request[neoboxv1.MeRequest]) (*connect.Response[neoboxv1.MeResponse], error) {
+func (s *AuthServiceServer) Me(ctx context.Context, _ *neoboxv1.MeRequest) (*neoboxv1.MeResponse, error) {
 	user, ok := auth.UserFromContext(ctx)
 	if !ok {
-		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
+		return nil, connect.NewError(connect.CodeUnauthenticated, "unauthenticated")
 	}
-	return connect.NewResponse(&neoboxv1.MeResponse{User: user}), nil
+	return &neoboxv1.MeResponse{User: user}, nil
 }
 
-func (s *AuthServiceServer) Logout(ctx context.Context, _ *connect.Request[neoboxv1.LogoutRequest]) (*connect.Response[neoboxv1.LogoutResponse], error) {
+func (s *AuthServiceServer) Logout(ctx context.Context, _ *neoboxv1.LogoutRequest) (*neoboxv1.LogoutResponse, error) {
 	logger := log.FromContext(ctx)
 	if s.repo == nil {
-		return connect.NewResponse(&neoboxv1.LogoutResponse{}), nil
+		return &neoboxv1.LogoutResponse{}, nil
 	}
 	session, ok := auth.SessionFromContext(ctx)
 	if !ok {
-		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
+		return nil, connect.NewError(connect.CodeUnauthenticated, "unauthenticated")
 	}
 	if err := s.repo.RevokeSession(ctx, session.ID); err != nil {
 		logger.Error("logout failed: revoke session", "session_id", session.ID, "user_id", session.UserID, "err", err)
 		return nil, connectx.InternalWith(err)
 	}
 	logger.Info("logout succeeded", "session_id", session.ID, "user_id", session.UserID)
-	return connect.NewResponse(&neoboxv1.LogoutResponse{}), nil
+	return &neoboxv1.LogoutResponse{}, nil
 }
 
-func (s *AuthServiceServer) ListUsers(ctx context.Context, _ *connect.Request[neoboxv1.ListUsersRequest]) (*connect.Response[neoboxv1.ListUsersResponse], error) {
+func (s *AuthServiceServer) ListUsers(ctx context.Context, _ *neoboxv1.ListUsersRequest) (*neoboxv1.ListUsersResponse, error) {
 	if err := s.requireAdmin(ctx); err != nil {
 		return nil, err
 	}
@@ -149,22 +149,22 @@ func (s *AuthServiceServer) ListUsers(ctx context.Context, _ *connect.Request[ne
 	if err != nil {
 		return nil, connectx.InternalWith(err)
 	}
-	return connect.NewResponse(&neoboxv1.ListUsersResponse{Users: users}), nil
+	return &neoboxv1.ListUsersResponse{Users: users}, nil
 }
 
-func (s *AuthServiceServer) CreateUser(ctx context.Context, req *connect.Request[neoboxv1.CreateUserRequest]) (*connect.Response[neoboxv1.CreateUserResponse], error) {
+func (s *AuthServiceServer) CreateUser(ctx context.Context, req *neoboxv1.CreateUserRequest) (*neoboxv1.CreateUserResponse, error) {
 	if err := s.requireAdmin(ctx); err != nil {
 		return nil, err
 	}
-	username := strings.TrimSpace(req.Msg.GetUsername())
+	username := strings.TrimSpace(req.GetUsername())
 	if username == "" {
-		return nil, connectx.RequiredArgument("username")
+		return nil, connectx.RequiredArgument(ctx, "username")
 	}
-	if req.Msg.GetPassword() == "" {
-		return nil, connectx.RequiredArgument("password")
+	if req.GetPassword() == "" {
+		return nil, connectx.RequiredArgument(ctx, "password")
 	}
-	role := normalizeRole(req.Msg.GetRole())
-	hash, err := bcrypt.GenerateFromPassword([]byte(req.Msg.GetPassword()), bcrypt.DefaultCost)
+	role := normalizeRole(req.GetRole())
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.GetPassword()), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, connectx.InternalWith(err)
 	}
@@ -172,9 +172,9 @@ func (s *AuthServiceServer) CreateUser(ctx context.Context, req *connect.Request
 	user := &neoboxv1.User{
 		Id:          uuid.NewString(),
 		Username:    username,
-		DisplayName: strings.TrimSpace(req.Msg.GetDisplayName()),
+		DisplayName: strings.TrimSpace(req.GetDisplayName()),
 		Role:        role,
-		Disabled:    req.Msg.GetDisabled(),
+		Disabled:    req.GetDisabled(),
 		CreatedAt:   timestamppb.New(now),
 		UpdatedAt:   timestamppb.New(now),
 	}
@@ -185,27 +185,27 @@ func (s *AuthServiceServer) CreateUser(ctx context.Context, req *connect.Request
 	if err := s.repo.CreateUser(ctx, user, string(hash)); err != nil {
 		if errors.Is(err, auth.ErrUserAlreadyExists) {
 			logger.Info("create user rejected: username already exists", "username", username)
-			return nil, connect.NewError(connect.CodeAlreadyExists, errors.New("username already exists"))
+			return nil, connect.NewError(connect.CodeAlreadyExists, "username already exists")
 		}
 		logger.Error("create user failed", "username", username, "err", err)
 		return nil, connectx.InternalWith(err)
 	}
 	logger.Info("user created", "username", username, "user_id", user.GetId(), "role", user.GetRole(), "disabled", user.GetDisabled())
-	return connect.NewResponse(&neoboxv1.CreateUserResponse{User: user}), nil
+	return &neoboxv1.CreateUserResponse{User: user}, nil
 }
 
-func (s *AuthServiceServer) UpdateUserPassword(ctx context.Context, req *connect.Request[neoboxv1.UpdateUserPasswordRequest]) (*connect.Response[neoboxv1.UpdateUserPasswordResponse], error) {
+func (s *AuthServiceServer) UpdateUserPassword(ctx context.Context, req *neoboxv1.UpdateUserPasswordRequest) (*neoboxv1.UpdateUserPasswordResponse, error) {
 	if err := s.requireAdmin(ctx); err != nil {
 		return nil, err
 	}
-	id := strings.TrimSpace(req.Msg.GetId())
+	id := strings.TrimSpace(req.GetId())
 	if id == "" {
-		return nil, connectx.RequiredArgument("id")
+		return nil, connectx.RequiredArgument(ctx, "id")
 	}
-	if req.Msg.GetPassword() == "" {
-		return nil, connectx.RequiredArgument("password")
+	if req.GetPassword() == "" {
+		return nil, connectx.RequiredArgument(ctx, "password")
 	}
-	hash, err := bcrypt.GenerateFromPassword([]byte(req.Msg.GetPassword()), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.GetPassword()), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, connectx.InternalWith(err)
 	}
@@ -219,27 +219,27 @@ func (s *AuthServiceServer) UpdateUserPassword(ctx context.Context, req *connect
 		return nil, connectx.InternalWith(err)
 	}
 	logger.Info("user password updated", "user_id", id, "username", user.GetUsername())
-	return connect.NewResponse(&neoboxv1.UpdateUserPasswordResponse{User: user}), nil
+	return &neoboxv1.UpdateUserPasswordResponse{User: user}, nil
 }
 
-func (s *AuthServiceServer) UpdateProfile(ctx context.Context, req *connect.Request[neoboxv1.UpdateProfileRequest]) (*connect.Response[neoboxv1.UpdateProfileResponse], error) {
+func (s *AuthServiceServer) UpdateProfile(ctx context.Context, req *neoboxv1.UpdateProfileRequest) (*neoboxv1.UpdateProfileResponse, error) {
 	if s.repo == nil {
-		return nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("auth store not available"))
+		return nil, connect.NewError(connect.CodeFailedPrecondition, "auth store not available")
 	}
 	current, ok := auth.UserFromContext(ctx)
 	if !ok {
-		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
+		return nil, connect.NewError(connect.CodeUnauthenticated, "unauthenticated")
 	}
-	displayName := strings.TrimSpace(req.Msg.GetDisplayName())
+	displayName := strings.TrimSpace(req.GetDisplayName())
 	if displayName == "" {
-		return nil, connectx.RequiredArgument("display_name")
+		return nil, connectx.RequiredArgument(ctx, "display_name")
 	}
 	// req.Msg.AvatarUrl is nil when the client did not include the field — leave
 	// the stored avatar untouched. A non-nil pointer (including empty string)
 	// is a deliberate update; trim whitespace but preserve the explicit clear.
 	var avatarURL *string
-	if req.Msg.AvatarUrl != nil {
-		trimmed := strings.TrimSpace(*req.Msg.AvatarUrl)
+	if req.AvatarUrl != nil {
+		trimmed := strings.TrimSpace(*req.AvatarUrl)
 		avatarURL = &trimmed
 	}
 	user, err := s.repo.UpdateUserProfile(ctx, current.GetId(), displayName, avatarURL, time.Now().UTC())
@@ -249,22 +249,22 @@ func (s *AuthServiceServer) UpdateProfile(ctx context.Context, req *connect.Requ
 		}
 		return nil, connectx.InternalWith(err)
 	}
-	return connect.NewResponse(&neoboxv1.UpdateProfileResponse{User: user}), nil
+	return &neoboxv1.UpdateProfileResponse{User: user}, nil
 }
 
-func (s *AuthServiceServer) ChangePassword(ctx context.Context, req *connect.Request[neoboxv1.ChangePasswordRequest]) (*connect.Response[neoboxv1.ChangePasswordResponse], error) {
+func (s *AuthServiceServer) ChangePassword(ctx context.Context, req *neoboxv1.ChangePasswordRequest) (*neoboxv1.ChangePasswordResponse, error) {
 	if s.repo == nil {
-		return nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("auth store not available"))
+		return nil, connect.NewError(connect.CodeFailedPrecondition, "auth store not available")
 	}
 	current, ok := auth.UserFromContext(ctx)
 	if !ok {
-		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
+		return nil, connect.NewError(connect.CodeUnauthenticated, "unauthenticated")
 	}
-	if req.Msg.GetCurrentPassword() == "" {
-		return nil, connectx.RequiredArgument("current_password")
+	if req.GetCurrentPassword() == "" {
+		return nil, connectx.RequiredArgument(ctx, "current_password")
 	}
-	if req.Msg.GetNewPassword() == "" {
-		return nil, connectx.RequiredArgument("new_password")
+	if req.GetNewPassword() == "" {
+		return nil, connectx.RequiredArgument(ctx, "new_password")
 	}
 	_, passwordHash, err := s.repo.FindUserByID(ctx, current.GetId())
 	if err != nil {
@@ -273,10 +273,10 @@ func (s *AuthServiceServer) ChangePassword(ctx context.Context, req *connect.Req
 		}
 		return nil, connectx.InternalWith(err)
 	}
-	if err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(req.Msg.GetCurrentPassword())); err != nil {
-		return nil, connect.NewError(connect.CodePermissionDenied, errors.New("current password is incorrect"))
+	if err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(req.GetCurrentPassword())); err != nil {
+		return nil, connect.NewError(connect.CodePermissionDenied, "current password is incorrect")
 	}
-	hash, err := bcrypt.GenerateFromPassword([]byte(req.Msg.GetNewPassword()), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.GetNewPassword()), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, connectx.InternalWith(err)
 	}
@@ -287,44 +287,44 @@ func (s *AuthServiceServer) ChangePassword(ctx context.Context, req *connect.Req
 		}
 		return nil, connectx.InternalWith(err)
 	}
-	return connect.NewResponse(&neoboxv1.ChangePasswordResponse{User: user}), nil
+	return &neoboxv1.ChangePasswordResponse{User: user}, nil
 }
 
-func (s *AuthServiceServer) SetUserDisabled(ctx context.Context, req *connect.Request[neoboxv1.SetUserDisabledRequest]) (*connect.Response[neoboxv1.SetUserDisabledResponse], error) {
+func (s *AuthServiceServer) SetUserDisabled(ctx context.Context, req *neoboxv1.SetUserDisabledRequest) (*neoboxv1.SetUserDisabledResponse, error) {
 	if err := s.requireAdmin(ctx); err != nil {
 		return nil, err
 	}
-	id := strings.TrimSpace(req.Msg.GetId())
+	id := strings.TrimSpace(req.GetId())
 	if id == "" {
-		return nil, connectx.RequiredArgument("id")
+		return nil, connectx.RequiredArgument(ctx, "id")
 	}
 	current, _ := auth.UserFromContext(ctx)
-	if current != nil && current.GetId() == id && req.Msg.GetDisabled() {
-		return nil, connect.NewError(connect.CodePermissionDenied, errors.New("cannot disable current user"))
+	if current != nil && current.GetId() == id && req.GetDisabled() {
+		return nil, connect.NewError(connect.CodePermissionDenied, "cannot disable current user")
 	}
 	logger := log.FromContext(ctx)
-	user, err := s.repo.SetUserDisabled(ctx, id, req.Msg.GetDisabled(), time.Now().UTC())
+	user, err := s.repo.SetUserDisabled(ctx, id, req.GetDisabled(), time.Now().UTC())
 	if err != nil {
 		if errors.Is(err, auth.ErrUserNotFound) {
 			return nil, connectx.NotFound("user")
 		}
-		logger.Error("set user disabled failed", "user_id", id, "disabled", req.Msg.GetDisabled(), "err", err)
+		logger.Error("set user disabled failed", "user_id", id, "disabled", req.GetDisabled(), "err", err)
 		return nil, connectx.InternalWith(err)
 	}
 	logger.Info("user disabled flag updated", "user_id", id, "username", user.GetUsername(), "disabled", user.GetDisabled())
-	return connect.NewResponse(&neoboxv1.SetUserDisabledResponse{User: user}), nil
+	return &neoboxv1.SetUserDisabledResponse{User: user}, nil
 }
 
 func (s *AuthServiceServer) requireAdmin(ctx context.Context) error {
 	if s.repo == nil {
-		return connect.NewError(connect.CodeFailedPrecondition, errors.New("auth store not available"))
+		return connect.NewError(connect.CodeFailedPrecondition, "auth store not available")
 	}
 	user, ok := auth.UserFromContext(ctx)
 	if !ok {
-		return connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
+		return connect.NewError(connect.CodeUnauthenticated, "unauthenticated")
 	}
 	if user.GetRole() != "admin" {
-		return connect.NewError(connect.CodePermissionDenied, errors.New("admin role required"))
+		return connect.NewError(connect.CodePermissionDenied, "admin role required")
 	}
 	return nil
 }

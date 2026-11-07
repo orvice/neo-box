@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	repo "go.orx.me/apps/neo-box/internal/repo/googleworkspace"
 	"go.orx.me/apps/neo-box/internal/transport/connectx"
@@ -31,10 +31,10 @@ func defaultDriveClient(ctx context.Context, cfg googleworkspace.ConnectionConfi
 	return c, nil
 }
 
-func accessReasonArg(raw, field string) (string, error) {
+func accessReasonArg(ctx context.Context, raw, field string) (string, error) {
 	reason, err := googleworkspace.ValidAccessReason(raw)
 	if err != nil {
-		return "", connectx.InvalidArgument(field, err.Error())
+		return "", connectx.InvalidArgument(ctx, field, err.Error())
 	}
 	return reason, nil
 }
@@ -49,15 +49,15 @@ func (d *workspaceDeps) openDrive(ctx context.Context, t *repo.Tenant, subject, 
 	}
 	api, err := d.drive(ctx, cfg, sec, t.CustomerID, subject, scope, domains, reason)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeFailedPrecondition, err)
+		return nil, connect.NewError(connect.CodeFailedPrecondition, err.Error()).WithCause(err)
 	}
 	api.SetWriteRecorder(workspaceRecorder{repo: d.repo, connection: d.c, tenant: t, actorName: d.actorName})
 	return api, nil
 }
 
-func (s *GoogleWorkspaceServiceServer) ListWorkspaceSharedDrives(ctx context.Context, req *connect.Request[neoboxv1.ListWorkspaceSharedDrivesRequest]) (*connect.Response[neoboxv1.ListWorkspaceSharedDrivesResponse], error) {
-	in := req.Msg
-	reason, err := accessReasonArg(in.GetReason(), "reason")
+func (s *GoogleWorkspaceServiceServer) ListWorkspaceSharedDrives(ctx context.Context, req *neoboxv1.ListWorkspaceSharedDrivesRequest) (*neoboxv1.ListWorkspaceSharedDrivesResponse, error) {
+	in := req
+	reason, err := accessReasonArg(ctx, in.GetReason(), "reason")
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (s *GoogleWorkspaceServiceServer) ListWorkspaceSharedDrives(ctx context.Con
 		q.MaxMembers = &n
 	}
 	if err := q.Validate(); err != nil {
-		return nil, mapWorkspaceErr(err)
+		return nil, mapWorkspaceErr(ctx, err)
 	}
 	d, t, err := s.openTenant(ctx, in.GetConnectionId(), in.GetTenantId())
 	if err != nil {
@@ -80,7 +80,7 @@ func (s *GoogleWorkspaceServiceServer) ListWorkspaceSharedDrives(ctx context.Con
 	}
 	page, err := api.ListSharedDrives(ctx, q)
 	if err != nil {
-		return nil, mapWorkspaceFeatureErr(err, googleworkspace.DriveReadonlyScope)
+		return nil, mapWorkspaceFeatureErr(ctx, err, googleworkspace.DriveReadonlyScope)
 	}
 	out := &neoboxv1.ListWorkspaceSharedDrivesResponse{NextPageToken: page.NextPageToken, ReadAt: timestamppb.New(page.ReadAt)}
 	for _, sd := range page.Drives {
@@ -93,7 +93,7 @@ func (s *GoogleWorkspaceServiceServer) ListWorkspaceSharedDrives(ctx context.Con
 		}
 		out.Drives = append(out.Drives, row)
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }
 
 // openTenant loads the connection and the tenant without opening a Google
@@ -110,18 +110,18 @@ func (s *GoogleWorkspaceServiceServer) openTenant(ctx context.Context, connectio
 	return d, t, nil
 }
 
-func (s *GoogleWorkspaceServiceServer) ListWorkspaceUserExposedFiles(ctx context.Context, req *connect.Request[neoboxv1.ListWorkspaceUserExposedFilesRequest]) (*connect.Response[neoboxv1.ListWorkspaceUserExposedFilesResponse], error) {
-	in := req.Msg
-	reason, err := accessReasonArg(in.GetConfirmation().GetReason(), "confirmation.reason")
+func (s *GoogleWorkspaceServiceServer) ListWorkspaceUserExposedFiles(ctx context.Context, req *neoboxv1.ListWorkspaceUserExposedFilesRequest) (*neoboxv1.ListWorkspaceUserExposedFilesResponse, error) {
+	in := req
+	reason, err := accessReasonArg(ctx, in.GetConfirmation().GetReason(), "confirmation.reason")
 	if err != nil {
 		return nil, err
 	}
 	if strings.TrimSpace(in.GetUserId()) == "" {
-		return nil, connectx.RequiredArgument("user_id")
+		return nil, connectx.RequiredArgument(ctx, "user_id")
 	}
 	q := googleworkspace.ExposedFilesQuery{Exposures: in.GetExposures(), PageToken: in.GetPageToken(), PageSize: int(in.GetPageSize())}
 	if err := q.Validate(); err != nil {
-		return nil, mapWorkspaceErr(err)
+		return nil, mapWorkspaceErr(ctx, err)
 	}
 	// The target is resolved inside the tenant with the administrator's own
 	// client before a token whose subject is that user is requested.
@@ -131,10 +131,10 @@ func (s *GoogleWorkspaceServiceServer) ListWorkspaceUserExposedFiles(ctx context
 	}
 	u, err := directory.GetUser(ctx, strings.TrimSpace(in.GetUserId()))
 	if err != nil {
-		return nil, mapWorkspaceErr(err)
+		return nil, mapWorkspaceErr(ctx, err)
 	}
 	if !strings.EqualFold(strings.TrimSpace(in.GetConfirmation().GetTargetEmail()), u.PrimaryEmail) {
-		return nil, connectx.InvalidArgument("confirmation.target_email", "must be this user's primary email")
+		return nil, connectx.InvalidArgument(ctx, "confirmation.target_email", "must be this user's primary email")
 	}
 	// Unknown domains leave "outside the tenant" unknown rather than guessed.
 	domains, err := directory.VerifiedDomains(ctx)
@@ -147,7 +147,7 @@ func (s *GoogleWorkspaceServiceServer) ListWorkspaceUserExposedFiles(ctx context
 	}
 	page, err := api.ListExposedFiles(ctx, q)
 	if err != nil {
-		return nil, mapWorkspaceFeatureErr(err, googleworkspace.DriveMetadataScope)
+		return nil, mapWorkspaceFeatureErr(ctx, err, googleworkspace.DriveMetadataScope)
 	}
 	out := &neoboxv1.ListWorkspaceUserExposedFilesResponse{UserEmail: u.PrimaryEmail, NextPageToken: page.NextPageToken, IncompleteSearch: page.IncompleteSearch, ReadAt: timestamppb.New(page.ReadAt)}
 	for _, f := range page.Files {
@@ -160,5 +160,5 @@ func (s *GoogleWorkspaceServiceServer) ListWorkspaceUserExposedFiles(ctx context
 		}
 		out.Files = append(out.Files, row)
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"go.orx.me/apps/neo-box/internal/cloudflare/cftest"
@@ -37,76 +37,76 @@ type emailAPI struct {
 
 func (e emailAPI) get() *neoboxv1.GetCloudflareEmailRoutingResponse {
 	e.t.Helper()
-	r, err := e.f.srv.GetCloudflareEmailRouting(asUser("u1"), connect.NewRequest(&neoboxv1.GetCloudflareEmailRoutingRequest{ConnectionId: e.conn, ZoneId: e.zone}))
+	r, err := e.f.srv.GetCloudflareEmailRouting(asUser("u1"), &neoboxv1.GetCloudflareEmailRoutingRequest{ConnectionId: e.conn, ZoneId: e.zone})
 	if err != nil {
 		e.t.Fatalf("GetCloudflareEmailRouting: %v", err)
 	}
-	return r.Msg
+	return r
 }
 
 func (e emailAPI) enable() (*neoboxv1.CloudflareChangeResult, error) {
-	r, err := e.f.srv.EnableCloudflareEmailRouting(asUser("u1"), connect.NewRequest(&neoboxv1.EnableCloudflareEmailRoutingRequest{ConnectionId: e.conn, ZoneId: e.zone}))
+	r, err := e.f.srv.EnableCloudflareEmailRouting(asUser("u1"), &neoboxv1.EnableCloudflareEmailRoutingRequest{ConnectionId: e.conn, ZoneId: e.zone})
 	if err != nil {
 		return nil, err
 	}
-	return r.Msg.GetResult(), nil
+	return r.GetResult(), nil
 }
 
 func (e emailAPI) createRule(in *neoboxv1.CloudflareEmailRuleInput) (*neoboxv1.CloudflareChangeResult, error) {
-	r, err := e.f.srv.CreateCloudflareEmailRule(asUser("u1"), connect.NewRequest(&neoboxv1.CreateCloudflareEmailRuleRequest{ConnectionId: e.conn, ZoneId: e.zone, Rule: in}))
+	r, err := e.f.srv.CreateCloudflareEmailRule(asUser("u1"), &neoboxv1.CreateCloudflareEmailRuleRequest{ConnectionId: e.conn, ZoneId: e.zone, Rule: in})
 	if err != nil {
 		return nil, err
 	}
-	return r.Msg.GetResult(), nil
+	return r.GetResult(), nil
 }
 
 func (e emailAPI) updateRule(id string, in *neoboxv1.CloudflareEmailRuleInput) (*neoboxv1.CloudflareChangeResult, error) {
-	r, err := e.f.srv.UpdateCloudflareEmailRule(asUser("u1"), connect.NewRequest(&neoboxv1.UpdateCloudflareEmailRuleRequest{ConnectionId: e.conn, ZoneId: e.zone, RuleId: id, Rule: in}))
+	r, err := e.f.srv.UpdateCloudflareEmailRule(asUser("u1"), &neoboxv1.UpdateCloudflareEmailRuleRequest{ConnectionId: e.conn, ZoneId: e.zone, RuleId: id, Rule: in})
 	if err != nil {
 		return nil, err
 	}
-	return r.Msg.GetResult(), nil
+	return r.GetResult(), nil
 }
 
 func (e emailAPI) deleteRule(id string) (*neoboxv1.CloudflareChangeResult, error) {
-	r, err := e.f.srv.DeleteCloudflareEmailRule(asUser("u1"), connect.NewRequest(&neoboxv1.DeleteCloudflareEmailRuleRequest{ConnectionId: e.conn, ZoneId: e.zone, RuleId: id}))
+	r, err := e.f.srv.DeleteCloudflareEmailRule(asUser("u1"), &neoboxv1.DeleteCloudflareEmailRuleRequest{ConnectionId: e.conn, ZoneId: e.zone, RuleId: id})
 	if err != nil {
 		return nil, err
 	}
-	return r.Msg.GetResult(), nil
+	return r.GetResult(), nil
 }
 
 func (e emailAPI) catchAll(enabled bool, action neoboxv1.CloudflareEmailAction, target string) (*neoboxv1.CloudflareChangeResult, error) {
-	r, err := e.f.srv.SetCloudflareEmailCatchAll(asUser("u1"), connect.NewRequest(&neoboxv1.SetCloudflareEmailCatchAllRequest{ConnectionId: e.conn, ZoneId: e.zone, Enabled: enabled, Action: action, Target: target}))
+	r, err := e.f.srv.SetCloudflareEmailCatchAll(asUser("u1"), &neoboxv1.SetCloudflareEmailCatchAllRequest{ConnectionId: e.conn, ZoneId: e.zone, Enabled: enabled, Action: action, Target: target})
 	if err != nil {
 		return nil, err
 	}
-	return r.Msg.GetResult(), nil
+	return r.GetResult(), nil
 }
 
 func (e emailAPI) addresses() []*neoboxv1.CloudflareEmailAddress {
 	e.t.Helper()
-	r, err := e.f.srv.ListCloudflareEmailAddresses(asUser("u1"), connect.NewRequest(&neoboxv1.ListCloudflareEmailAddressesRequest{ConnectionId: e.conn}))
+	r, err := e.f.srv.ListCloudflareEmailAddresses(asUser("u1"), &neoboxv1.ListCloudflareEmailAddressesRequest{ConnectionId: e.conn})
 	if err != nil {
 		e.t.Fatalf("ListCloudflareEmailAddresses: %v", err)
 	}
-	return r.Msg.GetAddresses()
+	return r.GetAddresses()
 }
 
 func (e emailAPI) createAddress(email string) (*neoboxv1.CloudflareChangeResult, error) {
-	r, err := e.f.srv.CreateCloudflareEmailAddress(asUser("u1"), connect.NewRequest(&neoboxv1.CreateCloudflareEmailAddressRequest{ConnectionId: e.conn, Email: email}))
+	r, err := e.f.srv.CreateCloudflareEmailAddress(asUser("u1"), &neoboxv1.CreateCloudflareEmailAddressRequest{ConnectionId: e.conn, Email: email})
 	if err != nil {
 		return nil, err
 	}
-	return r.Msg.GetResult(), nil
+	return r.GetResult(), nil
 }
 
 func (e emailAPI) deleteAddress(id string) (*neoboxv1.CloudflareChangeResult, error) {
-	r, err := e.f.srv.DeleteCloudflareEmailAddress(asUser("u1"), connect.NewRequest(&neoboxv1.DeleteCloudflareEmailAddressRequest{ConnectionId: e.conn, ZoneId: e.zone, AddressId: id}))
+	r, err := e.f.srv.DeleteCloudflareEmailAddress(asUser("u1"), &neoboxv1.DeleteCloudflareEmailAddressRequest{ConnectionId: e.conn, ZoneId: e.zone, AddressId: id})
 	if err != nil {
 		return nil, err
 	}
-	return r.Msg.GetResult(), nil
+	return r.GetResult(), nil
 }
 
 func addressByEmail(list []*neoboxv1.CloudflareEmailAddress, email string) *neoboxv1.CloudflareEmailAddress {
@@ -150,9 +150,9 @@ func TestCloudflareEmailRoutingEnableAndRead(t *testing.T) {
 	}
 
 	// A Zone of another account is never reachable.
-	_, err = f.srv.GetCloudflareEmailRouting(asUser("u1"), connect.NewRequest(&neoboxv1.GetCloudflareEmailRoutingRequest{ConnectionId: conn, ZoneId: "zb1"}))
+	_, err = f.srv.GetCloudflareEmailRouting(asUser("u1"), &neoboxv1.GetCloudflareEmailRoutingRequest{ConnectionId: conn, ZoneId: "zb1"})
 	wantCode(t, "zone of another account", err, connect.CodeNotFound)
-	_, err = f.srv.GetCloudflareEmailRouting(asUser("u2"), connect.NewRequest(&neoboxv1.GetCloudflareEmailRoutingRequest{ConnectionId: conn, ZoneId: "za1"}))
+	_, err = f.srv.GetCloudflareEmailRouting(asUser("u2"), &neoboxv1.GetCloudflareEmailRoutingRequest{ConnectionId: conn, ZoneId: "za1"})
 	wantCode(t, "connection of another user", err, connect.CodeNotFound)
 }
 
@@ -384,7 +384,7 @@ func TestCloudflareEmailPermissions(t *testing.T) {
 
 	// A token without any Email Routing permission cannot read it either.
 	none := emailAPI{t, f, f.connect(t, "u1", cfAccA, "manage-read"), "za1"}
-	_, err = f.srv.GetCloudflareEmailRouting(asUser("u1"), connect.NewRequest(&neoboxv1.GetCloudflareEmailRoutingRequest{ConnectionId: none.conn, ZoneId: "za1"}))
+	_, err = f.srv.GetCloudflareEmailRouting(asUser("u1"), &neoboxv1.GetCloudflareEmailRoutingRequest{ConnectionId: none.conn, ZoneId: "za1"})
 	wantCode(t, "read without permission", err, connect.CodePermissionDenied)
 }
 
@@ -412,13 +412,13 @@ func TestCloudflareEmailLogs(t *testing.T) {
 	f.cf.AddEmailEvent("za1", cftest.EmailEvent{Time: now.Add(-time.Minute), From: "s@x.org", To: "x@alpha.com", Status: "dropped", Action: "drop", IsSpam: true})
 	f.cf.AddEmailEvent("zb1", cftest.EmailEvent{Time: now.Add(-time.Minute), From: "o@x.org", To: "o@other-account.com", Status: "delivered"})
 	list := func(user, conn, zone string, start, end time.Time, limit int32) (*neoboxv1.ListCloudflareEmailLogsResponse, error) {
-		r, err := f.srv.ListCloudflareEmailLogs(asUser(user), connect.NewRequest(&neoboxv1.ListCloudflareEmailLogsRequest{
+		r, err := f.srv.ListCloudflareEmailLogs(asUser(user), &neoboxv1.ListCloudflareEmailLogsRequest{
 			ConnectionId: conn, ZoneId: zone, StartTime: timestamppb.New(start), EndTime: timestamppb.New(end), Limit: limit,
-		}))
+		})
 		if err != nil {
 			return nil, err
 		}
-		return r.Msg, nil
+		return r, nil
 	}
 
 	got, err := list("u1", conn, "za1", now.Add(-2*time.Hour), now, 0)

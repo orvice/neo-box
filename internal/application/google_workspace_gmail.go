@@ -7,7 +7,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	repo "go.orx.me/apps/neo-box/internal/repo/googleworkspace"
 	"go.orx.me/apps/neo-box/internal/transport/connectx"
@@ -38,12 +38,12 @@ func defaultGmailClient(ctx context.Context, cfg googleworkspace.ConnectionConfi
 // tenant. Nothing reaches Google's token endpoint for a user who is not in the
 // tenant or whose primary email was not typed back.
 func (s *GoogleWorkspaceServiceServer) gmailTarget(ctx context.Context, connectionID, tenantID, userID string, confirmation *neoboxv1.GmailAccessConfirmation) (*workspaceDeps, *repo.Tenant, workspaceAPI, *googleworkspace.User, string, error) {
-	reason, err := gmailReason(confirmation)
+	reason, err := gmailReason(ctx, confirmation)
 	if err != nil {
 		return nil, nil, nil, nil, "", err
 	}
 	if strings.TrimSpace(userID) == "" {
-		return nil, nil, nil, nil, "", connectx.RequiredArgument("user_id")
+		return nil, nil, nil, nil, "", connectx.RequiredArgument(ctx, "user_id")
 	}
 	d, t, directory, err := s.open(ctx, connectionID, tenantID)
 	if err != nil {
@@ -51,10 +51,10 @@ func (s *GoogleWorkspaceServiceServer) gmailTarget(ctx context.Context, connecti
 	}
 	u, err := directory.GetUser(ctx, strings.TrimSpace(userID))
 	if err != nil {
-		return nil, nil, nil, nil, "", mapWorkspaceErr(err)
+		return nil, nil, nil, nil, "", mapWorkspaceErr(ctx, err)
 	}
 	if !strings.EqualFold(strings.TrimSpace(confirmation.GetTargetEmail()), u.PrimaryEmail) {
-		return nil, nil, nil, nil, "", connectx.InvalidArgument("confirmation.target_email", "must be this user's primary email")
+		return nil, nil, nil, nil, "", connectx.InvalidArgument(ctx, "confirmation.target_email", "must be this user's primary email")
 	}
 	return d, t, directory, u, reason, nil
 }
@@ -78,36 +78,36 @@ func (s *GoogleWorkspaceServiceServer) gmailAccess(ctx context.Context, connecti
 	}
 	api, err := d.gmail(ctx, cfg, sec, t.CustomerID, u.PrimaryEmail, domains, reason)
 	if err != nil {
-		return nil, nil, nil, "", connect.NewError(connect.CodeFailedPrecondition, err)
+		return nil, nil, nil, "", connect.NewError(connect.CodeFailedPrecondition, err.Error()).WithCause(err)
 	}
 	api.SetWriteRecorder(workspaceRecorder{repo: d.repo, connection: d.c, tenant: t, actorName: d.actorName})
 	return d, t, api, u.PrimaryEmail, nil
 }
 
-func gmailReason(c *neoboxv1.GmailAccessConfirmation) (string, error) {
+func gmailReason(ctx context.Context, c *neoboxv1.GmailAccessConfirmation) (string, error) {
 	reason := strings.TrimSpace(c.GetReason())
 	if reason == "" {
-		return "", connectx.InvalidArgument("confirmation.reason", "an access reason is required")
+		return "", connectx.InvalidArgument(ctx, "confirmation.reason", "an access reason is required")
 	}
 	if utf8.RuneCountInString(reason) > googleworkspace.MaxAccessReason {
-		return "", connectx.InvalidArgument("confirmation.reason", "must be at most 200 characters")
+		return "", connectx.InvalidArgument(ctx, "confirmation.reason", "must be at most 200 characters")
 	}
 	for _, r := range reason {
 		if unicode.IsControl(r) {
-			return "", connectx.InvalidArgument("confirmation.reason", "must be a single line of text")
+			return "", connectx.InvalidArgument(ctx, "confirmation.reason", "must be a single line of text")
 		}
 	}
 	return reason, nil
 }
 
-func (s *GoogleWorkspaceServiceServer) GetWorkspaceUserGmailSettings(ctx context.Context, req *connect.Request[neoboxv1.GetWorkspaceUserGmailSettingsRequest]) (*connect.Response[neoboxv1.GetWorkspaceUserGmailSettingsResponse], error) {
-	_, _, api, email, err := s.gmailAccess(ctx, req.Msg.GetConnectionId(), req.Msg.GetTenantId(), req.Msg.GetUserId(), req.Msg.GetConfirmation())
+func (s *GoogleWorkspaceServiceServer) GetWorkspaceUserGmailSettings(ctx context.Context, req *neoboxv1.GetWorkspaceUserGmailSettingsRequest) (*neoboxv1.GetWorkspaceUserGmailSettingsResponse, error) {
+	_, _, api, email, err := s.gmailAccess(ctx, req.GetConnectionId(), req.GetTenantId(), req.GetUserId(), req.GetConfirmation())
 	if err != nil {
 		return nil, err
 	}
 	settings, err := api.ReadSettings(ctx)
 	if err != nil {
-		return nil, mapWorkspaceFeatureErr(err, googleworkspace.GmailSettingsScope)
+		return nil, mapWorkspaceFeatureErr(ctx, err, googleworkspace.GmailSettingsScope)
 	}
 	out := &neoboxv1.GetWorkspaceUserGmailSettingsResponse{
 		UserEmail:           email,
@@ -119,13 +119,13 @@ func (s *GoogleWorkspaceServiceServer) GetWorkspaceUserGmailSettings(ctx context
 		SendAs:              gmailSendAsToProto(&settings.SendAs),
 		ReadAt:              timestamppb.New(settings.ReadAt),
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }
 
-func (s *GoogleWorkspaceServiceServer) UpdateWorkspaceUserGmailVacation(ctx context.Context, req *connect.Request[neoboxv1.UpdateWorkspaceUserGmailVacationRequest]) (*connect.Response[neoboxv1.UpdateWorkspaceUserGmailVacationResponse], error) {
-	in := req.Msg.GetVacation()
+func (s *GoogleWorkspaceServiceServer) UpdateWorkspaceUserGmailVacation(ctx context.Context, req *neoboxv1.UpdateWorkspaceUserGmailVacationRequest) (*neoboxv1.UpdateWorkspaceUserGmailVacationResponse, error) {
+	in := req.GetVacation()
 	if in == nil {
-		return nil, connectx.RequiredArgument("vacation")
+		return nil, connectx.RequiredArgument(ctx, "vacation")
 	}
 	input := googleworkspace.VacationInput{
 		Enabled:            in.GetEnabled(),
@@ -141,17 +141,17 @@ func (s *GoogleWorkspaceServiceServer) UpdateWorkspaceUserGmailVacation(ctx cont
 		input.EndTime = in.GetEndTime().AsTime()
 	}
 	if err := input.Validate(); err != nil {
-		return nil, mapWorkspaceErr(err)
+		return nil, mapWorkspaceErr(ctx, err)
 	}
-	_, _, api, _, err := s.gmailAccess(ctx, req.Msg.GetConnectionId(), req.Msg.GetTenantId(), req.Msg.GetUserId(), req.Msg.GetConfirmation())
+	_, _, api, _, err := s.gmailAccess(ctx, req.GetConnectionId(), req.GetTenantId(), req.GetUserId(), req.GetConfirmation())
 	if err != nil {
 		return nil, err
 	}
 	v, err := api.UpdateVacation(ctx, input)
 	if err != nil {
-		return nil, mapWorkspaceFeatureErr(err, googleworkspace.GmailSettingsScope)
+		return nil, mapWorkspaceFeatureErr(ctx, err, googleworkspace.GmailSettingsScope)
 	}
-	return connect.NewResponse(&neoboxv1.UpdateWorkspaceUserGmailVacationResponse{Vacation: gmailVacationToProto("", v)}), nil
+	return &neoboxv1.UpdateWorkspaceUserGmailVacationResponse{Vacation: gmailVacationToProto("", v)}, nil
 }
 
 func gmailState(msg string) *neoboxv1.GmailSectionState {

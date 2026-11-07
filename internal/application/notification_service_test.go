@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"go.orx.me/apps/neo-box/internal/notify"
@@ -52,13 +52,13 @@ func newNotificationServer(t *testing.T) (*NotificationServiceServer, *memory.St
 	return srv, store, &sent
 }
 
-func telegramCreate(name, chat, token string) *connect.Request[neoboxv1.CreateNotificationChannelRequest] {
-	return connect.NewRequest(&neoboxv1.CreateNotificationChannelRequest{
+func telegramCreate(name, chat, token string) *neoboxv1.CreateNotificationChannelRequest {
+	return &neoboxv1.CreateNotificationChannelRequest{
 		Name: name,
 		Settings: &neoboxv1.CreateNotificationChannelRequest_Telegram{
 			Telegram: &neoboxv1.TelegramChannelSettings{ChatId: chat, BotToken: token},
 		},
-	})
+	}
 }
 
 func TestNotificationChannels(t *testing.T) {
@@ -69,14 +69,14 @@ func TestNotificationChannels(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ch := created.Msg.GetChannel()
+	ch := created.GetChannel()
 	raw, _ := protojson.Marshal(ch)
 	if strings.Contains(string(raw), "SECRET") || ch.GetTelegram().GetChatId() != "ok" || !ch.GetEnabled() {
 		t.Fatalf("created = %s", raw)
 	}
 
-	test, err := srv.TestNotificationChannel(ctx, connect.NewRequest(&neoboxv1.TestNotificationChannelRequest{Id: ch.GetId()}))
-	if err != nil || test.Msg.GetError() != "" || test.Msg.GetChannel().GetLastSentAt() == nil {
+	test, err := srv.TestNotificationChannel(ctx, &neoboxv1.TestNotificationChannelRequest{Id: ch.GetId()})
+	if err != nil || test.GetError() != "" || test.GetChannel().GetLastSentAt() == nil {
 		t.Fatalf("test = %+v, %v", test, err)
 	}
 	if len(*sent) != 1 || !strings.HasPrefix((*sent)[0], "111:SECRET/sendMessage <b>ℹ️ Neo Box test message</b>") {
@@ -85,25 +85,25 @@ func TestNotificationChannels(t *testing.T) {
 
 	// Moving to a chat the bot can't reach keeps the token, and the test
 	// reports the failure on the channel.
-	updated, err := srv.UpdateNotificationChannel(ctx, connect.NewRequest(&neoboxv1.UpdateNotificationChannelRequest{
+	updated, err := srv.UpdateNotificationChannel(ctx, &neoboxv1.UpdateNotificationChannelRequest{
 		Id: ch.GetId(), Name: "group", Enabled: false,
 		Settings: &neoboxv1.UpdateNotificationChannelRequest_Telegram{Telegram: &neoboxv1.TelegramChannelSettings{ChatId: "-1009"}},
-	}))
-	if err != nil || updated.Msg.GetChannel().GetName() != "group" || updated.Msg.GetChannel().GetEnabled() {
+	})
+	if err != nil || updated.GetChannel().GetName() != "group" || updated.GetChannel().GetEnabled() {
 		t.Fatalf("updated = %+v, %v", updated, err)
 	}
-	test, err = srv.TestNotificationChannel(ctx, connect.NewRequest(&neoboxv1.TestNotificationChannelRequest{Id: ch.GetId()}))
-	if err != nil || test.Msg.GetError() != "telegram: Bad Request: chat not found" || test.Msg.GetChannel().GetLastError() == "" {
+	test, err = srv.TestNotificationChannel(ctx, &neoboxv1.TestNotificationChannelRequest{Id: ch.GetId()})
+	if err != nil || test.GetError() != "telegram: Bad Request: chat not found" || test.GetChannel().GetLastError() == "" {
 		t.Fatalf("failed test = %+v, %v", test, err)
 	}
 
 	for name, call := range map[string]func() error{
 		"another user's channel": func() error {
-			_, err := srv.TestNotificationChannel(asUser("u2"), connect.NewRequest(&neoboxv1.TestNotificationChannelRequest{Id: ch.GetId()}))
+			_, err := srv.TestNotificationChannel(asUser("u2"), &neoboxv1.TestNotificationChannelRequest{Id: ch.GetId()})
 			return err
 		},
 		"delete by another user": func() error {
-			_, err := srv.DeleteNotificationChannel(asUser("u2"), connect.NewRequest(&neoboxv1.DeleteNotificationChannelRequest{Id: ch.GetId()}))
+			_, err := srv.DeleteNotificationChannel(asUser("u2"), &neoboxv1.DeleteNotificationChannelRequest{Id: ch.GetId()})
 			return err
 		},
 	} {
@@ -111,7 +111,7 @@ func TestNotificationChannels(t *testing.T) {
 			t.Errorf("%s: want NotFound", name)
 		}
 	}
-	for name, req := range map[string]*connect.Request[neoboxv1.CreateNotificationChannelRequest]{
+	for name, req := range map[string]*neoboxv1.CreateNotificationChannelRequest{
 		"no token":  telegramCreate("x", "ok", ""),
 		"no chat":   telegramCreate("x", "", "1:x"),
 		"bad token": telegramCreate("x", "ok", "not-a-token"),
@@ -122,16 +122,16 @@ func TestNotificationChannels(t *testing.T) {
 		}
 	}
 
-	list, _ := srv.ListNotificationChannels(asUser("u2"), connect.NewRequest(&neoboxv1.ListNotificationChannelsRequest{}))
-	if len(list.Msg.GetChannels()) != 0 {
-		t.Fatalf("u2 sees %d channels", len(list.Msg.GetChannels()))
+	list, _ := srv.ListNotificationChannels(asUser("u2"), &neoboxv1.ListNotificationChannelsRequest{})
+	if len(list.GetChannels()) != 0 {
+		t.Fatalf("u2 sees %d channels", len(list.GetChannels()))
 	}
-	if _, err := srv.DeleteNotificationChannel(ctx, connect.NewRequest(&neoboxv1.DeleteNotificationChannelRequest{Id: ch.GetId()})); err != nil {
+	if _, err := srv.DeleteNotificationChannel(ctx, &neoboxv1.DeleteNotificationChannelRequest{Id: ch.GetId()}); err != nil {
 		t.Fatal(err)
 	}
-	list, _ = srv.ListNotificationChannels(ctx, connect.NewRequest(&neoboxv1.ListNotificationChannelsRequest{}))
-	if len(list.Msg.GetChannels()) != 0 {
-		t.Fatalf("channels left after delete: %d", len(list.Msg.GetChannels()))
+	list, _ = srv.ListNotificationChannels(ctx, &neoboxv1.ListNotificationChannelsRequest{})
+	if len(list.GetChannels()) != 0 {
+		t.Fatalf("channels left after delete: %d", len(list.GetChannels()))
 	}
 }
 
@@ -148,17 +148,17 @@ func TestListAlerts(t *testing.T) {
 	}
 	_ = store.SetAlertDelivery(context.Background(), "a2", at.Add(time.Hour), "")
 
-	resp, err := srv.ListAlerts(asUser("u1"), connect.NewRequest(&neoboxv1.ListAlertsRequest{}))
+	resp, err := srv.ListAlerts(asUser("u1"), &neoboxv1.ListAlertsRequest{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	got := resp.Msg.GetAlerts()
+	got := resp.GetAlerts()
 	if len(got) != 2 || got[0].GetTitle() != "newer" || got[0].GetSeverity() != neoboxv1.AlertSeverity_ALERT_SEVERITY_CRITICAL ||
 		got[0].GetDeliveredAt() == nil || got[0].GetLink() != "/connections/c1" || got[1].GetDeliveredAt() != nil {
 		t.Fatalf("alerts = %+v", got)
 	}
-	resp, _ = srv.ListAlerts(asUser("u1"), connect.NewRequest(&neoboxv1.ListAlertsRequest{Limit: 1}))
-	if len(resp.Msg.GetAlerts()) != 1 {
-		t.Fatalf("limit ignored: %d", len(resp.Msg.GetAlerts()))
+	resp, _ = srv.ListAlerts(asUser("u1"), &neoboxv1.ListAlertsRequest{Limit: 1})
+	if len(resp.GetAlerts()) != 1 {
+		t.Fatalf("limit ignored: %d", len(resp.GetAlerts()))
 	}
 }
