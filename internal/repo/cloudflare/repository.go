@@ -84,6 +84,7 @@ const (
 	KindWorker       ResourceKind = "worker"
 	KindPages        ResourceKind = "pages"
 	KindEmailRouting ResourceKind = "email_routing"
+	KindZoneRules    ResourceKind = "zone_rules"
 )
 
 // ResourceOperation is one change to a Worker, a Pages project, or a Zone's

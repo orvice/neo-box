@@ -82,6 +82,8 @@ func resourceKindToProto(k cfrepo.ResourceKind) neoboxv1.CloudflareResourceKind 
 		return neoboxv1.CloudflareResourceKind_CLOUDFLARE_RESOURCE_KIND_PAGES
 	case cfrepo.KindEmailRouting:
 		return neoboxv1.CloudflareResourceKind_CLOUDFLARE_RESOURCE_KIND_EMAIL_ROUTING
+	case cfrepo.KindZoneRules:
+		return neoboxv1.CloudflareResourceKind_CLOUDFLARE_RESOURCE_KIND_ZONE_RULES
 	}
 	return neoboxv1.CloudflareResourceKind_CLOUDFLARE_RESOURCE_KIND_UNSPECIFIED
 }

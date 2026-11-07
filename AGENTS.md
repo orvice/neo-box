@@ -114,7 +114,8 @@ shadcn/ui + Connect-Web on the frontend.
   validation). Reads retry 429/5xx/network errors; writes retry only 429 and
   otherwise return `UncertainError`, never resent. `cftest/` is a stateful
   fake Cloudflare API (tokens with per-account permissions) for client and
-  service tests.
+  service tests. `rules.go` models the five Zone Ruleset phases and keeps
+  unknown rule fields through read-modify-write operations.
 - `internal/cloudflareacct/` — `Manager`: the "cloudflare" Provider
   (`Verify` accepts a token that reaches the Account through any one of
   account / zones / Workers / Pages reads; it never writes), live reads

@@ -186,6 +186,21 @@ const (
 	// CloudflareServiceListCloudflareEmailLogsProcedure is the procedure name of the
 	// CloudflareService's ListCloudflareEmailLogs RPC.
 	CloudflareServiceListCloudflareEmailLogsProcedure = "/neobox.v1.CloudflareService/ListCloudflareEmailLogs"
+	// CloudflareServiceGetCloudflareZoneRulesProcedure is the procedure name of the CloudflareService's
+	// GetCloudflareZoneRules RPC.
+	CloudflareServiceGetCloudflareZoneRulesProcedure = "/neobox.v1.CloudflareService/GetCloudflareZoneRules"
+	// CloudflareServiceCreateCloudflareZoneRuleProcedure is the procedure name of the
+	// CloudflareService's CreateCloudflareZoneRule RPC.
+	CloudflareServiceCreateCloudflareZoneRuleProcedure = "/neobox.v1.CloudflareService/CreateCloudflareZoneRule"
+	// CloudflareServiceUpdateCloudflareZoneRuleProcedure is the procedure name of the
+	// CloudflareService's UpdateCloudflareZoneRule RPC.
+	CloudflareServiceUpdateCloudflareZoneRuleProcedure = "/neobox.v1.CloudflareService/UpdateCloudflareZoneRule"
+	// CloudflareServiceDeleteCloudflareZoneRuleProcedure is the procedure name of the
+	// CloudflareService's DeleteCloudflareZoneRule RPC.
+	CloudflareServiceDeleteCloudflareZoneRuleProcedure = "/neobox.v1.CloudflareService/DeleteCloudflareZoneRule"
+	// CloudflareServiceReorderCloudflareZoneRulesProcedure is the procedure name of the
+	// CloudflareService's ReorderCloudflareZoneRules RPC.
+	CloudflareServiceReorderCloudflareZoneRulesProcedure = "/neobox.v1.CloudflareService/ReorderCloudflareZoneRules"
 )
 
 var (
@@ -567,6 +582,41 @@ var (
 			Procedure:  CloudflareServiceListCloudflareEmailLogsProcedure,
 		}
 	})
+	cloudflareServiceGetCloudflareZoneRulesSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("GetCloudflareZoneRules"),
+			Procedure:  CloudflareServiceGetCloudflareZoneRulesProcedure,
+		}
+	})
+	cloudflareServiceCreateCloudflareZoneRuleSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("CreateCloudflareZoneRule"),
+			Procedure:  CloudflareServiceCreateCloudflareZoneRuleProcedure,
+		}
+	})
+	cloudflareServiceUpdateCloudflareZoneRuleSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("UpdateCloudflareZoneRule"),
+			Procedure:  CloudflareServiceUpdateCloudflareZoneRuleProcedure,
+		}
+	})
+	cloudflareServiceDeleteCloudflareZoneRuleSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("DeleteCloudflareZoneRule"),
+			Procedure:  CloudflareServiceDeleteCloudflareZoneRuleProcedure,
+		}
+	})
+	cloudflareServiceReorderCloudflareZoneRulesSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_cloudflare_proto.Services().ByName("CloudflareService").Methods().ByName("ReorderCloudflareZoneRules"),
+			Procedure:  CloudflareServiceReorderCloudflareZoneRulesProcedure,
+		}
+	})
 )
 
 // CloudflareServiceClient is a client for the neobox.v1.CloudflareService service.
@@ -699,6 +749,11 @@ type CloudflareServiceClient interface {
 	// token needs the Analytics Read permission (PermissionDenied otherwise).
 	// Nothing is stored.
 	ListCloudflareEmailLogs(context.Context, *v1.ListCloudflareEmailLogsRequest) (*v1.ListCloudflareEmailLogsResponse, error)
+	GetCloudflareZoneRules(context.Context, *v1.GetCloudflareZoneRulesRequest) (*v1.GetCloudflareZoneRulesResponse, error)
+	CreateCloudflareZoneRule(context.Context, *v1.CreateCloudflareZoneRuleRequest) (*v1.CreateCloudflareZoneRuleResponse, error)
+	UpdateCloudflareZoneRule(context.Context, *v1.UpdateCloudflareZoneRuleRequest) (*v1.UpdateCloudflareZoneRuleResponse, error)
+	DeleteCloudflareZoneRule(context.Context, *v1.DeleteCloudflareZoneRuleRequest) (*v1.DeleteCloudflareZoneRuleResponse, error)
+	ReorderCloudflareZoneRules(context.Context, *v1.ReorderCloudflareZoneRulesRequest) (*v1.ReorderCloudflareZoneRulesResponse, error)
 }
 
 // NewCloudflareServiceClient constructs a client for the neobox.v1.CloudflareService service.
@@ -837,6 +892,11 @@ type CloudflareServiceHandler interface {
 	// token needs the Analytics Read permission (PermissionDenied otherwise).
 	// Nothing is stored.
 	ListCloudflareEmailLogs(context.Context, *v1.ListCloudflareEmailLogsRequest) (*v1.ListCloudflareEmailLogsResponse, error)
+	GetCloudflareZoneRules(context.Context, *v1.GetCloudflareZoneRulesRequest) (*v1.GetCloudflareZoneRulesResponse, error)
+	CreateCloudflareZoneRule(context.Context, *v1.CreateCloudflareZoneRuleRequest) (*v1.CreateCloudflareZoneRuleResponse, error)
+	UpdateCloudflareZoneRule(context.Context, *v1.UpdateCloudflareZoneRuleRequest) (*v1.UpdateCloudflareZoneRuleResponse, error)
+	DeleteCloudflareZoneRule(context.Context, *v1.DeleteCloudflareZoneRuleRequest) (*v1.DeleteCloudflareZoneRuleResponse, error)
+	ReorderCloudflareZoneRules(context.Context, *v1.ReorderCloudflareZoneRulesRequest) (*v1.ReorderCloudflareZoneRulesResponse, error)
 }
 
 // RegisterCloudflareServiceHandler registers svc as the neobox.v1.CloudflareService implementation
@@ -898,6 +958,11 @@ func RegisterCloudflareServiceHandler(server *connect.Server, svc CloudflareServ
 		connect.Method{Spec: cloudflareServiceCreateCloudflareEmailAddressSpec(), Handler: adapter.createCloudflareEmailAddress},
 		connect.Method{Spec: cloudflareServiceDeleteCloudflareEmailAddressSpec(), Handler: adapter.deleteCloudflareEmailAddress},
 		connect.Method{Spec: cloudflareServiceListCloudflareEmailLogsSpec(), Handler: adapter.listCloudflareEmailLogs},
+		connect.Method{Spec: cloudflareServiceGetCloudflareZoneRulesSpec(), Handler: adapter.getCloudflareZoneRules},
+		connect.Method{Spec: cloudflareServiceCreateCloudflareZoneRuleSpec(), Handler: adapter.createCloudflareZoneRule},
+		connect.Method{Spec: cloudflareServiceUpdateCloudflareZoneRuleSpec(), Handler: adapter.updateCloudflareZoneRule},
+		connect.Method{Spec: cloudflareServiceDeleteCloudflareZoneRuleSpec(), Handler: adapter.deleteCloudflareZoneRule},
+		connect.Method{Spec: cloudflareServiceReorderCloudflareZoneRulesSpec(), Handler: adapter.reorderCloudflareZoneRules},
 	)
 }
 
@@ -1118,6 +1183,26 @@ func (UnimplementedCloudflareServiceHandler) DeleteCloudflareEmailAddress(contex
 
 func (UnimplementedCloudflareServiceHandler) ListCloudflareEmailLogs(context.Context, *v1.ListCloudflareEmailLogsRequest) (*v1.ListCloudflareEmailLogsResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.ListCloudflareEmailLogs is not implemented")
+}
+
+func (UnimplementedCloudflareServiceHandler) GetCloudflareZoneRules(context.Context, *v1.GetCloudflareZoneRulesRequest) (*v1.GetCloudflareZoneRulesResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.GetCloudflareZoneRules is not implemented")
+}
+
+func (UnimplementedCloudflareServiceHandler) CreateCloudflareZoneRule(context.Context, *v1.CreateCloudflareZoneRuleRequest) (*v1.CreateCloudflareZoneRuleResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.CreateCloudflareZoneRule is not implemented")
+}
+
+func (UnimplementedCloudflareServiceHandler) UpdateCloudflareZoneRule(context.Context, *v1.UpdateCloudflareZoneRuleRequest) (*v1.UpdateCloudflareZoneRuleResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.UpdateCloudflareZoneRule is not implemented")
+}
+
+func (UnimplementedCloudflareServiceHandler) DeleteCloudflareZoneRule(context.Context, *v1.DeleteCloudflareZoneRuleRequest) (*v1.DeleteCloudflareZoneRuleResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.DeleteCloudflareZoneRule is not implemented")
+}
+
+func (UnimplementedCloudflareServiceHandler) ReorderCloudflareZoneRules(context.Context, *v1.ReorderCloudflareZoneRulesRequest) (*v1.ReorderCloudflareZoneRulesResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.CloudflareService.ReorderCloudflareZoneRules is not implemented")
 }
 
 type cloudflareServiceClient struct {
@@ -1551,6 +1636,46 @@ func (c *cloudflareServiceClient) DeleteCloudflareEmailAddress(ctx context.Conte
 func (c *cloudflareServiceClient) ListCloudflareEmailLogs(ctx context.Context, req *v1.ListCloudflareEmailLogsRequest) (*v1.ListCloudflareEmailLogsResponse, error) {
 	var res v1.ListCloudflareEmailLogsResponse
 	if err := c.client.CallUnary(ctx, cloudflareServiceListCloudflareEmailLogsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) GetCloudflareZoneRules(ctx context.Context, req *v1.GetCloudflareZoneRulesRequest) (*v1.GetCloudflareZoneRulesResponse, error) {
+	var res v1.GetCloudflareZoneRulesResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceGetCloudflareZoneRulesSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) CreateCloudflareZoneRule(ctx context.Context, req *v1.CreateCloudflareZoneRuleRequest) (*v1.CreateCloudflareZoneRuleResponse, error) {
+	var res v1.CreateCloudflareZoneRuleResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceCreateCloudflareZoneRuleSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) UpdateCloudflareZoneRule(ctx context.Context, req *v1.UpdateCloudflareZoneRuleRequest) (*v1.UpdateCloudflareZoneRuleResponse, error) {
+	var res v1.UpdateCloudflareZoneRuleResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceUpdateCloudflareZoneRuleSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) DeleteCloudflareZoneRule(ctx context.Context, req *v1.DeleteCloudflareZoneRuleRequest) (*v1.DeleteCloudflareZoneRuleResponse, error) {
+	var res v1.DeleteCloudflareZoneRuleResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceDeleteCloudflareZoneRuleSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *cloudflareServiceClient) ReorderCloudflareZoneRules(ctx context.Context, req *v1.ReorderCloudflareZoneRulesRequest) (*v1.ReorderCloudflareZoneRulesResponse, error) {
+	var res v1.ReorderCloudflareZoneRulesResponse
+	if err := c.client.CallUnary(ctx, cloudflareServiceReorderCloudflareZoneRulesSpec(), req, &res); err != nil {
 		return nil, err
 	}
 	return &res, nil
@@ -2200,6 +2325,66 @@ func (h cloudflareServiceHandler) listCloudflareEmailLogs(ctx context.Context, _
 		return err
 	}
 	res, err := h.svc.ListCloudflareEmailLogs(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) getCloudflareZoneRules(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.GetCloudflareZoneRulesRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.GetCloudflareZoneRules(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) createCloudflareZoneRule(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.CreateCloudflareZoneRuleRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.CreateCloudflareZoneRule(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) updateCloudflareZoneRule(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.UpdateCloudflareZoneRuleRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.UpdateCloudflareZoneRule(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) deleteCloudflareZoneRule(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteCloudflareZoneRuleRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteCloudflareZoneRule(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h cloudflareServiceHandler) reorderCloudflareZoneRules(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ReorderCloudflareZoneRulesRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ReorderCloudflareZoneRules(ctx, &req)
 	if err != nil {
 		return err
 	}

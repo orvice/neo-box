@@ -14,6 +14,7 @@ import {
   type CloudflarePagesEnvironment,
   type CloudflareResourceKind,
   type CloudflareZone,
+
 } from '@/gen/neobox/v1/cloudflare_pb'
 import type { MessageInitShape } from '@bufbuild/protobuf'
 import { timestampFromDate } from '@bufbuild/protobuf/wkt'
@@ -43,6 +44,8 @@ export {
   CloudflarePagesEnvironment,
   CloudflarePagesEnvVarType,
   CloudflareResourceKind,
+  CloudflareZoneRuleCategory,
+  type CloudflareZoneRules,
   type CloudflareChangeResult,
   type CloudflarePagesBuildConfig,
   type CloudflarePagesDeployment,
@@ -87,6 +90,8 @@ const keys = {
     ['cloudflare', connectionId, 'zones', q] as const,
   zone: (connectionId: string, zoneId: string) =>
     ['cloudflare', connectionId, 'zone', zoneId] as const,
+  zoneRules: (connectionId: string, zoneId: string) =>
+    ['cloudflare', connectionId, 'zone-rules', zoneId] as const,
   records: (
     connectionId: string,
     zoneId: string,
@@ -179,6 +184,20 @@ export function useCloudflareZone(connectionId: string, zoneId: string) {
       (await client.getCloudflareZone({ connectionId, zoneId })).zone,
     retry: false,
   })
+}
+
+export function useCloudflareZoneRules(connectionId: string, zoneId: string) {
+  return useQuery({ queryKey: keys.zoneRules(connectionId, zoneId), queryFn: async () => (await client.getCloudflareZoneRules({ connectionId, zoneId })).categories, retry: false })
+}
+export function useCloudflareZoneRuleMutations(connectionId: string, zoneId: string) {
+  const qc = useQueryClient()
+  const invalidate = () => qc.invalidateQueries({ queryKey: keys.zoneRules(connectionId, zoneId) })
+  return {
+    create: useMutation({ mutationFn: (x: any) => client.createCloudflareZoneRule(x), onSuccess: invalidate }),
+    update: useMutation({ mutationFn: (x: any) => client.updateCloudflareZoneRule(x), onSuccess: invalidate }),
+    remove: useMutation({ mutationFn: (x: any) => client.deleteCloudflareZoneRule(x), onSuccess: invalidate }),
+    reorder: useMutation({ mutationFn: (x: any) => client.reorderCloudflareZoneRules(x), onSuccess: invalidate }),
+  }
 }
 
 export function useCloudflareDNSRecords(

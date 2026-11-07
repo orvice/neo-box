@@ -145,6 +145,7 @@ type Connection struct {
 	// The provider's non-secret settings.
 	//
 	// Types that are assignable to Config:
+	//
 	//	*Connection_Nocodb
 	//	*Connection_Wasabi
 	//	*Connection_Cloudflare
@@ -909,6 +910,7 @@ type CreateConnectionRequest struct {
 
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// Types that are assignable to Settings:
+	//
 	//	*CreateConnectionRequest_Nocodb
 	//	*CreateConnectionRequest_Wasabi
 	//	*CreateConnectionRequest_Cloudflare
@@ -1073,6 +1075,7 @@ type UpdateConnectionRequest struct {
 	Id   string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	// Types that are assignable to Settings:
+	//
 	//	*UpdateConnectionRequest_Nocodb
 	//	*UpdateConnectionRequest_Wasabi
 	//	*UpdateConnectionRequest_Cloudflare
