@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -60,24 +60,24 @@ func (s *NocoDBServiceServer) SetDeps(r repo.Repository, m *backup.Manager, conn
 func (s *NocoDBServiceServer) deps(ctx context.Context) (string, repo.Repository, *backup.Manager, error) {
 	user, ok := auth.UserFromContext(ctx)
 	if !ok {
-		return "", nil, nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
+		return "", nil, nil, connect.NewError(connect.CodeUnauthenticated, "unauthenticated")
 	}
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	if s.repo == nil || s.manager == nil || s.conns == nil {
-		return "", nil, nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("nocodb backups are not available"))
+		return "", nil, nil, connect.NewError(connect.CodeFailedPrecondition, "nocodb backups are not available")
 	}
 	return user.GetId(), s.repo, s.manager, nil
 }
 
 // --- bases & policies ---
 
-func (s *NocoDBServiceServer) ListNocoDBBases(ctx context.Context, req *connect.Request[neoboxv1.ListNocoDBBasesRequest]) (*connect.Response[neoboxv1.ListNocoDBBasesResponse], error) {
+func (s *NocoDBServiceServer) ListNocoDBBases(ctx context.Context, req *neoboxv1.ListNocoDBBasesRequest) (*neoboxv1.ListNocoDBBasesResponse, error) {
 	userID, r, m, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	conn, err := s.loadConnection(ctx, userID, req.Msg.GetConnectionId())
+	conn, err := s.loadConnection(ctx, userID, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func (s *NocoDBServiceServer) ListNocoDBBases(ctx context.Context, req *connect.
 	}
 	bases, err := api.ListBases(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnavailable, err)
+		return nil, connect.NewError(connect.CodeUnavailable, err.Error()).WithCause(err)
 	}
 	policies, err := r.ListPolicies(ctx, userID, conn.ID)
 	if err != nil {
@@ -112,37 +112,37 @@ func (s *NocoDBServiceServer) ListNocoDBBases(ctx context.Context, req *connect.
 		}
 		out = append(out, item)
 	}
-	return connect.NewResponse(&neoboxv1.ListNocoDBBasesResponse{Bases: out}), nil
+	return &neoboxv1.ListNocoDBBasesResponse{Bases: out}, nil
 }
 
-func (s *NocoDBServiceServer) UpsertBackupPolicy(ctx context.Context, req *connect.Request[neoboxv1.UpsertBackupPolicyRequest]) (*connect.Response[neoboxv1.UpsertBackupPolicyResponse], error) {
+func (s *NocoDBServiceServer) UpsertBackupPolicy(ctx context.Context, req *neoboxv1.UpsertBackupPolicyRequest) (*neoboxv1.UpsertBackupPolicyResponse, error) {
 	userID, r, m, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	conn, err := s.loadConnection(ctx, userID, req.Msg.GetConnectionId())
+	conn, err := s.loadConnection(ctx, userID, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	baseID := strings.TrimSpace(req.Msg.GetBaseId())
+	baseID := strings.TrimSpace(req.GetBaseId())
 	if baseID == "" {
-		return nil, connectx.RequiredArgument("base_id")
+		return nil, connectx.RequiredArgument(ctx, "base_id")
 	}
-	cronExpr := strings.TrimSpace(req.Msg.GetCron())
-	if req.Msg.GetEnabled() || cronExpr != "" {
+	cronExpr := strings.TrimSpace(req.GetCron())
+	if req.GetEnabled() || cronExpr != "" {
 		if cronExpr == "" {
-			return nil, connectx.RequiredArgument("cron")
+			return nil, connectx.RequiredArgument(ctx, "cron")
 		}
 		if err := backup.ValidateCron(cronExpr); err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+			return nil, connect.NewError(connect.CodeInvalidArgument, err.Error()).WithCause(err)
 		}
 	}
-	if req.Msg.GetRetention() < 0 {
-		return nil, connectx.InvalidArgument("retention", "must be >= 0")
+	if req.GetRetention() < 0 {
+		return nil, connectx.InvalidArgument(ctx, "retention", "must be >= 0")
 	}
 	includeAttachments := true
-	if req.Msg.IncludeAttachments != nil {
-		includeAttachments = req.Msg.GetIncludeAttachments()
+	if req.IncludeAttachments != nil {
+		includeAttachments = req.GetIncludeAttachments()
 	} else {
 		existing, err := r.ListPolicies(ctx, userID, conn.ID)
 		if err != nil {
@@ -156,7 +156,7 @@ func (s *NocoDBServiceServer) UpsertBackupPolicy(ctx context.Context, req *conne
 	}
 	p := &repo.Policy{
 		ConnectionID: conn.ID, BaseID: baseID, UserID: userID,
-		Enabled: req.Msg.GetEnabled(), Cron: cronExpr, Retention: int(req.Msg.GetRetention()),
+		Enabled: req.GetEnabled(), Cron: cronExpr, Retention: int(req.GetRetention()),
 		IncludeAttachments: includeAttachments,
 		UpdatedAt:          time.Now().UTC(),
 	}
@@ -166,46 +166,46 @@ func (s *NocoDBServiceServer) UpsertBackupPolicy(ctx context.Context, req *conne
 	if err := m.ReloadSchedules(ctx); err != nil {
 		return nil, connectx.InternalWith(err)
 	}
-	return connect.NewResponse(&neoboxv1.UpsertBackupPolicyResponse{Policy: policyToProto(p, m.NextRun(p.ConnectionID, p.BaseID))}), nil
+	return &neoboxv1.UpsertBackupPolicyResponse{Policy: policyToProto(p, m.NextRun(p.ConnectionID, p.BaseID))}, nil
 }
 
 // --- snapshots ---
 
-func (s *NocoDBServiceServer) CreateSnapshot(ctx context.Context, req *connect.Request[neoboxv1.CreateSnapshotRequest]) (*connect.Response[neoboxv1.CreateSnapshotResponse], error) {
+func (s *NocoDBServiceServer) CreateSnapshot(ctx context.Context, req *neoboxv1.CreateSnapshotRequest) (*neoboxv1.CreateSnapshotResponse, error) {
 	userID, _, m, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	conn, err := s.loadConnection(ctx, userID, req.Msg.GetConnectionId())
+	conn, err := s.loadConnection(ctx, userID, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	baseID := strings.TrimSpace(req.Msg.GetBaseId())
+	baseID := strings.TrimSpace(req.GetBaseId())
 	if baseID == "" {
-		return nil, connectx.RequiredArgument("base_id")
+		return nil, connectx.RequiredArgument(ctx, "base_id")
 	}
 	snap, err := m.Enqueue(ctx, conn, baseID, "", repo.TriggerManual)
 	if err != nil {
 		if errors.Is(err, backup.ErrSnapshotInProgress) {
-			return nil, connect.NewError(connect.CodeFailedPrecondition, err)
+			return nil, connect.NewError(connect.CodeFailedPrecondition, err.Error()).WithCause(err)
 		}
-		return nil, connect.NewError(connect.CodeResourceExhausted, err)
+		return nil, connect.NewError(connect.CodeResourceExhausted, err.Error()).WithCause(err)
 	}
-	return connect.NewResponse(&neoboxv1.CreateSnapshotResponse{Snapshot: snapshotToProto(snap)}), nil
+	return &neoboxv1.CreateSnapshotResponse{Snapshot: snapshotToProto(snap)}, nil
 }
 
-func (s *NocoDBServiceServer) ListSnapshots(ctx context.Context, req *connect.Request[neoboxv1.ListSnapshotsRequest]) (*connect.Response[neoboxv1.ListSnapshotsResponse], error) {
+func (s *NocoDBServiceServer) ListSnapshots(ctx context.Context, req *neoboxv1.ListSnapshotsRequest) (*neoboxv1.ListSnapshotsResponse, error) {
 	userID, r, _, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	limit := int(req.Msg.GetLimit())
+	limit := int(req.GetLimit())
 	if limit <= 0 {
 		limit = defaultSnapshotListLimit
 	}
 	limit = min(limit, maxSnapshotListLimit)
 	snaps, err := r.ListSnapshots(ctx, repo.SnapshotFilter{
-		UserID: userID, ConnectionID: req.Msg.GetConnectionId(), BaseID: req.Msg.GetBaseId(), Limit: limit,
+		UserID: userID, ConnectionID: req.GetConnectionId(), BaseID: req.GetBaseId(), Limit: limit,
 	})
 	if err != nil {
 		return nil, connectx.InternalWith(err)
@@ -214,56 +214,56 @@ func (s *NocoDBServiceServer) ListSnapshots(ctx context.Context, req *connect.Re
 	for _, snap := range snaps {
 		out = append(out, snapshotToProto(snap))
 	}
-	return connect.NewResponse(&neoboxv1.ListSnapshotsResponse{Snapshots: out}), nil
+	return &neoboxv1.ListSnapshotsResponse{Snapshots: out}, nil
 }
 
-func (s *NocoDBServiceServer) GetSnapshot(ctx context.Context, req *connect.Request[neoboxv1.GetSnapshotRequest]) (*connect.Response[neoboxv1.GetSnapshotResponse], error) {
+func (s *NocoDBServiceServer) GetSnapshot(ctx context.Context, req *neoboxv1.GetSnapshotRequest) (*neoboxv1.GetSnapshotResponse, error) {
 	userID, r, _, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	snap, err := r.GetSnapshot(ctx, userID, req.Msg.GetId())
+	snap, err := r.GetSnapshot(ctx, userID, req.GetId())
 	if err != nil {
 		return nil, mapRepoErr(err, "snapshot")
 	}
-	return connect.NewResponse(&neoboxv1.GetSnapshotResponse{Snapshot: snapshotToProto(snap)}), nil
+	return &neoboxv1.GetSnapshotResponse{Snapshot: snapshotToProto(snap)}, nil
 }
 
-func (s *NocoDBServiceServer) DeleteSnapshot(ctx context.Context, req *connect.Request[neoboxv1.DeleteSnapshotRequest]) (*connect.Response[neoboxv1.DeleteSnapshotResponse], error) {
+func (s *NocoDBServiceServer) DeleteSnapshot(ctx context.Context, req *neoboxv1.DeleteSnapshotRequest) (*neoboxv1.DeleteSnapshotResponse, error) {
 	userID, r, m, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	snap, err := r.GetSnapshot(ctx, userID, req.Msg.GetId())
+	snap, err := r.GetSnapshot(ctx, userID, req.GetId())
 	if err != nil {
 		return nil, mapRepoErr(err, "snapshot")
 	}
 	if err := m.DeleteSnapshot(ctx, snap); err != nil {
 		if errors.Is(err, backup.ErrSnapshotInProgress) {
-			return nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("snapshot is still in progress"))
+			return nil, connect.NewError(connect.CodeFailedPrecondition, "snapshot is still in progress")
 		}
 		if errors.Is(err, backup.ErrRestoreInProgress) {
-			return nil, connect.NewError(connect.CodeFailedPrecondition, err)
+			return nil, connect.NewError(connect.CodeFailedPrecondition, err.Error()).WithCause(err)
 		}
 		return nil, connectx.InternalWith(err)
 	}
 	s.cache.dropSnapshot(snap.ID)
-	return connect.NewResponse(&neoboxv1.DeleteSnapshotResponse{}), nil
+	return &neoboxv1.DeleteSnapshotResponse{}, nil
 }
 
-func (s *NocoDBServiceServer) ListSnapshotRecords(ctx context.Context, req *connect.Request[neoboxv1.ListSnapshotRecordsRequest]) (*connect.Response[neoboxv1.ListSnapshotRecordsResponse], error) {
+func (s *NocoDBServiceServer) ListSnapshotRecords(ctx context.Context, req *neoboxv1.ListSnapshotRecordsRequest) (*neoboxv1.ListSnapshotRecordsResponse, error) {
 	userID, r, m, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	snap, err := r.GetSnapshot(ctx, userID, req.Msg.GetSnapshotId())
+	snap, err := r.GetSnapshot(ctx, userID, req.GetSnapshotId())
 	if err != nil {
 		return nil, mapRepoErr(err, "snapshot")
 	}
 	if snap.Status != repo.StatusSucceeded {
-		return nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("snapshot has not succeeded"))
+		return nil, connect.NewError(connect.CodeFailedPrecondition, "snapshot has not succeeded")
 	}
-	tableID := req.Msg.GetTableId()
+	tableID := req.GetTableId()
 	table, err := s.cache.get(snap.ID, tableID, func() (*snapshot.Table, error) {
 		rc, err := m.OpenContent(ctx, snap)
 		if err != nil {
@@ -280,8 +280,8 @@ func (s *NocoDBServiceServer) ListSnapshotRecords(ctx context.Context, req *conn
 		return nil, connectx.NotFound("table not found in snapshot")
 	}
 
-	page := max(int(req.Msg.GetPage()), 1)
-	size := int(req.Msg.GetPageSize())
+	page := max(int(req.GetPage()), 1)
+	size := int(req.GetPageSize())
 	if size <= 0 {
 		size = defaultRecordPageSize
 	}
@@ -304,28 +304,28 @@ func (s *NocoDBServiceServer) ListSnapshotRecords(ctx context.Context, req *conn
 		}
 		resp.Records = append(resp.Records, st)
 	}
-	return connect.NewResponse(resp), nil
+	return resp, nil
 }
 
 // --- restores ---
 
-func (s *NocoDBServiceServer) RestoreSnapshot(ctx context.Context, req *connect.Request[neoboxv1.RestoreSnapshotRequest]) (*connect.Response[neoboxv1.RestoreSnapshotResponse], error) {
+func (s *NocoDBServiceServer) RestoreSnapshot(ctx context.Context, req *neoboxv1.RestoreSnapshotRequest) (*neoboxv1.RestoreSnapshotResponse, error) {
 	userID, r, m, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	snapID := strings.TrimSpace(req.Msg.GetSnapshotId())
+	snapID := strings.TrimSpace(req.GetSnapshotId())
 	if snapID == "" {
-		return nil, connectx.RequiredArgument("snapshot_id")
+		return nil, connectx.RequiredArgument(ctx, "snapshot_id")
 	}
 	snap, err := r.GetSnapshot(ctx, userID, snapID)
 	if err != nil {
 		return nil, mapRepoErr(err, "snapshot")
 	}
 	if snap.Status != repo.StatusSucceeded {
-		return nil, connect.NewError(connect.CodeFailedPrecondition, backup.ErrNotRestorable)
+		return nil, connect.NewError(connect.CodeFailedPrecondition, backup.ErrNotRestorable.Error()).WithCause(backup.ErrNotRestorable)
 	}
-	targetID := strings.TrimSpace(req.Msg.GetTargetConnectionId())
+	targetID := strings.TrimSpace(req.GetTargetConnectionId())
 	if targetID == "" {
 		targetID = snap.ConnectionID
 	}
@@ -333,21 +333,21 @@ func (s *NocoDBServiceServer) RestoreSnapshot(ctx context.Context, req *connect.
 	if err != nil {
 		return nil, err
 	}
-	title := strings.TrimSpace(req.Msg.GetTitle())
+	title := strings.TrimSpace(req.GetTitle())
 	if title == "" {
 		title = defaultRestoreTitle(snap)
 	} else if !nocodb.ValidBaseTitle(title) {
-		return nil, connectx.InvalidArgument("title", fmt.Sprintf(
+		return nil, connectx.InvalidArgument(ctx, "title", fmt.Sprintf(
 			"may only contain letters, numbers, spaces, and - _ . ( ) & , ' and be at most %d characters", nocodb.BaseTitleMaxLen))
 	}
 	restore, err := m.EnqueueRestore(ctx, snap, target, title)
 	if err != nil {
 		if errors.Is(err, backup.ErrQueueFull) {
-			return nil, connect.NewError(connect.CodeResourceExhausted, err)
+			return nil, connect.NewError(connect.CodeResourceExhausted, err.Error()).WithCause(err)
 		}
 		return nil, connectx.InternalWith(err)
 	}
-	return connect.NewResponse(&neoboxv1.RestoreSnapshotResponse{Restore: restoreToProto(restore)}), nil
+	return &neoboxv1.RestoreSnapshotResponse{Restore: restoreToProto(restore)}, nil
 }
 
 // defaultRestoreTitle names a restored Base after its source and the
@@ -361,30 +361,30 @@ func defaultRestoreTitle(snap *repo.Snapshot) string {
 	return title + suffix
 }
 
-func (s *NocoDBServiceServer) GetRestore(ctx context.Context, req *connect.Request[neoboxv1.GetRestoreRequest]) (*connect.Response[neoboxv1.GetRestoreResponse], error) {
+func (s *NocoDBServiceServer) GetRestore(ctx context.Context, req *neoboxv1.GetRestoreRequest) (*neoboxv1.GetRestoreResponse, error) {
 	userID, r, _, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	restore, err := r.GetRestore(ctx, userID, req.Msg.GetId())
+	restore, err := r.GetRestore(ctx, userID, req.GetId())
 	if err != nil {
 		return nil, mapRepoErr(err, "restore")
 	}
-	return connect.NewResponse(&neoboxv1.GetRestoreResponse{Restore: restoreToProto(restore)}), nil
+	return &neoboxv1.GetRestoreResponse{Restore: restoreToProto(restore)}, nil
 }
 
-func (s *NocoDBServiceServer) ListRestores(ctx context.Context, req *connect.Request[neoboxv1.ListRestoresRequest]) (*connect.Response[neoboxv1.ListRestoresResponse], error) {
+func (s *NocoDBServiceServer) ListRestores(ctx context.Context, req *neoboxv1.ListRestoresRequest) (*neoboxv1.ListRestoresResponse, error) {
 	userID, r, _, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	limit := int(req.Msg.GetLimit())
+	limit := int(req.GetLimit())
 	if limit <= 0 {
 		limit = defaultRestoreListLimit
 	}
 	limit = min(limit, maxRestoreListLimit)
 	restores, err := r.ListRestores(ctx, repo.RestoreFilter{
-		UserID: userID, SnapshotID: req.Msg.GetSnapshotId(), ConnectionID: req.Msg.GetConnectionId(), Limit: limit,
+		UserID: userID, SnapshotID: req.GetSnapshotId(), ConnectionID: req.GetConnectionId(), Limit: limit,
 	})
 	if err != nil {
 		return nil, connectx.InternalWith(err)
@@ -393,7 +393,7 @@ func (s *NocoDBServiceServer) ListRestores(ctx context.Context, req *connect.Req
 	for _, restore := range restores {
 		out = append(out, restoreToProto(restore))
 	}
-	return connect.NewResponse(&neoboxv1.ListRestoresResponse{Restores: out}), nil
+	return &neoboxv1.ListRestoresResponse{Restores: out}, nil
 }
 
 // --- helpers ---
@@ -403,7 +403,7 @@ func (s *NocoDBServiceServer) ListRestores(ctx context.Context, req *connect.Req
 func (s *NocoDBServiceServer) loadConnection(ctx context.Context, userID, id string) (*connrepo.Connection, error) {
 	id = strings.TrimSpace(id)
 	if id == "" {
-		return nil, connectx.RequiredArgument("connection_id")
+		return nil, connectx.RequiredArgument(ctx, "connection_id")
 	}
 	s.mu.RLock()
 	conns := s.conns

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -66,12 +66,12 @@ type cloudflareDeps struct {
 func (s *CloudflareServiceServer) deps(ctx context.Context) (*cloudflareDeps, error) {
 	user, ok := auth.UserFromContext(ctx)
 	if !ok {
-		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
+		return nil, connect.NewError(connect.CodeUnauthenticated, "unauthenticated")
 	}
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	if s.manager == nil || s.repo == nil || s.conns == nil {
-		return nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("cloudflare is not available"))
+		return nil, connect.NewError(connect.CodeFailedPrecondition, "cloudflare is not available")
 	}
 	name := user.GetDisplayName()
 	if name == "" {
@@ -85,7 +85,7 @@ func (s *CloudflareServiceServer) deps(ctx context.Context) (*cloudflareDeps, er
 func (d *cloudflareDeps) load(ctx context.Context, connectionID string) (*connrepo.Connection, error) {
 	id := strings.TrimSpace(connectionID)
 	if id == "" {
-		return nil, connectx.RequiredArgument("connection_id")
+		return nil, connectx.RequiredArgument(ctx, "connection_id")
 	}
 	c, err := d.conns.Get(ctx, d.user.ID, id)
 	if err != nil {
@@ -112,164 +112,164 @@ func (d *cloudflareDeps) open(ctx context.Context, connectionID string) (*cloudf
 
 // --- zones ---
 
-func (s *CloudflareServiceServer) ListCloudflareZones(ctx context.Context, req *connect.Request[neoboxv1.ListCloudflareZonesRequest]) (*connect.Response[neoboxv1.ListCloudflareZonesResponse], error) {
+func (s *CloudflareServiceServer) ListCloudflareZones(ctx context.Context, req *neoboxv1.ListCloudflareZonesRequest) (*neoboxv1.ListCloudflareZonesResponse, error) {
 	d, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	a, err := d.open(ctx, req.Msg.GetConnectionId())
+	a, err := d.open(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	page, size := pageArgs(req.Msg.GetPage(), req.Msg.GetPageSize(), defaultZonePageSize, minZonePageSize, maxZonePageSize)
-	zones, info, err := a.Zones(ctx, strings.TrimSpace(req.Msg.GetQuery()), page, size)
+	page, size := pageArgs(req.GetPage(), req.GetPageSize(), defaultZonePageSize, minZonePageSize, maxZonePageSize)
+	zones, info, err := a.Zones(ctx, strings.TrimSpace(req.GetQuery()), page, size)
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
 	out := make([]*neoboxv1.CloudflareZone, 0, len(zones))
 	for i := range zones {
 		out = append(out, zoneToProto(&zones[i]))
 	}
-	return connect.NewResponse(&neoboxv1.ListCloudflareZonesResponse{Zones: out, PageInfo: cfPageInfoToProto(info, page, size)}), nil
+	return &neoboxv1.ListCloudflareZonesResponse{Zones: out, PageInfo: cfPageInfoToProto(info, page, size)}, nil
 }
 
-func (s *CloudflareServiceServer) GetCloudflareZone(ctx context.Context, req *connect.Request[neoboxv1.GetCloudflareZoneRequest]) (*connect.Response[neoboxv1.GetCloudflareZoneResponse], error) {
+func (s *CloudflareServiceServer) GetCloudflareZone(ctx context.Context, req *neoboxv1.GetCloudflareZoneRequest) (*neoboxv1.GetCloudflareZoneResponse, error) {
 	d, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	a, err := d.open(ctx, req.Msg.GetConnectionId())
+	a, err := d.open(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	z, err := a.Zone(ctx, strings.TrimSpace(req.Msg.GetZoneId()))
+	z, err := a.Zone(ctx, strings.TrimSpace(req.GetZoneId()))
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.GetCloudflareZoneResponse{Zone: zoneToProto(z)}), nil
+	return &neoboxv1.GetCloudflareZoneResponse{Zone: zoneToProto(z)}, nil
 }
 
 // --- DNS records ---
 
 var recordTypePattern = regexp.MustCompile(`^[A-Z0-9]{1,10}$`)
 
-func (s *CloudflareServiceServer) ListCloudflareDNSRecords(ctx context.Context, req *connect.Request[neoboxv1.ListCloudflareDNSRecordsRequest]) (*connect.Response[neoboxv1.ListCloudflareDNSRecordsResponse], error) {
+func (s *CloudflareServiceServer) ListCloudflareDNSRecords(ctx context.Context, req *neoboxv1.ListCloudflareDNSRecordsRequest) (*neoboxv1.ListCloudflareDNSRecordsResponse, error) {
 	d, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	a, err := d.open(ctx, req.Msg.GetConnectionId())
+	a, err := d.open(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	typ := strings.ToUpper(strings.TrimSpace(req.Msg.GetType()))
+	typ := strings.ToUpper(strings.TrimSpace(req.GetType()))
 	if typ != "" && !recordTypePattern.MatchString(typ) {
-		return nil, connectx.InvalidArgument("type", "must be a DNS record type")
+		return nil, connectx.InvalidArgument(ctx, "type", "must be a DNS record type")
 	}
-	page, size := pageArgs(req.Msg.GetPage(), req.Msg.GetPageSize(), defaultRecordListSize, minRecordListSize, maxRecordListSize)
-	records, info, err := a.Records(ctx, strings.TrimSpace(req.Msg.GetZoneId()), cloudflare.RecordQuery{
-		Search: strings.TrimSpace(req.Msg.GetQuery()), Type: typ, Page: page, PerPage: size,
+	page, size := pageArgs(req.GetPage(), req.GetPageSize(), defaultRecordListSize, minRecordListSize, maxRecordListSize)
+	records, info, err := a.Records(ctx, strings.TrimSpace(req.GetZoneId()), cloudflare.RecordQuery{
+		Search: strings.TrimSpace(req.GetQuery()), Type: typ, Page: page, PerPage: size,
 	})
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
 	out := make([]*neoboxv1.CloudflareDNSRecord, 0, len(records))
 	for i := range records {
 		out = append(out, recordToProto(&records[i]))
 	}
-	return connect.NewResponse(&neoboxv1.ListCloudflareDNSRecordsResponse{Records: out, PageInfo: cfPageInfoToProto(info, page, size)}), nil
+	return &neoboxv1.ListCloudflareDNSRecordsResponse{Records: out, PageInfo: cfPageInfoToProto(info, page, size)}, nil
 }
 
-func (s *CloudflareServiceServer) CreateCloudflareDNSRecord(ctx context.Context, req *connect.Request[neoboxv1.CreateCloudflareDNSRecordRequest]) (*connect.Response[neoboxv1.CreateCloudflareDNSRecordResponse], error) {
+func (s *CloudflareServiceServer) CreateCloudflareDNSRecord(ctx context.Context, req *neoboxv1.CreateCloudflareDNSRecordRequest) (*neoboxv1.CreateCloudflareDNSRecordResponse, error) {
 	d, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if req.Msg.GetRecord() == nil {
-		return nil, connectx.RequiredArgument("record")
+	if req.GetRecord() == nil {
+		return nil, connectx.RequiredArgument(ctx, "record")
 	}
-	a, err := d.open(ctx, req.Msg.GetConnectionId())
+	a, err := d.open(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	ch, err := a.CreateRecord(ctx, d.user, strings.TrimSpace(req.Msg.GetZoneId()), recordInput(req.Msg.GetRecord()))
+	ch, err := a.CreateRecord(ctx, d.user, strings.TrimSpace(req.GetZoneId()), recordInput(req.GetRecord()))
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.CreateCloudflareDNSRecordResponse{
+	return &neoboxv1.CreateCloudflareDNSRecordResponse{
 		Record: recordToProto(ch.Record), Operation: operationToProto(ch.Operation), OperationLogError: logErrText(ch),
-	}), nil
+	}, nil
 }
 
-func (s *CloudflareServiceServer) UpdateCloudflareDNSRecord(ctx context.Context, req *connect.Request[neoboxv1.UpdateCloudflareDNSRecordRequest]) (*connect.Response[neoboxv1.UpdateCloudflareDNSRecordResponse], error) {
+func (s *CloudflareServiceServer) UpdateCloudflareDNSRecord(ctx context.Context, req *neoboxv1.UpdateCloudflareDNSRecordRequest) (*neoboxv1.UpdateCloudflareDNSRecordResponse, error) {
 	d, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if req.Msg.GetRecord() == nil {
-		return nil, connectx.RequiredArgument("record")
+	if req.GetRecord() == nil {
+		return nil, connectx.RequiredArgument(ctx, "record")
 	}
-	a, err := d.open(ctx, req.Msg.GetConnectionId())
+	a, err := d.open(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	ch, err := a.UpdateRecord(ctx, d.user, strings.TrimSpace(req.Msg.GetZoneId()), strings.TrimSpace(req.Msg.GetRecordId()), recordInput(req.Msg.GetRecord()))
+	ch, err := a.UpdateRecord(ctx, d.user, strings.TrimSpace(req.GetZoneId()), strings.TrimSpace(req.GetRecordId()), recordInput(req.GetRecord()))
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.UpdateCloudflareDNSRecordResponse{
+	return &neoboxv1.UpdateCloudflareDNSRecordResponse{
 		Record: recordToProto(ch.Record), Operation: operationToProto(ch.Operation), OperationLogError: logErrText(ch),
-	}), nil
+	}, nil
 }
 
-func (s *CloudflareServiceServer) SetCloudflareDNSRecordProxied(ctx context.Context, req *connect.Request[neoboxv1.SetCloudflareDNSRecordProxiedRequest]) (*connect.Response[neoboxv1.SetCloudflareDNSRecordProxiedResponse], error) {
+func (s *CloudflareServiceServer) SetCloudflareDNSRecordProxied(ctx context.Context, req *neoboxv1.SetCloudflareDNSRecordProxiedRequest) (*neoboxv1.SetCloudflareDNSRecordProxiedResponse, error) {
 	d, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	a, err := d.open(ctx, req.Msg.GetConnectionId())
+	a, err := d.open(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	ch, err := a.SetProxied(ctx, d.user, strings.TrimSpace(req.Msg.GetZoneId()), strings.TrimSpace(req.Msg.GetRecordId()), req.Msg.GetProxied())
+	ch, err := a.SetProxied(ctx, d.user, strings.TrimSpace(req.GetZoneId()), strings.TrimSpace(req.GetRecordId()), req.GetProxied())
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.SetCloudflareDNSRecordProxiedResponse{
+	return &neoboxv1.SetCloudflareDNSRecordProxiedResponse{
 		Record: recordToProto(ch.Record), Operation: operationToProto(ch.Operation), OperationLogError: logErrText(ch),
-	}), nil
+	}, nil
 }
 
-func (s *CloudflareServiceServer) DeleteCloudflareDNSRecord(ctx context.Context, req *connect.Request[neoboxv1.DeleteCloudflareDNSRecordRequest]) (*connect.Response[neoboxv1.DeleteCloudflareDNSRecordResponse], error) {
+func (s *CloudflareServiceServer) DeleteCloudflareDNSRecord(ctx context.Context, req *neoboxv1.DeleteCloudflareDNSRecordRequest) (*neoboxv1.DeleteCloudflareDNSRecordResponse, error) {
 	d, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	a, err := d.open(ctx, req.Msg.GetConnectionId())
+	a, err := d.open(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	ch, err := a.DeleteRecord(ctx, d.user, strings.TrimSpace(req.Msg.GetZoneId()), strings.TrimSpace(req.Msg.GetRecordId()))
+	ch, err := a.DeleteRecord(ctx, d.user, strings.TrimSpace(req.GetZoneId()), strings.TrimSpace(req.GetRecordId()))
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.DeleteCloudflareDNSRecordResponse{
+	return &neoboxv1.DeleteCloudflareDNSRecordResponse{
 		Operation: operationToProto(ch.Operation), OperationLogError: logErrText(ch),
-	}), nil
+	}, nil
 }
 
-func (s *CloudflareServiceServer) ListCloudflareDNSOperations(ctx context.Context, req *connect.Request[neoboxv1.ListCloudflareDNSOperationsRequest]) (*connect.Response[neoboxv1.ListCloudflareDNSOperationsResponse], error) {
+func (s *CloudflareServiceServer) ListCloudflareDNSOperations(ctx context.Context, req *neoboxv1.ListCloudflareDNSOperationsRequest) (*neoboxv1.ListCloudflareDNSOperationsResponse, error) {
 	d, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	c, err := d.load(ctx, req.Msg.GetConnectionId())
+	c, err := d.load(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	page, size := pageArgs(req.Msg.GetPage(), req.Msg.GetPageSize(), defaultOperationsSize, 1, maxOperationsSize)
+	page, size := pageArgs(req.GetPage(), req.GetPageSize(), defaultOperationsSize, 1, maxOperationsSize)
 	ops, total, err := d.repo.ListDNSOperations(ctx, cfrepo.Filter{
-		UserID: d.user.ID, ConnectionID: c.ID, ZoneID: strings.TrimSpace(req.Msg.GetZoneId()),
+		UserID: d.user.ID, ConnectionID: c.ID, ZoneID: strings.TrimSpace(req.GetZoneId()),
 		Offset: (page - 1) * size, Limit: size,
 	})
 	if err != nil {
@@ -279,7 +279,7 @@ func (s *CloudflareServiceServer) ListCloudflareDNSOperations(ctx context.Contex
 	for _, op := range ops {
 		out = append(out, operationToProto(op))
 	}
-	return connect.NewResponse(&neoboxv1.ListCloudflareDNSOperationsResponse{Operations: out, PageInfo: pageInfoOf(page, size, total)}), nil
+	return &neoboxv1.ListCloudflareDNSOperationsResponse{Operations: out, PageInfo: pageInfoOf(page, size, total)}, nil
 }
 
 func logErrText(ch *cloudflareacct.Change) string {
@@ -388,19 +388,19 @@ func dnsStatusToProto(s cfrepo.Status) neoboxv1.CloudflareOperationStatus {
 
 // --- Workers and Pages ---
 
-func (s *CloudflareServiceServer) ListCloudflareWorkers(ctx context.Context, req *connect.Request[neoboxv1.ListCloudflareWorkersRequest]) (*connect.Response[neoboxv1.ListCloudflareWorkersResponse], error) {
+func (s *CloudflareServiceServer) ListCloudflareWorkers(ctx context.Context, req *neoboxv1.ListCloudflareWorkersRequest) (*neoboxv1.ListCloudflareWorkersResponse, error) {
 	d, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	a, err := d.open(ctx, req.Msg.GetConnectionId())
+	a, err := d.open(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	page, size := pageArgs(req.Msg.GetPage(), req.Msg.GetPageSize(), defaultListSize, 1, maxListSize)
-	list, err := a.Workers(ctx, req.Msg.GetQuery(), page, size)
+	page, size := pageArgs(req.GetPage(), req.GetPageSize(), defaultListSize, 1, maxListSize)
+	list, err := a.Workers(ctx, req.GetQuery(), page, size)
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
 	out := &neoboxv1.ListCloudflareWorkersResponse{
 		PageInfo: pageInfoOf(page, size, list.Total), AddressIssues: issuesToProto(list.Issues),
@@ -410,22 +410,22 @@ func (s *CloudflareServiceServer) ListCloudflareWorkers(ctx context.Context, req
 			Name: w.Name, Addresses: addressesToProto(w.Addresses), AddressesIncomplete: w.Incomplete,
 		})
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }
 
-func (s *CloudflareServiceServer) ListCloudflarePagesProjects(ctx context.Context, req *connect.Request[neoboxv1.ListCloudflarePagesProjectsRequest]) (*connect.Response[neoboxv1.ListCloudflarePagesProjectsResponse], error) {
+func (s *CloudflareServiceServer) ListCloudflarePagesProjects(ctx context.Context, req *neoboxv1.ListCloudflarePagesProjectsRequest) (*neoboxv1.ListCloudflarePagesProjectsResponse, error) {
 	d, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	a, err := d.open(ctx, req.Msg.GetConnectionId())
+	a, err := d.open(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	page, size := pageArgs(req.Msg.GetPage(), req.Msg.GetPageSize(), defaultListSize, 1, maxListSize)
-	list, err := a.PagesProjects(ctx, req.Msg.GetQuery(), page, size)
+	page, size := pageArgs(req.GetPage(), req.GetPageSize(), defaultListSize, 1, maxListSize)
+	list, err := a.PagesProjects(ctx, req.GetQuery(), page, size)
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
 	out := &neoboxv1.ListCloudflarePagesProjectsResponse{
 		PageInfo: pageInfoOf(page, size, list.Total), AddressIssues: issuesToProto(list.Issues),
@@ -435,7 +435,7 @@ func (s *CloudflareServiceServer) ListCloudflarePagesProjects(ctx context.Contex
 			Name: p.Name, Addresses: addressesToProto(p.Addresses), AddressesIncomplete: p.Incomplete,
 		})
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }
 
 // pageInfoOf describes a page of a list paged here; cfPageInfoToProto
@@ -514,7 +514,7 @@ func zoneToProto(z *cloudflare.Zone) *neoboxv1.CloudflareZone {
 // mapCloudflareErr turns Cloudflare and Manager errors into Connect codes.
 // A rejected token is FailedPrecondition, never Unauthenticated, which
 // would sign the user out of Neo Box.
-func mapCloudflareErr(err error) error {
+func mapCloudflareErr(ctx context.Context, err error) error {
 	var (
 		cerr     *connect.Error
 		ferr     *cloudflare.FieldError
@@ -526,11 +526,11 @@ func mapCloudflareErr(err error) error {
 	case errors.As(err, &cerr):
 		return cerr
 	case errors.As(err, &ferr):
-		return connectx.InvalidArgument(ferr.Field, ferr.Message)
+		return connectx.InvalidArgument(ctx, ferr.Field, ferr.Message)
 	case errors.As(err, &rejected):
-		return connect.NewError(connect.CodeFailedPrecondition, rejected)
+		return connect.NewError(connect.CodeFailedPrecondition, rejected.Error()).WithCause(rejected)
 	case errors.As(err, &perm), errors.Is(err, cloudflareacct.ErrReadOnly):
-		return connect.NewError(connect.CodePermissionDenied, err)
+		return connect.NewError(connect.CodePermissionDenied, err.Error()).WithCause(err)
 	case errors.Is(err, cloudflareacct.ErrZoneNotFound), errors.Is(err, cloudflareacct.ErrRecordNotFound),
 		errors.Is(err, cloudflareacct.ErrTunnelNotFound), errors.Is(err, cloudflare.ErrRuleNotFound),
 		errors.Is(err, cloudflareacct.ErrWorkerNotFound), errors.Is(err, cloudflareacct.ErrPagesProjectNotFound),
@@ -538,25 +538,25 @@ func mapCloudflareErr(err error) error {
 		errors.Is(err, cloudflareacct.ErrEmailRuleNotFound), errors.Is(err, cloudflareacct.ErrEmailAddressNotFound):
 		return connectx.NotFound(err.Error())
 	case errors.Is(err, cloudflareacct.ErrInUse):
-		return connect.NewError(connect.CodeAlreadyExists, err)
+		return connect.NewError(connect.CodeAlreadyExists, err.Error()).WithCause(err)
 	case errors.Is(err, cloudflareacct.ErrNoWorkersSubdomain):
-		return connect.NewError(connect.CodeFailedPrecondition, err)
+		return connect.NewError(connect.CodeFailedPrecondition, err.Error()).WithCause(err)
 	case errors.Is(err, cloudflareacct.ErrNotEditable), errors.Is(err, cloudflareacct.ErrNotRemotelyManaged),
 		errors.Is(err, cloudflareacct.ErrAddressUnverified), errors.Is(err, cloudflareacct.ErrAddressInUse),
 		errors.Is(err, cloudflareacct.ErrRuleReadOnly):
-		return connect.NewError(connect.CodeFailedPrecondition, err)
+		return connect.NewError(connect.CodeFailedPrecondition, err.Error()).WithCause(err)
 	case errors.Is(err, cloudflareacct.ErrLogUnavailable):
-		return connect.NewError(connect.CodeUnavailable, err)
+		return connect.NewError(connect.CodeUnavailable, err.Error()).WithCause(err)
 	case cloudflare.IsUncertain(err):
-		return connect.NewError(connect.CodeUnknown, err)
+		return connect.NewError(connect.CodeUnknown, err.Error()).WithCause(err)
 	case cloudflare.IsRejected(err) && errors.As(err, &apiErr):
-		return connect.NewError(connect.CodeInvalidArgument, errors.New("Cloudflare refused it: "+apiErr.Message()))
+		return connect.NewError(connect.CodeInvalidArgument, "Cloudflare refused it: "+apiErr.Message())
 	case cloudflare.IsNotFound(err):
 		return connectx.NotFound("not found at Cloudflare")
 	case errors.Is(err, context.DeadlineExceeded):
-		return connect.NewError(connect.CodeDeadlineExceeded, err)
+		return connect.NewError(connect.CodeDeadlineExceeded, err.Error()).WithCause(err)
 	case errors.Is(err, context.Canceled):
-		return connect.NewError(connect.CodeCanceled, err)
+		return connect.NewError(connect.CodeCanceled, err.Error()).WithCause(err)
 	}
-	return connect.NewError(connect.CodeUnavailable, err)
+	return connect.NewError(connect.CodeUnavailable, err.Error()).WithCause(err)
 }

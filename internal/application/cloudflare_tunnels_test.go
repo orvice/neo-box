@@ -7,7 +7,7 @@ import (
 	"sync"
 	"testing"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 
 	"go.orx.me/apps/neo-box/internal/cloudflare/cftest"
 	neoboxv1 "go.orx.me/apps/neo-box/pkg/proto/neobox/v1"
@@ -33,10 +33,10 @@ func tunnelRoutes(t *testing.T, f *cfFixture, acc, id string) (routes map[string
 	return routes, catchAll
 }
 
-func (f *cfFixture) addHostname(conn, tunnel, host, service string, dns bool) (*connect.Response[neoboxv1.AddCloudflareTunnelHostnameResponse], error) {
-	return f.srv.AddCloudflareTunnelHostname(asUser("u1"), connect.NewRequest(&neoboxv1.AddCloudflareTunnelHostnameRequest{
+func (f *cfFixture) addHostname(conn, tunnel, host, service string, dns bool) (*neoboxv1.AddCloudflareTunnelHostnameResponse, error) {
+	return f.srv.AddCloudflareTunnelHostname(asUser("u1"), &neoboxv1.AddCloudflareTunnelHostnameRequest{
 		ConnectionId: conn, TunnelId: tunnel, Hostname: host, Service: service, CreateDns: dns,
-	}))
+	})
 }
 
 func TestCloudflareTunnelsAreListedWithinTheAccount(t *testing.T) {
@@ -51,28 +51,28 @@ func TestCloudflareTunnelsAreListedWithinTheAccount(t *testing.T) {
 	conn := f.connect(t, "u1", cfAccA, "full") // the token also reaches account B
 	ctx := asUser("u1")
 
-	list, err := f.srv.ListCloudflareTunnels(ctx, connect.NewRequest(&neoboxv1.ListCloudflareTunnelsRequest{ConnectionId: conn, PageSize: 5}))
+	list, err := f.srv.ListCloudflareTunnels(ctx, &neoboxv1.ListCloudflareTunnelsRequest{ConnectionId: conn, PageSize: 5})
 	if err != nil {
 		t.Fatalf("ListCloudflareTunnels: %v", err)
 	}
-	if list.Msg.GetPageInfo().GetTotalCount() != 8 || list.Msg.GetPageInfo().GetTotalPages() != 2 || len(list.Msg.GetTunnels()) != 5 {
-		t.Fatalf("page 1 = %d tunnels, %+v", len(list.Msg.GetTunnels()), list.Msg.GetPageInfo())
+	if list.GetPageInfo().GetTotalCount() != 8 || list.GetPageInfo().GetTotalPages() != 2 || len(list.GetTunnels()) != 5 {
+		t.Fatalf("page 1 = %d tunnels, %+v", len(list.GetTunnels()), list.GetPageInfo())
 	}
-	if list.Msg.GetTunnels()[0].GetName() != "legacy" {
-		t.Fatalf("first tunnel = %q, want name order", list.Msg.GetTunnels()[0].GetName())
+	if list.GetTunnels()[0].GetName() != "legacy" {
+		t.Fatalf("first tunnel = %q, want name order", list.GetTunnels()[0].GetName())
 	}
-	legacy := list.Msg.GetTunnels()[0]
+	legacy := list.GetTunnels()[0]
 	if legacy.GetManagedRemotely() || legacy.GetActiveConnections() != 2 || legacy.GetStatus() != neoboxv1.CloudflareTunnelStatus_CLOUDFLARE_TUNNEL_STATUS_HEALTHY {
 		t.Fatalf("legacy = %+v", legacy)
 	}
 
 	// Search covers the whole list, not the page; deleted and foreign
 	// tunnels never show.
-	found, err := f.srv.ListCloudflareTunnels(ctx, connect.NewRequest(&neoboxv1.ListCloudflareTunnelsRequest{ConnectionId: conn, Query: "SITE-"}))
-	if err != nil || found.Msg.GetPageInfo().GetTotalCount() != 7 {
+	found, err := f.srv.ListCloudflareTunnels(ctx, &neoboxv1.ListCloudflareTunnelsRequest{ConnectionId: conn, Query: "SITE-"})
+	if err != nil || found.GetPageInfo().GetTotalCount() != 7 {
 		t.Fatalf("search = %v, %v", found, err)
 	}
-	for _, tun := range found.Msg.GetTunnels() {
+	for _, tun := range found.GetTunnels() {
 		if tun.GetId() == "tdel" || tun.GetId() == "tb1" {
 			t.Fatalf("listed %s", tun.GetId())
 		}
@@ -81,14 +81,14 @@ func TestCloudflareTunnelsAreListedWithinTheAccount(t *testing.T) {
 	// A tunnel of the other account is not found, even though the token
 	// reaches it; a deleted one neither.
 	for _, id := range []string{"tb1", "tdel", "nope"} {
-		_, err := f.srv.GetCloudflareTunnel(ctx, connect.NewRequest(&neoboxv1.GetCloudflareTunnelRequest{ConnectionId: conn, TunnelId: id}))
+		_, err := f.srv.GetCloudflareTunnel(ctx, &neoboxv1.GetCloudflareTunnelRequest{ConnectionId: conn, TunnelId: id})
 		if connect.CodeOf(err) != connect.CodeNotFound {
 			t.Errorf("Get(%s) = %v, want NotFound", id, err)
 		}
 	}
 
 	// Another user's connection is not found.
-	if _, err := f.srv.ListCloudflareTunnels(asUser("u2"), connect.NewRequest(&neoboxv1.ListCloudflareTunnelsRequest{ConnectionId: conn})); connect.CodeOf(err) != connect.CodeNotFound {
+	if _, err := f.srv.ListCloudflareTunnels(asUser("u2"), &neoboxv1.ListCloudflareTunnelsRequest{ConnectionId: conn}); connect.CodeOf(err) != connect.CodeNotFound {
 		t.Fatalf("other user = %v, want NotFound", err)
 	}
 }
@@ -111,11 +111,11 @@ func TestCloudflareTunnelDetail(t *testing.T) {
 
 	get := func(id string) *neoboxv1.GetCloudflareTunnelResponse {
 		t.Helper()
-		resp, err := f.srv.GetCloudflareTunnel(ctx, connect.NewRequest(&neoboxv1.GetCloudflareTunnelRequest{ConnectionId: conn, TunnelId: id}))
+		resp, err := f.srv.GetCloudflareTunnel(ctx, &neoboxv1.GetCloudflareTunnelRequest{ConnectionId: conn, TunnelId: id})
 		if err != nil {
 			t.Fatalf("Get(%s): %v", id, err)
 		}
-		return resp.Msg
+		return resp
 	}
 	d := get("t1")
 	if len(d.GetConnectors()) != 1 || len(d.GetConnectors()[0].GetConnections()) != 2 || d.GetConnectors()[0].GetVersion() != "2026.9.0" {
@@ -151,7 +151,7 @@ func TestCloudflareTunnelPermissions(t *testing.T) {
 	// A token without any Tunnel permission is refused, not shown as an
 	// empty account.
 	noTunnels := f.connect(t, "u1", cfAccA, "dns-read")
-	_, err := f.srv.ListCloudflareTunnels(ctx, connect.NewRequest(&neoboxv1.ListCloudflareTunnelsRequest{ConnectionId: noTunnels}))
+	_, err := f.srv.ListCloudflareTunnels(ctx, &neoboxv1.ListCloudflareTunnelsRequest{ConnectionId: noTunnels})
 	if connect.CodeOf(err) != connect.CodePermissionDenied || !strings.Contains(err.Error(), "Cloudflare Tunnel Read") {
 		t.Fatalf("list without permission = %v", err)
 	}
@@ -159,16 +159,16 @@ func TestCloudflareTunnelPermissions(t *testing.T) {
 	// A read-only token reads; Cloudflare refuses every change and none is
 	// made.
 	ro := f.connect(t, "u1", cfAccA, "tunnel-read")
-	if _, err := f.srv.GetCloudflareTunnel(ctx, connect.NewRequest(&neoboxv1.GetCloudflareTunnelRequest{ConnectionId: ro, TunnelId: "t1"})); err != nil {
+	if _, err := f.srv.GetCloudflareTunnel(ctx, &neoboxv1.GetCloudflareTunnelRequest{ConnectionId: ro, TunnelId: "t1"}); err != nil {
 		t.Fatalf("read-only Get: %v", err)
 	}
-	if _, err := f.srv.CreateCloudflareTunnel(ctx, connect.NewRequest(&neoboxv1.CreateCloudflareTunnelRequest{ConnectionId: ro, Name: "x"})); connect.CodeOf(err) != connect.CodePermissionDenied {
+	if _, err := f.srv.CreateCloudflareTunnel(ctx, &neoboxv1.CreateCloudflareTunnelRequest{ConnectionId: ro, Name: "x"}); connect.CodeOf(err) != connect.CodePermissionDenied {
 		t.Errorf("create = %v, want PermissionDenied", err)
 	}
 	if _, err := f.addHostname(ro, "t1", "a.alpha.com", "http://localhost:1", true); connect.CodeOf(err) != connect.CodePermissionDenied || !strings.Contains(err.Error(), "Cloudflare Tunnel Edit") {
 		t.Errorf("add hostname = %v, want PermissionDenied naming the permission", err)
 	}
-	if _, err := f.srv.DeleteCloudflareTunnel(ctx, connect.NewRequest(&neoboxv1.DeleteCloudflareTunnelRequest{ConnectionId: ro, TunnelId: "t1"})); connect.CodeOf(err) != connect.CodePermissionDenied {
+	if _, err := f.srv.DeleteCloudflareTunnel(ctx, &neoboxv1.DeleteCloudflareTunnelRequest{ConnectionId: ro, TunnelId: "t1"}); connect.CodeOf(err) != connect.CodePermissionDenied {
 		t.Errorf("delete = %v, want PermissionDenied", err)
 	}
 	if tun := f.cf.Tunnel(cfAccA, "t1"); tun == nil || tun.Version != 0 || f.cf.TunnelByName(cfAccA, "x") != nil {
@@ -182,16 +182,16 @@ func TestCloudflareTunnelCreateTokenAndDelete(t *testing.T) {
 	ctx := asUser("u1")
 
 	for _, name := range []string{"", "   ", strings.Repeat("x", 300)} {
-		_, err := f.srv.CreateCloudflareTunnel(ctx, connect.NewRequest(&neoboxv1.CreateCloudflareTunnelRequest{ConnectionId: conn, Name: name}))
+		_, err := f.srv.CreateCloudflareTunnel(ctx, &neoboxv1.CreateCloudflareTunnelRequest{ConnectionId: conn, Name: name})
 		if connect.CodeOf(err) != connect.CodeInvalidArgument {
 			t.Errorf("create %.10q = %v, want InvalidArgument", name, err)
 		}
 	}
-	created, err := f.srv.CreateCloudflareTunnel(ctx, connect.NewRequest(&neoboxv1.CreateCloudflareTunnelRequest{ConnectionId: conn, Name: "  home  "}))
+	created, err := f.srv.CreateCloudflareTunnel(ctx, &neoboxv1.CreateCloudflareTunnelRequest{ConnectionId: conn, Name: "  home  "})
 	if err != nil {
 		t.Fatalf("create: %v", err)
 	}
-	tun := created.Msg.GetTunnel()
+	tun := created.GetTunnel()
 	if tun.GetName() != "home" || !tun.GetManagedRemotely() || tun.GetStatus() != neoboxv1.CloudflareTunnelStatus_CLOUDFLARE_TUNNEL_STATUS_INACTIVE {
 		t.Fatalf("created = %+v", tun)
 	}
@@ -199,21 +199,21 @@ func TestCloudflareTunnelCreateTokenAndDelete(t *testing.T) {
 		t.Fatal("the tunnel was not created at Cloudflare")
 	}
 	// The secret Neo Box sends never comes back; the token is its own call.
-	if strings.Contains(strings.ToLower(created.Msg.String()), "token") {
-		t.Fatalf("create response carries a credential: %v", created.Msg)
+	if strings.Contains(strings.ToLower(created.String()), "token") {
+		t.Fatalf("create response carries a credential: %v", created)
 	}
-	if _, err := f.srv.CreateCloudflareTunnel(ctx, connect.NewRequest(&neoboxv1.CreateCloudflareTunnelRequest{ConnectionId: conn, Name: "home"})); connect.CodeOf(err) != connect.CodeInvalidArgument {
+	if _, err := f.srv.CreateCloudflareTunnel(ctx, &neoboxv1.CreateCloudflareTunnelRequest{ConnectionId: conn, Name: "home"}); connect.CodeOf(err) != connect.CodeInvalidArgument {
 		t.Errorf("duplicate name = %v, want InvalidArgument", err)
 	}
 
-	token, err := f.srv.GetCloudflareTunnelToken(ctx, connect.NewRequest(&neoboxv1.GetCloudflareTunnelTokenRequest{ConnectionId: conn, TunnelId: tun.GetId()}))
-	if err != nil || token.Msg.GetToken() != "token-for-"+tun.GetId() {
+	token, err := f.srv.GetCloudflareTunnelToken(ctx, &neoboxv1.GetCloudflareTunnelTokenRequest{ConnectionId: conn, TunnelId: tun.GetId()})
+	if err != nil || token.GetToken() != "token-for-"+tun.GetId() {
 		t.Fatalf("token = %v, %v", token, err)
 	}
 	// The token of a tunnel in another account is never asked for.
 	f.cf.AddTunnel(cfAccB, &cftest.Tunnel{ID: "tb1", Name: "b"})
 	n := len(f.cf.Requests())
-	if _, err := f.srv.GetCloudflareTunnelToken(ctx, connect.NewRequest(&neoboxv1.GetCloudflareTunnelTokenRequest{ConnectionId: conn, TunnelId: "tb1"})); connect.CodeOf(err) != connect.CodeNotFound {
+	if _, err := f.srv.GetCloudflareTunnelToken(ctx, &neoboxv1.GetCloudflareTunnelTokenRequest{ConnectionId: conn, TunnelId: "tb1"}); connect.CodeOf(err) != connect.CodeNotFound {
 		t.Fatalf("foreign token = %v, want NotFound", err)
 	}
 	for _, r := range f.cf.Requests()[n:] {
@@ -225,17 +225,17 @@ func TestCloudflareTunnelCreateTokenAndDelete(t *testing.T) {
 	// A tunnel with a connector cannot be deleted until its connections
 	// are cleaned up.
 	f.cf.AddTunnel(cfAccA, &cftest.Tunnel{ID: "busy", Name: "busy", Connectors: []cftest.TunnelConnector{{ID: "c1", Colos: []string{"SJC"}}}})
-	if _, err := f.srv.DeleteCloudflareTunnel(ctx, connect.NewRequest(&neoboxv1.DeleteCloudflareTunnelRequest{ConnectionId: conn, TunnelId: "busy"})); err == nil ||
+	if _, err := f.srv.DeleteCloudflareTunnel(ctx, &neoboxv1.DeleteCloudflareTunnelRequest{ConnectionId: conn, TunnelId: "busy"}); err == nil ||
 		!strings.Contains(err.Error(), "active connections") {
 		t.Fatalf("delete busy = %v, want Cloudflare's refusal", err)
 	}
 	if f.cf.Tunnel(cfAccA, "busy") == nil {
 		t.Fatal("the busy tunnel was deleted")
 	}
-	if _, err := f.srv.CleanupCloudflareTunnelConnections(ctx, connect.NewRequest(&neoboxv1.CleanupCloudflareTunnelConnectionsRequest{ConnectionId: conn, TunnelId: "busy"})); err != nil {
+	if _, err := f.srv.CleanupCloudflareTunnelConnections(ctx, &neoboxv1.CleanupCloudflareTunnelConnectionsRequest{ConnectionId: conn, TunnelId: "busy"}); err != nil {
 		t.Fatalf("cleanup: %v", err)
 	}
-	if _, err := f.srv.DeleteCloudflareTunnel(ctx, connect.NewRequest(&neoboxv1.DeleteCloudflareTunnelRequest{ConnectionId: conn, TunnelId: "busy"})); err != nil {
+	if _, err := f.srv.DeleteCloudflareTunnel(ctx, &neoboxv1.DeleteCloudflareTunnelRequest{ConnectionId: conn, TunnelId: "busy"}); err != nil {
 		t.Fatalf("delete after cleanup: %v", err)
 	}
 	if f.cf.Tunnel(cfAccA, "busy") != nil {
@@ -244,14 +244,14 @@ func TestCloudflareTunnelCreateTokenAndDelete(t *testing.T) {
 
 	// cleanup_connections does both in one call.
 	f.cf.AddTunnel(cfAccA, &cftest.Tunnel{ID: "busy2", Name: "busy2", Connectors: []cftest.TunnelConnector{{ID: "c1", Colos: []string{"SJC"}}}})
-	if _, err := f.srv.DeleteCloudflareTunnel(ctx, connect.NewRequest(&neoboxv1.DeleteCloudflareTunnelRequest{ConnectionId: conn, TunnelId: "busy2", CleanupConnections: true})); err != nil {
+	if _, err := f.srv.DeleteCloudflareTunnel(ctx, &neoboxv1.DeleteCloudflareTunnelRequest{ConnectionId: conn, TunnelId: "busy2", CleanupConnections: true}); err != nil {
 		t.Fatalf("delete with cleanup: %v", err)
 	}
 	if f.cf.Tunnel(cfAccA, "busy2") != nil {
 		t.Fatal("the tunnel was not deleted")
 	}
 	// A foreign tunnel cannot be deleted through this connection.
-	if _, err := f.srv.DeleteCloudflareTunnel(ctx, connect.NewRequest(&neoboxv1.DeleteCloudflareTunnelRequest{ConnectionId: conn, TunnelId: "tb1"})); connect.CodeOf(err) != connect.CodeNotFound ||
+	if _, err := f.srv.DeleteCloudflareTunnel(ctx, &neoboxv1.DeleteCloudflareTunnelRequest{ConnectionId: conn, TunnelId: "tb1"}); connect.CodeOf(err) != connect.CodeNotFound ||
 		f.cf.Tunnel(cfAccB, "tb1") == nil {
 		t.Fatalf("foreign delete = %v", err)
 	}
@@ -295,9 +295,9 @@ func TestCloudflareTunnelHostnames(t *testing.T) {
 	if err != nil {
 		t.Fatalf("add: %v", err)
 	}
-	if added.Msg.GetHostname().GetHostname() != "app.alpha.com" || added.Msg.GetConfigVersion() != 2 ||
-		added.Msg.GetRecord().GetStatus() != neoboxv1.CloudflareTunnelRecordStatus_CLOUDFLARE_TUNNEL_RECORD_STATUS_CREATED {
-		t.Fatalf("add response = %+v", added.Msg)
+	if added.GetHostname().GetHostname() != "app.alpha.com" || added.GetConfigVersion() != 2 ||
+		added.GetRecord().GetStatus() != neoboxv1.CloudflareTunnelRecordStatus_CLOUDFLARE_TUNNEL_RECORD_STATUS_CREATED {
+		t.Fatalf("add response = %+v", added)
 	}
 	routes, catchAll := tunnelRoutes(t, f, cfAccA, "t1")
 	if routes["app.alpha.com"] != "http://localhost:3000" || routes["old.alpha.com"] != "http://localhost:1" || catchAll != "http_status:503" {
@@ -309,7 +309,7 @@ func TestCloudflareTunnelHostnames(t *testing.T) {
 		rules[len(rules)-1].(map[string]any)["hostname"] != nil {
 		t.Fatalf("stored config = %v", stored.Config)
 	}
-	rec := f.cf.Record("za1", added.Msg.GetRecord().GetRecordId())
+	rec := f.cf.Record("za1", added.GetRecord().GetRecordId())
 	if rec == nil || rec["type"] != "CNAME" || rec["name"] != "app.alpha.com" || rec["content"] != "t1.cfargotunnel.com" || rec["proxied"] != true {
 		t.Fatalf("dns record = %v", rec)
 	}
@@ -324,32 +324,32 @@ func TestCloudflareTunnelHostnames(t *testing.T) {
 	}
 
 	// Update changes path and service and keeps the rule's settings.
-	upd, err := f.srv.UpdateCloudflareTunnelHostname(ctx, connect.NewRequest(&neoboxv1.UpdateCloudflareTunnelHostnameRequest{
+	upd, err := f.srv.UpdateCloudflareTunnelHostname(ctx, &neoboxv1.UpdateCloudflareTunnelHostnameRequest{
 		ConnectionId: conn, TunnelId: "t1", Hostname: "old.alpha.com", Path: "^/v2", Service: "https://localhost:8443",
-	}))
+	})
 	if err != nil {
 		t.Fatalf("update: %v", err)
 	}
-	if h := upd.Msg.GetHostname(); h.GetPath() != "^/v2" || h.GetService() != "https://localhost:8443" || !h.GetHasOriginSettings() {
+	if h := upd.GetHostname(); h.GetPath() != "^/v2" || h.GetService() != "https://localhost:8443" || !h.GetHasOriginSettings() {
 		t.Fatalf("updated = %+v", h)
 	}
-	if _, err := f.srv.UpdateCloudflareTunnelHostname(ctx, connect.NewRequest(&neoboxv1.UpdateCloudflareTunnelHostnameRequest{
+	if _, err := f.srv.UpdateCloudflareTunnelHostname(ctx, &neoboxv1.UpdateCloudflareTunnelHostnameRequest{
 		ConnectionId: conn, TunnelId: "t1", Hostname: "ghost.alpha.com", Service: "http://x:1",
-	})); connect.CodeOf(err) != connect.CodeNotFound {
+	}); connect.CodeOf(err) != connect.CodeNotFound {
 		t.Fatalf("update unknown = %v, want NotFound", err)
 	}
 
 	// Delete removes the route and, on request, the CNAME to this tunnel.
-	del, err := f.srv.DeleteCloudflareTunnelHostname(ctx, connect.NewRequest(&neoboxv1.DeleteCloudflareTunnelHostnameRequest{
+	del, err := f.srv.DeleteCloudflareTunnelHostname(ctx, &neoboxv1.DeleteCloudflareTunnelHostnameRequest{
 		ConnectionId: conn, TunnelId: "t1", Hostname: "app.alpha.com", DeleteDns: true,
-	}))
-	if err != nil || del.Msg.GetRecord().GetStatus() != neoboxv1.CloudflareTunnelRecordStatus_CLOUDFLARE_TUNNEL_RECORD_STATUS_DELETED {
+	})
+	if err != nil || del.GetRecord().GetStatus() != neoboxv1.CloudflareTunnelRecordStatus_CLOUDFLARE_TUNNEL_RECORD_STATUS_DELETED {
 		t.Fatalf("delete = %v, %v", del, err)
 	}
 	if routes, _ := tunnelRoutes(t, f, cfAccA, "t1"); routes["app.alpha.com"] != "" || len(routes) != 1 {
 		t.Fatalf("ingress after delete = %v", routes)
 	}
-	if f.cf.Record("za1", added.Msg.GetRecord().GetRecordId()) != nil {
+	if f.cf.Record("za1", added.GetRecord().GetRecordId()) != nil {
 		t.Fatal("the CNAME was not deleted")
 	}
 	// The catch-all and the other settings survive the last-but-one delete.
@@ -378,20 +378,20 @@ func TestCloudflareTunnelHostnameDNSOutcomes(t *testing.T) {
 
 	// A hostname in no zone of the account still gets its route.
 	r, err := f.addHostname(conn, "t1", "x.nowhere.org", "http://localhost:1", true)
-	if err != nil || r.Msg.GetRecord().GetStatus() != neoboxv1.CloudflareTunnelRecordStatus_CLOUDFLARE_TUNNEL_RECORD_STATUS_NO_ZONE ||
-		!strings.Contains(r.Msg.GetRecord().GetMessage(), "t1.cfargotunnel.com") {
+	if err != nil || r.GetRecord().GetStatus() != neoboxv1.CloudflareTunnelRecordStatus_CLOUDFLARE_TUNNEL_RECORD_STATUS_NO_ZONE ||
+		!strings.Contains(r.GetRecord().GetMessage(), "t1.cfargotunnel.com") {
 		t.Fatalf("no zone = %+v, %v", r, err)
 	}
 	// A zone of another account is not used even though the token sees it.
 	r, err = f.addHostname(conn, "t1", "x.other-account.com", "http://localhost:1", true)
-	if err != nil || r.Msg.GetRecord().GetStatus() != neoboxv1.CloudflareTunnelRecordStatus_CLOUDFLARE_TUNNEL_RECORD_STATUS_NO_ZONE || f.cf.RecordCount("zb1") != 0 {
+	if err != nil || r.GetRecord().GetStatus() != neoboxv1.CloudflareTunnelRecordStatus_CLOUDFLARE_TUNNEL_RECORD_STATUS_NO_ZONE || f.cf.RecordCount("zb1") != 0 {
 		t.Fatalf("foreign zone = %+v, %v", r, err)
 	}
 
 	// An existing record of another kind is never replaced.
 	other := f.cf.AddRecord("za1", map[string]any{"type": "A", "name": "web.alpha.com", "content": "192.0.2.1"})
 	r, err = f.addHostname(conn, "t1", "web.alpha.com", "http://localhost:1", true)
-	if err != nil || r.Msg.GetRecord().GetStatus() != neoboxv1.CloudflareTunnelRecordStatus_CLOUDFLARE_TUNNEL_RECORD_STATUS_CONFLICT {
+	if err != nil || r.GetRecord().GetStatus() != neoboxv1.CloudflareTunnelRecordStatus_CLOUDFLARE_TUNNEL_RECORD_STATUS_CONFLICT {
 		t.Fatalf("conflict = %+v, %v", r, err)
 	}
 	if rec := f.cf.Record("za1", other); rec == nil || rec["content"] != "192.0.2.1" {
@@ -402,10 +402,10 @@ func TestCloudflareTunnelHostnameDNSOutcomes(t *testing.T) {
 	}
 	// Deleting it with deleteDns leaves a record that is not a CNAME to
 	// this tunnel.
-	d, err := f.srv.DeleteCloudflareTunnelHostname(ctx, connect.NewRequest(&neoboxv1.DeleteCloudflareTunnelHostnameRequest{
+	d, err := f.srv.DeleteCloudflareTunnelHostname(ctx, &neoboxv1.DeleteCloudflareTunnelHostnameRequest{
 		ConnectionId: conn, TunnelId: "t1", Hostname: "web.alpha.com", DeleteDns: true,
-	}))
-	if err != nil || d.Msg.GetRecord().GetStatus() != neoboxv1.CloudflareTunnelRecordStatus_CLOUDFLARE_TUNNEL_RECORD_STATUS_KEPT || f.cf.Record("za1", other) == nil {
+	})
+	if err != nil || d.GetRecord().GetStatus() != neoboxv1.CloudflareTunnelRecordStatus_CLOUDFLARE_TUNNEL_RECORD_STATUS_KEPT || f.cf.Record("za1", other) == nil {
 		t.Fatalf("delete over an A record = %+v, %v", d, err)
 	}
 
@@ -415,7 +415,7 @@ func TestCloudflareTunnelHostnameDNSOutcomes(t *testing.T) {
 	f.cf.AddRecord("za1", map[string]any{"type": "CNAME", "name": "theirs.alpha.com", "content": "t2.cfargotunnel.com", "proxied": true})
 	writes := len(f.cf.Writes())
 	r, err = f.addHostname(conn, "t1", "mine.alpha.com", "http://localhost:1", true)
-	if err != nil || r.Msg.GetRecord().GetStatus() != neoboxv1.CloudflareTunnelRecordStatus_CLOUDFLARE_TUNNEL_RECORD_STATUS_EXISTS || r.Msg.GetRecord().GetRecordId() != own {
+	if err != nil || r.GetRecord().GetStatus() != neoboxv1.CloudflareTunnelRecordStatus_CLOUDFLARE_TUNNEL_RECORD_STATUS_EXISTS || r.GetRecord().GetRecordId() != own {
 		t.Fatalf("existing cname = %+v, %v", r, err)
 	}
 	for _, w := range f.cf.Writes()[writes:] {
@@ -424,12 +424,12 @@ func TestCloudflareTunnelHostnameDNSOutcomes(t *testing.T) {
 		}
 	}
 	r, err = f.addHostname(conn, "t1", "theirs.alpha.com", "http://localhost:1", true)
-	if err != nil || r.Msg.GetRecord().GetStatus() != neoboxv1.CloudflareTunnelRecordStatus_CLOUDFLARE_TUNNEL_RECORD_STATUS_CONFLICT {
+	if err != nil || r.GetRecord().GetStatus() != neoboxv1.CloudflareTunnelRecordStatus_CLOUDFLARE_TUNNEL_RECORD_STATUS_CONFLICT {
 		t.Fatalf("other tunnel's cname = %+v, %v", r, err)
 	}
-	if _, err := f.srv.DeleteCloudflareTunnelHostname(ctx, connect.NewRequest(&neoboxv1.DeleteCloudflareTunnelHostnameRequest{
+	if _, err := f.srv.DeleteCloudflareTunnelHostname(ctx, &neoboxv1.DeleteCloudflareTunnelHostnameRequest{
 		ConnectionId: conn, TunnelId: "t1", Hostname: "theirs.alpha.com", DeleteDns: true,
-	})); err != nil {
+	}); err != nil {
 		t.Fatal(err)
 	}
 	if n := f.cf.RecordCount("za1"); n != 3 { // A, mine, theirs
@@ -437,26 +437,26 @@ func TestCloudflareTunnelHostnameDNSOutcomes(t *testing.T) {
 	}
 
 	// Another route on the same hostname keeps its DNS record.
-	if _, err := f.srv.AddCloudflareTunnelHostname(ctx, connect.NewRequest(&neoboxv1.AddCloudflareTunnelHostnameRequest{
+	if _, err := f.srv.AddCloudflareTunnelHostname(ctx, &neoboxv1.AddCloudflareTunnelHostnameRequest{
 		ConnectionId: conn, TunnelId: "t1", Hostname: "mine.alpha.com", Path: "^/admin", Service: "http://localhost:2",
-	})); err != nil {
+	}); err != nil {
 		t.Fatal(err)
 	}
-	d, err = f.srv.DeleteCloudflareTunnelHostname(ctx, connect.NewRequest(&neoboxv1.DeleteCloudflareTunnelHostnameRequest{
+	d, err = f.srv.DeleteCloudflareTunnelHostname(ctx, &neoboxv1.DeleteCloudflareTunnelHostnameRequest{
 		ConnectionId: conn, TunnelId: "t1", Hostname: "mine.alpha.com", Path: "^/admin", DeleteDns: true,
-	}))
-	if err != nil || d.Msg.GetRecord().GetStatus() != neoboxv1.CloudflareTunnelRecordStatus_CLOUDFLARE_TUNNEL_RECORD_STATUS_KEPT || f.cf.Record("za1", own) == nil {
+	})
+	if err != nil || d.GetRecord().GetStatus() != neoboxv1.CloudflareTunnelRecordStatus_CLOUDFLARE_TUNNEL_RECORD_STATUS_KEPT || f.cf.Record("za1", own) == nil {
 		t.Fatalf("delete one of two routes = %+v, %v", d, err)
 	}
 
 	// Without DNS permission the route is saved and the problem reported.
 	f.cf.AddTunnel(cfAccA, &cftest.Tunnel{ID: "t3", Name: "nodns"})
 	noDNS := f.connect(t, "u1", cfAccA, "tunnel-no-dns")
-	r, err = f.srv.AddCloudflareTunnelHostname(ctx, connect.NewRequest(&neoboxv1.AddCloudflareTunnelHostnameRequest{
+	r, err = f.srv.AddCloudflareTunnelHostname(ctx, &neoboxv1.AddCloudflareTunnelHostnameRequest{
 		ConnectionId: noDNS, TunnelId: "t3", Hostname: "n.alpha.com", Service: "http://localhost:1", CreateDns: true,
-	}))
-	if err != nil || r.Msg.GetRecord().GetStatus() != neoboxv1.CloudflareTunnelRecordStatus_CLOUDFLARE_TUNNEL_RECORD_STATUS_FAILED ||
-		!strings.Contains(r.Msg.GetRecord().GetMessage(), "DNS Write") {
+	})
+	if err != nil || r.GetRecord().GetStatus() != neoboxv1.CloudflareTunnelRecordStatus_CLOUDFLARE_TUNNEL_RECORD_STATUS_FAILED ||
+		!strings.Contains(r.GetRecord().GetMessage(), "DNS Write") {
 		t.Fatalf("no dns permission = %+v, %v", r, err)
 	}
 	if routes, _ := tunnelRoutes(t, f, cfAccA, "t3"); routes["n.alpha.com"] == "" {
@@ -538,8 +538,8 @@ func TestCloudflareConnectionWithOnlyTunnelPermission(t *testing.T) {
 
 	// A token that only reads Tunnels reaches the account through them.
 	conn := f.connect(t, "u1", cfAccA, "tunnels-only")
-	list, err := f.srv.ListCloudflareTunnels(asUser("u1"), connect.NewRequest(&neoboxv1.ListCloudflareTunnelsRequest{ConnectionId: conn}))
-	if err != nil || len(list.Msg.GetTunnels()) != 1 {
+	list, err := f.srv.ListCloudflareTunnels(asUser("u1"), &neoboxv1.ListCloudflareTunnelsRequest{ConnectionId: conn})
+	if err != nil || len(list.GetTunnels()) != 1 {
 		t.Fatalf("list = %v, %v", list, err)
 	}
 	// ...but not an account it does not reach.

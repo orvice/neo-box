@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"butterfly.orx.me/core/log"
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -38,9 +38,9 @@ func (s *AuthServiceServer) SetOAuthStateRepo(r oauthstate.Repository) {
 	s.stateRepo = r
 }
 
-func (s *AuthServiceServer) ListOAuthProviders(_ context.Context, _ *connect.Request[neoboxv1.ListOAuthProvidersRequest]) (*connect.Response[neoboxv1.ListOAuthProvidersResponse], error) {
+func (s *AuthServiceServer) ListOAuthProviders(_ context.Context, _ *neoboxv1.ListOAuthProvidersRequest) (*neoboxv1.ListOAuthProvidersResponse, error) {
 	if s.providers == nil {
-		return connect.NewResponse(&neoboxv1.ListOAuthProvidersResponse{}), nil
+		return &neoboxv1.ListOAuthProvidersResponse{}, nil
 	}
 	list := s.providers.List()
 	out := make([]*neoboxv1.OAuthProvider, 0, len(list))
@@ -50,20 +50,20 @@ func (s *AuthServiceServer) ListOAuthProviders(_ context.Context, _ *connect.Req
 			DisplayName: p.DisplayName(),
 		})
 	}
-	return connect.NewResponse(&neoboxv1.ListOAuthProvidersResponse{Providers: out}), nil
+	return &neoboxv1.ListOAuthProvidersResponse{Providers: out}, nil
 }
 
-func (s *AuthServiceServer) BeginOAuthFlow(ctx context.Context, req *connect.Request[neoboxv1.BeginOAuthFlowRequest]) (*connect.Response[neoboxv1.BeginOAuthFlowResponse], error) {
+func (s *AuthServiceServer) BeginOAuthFlow(ctx context.Context, req *neoboxv1.BeginOAuthFlowRequest) (*neoboxv1.BeginOAuthFlowResponse, error) {
 	if s.providers == nil || s.stateRepo == nil {
-		return nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("oauth login not available"))
+		return nil, connect.NewError(connect.CodeFailedPrecondition, "oauth login not available")
 	}
-	name := strings.TrimSpace(req.Msg.GetProvider())
+	name := strings.TrimSpace(req.GetProvider())
 	if name == "" {
-		return nil, connectx.RequiredArgument("provider")
+		return nil, connectx.RequiredArgument(ctx, "provider")
 	}
 	p, err := s.providers.Get(name)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeNotFound, errors.New("unknown oauth provider"))
+		return nil, connect.NewError(connect.CodeNotFound, "unknown oauth provider")
 	}
 	state, err := generateOAuthState()
 	if err != nil {
@@ -73,63 +73,63 @@ func (s *AuthServiceServer) BeginOAuthFlow(ctx context.Context, req *connect.Req
 	entry := &oauthstate.Entry{
 		State:       state,
 		Provider:    name,
-		RedirectURI: strings.TrimSpace(req.Msg.GetRedirectUri()),
+		RedirectURI: strings.TrimSpace(req.GetRedirectUri()),
 		CreatedAt:   now,
 		ExpiresAt:   now.Add(oauthStateTTL),
 	}
 	if err := s.stateRepo.Create(ctx, entry); err != nil {
 		return nil, connectx.InternalWith(err)
 	}
-	return connect.NewResponse(&neoboxv1.BeginOAuthFlowResponse{
+	return &neoboxv1.BeginOAuthFlowResponse{
 		AuthorizeUrl: p.AuthorizeURL(state),
 		State:        state,
-	}), nil
+	}, nil
 }
 
-func (s *AuthServiceServer) CompleteOAuthFlow(ctx context.Context, req *connect.Request[neoboxv1.CompleteOAuthFlowRequest]) (*connect.Response[neoboxv1.CompleteOAuthFlowResponse], error) {
+func (s *AuthServiceServer) CompleteOAuthFlow(ctx context.Context, req *neoboxv1.CompleteOAuthFlowRequest) (*neoboxv1.CompleteOAuthFlowResponse, error) {
 	logger := log.FromContext(ctx)
 	if s.repo == nil {
-		return nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("auth store not available"))
+		return nil, connect.NewError(connect.CodeFailedPrecondition, "auth store not available")
 	}
 	if s.providers == nil || s.stateRepo == nil {
-		return nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("oauth login not available"))
+		return nil, connect.NewError(connect.CodeFailedPrecondition, "oauth login not available")
 	}
-	name := strings.TrimSpace(req.Msg.GetProvider())
+	name := strings.TrimSpace(req.GetProvider())
 	if name == "" {
-		return nil, connectx.RequiredArgument("provider")
+		return nil, connectx.RequiredArgument(ctx, "provider")
 	}
-	code := strings.TrimSpace(req.Msg.GetCode())
-	state := strings.TrimSpace(req.Msg.GetState())
+	code := strings.TrimSpace(req.GetCode())
+	state := strings.TrimSpace(req.GetState())
 	if code == "" {
-		return nil, connectx.RequiredArgument("code")
+		return nil, connectx.RequiredArgument(ctx, "code")
 	}
 	if state == "" {
-		return nil, connectx.RequiredArgument("state")
+		return nil, connectx.RequiredArgument(ctx, "state")
 	}
 
 	entry, err := s.stateRepo.Consume(ctx, state, time.Now().UTC())
 	if err != nil {
 		if errors.Is(err, oauthstate.ErrNotFound) {
-			return nil, connect.NewError(connect.CodePermissionDenied, errors.New("invalid or expired state"))
+			return nil, connect.NewError(connect.CodePermissionDenied, "invalid or expired state")
 		}
 		return nil, connectx.InternalWith(err)
 	}
 	if entry.Provider != name {
-		return nil, connect.NewError(connect.CodePermissionDenied, errors.New("state provider mismatch"))
+		return nil, connect.NewError(connect.CodePermissionDenied, "state provider mismatch")
 	}
 
 	p, err := s.providers.Get(name)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeNotFound, errors.New("unknown oauth provider"))
+		return nil, connect.NewError(connect.CodeNotFound, "unknown oauth provider")
 	}
 
 	claims, err := p.Exchange(ctx, code)
 	if err != nil {
 		logger.Error("oauth exchange failed", "provider", name, "err", err)
-		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("oauth code exchange failed"))
+		return nil, connect.NewError(connect.CodeUnauthenticated, "oauth code exchange failed")
 	}
 	if claims == nil || claims.ExternalID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("oauth provider returned no identity"))
+		return nil, connect.NewError(connect.CodeUnauthenticated, "oauth provider returned no identity")
 	}
 
 	user, err := s.upsertOAuthUser(ctx, name, claims)
@@ -137,7 +137,7 @@ func (s *AuthServiceServer) CompleteOAuthFlow(ctx context.Context, req *connect.
 		return nil, err
 	}
 	if user.GetDisabled() {
-		return nil, connect.NewError(connect.CodePermissionDenied, errors.New("user disabled"))
+		return nil, connect.NewError(connect.CodePermissionDenied, "user disabled")
 	}
 
 	secret, err := generateSessionSecret()
@@ -163,11 +163,11 @@ func (s *AuthServiceServer) CompleteOAuthFlow(ctx context.Context, req *connect.
 		"username", user.GetUsername(),
 		"session_id", session.ID,
 	)
-	return connect.NewResponse(&neoboxv1.CompleteOAuthFlowResponse{
+	return &neoboxv1.CompleteOAuthFlowResponse{
 		Token:     secret,
 		User:      user,
 		ExpiresAt: timestamppb.New(expiresAt),
-	}), nil
+	}, nil
 }
 
 // upsertOAuthUser returns the existing user for (provider, externalID) or

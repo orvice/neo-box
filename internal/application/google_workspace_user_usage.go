@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"connectrpc.com/connect"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	"go.orx.me/apps/neo-box/internal/transport/connectx"
 	neoboxv1 "go.orx.me/apps/neo-box/pkg/proto/neobox/v1"
@@ -21,17 +20,17 @@ const (
 // GetWorkspaceUserUsage reads one user's storage and Gmail counts per day from
 // Google's usage reports. These are aggregates; the mailbox itself is never
 // opened, so no access reason is asked for and nothing is logged.
-func (s *GoogleWorkspaceServiceServer) GetWorkspaceUserUsage(ctx context.Context, req *connect.Request[neoboxv1.GetWorkspaceUserUsageRequest]) (*connect.Response[neoboxv1.GetWorkspaceUserUsageResponse], error) {
-	in := req.Msg
+func (s *GoogleWorkspaceServiceServer) GetWorkspaceUserUsage(ctx context.Context, req *neoboxv1.GetWorkspaceUserUsageRequest) (*neoboxv1.GetWorkspaceUserUsageResponse, error) {
+	in := req
 	if strings.TrimSpace(in.GetUserId()) == "" {
-		return nil, connectx.RequiredArgument("user_id")
+		return nil, connectx.RequiredArgument(ctx, "user_id")
 	}
 	days := int(in.GetDays())
 	if days == 0 {
 		days = defaultUserUsageDays
 	}
 	if days < 1 || days > maxUserUsageDays {
-		return nil, connectx.InvalidArgument("days", "must be between 1 and 30")
+		return nil, connectx.InvalidArgument(ctx, "days", "must be between 1 and 30")
 	}
 	_, _, api, err := s.open(ctx, in.GetConnectionId(), in.GetTenantId(), googleworkspace.UsageScope)
 	if err != nil {
@@ -42,13 +41,13 @@ func (s *GoogleWorkspaceServiceServer) GetWorkspaceUserUsage(ctx context.Context
 	// email the report is keyed by.
 	u, err := api.GetUser(ctx, strings.TrimSpace(in.GetUserId()))
 	if err != nil {
-		return nil, mapWorkspaceErr(err)
+		return nil, mapWorkspaceErr(ctx, err)
 	}
 	readCtx, cancel := context.WithTimeout(ctx, userUsageTimeout)
 	defer cancel()
 	usage, err := api.ReadUserUsage(readCtx, u.PrimaryEmail, time.Now().UTC(), days)
 	if err != nil {
-		return nil, mapWorkspaceFeatureErr(err, googleworkspace.UsageScope)
+		return nil, mapWorkspaceFeatureErr(ctx, err, googleworkspace.UsageScope)
 	}
 	out := &neoboxv1.GetWorkspaceUserUsageResponse{UserEmail: u.PrimaryEmail, DaysRequested: int32(days)}
 	for _, d := range usage.Days {
@@ -58,5 +57,5 @@ func (s *GoogleWorkspaceServiceServer) GetWorkspaceUserUsage(ctx context.Context
 			EmailsReceived: d.EmailsReceived, EmailsSent: d.EmailsSent, SpamReceived: d.SpamRecvd,
 		})
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }

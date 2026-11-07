@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"sync/atomic"
 
+	"connectrpc.com/connect/v2"
+	"connectrpc.com/connect/v2/connecthttp"
 	"github.com/gin-gonic/gin"
 
 	"go.orx.me/apps/neo-box/internal/application"
@@ -70,25 +72,40 @@ func (s *snapshotContent) OpenContent(ctx *gin.Context, snap *nocodbrepo.Snapsho
 
 // SetupRoutes builds the Gin router and the handler set that Bootstrap wires.
 func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
-	// Every Connect handler shares the same option set (snake_case JSON).
-	connectOpts := connectx.HandlerOptions()
-
 	// Session TTL is read from cfg in Bootstrap, after YAML is loaded.
 	authSvcServer := application.NewAuthServiceServer(nil, 0)
-	authConnectPath, authConnectHandler := neoboxv1connect.NewAuthServiceHandler(authSvcServer, connectOpts...)
 	connectionSvcServer := application.NewConnectionServiceServer()
-	connectionConnectPath, connectionConnectHandler := neoboxv1connect.NewConnectionServiceHandler(connectionSvcServer, connectOpts...)
 	nocodbSvcServer := application.NewNocoDBServiceServer()
-	nocodbConnectPath, nocodbConnectHandler := neoboxv1connect.NewNocoDBServiceHandler(nocodbSvcServer, connectOpts...)
 	wasabiSvcServer := application.NewWasabiServiceServer()
-	wasabiConnectPath, wasabiConnectHandler := neoboxv1connect.NewWasabiServiceHandler(wasabiSvcServer, connectOpts...)
 	cloudflareSvcServer := application.NewCloudflareServiceServer()
-	cloudflareConnectPath, cloudflareConnectHandler := neoboxv1connect.NewCloudflareServiceHandler(cloudflareSvcServer, connectOpts...)
 	workspaceSvcServer := application.NewGoogleWorkspaceServiceServer()
-	workspaceConnectPath, workspaceConnectHandler := neoboxv1connect.NewGoogleWorkspaceServiceHandler(workspaceSvcServer, connectOpts...)
-
 	notifySvcServer := application.NewNotificationServiceServer()
-	notifyConnectPath, notifyConnectHandler := neoboxv1connect.NewNotificationServiceHandler(notifySvcServer, connectOpts...)
+
+	// One Connect server serves every service: HTTP options (codecs, read
+	// limits) are applied once when the server is mounted on a mux.
+	server := connect.NewServer()
+	neoboxv1connect.RegisterAuthServiceHandler(server, authSvcServer)
+	neoboxv1connect.RegisterConnectionServiceHandler(server, connectionSvcServer)
+	neoboxv1connect.RegisterNocoDBServiceHandler(server, nocodbSvcServer)
+	neoboxv1connect.RegisterWasabiServiceHandler(server, wasabiSvcServer)
+	neoboxv1connect.RegisterCloudflareServiceHandler(server, cloudflareSvcServer)
+	neoboxv1connect.RegisterGoogleWorkspaceServiceHandler(server, workspaceSvcServer)
+	neoboxv1connect.RegisterNotificationServiceHandler(server, notifySvcServer)
+
+	// RPCs keep their /api/neobox.v1.<Service>/<Method> paths: Gin matches the
+	// service prefix, strips /api, and the inner mux dispatches the procedure.
+	apiMux := http.NewServeMux()
+	connecthttp.Mount(apiMux, server, connectx.HandlerOptions()...)
+	apiHandler := http.StripPrefix("/api", apiMux)
+	servicePrefixes := []string{
+		neoboxv1connect.AuthServiceName,
+		neoboxv1connect.ConnectionServiceName,
+		neoboxv1connect.NocoDBServiceName,
+		neoboxv1connect.WasabiServiceName,
+		neoboxv1connect.CloudflareServiceName,
+		neoboxv1connect.GoogleWorkspaceServiceName,
+		neoboxv1connect.NotificationServiceName,
+	}
 
 	handlers := &Handlers{
 		cfg:                 cfg,
@@ -106,14 +123,11 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 		httpHandler.RegisterHealth(r)
 		httpHandler.RegisterSnapshotDownload(r, handlers.snapshotContentFromHolder)
 
-		r.Any("/api"+authConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", authConnectHandler)))
-		r.Any("/api"+connectionConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", connectionConnectHandler)))
-		r.Any("/api"+nocodbConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", nocodbConnectHandler)))
-		r.Any("/api"+wasabiConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", wasabiConnectHandler)))
-		r.Any("/api"+cloudflareConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", cloudflareConnectHandler)))
-		r.Any("/api"+workspaceConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", workspaceConnectHandler)))
-
-		r.Any("/api"+notifyConnectPath+"*path", gin.WrapH(http.StripPrefix("/api", notifyConnectHandler)))
+		// Only the RPC service prefixes go to the Connect mux; other /api
+		// routes (health, snapshot download) keep their own Gin handlers.
+		for _, name := range servicePrefixes {
+			r.Any("/api/"+name+"/*path", gin.WrapH(apiHandler))
+		}
 	}
 
 	return router, handlers

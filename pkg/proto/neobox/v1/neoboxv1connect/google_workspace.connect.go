@@ -5,1433 +5,1769 @@
 package neoboxv1connect
 
 import (
-	connect "connectrpc.com/connect"
+	connect "connectrpc.com/connect/v2"
 	context "context"
-	errors "errors"
 	v1 "go.orx.me/apps/neo-box/pkg/proto/neobox/v1"
-	http "net/http"
-	strings "strings"
+	sync "sync"
 )
-
-// This is a compile-time assertion to ensure that this generated file and the connect package are
-// compatible. If you get a compiler error that this constant is not defined, this code was
-// generated with a version of connect newer than the one compiled into your binary. You can fix the
-// problem by either regenerating this code with an older version of connect or updating the connect
-// version compiled into your binary.
-const _ = connect.IsAtLeastVersion1_13_0
 
 const (
 	// GoogleWorkspaceServiceName is the fully-qualified name of the GoogleWorkspaceService service.
 	GoogleWorkspaceServiceName = "neobox.v1.GoogleWorkspaceService"
 )
 
-// These constants are the fully-qualified names of the RPCs defined in this package. They're
-// exposed at runtime as Spec.Procedure and as the final two segments of the HTTP route.
+// These constants are the procedure names of the RPCs defined in this package. They're exposed at
+// runtime as Spec.Procedure and as the final two segments of the HTTP route.
 //
 // Note that these are different from the fully-qualified method names used by
 // google.golang.org/protobuf/reflect/protoreflect. To convert from these constants to
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// GoogleWorkspaceServiceListWorkspaceTenantsProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceListWorkspaceTenantsProcedure is the procedure name of the
 	// GoogleWorkspaceService's ListWorkspaceTenants RPC.
 	GoogleWorkspaceServiceListWorkspaceTenantsProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceTenants"
-	// GoogleWorkspaceServiceCreateWorkspaceTenantProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceCreateWorkspaceTenantProcedure is the procedure name of the
 	// GoogleWorkspaceService's CreateWorkspaceTenant RPC.
 	GoogleWorkspaceServiceCreateWorkspaceTenantProcedure = "/neobox.v1.GoogleWorkspaceService/CreateWorkspaceTenant"
-	// GoogleWorkspaceServiceUpdateWorkspaceTenantProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceUpdateWorkspaceTenantProcedure is the procedure name of the
 	// GoogleWorkspaceService's UpdateWorkspaceTenant RPC.
 	GoogleWorkspaceServiceUpdateWorkspaceTenantProcedure = "/neobox.v1.GoogleWorkspaceService/UpdateWorkspaceTenant"
-	// GoogleWorkspaceServiceDeleteWorkspaceTenantProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceDeleteWorkspaceTenantProcedure is the procedure name of the
 	// GoogleWorkspaceService's DeleteWorkspaceTenant RPC.
 	GoogleWorkspaceServiceDeleteWorkspaceTenantProcedure = "/neobox.v1.GoogleWorkspaceService/DeleteWorkspaceTenant"
-	// GoogleWorkspaceServiceTestWorkspaceTenantProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceTestWorkspaceTenantProcedure is the procedure name of the
 	// GoogleWorkspaceService's TestWorkspaceTenant RPC.
 	GoogleWorkspaceServiceTestWorkspaceTenantProcedure = "/neobox.v1.GoogleWorkspaceService/TestWorkspaceTenant"
-	// GoogleWorkspaceServiceListWorkspaceUsersProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceListWorkspaceUsersProcedure is the procedure name of the
 	// GoogleWorkspaceService's ListWorkspaceUsers RPC.
 	GoogleWorkspaceServiceListWorkspaceUsersProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceUsers"
-	// GoogleWorkspaceServiceGetWorkspaceUserProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceGetWorkspaceUserProcedure is the procedure name of the
 	// GoogleWorkspaceService's GetWorkspaceUser RPC.
 	GoogleWorkspaceServiceGetWorkspaceUserProcedure = "/neobox.v1.GoogleWorkspaceService/GetWorkspaceUser"
-	// GoogleWorkspaceServiceCreateWorkspaceUserProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceCreateWorkspaceUserProcedure is the procedure name of the
 	// GoogleWorkspaceService's CreateWorkspaceUser RPC.
 	GoogleWorkspaceServiceCreateWorkspaceUserProcedure = "/neobox.v1.GoogleWorkspaceService/CreateWorkspaceUser"
-	// GoogleWorkspaceServiceUpdateWorkspaceUserProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceUpdateWorkspaceUserProcedure is the procedure name of the
 	// GoogleWorkspaceService's UpdateWorkspaceUser RPC.
 	GoogleWorkspaceServiceUpdateWorkspaceUserProcedure = "/neobox.v1.GoogleWorkspaceService/UpdateWorkspaceUser"
-	// GoogleWorkspaceServiceResetWorkspaceUserPasswordProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceResetWorkspaceUserPasswordProcedure is the procedure name of the
 	// GoogleWorkspaceService's ResetWorkspaceUserPassword RPC.
 	GoogleWorkspaceServiceResetWorkspaceUserPasswordProcedure = "/neobox.v1.GoogleWorkspaceService/ResetWorkspaceUserPassword"
-	// GoogleWorkspaceServiceSetWorkspaceUserSuspendedProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceSetWorkspaceUserSuspendedProcedure is the procedure name of the
 	// GoogleWorkspaceService's SetWorkspaceUserSuspended RPC.
 	GoogleWorkspaceServiceSetWorkspaceUserSuspendedProcedure = "/neobox.v1.GoogleWorkspaceService/SetWorkspaceUserSuspended"
-	// GoogleWorkspaceServiceListWorkspaceUserAliasesProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceListWorkspaceUserAliasesProcedure is the procedure name of the
 	// GoogleWorkspaceService's ListWorkspaceUserAliases RPC.
 	GoogleWorkspaceServiceListWorkspaceUserAliasesProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceUserAliases"
-	// GoogleWorkspaceServiceAddWorkspaceUserAliasProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceAddWorkspaceUserAliasProcedure is the procedure name of the
 	// GoogleWorkspaceService's AddWorkspaceUserAlias RPC.
 	GoogleWorkspaceServiceAddWorkspaceUserAliasProcedure = "/neobox.v1.GoogleWorkspaceService/AddWorkspaceUserAlias"
-	// GoogleWorkspaceServiceDeleteWorkspaceUserAliasProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceDeleteWorkspaceUserAliasProcedure is the procedure name of the
 	// GoogleWorkspaceService's DeleteWorkspaceUserAlias RPC.
 	GoogleWorkspaceServiceDeleteWorkspaceUserAliasProcedure = "/neobox.v1.GoogleWorkspaceService/DeleteWorkspaceUserAlias"
-	// GoogleWorkspaceServiceListWorkspaceGroupsProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceListWorkspaceGroupsProcedure is the procedure name of the
 	// GoogleWorkspaceService's ListWorkspaceGroups RPC.
 	GoogleWorkspaceServiceListWorkspaceGroupsProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceGroups"
-	// GoogleWorkspaceServiceListWorkspaceUserGroupsProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceListWorkspaceUserGroupsProcedure is the procedure name of the
 	// GoogleWorkspaceService's ListWorkspaceUserGroups RPC.
 	GoogleWorkspaceServiceListWorkspaceUserGroupsProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceUserGroups"
-	// GoogleWorkspaceServiceCreateWorkspaceGroupProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceCreateWorkspaceGroupProcedure is the procedure name of the
 	// GoogleWorkspaceService's CreateWorkspaceGroup RPC.
 	GoogleWorkspaceServiceCreateWorkspaceGroupProcedure = "/neobox.v1.GoogleWorkspaceService/CreateWorkspaceGroup"
-	// GoogleWorkspaceServiceUpdateWorkspaceGroupProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceUpdateWorkspaceGroupProcedure is the procedure name of the
 	// GoogleWorkspaceService's UpdateWorkspaceGroup RPC.
 	GoogleWorkspaceServiceUpdateWorkspaceGroupProcedure = "/neobox.v1.GoogleWorkspaceService/UpdateWorkspaceGroup"
-	// GoogleWorkspaceServiceDeleteWorkspaceGroupProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceDeleteWorkspaceGroupProcedure is the procedure name of the
 	// GoogleWorkspaceService's DeleteWorkspaceGroup RPC.
 	GoogleWorkspaceServiceDeleteWorkspaceGroupProcedure = "/neobox.v1.GoogleWorkspaceService/DeleteWorkspaceGroup"
-	// GoogleWorkspaceServiceListWorkspaceGroupMembersProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceListWorkspaceGroupMembersProcedure is the procedure name of the
 	// GoogleWorkspaceService's ListWorkspaceGroupMembers RPC.
 	GoogleWorkspaceServiceListWorkspaceGroupMembersProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceGroupMembers"
-	// GoogleWorkspaceServiceAddWorkspaceGroupMemberProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceAddWorkspaceGroupMemberProcedure is the procedure name of the
 	// GoogleWorkspaceService's AddWorkspaceGroupMember RPC.
 	GoogleWorkspaceServiceAddWorkspaceGroupMemberProcedure = "/neobox.v1.GoogleWorkspaceService/AddWorkspaceGroupMember"
-	// GoogleWorkspaceServiceUpdateWorkspaceGroupMemberProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceUpdateWorkspaceGroupMemberProcedure is the procedure name of the
 	// GoogleWorkspaceService's UpdateWorkspaceGroupMember RPC.
 	GoogleWorkspaceServiceUpdateWorkspaceGroupMemberProcedure = "/neobox.v1.GoogleWorkspaceService/UpdateWorkspaceGroupMember"
-	// GoogleWorkspaceServiceDeleteWorkspaceGroupMemberProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceDeleteWorkspaceGroupMemberProcedure is the procedure name of the
 	// GoogleWorkspaceService's DeleteWorkspaceGroupMember RPC.
 	GoogleWorkspaceServiceDeleteWorkspaceGroupMemberProcedure = "/neobox.v1.GoogleWorkspaceService/DeleteWorkspaceGroupMember"
-	// GoogleWorkspaceServiceListWorkspaceOrgUnitsProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceListWorkspaceOrgUnitsProcedure is the procedure name of the
 	// GoogleWorkspaceService's ListWorkspaceOrgUnits RPC.
 	GoogleWorkspaceServiceListWorkspaceOrgUnitsProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceOrgUnits"
-	// GoogleWorkspaceServiceCreateWorkspaceOrgUnitProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceCreateWorkspaceOrgUnitProcedure is the procedure name of the
 	// GoogleWorkspaceService's CreateWorkspaceOrgUnit RPC.
 	GoogleWorkspaceServiceCreateWorkspaceOrgUnitProcedure = "/neobox.v1.GoogleWorkspaceService/CreateWorkspaceOrgUnit"
-	// GoogleWorkspaceServiceUpdateWorkspaceOrgUnitProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceUpdateWorkspaceOrgUnitProcedure is the procedure name of the
 	// GoogleWorkspaceService's UpdateWorkspaceOrgUnit RPC.
 	GoogleWorkspaceServiceUpdateWorkspaceOrgUnitProcedure = "/neobox.v1.GoogleWorkspaceService/UpdateWorkspaceOrgUnit"
-	// GoogleWorkspaceServiceDeleteWorkspaceOrgUnitProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceDeleteWorkspaceOrgUnitProcedure is the procedure name of the
 	// GoogleWorkspaceService's DeleteWorkspaceOrgUnit RPC.
 	GoogleWorkspaceServiceDeleteWorkspaceOrgUnitProcedure = "/neobox.v1.GoogleWorkspaceService/DeleteWorkspaceOrgUnit"
-	// GoogleWorkspaceServiceSignOutWorkspaceUserProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceSignOutWorkspaceUserProcedure is the procedure name of the
 	// GoogleWorkspaceService's SignOutWorkspaceUser RPC.
 	GoogleWorkspaceServiceSignOutWorkspaceUserProcedure = "/neobox.v1.GoogleWorkspaceService/SignOutWorkspaceUser"
-	// GoogleWorkspaceServiceListWorkspaceUserTokensProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceListWorkspaceUserTokensProcedure is the procedure name of the
 	// GoogleWorkspaceService's ListWorkspaceUserTokens RPC.
 	GoogleWorkspaceServiceListWorkspaceUserTokensProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceUserTokens"
-	// GoogleWorkspaceServiceRevokeWorkspaceUserTokenProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceRevokeWorkspaceUserTokenProcedure is the procedure name of the
 	// GoogleWorkspaceService's RevokeWorkspaceUserToken RPC.
 	GoogleWorkspaceServiceRevokeWorkspaceUserTokenProcedure = "/neobox.v1.GoogleWorkspaceService/RevokeWorkspaceUserToken"
-	// GoogleWorkspaceServiceListWorkspaceOperationsProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceListWorkspaceOperationsProcedure is the procedure name of the
 	// GoogleWorkspaceService's ListWorkspaceOperations RPC.
 	GoogleWorkspaceServiceListWorkspaceOperationsProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceOperations"
-	// GoogleWorkspaceServiceGetWorkspaceOverviewProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceGetWorkspaceOverviewProcedure is the procedure name of the
 	// GoogleWorkspaceService's GetWorkspaceOverview RPC.
 	GoogleWorkspaceServiceGetWorkspaceOverviewProcedure = "/neobox.v1.GoogleWorkspaceService/GetWorkspaceOverview"
-	// GoogleWorkspaceServiceListWorkspaceAuditActivitiesProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceListWorkspaceAuditActivitiesProcedure is the procedure name of the
 	// GoogleWorkspaceService's ListWorkspaceAuditActivities RPC.
 	GoogleWorkspaceServiceListWorkspaceAuditActivitiesProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceAuditActivities"
-	// GoogleWorkspaceServiceGetWorkspaceUserGmailSettingsProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceGetWorkspaceUserGmailSettingsProcedure is the procedure name of the
 	// GoogleWorkspaceService's GetWorkspaceUserGmailSettings RPC.
 	GoogleWorkspaceServiceGetWorkspaceUserGmailSettingsProcedure = "/neobox.v1.GoogleWorkspaceService/GetWorkspaceUserGmailSettings"
-	// GoogleWorkspaceServiceUpdateWorkspaceUserGmailVacationProcedure is the fully-qualified name of
-	// the GoogleWorkspaceService's UpdateWorkspaceUserGmailVacation RPC.
+	// GoogleWorkspaceServiceUpdateWorkspaceUserGmailVacationProcedure is the procedure name of the
+	// GoogleWorkspaceService's UpdateWorkspaceUserGmailVacation RPC.
 	GoogleWorkspaceServiceUpdateWorkspaceUserGmailVacationProcedure = "/neobox.v1.GoogleWorkspaceService/UpdateWorkspaceUserGmailVacation"
-	// GoogleWorkspaceServiceListWorkspaceUserGmailLabelsProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceListWorkspaceUserGmailLabelsProcedure is the procedure name of the
 	// GoogleWorkspaceService's ListWorkspaceUserGmailLabels RPC.
 	GoogleWorkspaceServiceListWorkspaceUserGmailLabelsProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceUserGmailLabels"
-	// GoogleWorkspaceServiceSearchWorkspaceUserGmailMessagesProcedure is the fully-qualified name of
-	// the GoogleWorkspaceService's SearchWorkspaceUserGmailMessages RPC.
+	// GoogleWorkspaceServiceSearchWorkspaceUserGmailMessagesProcedure is the procedure name of the
+	// GoogleWorkspaceService's SearchWorkspaceUserGmailMessages RPC.
 	GoogleWorkspaceServiceSearchWorkspaceUserGmailMessagesProcedure = "/neobox.v1.GoogleWorkspaceService/SearchWorkspaceUserGmailMessages"
-	// GoogleWorkspaceServiceGetWorkspaceUserGmailMessageProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceGetWorkspaceUserGmailMessageProcedure is the procedure name of the
 	// GoogleWorkspaceService's GetWorkspaceUserGmailMessage RPC.
 	GoogleWorkspaceServiceGetWorkspaceUserGmailMessageProcedure = "/neobox.v1.GoogleWorkspaceService/GetWorkspaceUserGmailMessage"
-	// GoogleWorkspaceServiceDownloadWorkspaceUserGmailAttachmentProcedure is the fully-qualified name
-	// of the GoogleWorkspaceService's DownloadWorkspaceUserGmailAttachment RPC.
+	// GoogleWorkspaceServiceDownloadWorkspaceUserGmailAttachmentProcedure is the procedure name of the
+	// GoogleWorkspaceService's DownloadWorkspaceUserGmailAttachment RPC.
 	GoogleWorkspaceServiceDownloadWorkspaceUserGmailAttachmentProcedure = "/neobox.v1.GoogleWorkspaceService/DownloadWorkspaceUserGmailAttachment"
-	// GoogleWorkspaceServiceListWorkspaceDriveActivitiesProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceListWorkspaceDriveActivitiesProcedure is the procedure name of the
 	// GoogleWorkspaceService's ListWorkspaceDriveActivities RPC.
 	GoogleWorkspaceServiceListWorkspaceDriveActivitiesProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceDriveActivities"
-	// GoogleWorkspaceServiceListWorkspaceDriveUsageProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceListWorkspaceDriveUsageProcedure is the procedure name of the
 	// GoogleWorkspaceService's ListWorkspaceDriveUsage RPC.
 	GoogleWorkspaceServiceListWorkspaceDriveUsageProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceDriveUsage"
-	// GoogleWorkspaceServiceListWorkspaceSharedDrivesProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceListWorkspaceSharedDrivesProcedure is the procedure name of the
 	// GoogleWorkspaceService's ListWorkspaceSharedDrives RPC.
 	GoogleWorkspaceServiceListWorkspaceSharedDrivesProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceSharedDrives"
-	// GoogleWorkspaceServiceListWorkspaceUserExposedFilesProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceListWorkspaceUserExposedFilesProcedure is the procedure name of the
 	// GoogleWorkspaceService's ListWorkspaceUserExposedFiles RPC.
 	GoogleWorkspaceServiceListWorkspaceUserExposedFilesProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceUserExposedFiles"
-	// GoogleWorkspaceServiceGetWorkspaceUserUsageProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceGetWorkspaceUserUsageProcedure is the procedure name of the
 	// GoogleWorkspaceService's GetWorkspaceUserUsage RPC.
 	GoogleWorkspaceServiceGetWorkspaceUserUsageProcedure = "/neobox.v1.GoogleWorkspaceService/GetWorkspaceUserUsage"
-	// GoogleWorkspaceServiceListWorkspaceStorageUsageProcedure is the fully-qualified name of the
+	// GoogleWorkspaceServiceListWorkspaceStorageUsageProcedure is the procedure name of the
 	// GoogleWorkspaceService's ListWorkspaceStorageUsage RPC.
 	GoogleWorkspaceServiceListWorkspaceStorageUsageProcedure = "/neobox.v1.GoogleWorkspaceService/ListWorkspaceStorageUsage"
 )
 
+var (
+	googleWorkspaceServiceListWorkspaceTenantsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("ListWorkspaceTenants"),
+			Procedure:  GoogleWorkspaceServiceListWorkspaceTenantsProcedure,
+		}
+	})
+	googleWorkspaceServiceCreateWorkspaceTenantSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("CreateWorkspaceTenant"),
+			Procedure:  GoogleWorkspaceServiceCreateWorkspaceTenantProcedure,
+		}
+	})
+	googleWorkspaceServiceUpdateWorkspaceTenantSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("UpdateWorkspaceTenant"),
+			Procedure:  GoogleWorkspaceServiceUpdateWorkspaceTenantProcedure,
+		}
+	})
+	googleWorkspaceServiceDeleteWorkspaceTenantSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("DeleteWorkspaceTenant"),
+			Procedure:  GoogleWorkspaceServiceDeleteWorkspaceTenantProcedure,
+		}
+	})
+	googleWorkspaceServiceTestWorkspaceTenantSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("TestWorkspaceTenant"),
+			Procedure:  GoogleWorkspaceServiceTestWorkspaceTenantProcedure,
+		}
+	})
+	googleWorkspaceServiceListWorkspaceUsersSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("ListWorkspaceUsers"),
+			Procedure:  GoogleWorkspaceServiceListWorkspaceUsersProcedure,
+		}
+	})
+	googleWorkspaceServiceGetWorkspaceUserSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("GetWorkspaceUser"),
+			Procedure:  GoogleWorkspaceServiceGetWorkspaceUserProcedure,
+		}
+	})
+	googleWorkspaceServiceCreateWorkspaceUserSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("CreateWorkspaceUser"),
+			Procedure:  GoogleWorkspaceServiceCreateWorkspaceUserProcedure,
+		}
+	})
+	googleWorkspaceServiceUpdateWorkspaceUserSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("UpdateWorkspaceUser"),
+			Procedure:  GoogleWorkspaceServiceUpdateWorkspaceUserProcedure,
+		}
+	})
+	googleWorkspaceServiceResetWorkspaceUserPasswordSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("ResetWorkspaceUserPassword"),
+			Procedure:  GoogleWorkspaceServiceResetWorkspaceUserPasswordProcedure,
+		}
+	})
+	googleWorkspaceServiceSetWorkspaceUserSuspendedSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("SetWorkspaceUserSuspended"),
+			Procedure:  GoogleWorkspaceServiceSetWorkspaceUserSuspendedProcedure,
+		}
+	})
+	googleWorkspaceServiceListWorkspaceUserAliasesSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("ListWorkspaceUserAliases"),
+			Procedure:  GoogleWorkspaceServiceListWorkspaceUserAliasesProcedure,
+		}
+	})
+	googleWorkspaceServiceAddWorkspaceUserAliasSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("AddWorkspaceUserAlias"),
+			Procedure:  GoogleWorkspaceServiceAddWorkspaceUserAliasProcedure,
+		}
+	})
+	googleWorkspaceServiceDeleteWorkspaceUserAliasSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("DeleteWorkspaceUserAlias"),
+			Procedure:  GoogleWorkspaceServiceDeleteWorkspaceUserAliasProcedure,
+		}
+	})
+	googleWorkspaceServiceListWorkspaceGroupsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("ListWorkspaceGroups"),
+			Procedure:  GoogleWorkspaceServiceListWorkspaceGroupsProcedure,
+		}
+	})
+	googleWorkspaceServiceListWorkspaceUserGroupsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("ListWorkspaceUserGroups"),
+			Procedure:  GoogleWorkspaceServiceListWorkspaceUserGroupsProcedure,
+		}
+	})
+	googleWorkspaceServiceCreateWorkspaceGroupSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("CreateWorkspaceGroup"),
+			Procedure:  GoogleWorkspaceServiceCreateWorkspaceGroupProcedure,
+		}
+	})
+	googleWorkspaceServiceUpdateWorkspaceGroupSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("UpdateWorkspaceGroup"),
+			Procedure:  GoogleWorkspaceServiceUpdateWorkspaceGroupProcedure,
+		}
+	})
+	googleWorkspaceServiceDeleteWorkspaceGroupSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("DeleteWorkspaceGroup"),
+			Procedure:  GoogleWorkspaceServiceDeleteWorkspaceGroupProcedure,
+		}
+	})
+	googleWorkspaceServiceListWorkspaceGroupMembersSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("ListWorkspaceGroupMembers"),
+			Procedure:  GoogleWorkspaceServiceListWorkspaceGroupMembersProcedure,
+		}
+	})
+	googleWorkspaceServiceAddWorkspaceGroupMemberSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("AddWorkspaceGroupMember"),
+			Procedure:  GoogleWorkspaceServiceAddWorkspaceGroupMemberProcedure,
+		}
+	})
+	googleWorkspaceServiceUpdateWorkspaceGroupMemberSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("UpdateWorkspaceGroupMember"),
+			Procedure:  GoogleWorkspaceServiceUpdateWorkspaceGroupMemberProcedure,
+		}
+	})
+	googleWorkspaceServiceDeleteWorkspaceGroupMemberSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("DeleteWorkspaceGroupMember"),
+			Procedure:  GoogleWorkspaceServiceDeleteWorkspaceGroupMemberProcedure,
+		}
+	})
+	googleWorkspaceServiceListWorkspaceOrgUnitsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("ListWorkspaceOrgUnits"),
+			Procedure:  GoogleWorkspaceServiceListWorkspaceOrgUnitsProcedure,
+		}
+	})
+	googleWorkspaceServiceCreateWorkspaceOrgUnitSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("CreateWorkspaceOrgUnit"),
+			Procedure:  GoogleWorkspaceServiceCreateWorkspaceOrgUnitProcedure,
+		}
+	})
+	googleWorkspaceServiceUpdateWorkspaceOrgUnitSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("UpdateWorkspaceOrgUnit"),
+			Procedure:  GoogleWorkspaceServiceUpdateWorkspaceOrgUnitProcedure,
+		}
+	})
+	googleWorkspaceServiceDeleteWorkspaceOrgUnitSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("DeleteWorkspaceOrgUnit"),
+			Procedure:  GoogleWorkspaceServiceDeleteWorkspaceOrgUnitProcedure,
+		}
+	})
+	googleWorkspaceServiceSignOutWorkspaceUserSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("SignOutWorkspaceUser"),
+			Procedure:  GoogleWorkspaceServiceSignOutWorkspaceUserProcedure,
+		}
+	})
+	googleWorkspaceServiceListWorkspaceUserTokensSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("ListWorkspaceUserTokens"),
+			Procedure:  GoogleWorkspaceServiceListWorkspaceUserTokensProcedure,
+		}
+	})
+	googleWorkspaceServiceRevokeWorkspaceUserTokenSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("RevokeWorkspaceUserToken"),
+			Procedure:  GoogleWorkspaceServiceRevokeWorkspaceUserTokenProcedure,
+		}
+	})
+	googleWorkspaceServiceListWorkspaceOperationsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("ListWorkspaceOperations"),
+			Procedure:  GoogleWorkspaceServiceListWorkspaceOperationsProcedure,
+		}
+	})
+	googleWorkspaceServiceGetWorkspaceOverviewSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("GetWorkspaceOverview"),
+			Procedure:  GoogleWorkspaceServiceGetWorkspaceOverviewProcedure,
+		}
+	})
+	googleWorkspaceServiceListWorkspaceAuditActivitiesSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("ListWorkspaceAuditActivities"),
+			Procedure:  GoogleWorkspaceServiceListWorkspaceAuditActivitiesProcedure,
+		}
+	})
+	googleWorkspaceServiceGetWorkspaceUserGmailSettingsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("GetWorkspaceUserGmailSettings"),
+			Procedure:  GoogleWorkspaceServiceGetWorkspaceUserGmailSettingsProcedure,
+		}
+	})
+	googleWorkspaceServiceUpdateWorkspaceUserGmailVacationSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("UpdateWorkspaceUserGmailVacation"),
+			Procedure:  GoogleWorkspaceServiceUpdateWorkspaceUserGmailVacationProcedure,
+		}
+	})
+	googleWorkspaceServiceListWorkspaceUserGmailLabelsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("ListWorkspaceUserGmailLabels"),
+			Procedure:  GoogleWorkspaceServiceListWorkspaceUserGmailLabelsProcedure,
+		}
+	})
+	googleWorkspaceServiceSearchWorkspaceUserGmailMessagesSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("SearchWorkspaceUserGmailMessages"),
+			Procedure:  GoogleWorkspaceServiceSearchWorkspaceUserGmailMessagesProcedure,
+		}
+	})
+	googleWorkspaceServiceGetWorkspaceUserGmailMessageSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("GetWorkspaceUserGmailMessage"),
+			Procedure:  GoogleWorkspaceServiceGetWorkspaceUserGmailMessageProcedure,
+		}
+	})
+	googleWorkspaceServiceDownloadWorkspaceUserGmailAttachmentSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("DownloadWorkspaceUserGmailAttachment"),
+			Procedure:  GoogleWorkspaceServiceDownloadWorkspaceUserGmailAttachmentProcedure,
+		}
+	})
+	googleWorkspaceServiceListWorkspaceDriveActivitiesSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("ListWorkspaceDriveActivities"),
+			Procedure:  GoogleWorkspaceServiceListWorkspaceDriveActivitiesProcedure,
+		}
+	})
+	googleWorkspaceServiceListWorkspaceDriveUsageSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("ListWorkspaceDriveUsage"),
+			Procedure:  GoogleWorkspaceServiceListWorkspaceDriveUsageProcedure,
+		}
+	})
+	googleWorkspaceServiceListWorkspaceSharedDrivesSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("ListWorkspaceSharedDrives"),
+			Procedure:  GoogleWorkspaceServiceListWorkspaceSharedDrivesProcedure,
+		}
+	})
+	googleWorkspaceServiceListWorkspaceUserExposedFilesSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("ListWorkspaceUserExposedFiles"),
+			Procedure:  GoogleWorkspaceServiceListWorkspaceUserExposedFilesProcedure,
+		}
+	})
+	googleWorkspaceServiceGetWorkspaceUserUsageSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("GetWorkspaceUserUsage"),
+			Procedure:  GoogleWorkspaceServiceGetWorkspaceUserUsageProcedure,
+		}
+	})
+	googleWorkspaceServiceListWorkspaceStorageUsageSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods().ByName("ListWorkspaceStorageUsage"),
+			Procedure:  GoogleWorkspaceServiceListWorkspaceStorageUsageProcedure,
+		}
+	})
+)
+
 // GoogleWorkspaceServiceClient is a client for the neobox.v1.GoogleWorkspaceService service.
 type GoogleWorkspaceServiceClient interface {
-	ListWorkspaceTenants(context.Context, *connect.Request[v1.ListWorkspaceTenantsRequest]) (*connect.Response[v1.ListWorkspaceTenantsResponse], error)
-	CreateWorkspaceTenant(context.Context, *connect.Request[v1.CreateWorkspaceTenantRequest]) (*connect.Response[v1.CreateWorkspaceTenantResponse], error)
-	UpdateWorkspaceTenant(context.Context, *connect.Request[v1.UpdateWorkspaceTenantRequest]) (*connect.Response[v1.UpdateWorkspaceTenantResponse], error)
-	DeleteWorkspaceTenant(context.Context, *connect.Request[v1.DeleteWorkspaceTenantRequest]) (*connect.Response[v1.DeleteWorkspaceTenantResponse], error)
-	TestWorkspaceTenant(context.Context, *connect.Request[v1.TestWorkspaceTenantRequest]) (*connect.Response[v1.TestWorkspaceTenantResponse], error)
-	ListWorkspaceUsers(context.Context, *connect.Request[v1.ListWorkspaceUsersRequest]) (*connect.Response[v1.ListWorkspaceUsersResponse], error)
-	GetWorkspaceUser(context.Context, *connect.Request[v1.GetWorkspaceUserRequest]) (*connect.Response[v1.GetWorkspaceUserResponse], error)
-	CreateWorkspaceUser(context.Context, *connect.Request[v1.CreateWorkspaceUserRequest]) (*connect.Response[v1.CreateWorkspaceUserResponse], error)
-	UpdateWorkspaceUser(context.Context, *connect.Request[v1.UpdateWorkspaceUserRequest]) (*connect.Response[v1.UpdateWorkspaceUserResponse], error)
-	ResetWorkspaceUserPassword(context.Context, *connect.Request[v1.ResetWorkspaceUserPasswordRequest]) (*connect.Response[v1.ResetWorkspaceUserPasswordResponse], error)
-	SetWorkspaceUserSuspended(context.Context, *connect.Request[v1.SetWorkspaceUserSuspendedRequest]) (*connect.Response[v1.SetWorkspaceUserSuspendedResponse], error)
-	ListWorkspaceUserAliases(context.Context, *connect.Request[v1.ListWorkspaceUserAliasesRequest]) (*connect.Response[v1.ListWorkspaceUserAliasesResponse], error)
-	AddWorkspaceUserAlias(context.Context, *connect.Request[v1.AddWorkspaceUserAliasRequest]) (*connect.Response[v1.AddWorkspaceUserAliasResponse], error)
-	DeleteWorkspaceUserAlias(context.Context, *connect.Request[v1.DeleteWorkspaceUserAliasRequest]) (*connect.Response[v1.DeleteWorkspaceUserAliasResponse], error)
-	ListWorkspaceGroups(context.Context, *connect.Request[v1.ListWorkspaceGroupsRequest]) (*connect.Response[v1.ListWorkspaceGroupsResponse], error)
-	ListWorkspaceUserGroups(context.Context, *connect.Request[v1.ListWorkspaceUserGroupsRequest]) (*connect.Response[v1.ListWorkspaceUserGroupsResponse], error)
-	CreateWorkspaceGroup(context.Context, *connect.Request[v1.CreateWorkspaceGroupRequest]) (*connect.Response[v1.CreateWorkspaceGroupResponse], error)
-	UpdateWorkspaceGroup(context.Context, *connect.Request[v1.UpdateWorkspaceGroupRequest]) (*connect.Response[v1.UpdateWorkspaceGroupResponse], error)
-	DeleteWorkspaceGroup(context.Context, *connect.Request[v1.DeleteWorkspaceGroupRequest]) (*connect.Response[v1.DeleteWorkspaceGroupResponse], error)
-	ListWorkspaceGroupMembers(context.Context, *connect.Request[v1.ListWorkspaceGroupMembersRequest]) (*connect.Response[v1.ListWorkspaceGroupMembersResponse], error)
-	AddWorkspaceGroupMember(context.Context, *connect.Request[v1.AddWorkspaceGroupMemberRequest]) (*connect.Response[v1.AddWorkspaceGroupMemberResponse], error)
-	UpdateWorkspaceGroupMember(context.Context, *connect.Request[v1.UpdateWorkspaceGroupMemberRequest]) (*connect.Response[v1.UpdateWorkspaceGroupMemberResponse], error)
-	DeleteWorkspaceGroupMember(context.Context, *connect.Request[v1.DeleteWorkspaceGroupMemberRequest]) (*connect.Response[v1.DeleteWorkspaceGroupMemberResponse], error)
-	ListWorkspaceOrgUnits(context.Context, *connect.Request[v1.ListWorkspaceOrgUnitsRequest]) (*connect.Response[v1.ListWorkspaceOrgUnitsResponse], error)
-	CreateWorkspaceOrgUnit(context.Context, *connect.Request[v1.CreateWorkspaceOrgUnitRequest]) (*connect.Response[v1.CreateWorkspaceOrgUnitResponse], error)
-	UpdateWorkspaceOrgUnit(context.Context, *connect.Request[v1.UpdateWorkspaceOrgUnitRequest]) (*connect.Response[v1.UpdateWorkspaceOrgUnitResponse], error)
-	DeleteWorkspaceOrgUnit(context.Context, *connect.Request[v1.DeleteWorkspaceOrgUnitRequest]) (*connect.Response[v1.DeleteWorkspaceOrgUnitResponse], error)
-	SignOutWorkspaceUser(context.Context, *connect.Request[v1.SignOutWorkspaceUserRequest]) (*connect.Response[v1.SignOutWorkspaceUserResponse], error)
-	ListWorkspaceUserTokens(context.Context, *connect.Request[v1.ListWorkspaceUserTokensRequest]) (*connect.Response[v1.ListWorkspaceUserTokensResponse], error)
-	RevokeWorkspaceUserToken(context.Context, *connect.Request[v1.RevokeWorkspaceUserTokenRequest]) (*connect.Response[v1.RevokeWorkspaceUserTokenResponse], error)
-	ListWorkspaceOperations(context.Context, *connect.Request[v1.ListWorkspaceOperationsRequest]) (*connect.Response[v1.ListWorkspaceOperationsResponse], error)
-	GetWorkspaceOverview(context.Context, *connect.Request[v1.GetWorkspaceOverviewRequest]) (*connect.Response[v1.GetWorkspaceOverviewResponse], error)
-	ListWorkspaceAuditActivities(context.Context, *connect.Request[v1.ListWorkspaceAuditActivitiesRequest]) (*connect.Response[v1.ListWorkspaceAuditActivitiesResponse], error)
+	ListWorkspaceTenants(context.Context, *v1.ListWorkspaceTenantsRequest) (*v1.ListWorkspaceTenantsResponse, error)
+	CreateWorkspaceTenant(context.Context, *v1.CreateWorkspaceTenantRequest) (*v1.CreateWorkspaceTenantResponse, error)
+	UpdateWorkspaceTenant(context.Context, *v1.UpdateWorkspaceTenantRequest) (*v1.UpdateWorkspaceTenantResponse, error)
+	DeleteWorkspaceTenant(context.Context, *v1.DeleteWorkspaceTenantRequest) (*v1.DeleteWorkspaceTenantResponse, error)
+	TestWorkspaceTenant(context.Context, *v1.TestWorkspaceTenantRequest) (*v1.TestWorkspaceTenantResponse, error)
+	ListWorkspaceUsers(context.Context, *v1.ListWorkspaceUsersRequest) (*v1.ListWorkspaceUsersResponse, error)
+	GetWorkspaceUser(context.Context, *v1.GetWorkspaceUserRequest) (*v1.GetWorkspaceUserResponse, error)
+	CreateWorkspaceUser(context.Context, *v1.CreateWorkspaceUserRequest) (*v1.CreateWorkspaceUserResponse, error)
+	UpdateWorkspaceUser(context.Context, *v1.UpdateWorkspaceUserRequest) (*v1.UpdateWorkspaceUserResponse, error)
+	ResetWorkspaceUserPassword(context.Context, *v1.ResetWorkspaceUserPasswordRequest) (*v1.ResetWorkspaceUserPasswordResponse, error)
+	SetWorkspaceUserSuspended(context.Context, *v1.SetWorkspaceUserSuspendedRequest) (*v1.SetWorkspaceUserSuspendedResponse, error)
+	ListWorkspaceUserAliases(context.Context, *v1.ListWorkspaceUserAliasesRequest) (*v1.ListWorkspaceUserAliasesResponse, error)
+	AddWorkspaceUserAlias(context.Context, *v1.AddWorkspaceUserAliasRequest) (*v1.AddWorkspaceUserAliasResponse, error)
+	DeleteWorkspaceUserAlias(context.Context, *v1.DeleteWorkspaceUserAliasRequest) (*v1.DeleteWorkspaceUserAliasResponse, error)
+	ListWorkspaceGroups(context.Context, *v1.ListWorkspaceGroupsRequest) (*v1.ListWorkspaceGroupsResponse, error)
+	ListWorkspaceUserGroups(context.Context, *v1.ListWorkspaceUserGroupsRequest) (*v1.ListWorkspaceUserGroupsResponse, error)
+	CreateWorkspaceGroup(context.Context, *v1.CreateWorkspaceGroupRequest) (*v1.CreateWorkspaceGroupResponse, error)
+	UpdateWorkspaceGroup(context.Context, *v1.UpdateWorkspaceGroupRequest) (*v1.UpdateWorkspaceGroupResponse, error)
+	DeleteWorkspaceGroup(context.Context, *v1.DeleteWorkspaceGroupRequest) (*v1.DeleteWorkspaceGroupResponse, error)
+	ListWorkspaceGroupMembers(context.Context, *v1.ListWorkspaceGroupMembersRequest) (*v1.ListWorkspaceGroupMembersResponse, error)
+	AddWorkspaceGroupMember(context.Context, *v1.AddWorkspaceGroupMemberRequest) (*v1.AddWorkspaceGroupMemberResponse, error)
+	UpdateWorkspaceGroupMember(context.Context, *v1.UpdateWorkspaceGroupMemberRequest) (*v1.UpdateWorkspaceGroupMemberResponse, error)
+	DeleteWorkspaceGroupMember(context.Context, *v1.DeleteWorkspaceGroupMemberRequest) (*v1.DeleteWorkspaceGroupMemberResponse, error)
+	ListWorkspaceOrgUnits(context.Context, *v1.ListWorkspaceOrgUnitsRequest) (*v1.ListWorkspaceOrgUnitsResponse, error)
+	CreateWorkspaceOrgUnit(context.Context, *v1.CreateWorkspaceOrgUnitRequest) (*v1.CreateWorkspaceOrgUnitResponse, error)
+	UpdateWorkspaceOrgUnit(context.Context, *v1.UpdateWorkspaceOrgUnitRequest) (*v1.UpdateWorkspaceOrgUnitResponse, error)
+	DeleteWorkspaceOrgUnit(context.Context, *v1.DeleteWorkspaceOrgUnitRequest) (*v1.DeleteWorkspaceOrgUnitResponse, error)
+	SignOutWorkspaceUser(context.Context, *v1.SignOutWorkspaceUserRequest) (*v1.SignOutWorkspaceUserResponse, error)
+	ListWorkspaceUserTokens(context.Context, *v1.ListWorkspaceUserTokensRequest) (*v1.ListWorkspaceUserTokensResponse, error)
+	RevokeWorkspaceUserToken(context.Context, *v1.RevokeWorkspaceUserTokenRequest) (*v1.RevokeWorkspaceUserTokenResponse, error)
+	ListWorkspaceOperations(context.Context, *v1.ListWorkspaceOperationsRequest) (*v1.ListWorkspaceOperationsResponse, error)
+	GetWorkspaceOverview(context.Context, *v1.GetWorkspaceOverviewRequest) (*v1.GetWorkspaceOverviewResponse, error)
+	ListWorkspaceAuditActivities(context.Context, *v1.ListWorkspaceAuditActivitiesRequest) (*v1.ListWorkspaceAuditActivitiesResponse, error)
 	// Gmail settings are read and changed by impersonating one tenant user
 	// (ADR 0008). Settings requests never read message content.
-	GetWorkspaceUserGmailSettings(context.Context, *connect.Request[v1.GetWorkspaceUserGmailSettingsRequest]) (*connect.Response[v1.GetWorkspaceUserGmailSettingsResponse], error)
-	UpdateWorkspaceUserGmailVacation(context.Context, *connect.Request[v1.UpdateWorkspaceUserGmailVacationRequest]) (*connect.Response[v1.UpdateWorkspaceUserGmailVacationResponse], error)
+	GetWorkspaceUserGmailSettings(context.Context, *v1.GetWorkspaceUserGmailSettingsRequest) (*v1.GetWorkspaceUserGmailSettingsResponse, error)
+	UpdateWorkspaceUserGmailVacation(context.Context, *v1.UpdateWorkspaceUserGmailVacationRequest) (*v1.UpdateWorkspaceUserGmailVacationResponse, error)
 	// Gmail mail is read-only (ADR 0010): labels, search, one message and one
 	// attachment, read live by impersonating the user with gmail.readonly. Each
 	// call carries the same access confirmation and is logged before it is sent;
 	// nothing changes the mailbox.
-	ListWorkspaceUserGmailLabels(context.Context, *connect.Request[v1.ListWorkspaceUserGmailLabelsRequest]) (*connect.Response[v1.ListWorkspaceUserGmailLabelsResponse], error)
-	SearchWorkspaceUserGmailMessages(context.Context, *connect.Request[v1.SearchWorkspaceUserGmailMessagesRequest]) (*connect.Response[v1.SearchWorkspaceUserGmailMessagesResponse], error)
-	GetWorkspaceUserGmailMessage(context.Context, *connect.Request[v1.GetWorkspaceUserGmailMessageRequest]) (*connect.Response[v1.GetWorkspaceUserGmailMessageResponse], error)
-	DownloadWorkspaceUserGmailAttachment(context.Context, *connect.Request[v1.DownloadWorkspaceUserGmailAttachmentRequest]) (*connect.Response[v1.DownloadWorkspaceUserGmailAttachmentResponse], error)
+	ListWorkspaceUserGmailLabels(context.Context, *v1.ListWorkspaceUserGmailLabelsRequest) (*v1.ListWorkspaceUserGmailLabelsResponse, error)
+	SearchWorkspaceUserGmailMessages(context.Context, *v1.SearchWorkspaceUserGmailMessagesRequest) (*v1.SearchWorkspaceUserGmailMessagesResponse, error)
+	GetWorkspaceUserGmailMessage(context.Context, *v1.GetWorkspaceUserGmailMessageRequest) (*v1.GetWorkspaceUserGmailMessageResponse, error)
+	DownloadWorkspaceUserGmailAttachment(context.Context, *v1.DownloadWorkspaceUserGmailAttachmentRequest) (*v1.DownloadWorkspaceUserGmailAttachmentResponse, error)
 	// Drive governance reads Google's Reports API only (ADR 0009); no file
 	// content is reachable with these scopes.
-	ListWorkspaceDriveActivities(context.Context, *connect.Request[v1.ListWorkspaceDriveActivitiesRequest]) (*connect.Response[v1.ListWorkspaceDriveActivitiesResponse], error)
-	ListWorkspaceDriveUsage(context.Context, *connect.Request[v1.ListWorkspaceDriveUsageRequest]) (*connect.Response[v1.ListWorkspaceDriveUsageResponse], error)
+	ListWorkspaceDriveActivities(context.Context, *v1.ListWorkspaceDriveActivitiesRequest) (*v1.ListWorkspaceDriveActivitiesResponse, error)
+	ListWorkspaceDriveUsage(context.Context, *v1.ListWorkspaceDriveUsageRequest) (*v1.ListWorkspaceDriveUsageResponse, error)
 	// Shared drive inventory (drives.list as the tenant's administrator).
 	// Needs drive.readonly, a scope that could read file content; Neo Box
 	// calls only drives.list and records each read with its reason first. See
 	// docs/adr/0009.
-	ListWorkspaceSharedDrives(context.Context, *connect.Request[v1.ListWorkspaceSharedDrivesRequest]) (*connect.Response[v1.ListWorkspaceSharedDrivesResponse], error)
+	ListWorkspaceSharedDrives(context.Context, *v1.ListWorkspaceSharedDrivesRequest) (*v1.ListWorkspaceSharedDrivesResponse, error)
 	// One user's files that are visible beyond named people (files.list as that
 	// user, drive.metadata.readonly: metadata only). Reason and typed primary
 	// email on every request, recorded first. See docs/adr/0009.
-	ListWorkspaceUserExposedFiles(context.Context, *connect.Request[v1.ListWorkspaceUserExposedFilesRequest]) (*connect.Response[v1.ListWorkspaceUserExposedFilesResponse], error)
+	ListWorkspaceUserExposedFiles(context.Context, *v1.ListWorkspaceUserExposedFilesRequest) (*v1.ListWorkspaceUserExposedFilesResponse, error)
 	// One user's storage and Gmail activity per day, from Google's usage
 	// reports (admin.reports.usage.readonly). Aggregate figures only: it never
 	// reads the mailbox, so it needs no access reason and is not recorded.
-	GetWorkspaceUserUsage(context.Context, *connect.Request[v1.GetWorkspaceUserUsageRequest]) (*connect.Response[v1.GetWorkspaceUserUsageResponse], error)
+	GetWorkspaceUserUsage(context.Context, *v1.GetWorkspaceUserUsageRequest) (*v1.GetWorkspaceUserUsageResponse, error)
 	// Every user's storage (Gmail, Drive, Photos, total, quota) from the newest
 	// usage report, joined with the Directory for each user's organizational
 	// unit and summarised per unit. Read-only: the quota shown is what Google
 	// reports; Google has no API to set a user storage limit, which stays in the
 	// Admin console.
-	ListWorkspaceStorageUsage(context.Context, *connect.Request[v1.ListWorkspaceStorageUsageRequest]) (*connect.Response[v1.ListWorkspaceStorageUsageResponse], error)
+	ListWorkspaceStorageUsage(context.Context, *v1.ListWorkspaceStorageUsageRequest) (*v1.ListWorkspaceStorageUsageResponse, error)
 }
 
 // NewGoogleWorkspaceServiceClient constructs a client for the neobox.v1.GoogleWorkspaceService
-// service. By default, it uses the Connect protocol with the binary Protobuf Codec, asks for
-// gzipped responses, and sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply
-// the connect.WithGRPC() or connect.WithGRPCWeb() options.
-//
-// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
-// http://api.acme.com or https://acme.com/grpc).
-func NewGoogleWorkspaceServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) GoogleWorkspaceServiceClient {
-	baseURL = strings.TrimRight(baseURL, "/")
-	googleWorkspaceServiceMethods := v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods()
-	return &googleWorkspaceServiceClient{
-		listWorkspaceTenants: connect.NewClient[v1.ListWorkspaceTenantsRequest, v1.ListWorkspaceTenantsResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceListWorkspaceTenantsProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceTenants")),
-			connect.WithClientOptions(opts...),
-		),
-		createWorkspaceTenant: connect.NewClient[v1.CreateWorkspaceTenantRequest, v1.CreateWorkspaceTenantResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceCreateWorkspaceTenantProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("CreateWorkspaceTenant")),
-			connect.WithClientOptions(opts...),
-		),
-		updateWorkspaceTenant: connect.NewClient[v1.UpdateWorkspaceTenantRequest, v1.UpdateWorkspaceTenantResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceUpdateWorkspaceTenantProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("UpdateWorkspaceTenant")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteWorkspaceTenant: connect.NewClient[v1.DeleteWorkspaceTenantRequest, v1.DeleteWorkspaceTenantResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceDeleteWorkspaceTenantProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("DeleteWorkspaceTenant")),
-			connect.WithClientOptions(opts...),
-		),
-		testWorkspaceTenant: connect.NewClient[v1.TestWorkspaceTenantRequest, v1.TestWorkspaceTenantResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceTestWorkspaceTenantProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("TestWorkspaceTenant")),
-			connect.WithClientOptions(opts...),
-		),
-		listWorkspaceUsers: connect.NewClient[v1.ListWorkspaceUsersRequest, v1.ListWorkspaceUsersResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceListWorkspaceUsersProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceUsers")),
-			connect.WithClientOptions(opts...),
-		),
-		getWorkspaceUser: connect.NewClient[v1.GetWorkspaceUserRequest, v1.GetWorkspaceUserResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceGetWorkspaceUserProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("GetWorkspaceUser")),
-			connect.WithClientOptions(opts...),
-		),
-		createWorkspaceUser: connect.NewClient[v1.CreateWorkspaceUserRequest, v1.CreateWorkspaceUserResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceCreateWorkspaceUserProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("CreateWorkspaceUser")),
-			connect.WithClientOptions(opts...),
-		),
-		updateWorkspaceUser: connect.NewClient[v1.UpdateWorkspaceUserRequest, v1.UpdateWorkspaceUserResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceUpdateWorkspaceUserProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("UpdateWorkspaceUser")),
-			connect.WithClientOptions(opts...),
-		),
-		resetWorkspaceUserPassword: connect.NewClient[v1.ResetWorkspaceUserPasswordRequest, v1.ResetWorkspaceUserPasswordResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceResetWorkspaceUserPasswordProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ResetWorkspaceUserPassword")),
-			connect.WithClientOptions(opts...),
-		),
-		setWorkspaceUserSuspended: connect.NewClient[v1.SetWorkspaceUserSuspendedRequest, v1.SetWorkspaceUserSuspendedResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceSetWorkspaceUserSuspendedProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("SetWorkspaceUserSuspended")),
-			connect.WithClientOptions(opts...),
-		),
-		listWorkspaceUserAliases: connect.NewClient[v1.ListWorkspaceUserAliasesRequest, v1.ListWorkspaceUserAliasesResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceListWorkspaceUserAliasesProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceUserAliases")),
-			connect.WithClientOptions(opts...),
-		),
-		addWorkspaceUserAlias: connect.NewClient[v1.AddWorkspaceUserAliasRequest, v1.AddWorkspaceUserAliasResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceAddWorkspaceUserAliasProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("AddWorkspaceUserAlias")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteWorkspaceUserAlias: connect.NewClient[v1.DeleteWorkspaceUserAliasRequest, v1.DeleteWorkspaceUserAliasResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceDeleteWorkspaceUserAliasProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("DeleteWorkspaceUserAlias")),
-			connect.WithClientOptions(opts...),
-		),
-		listWorkspaceGroups: connect.NewClient[v1.ListWorkspaceGroupsRequest, v1.ListWorkspaceGroupsResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceListWorkspaceGroupsProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceGroups")),
-			connect.WithClientOptions(opts...),
-		),
-		listWorkspaceUserGroups: connect.NewClient[v1.ListWorkspaceUserGroupsRequest, v1.ListWorkspaceUserGroupsResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceListWorkspaceUserGroupsProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceUserGroups")),
-			connect.WithClientOptions(opts...),
-		),
-		createWorkspaceGroup: connect.NewClient[v1.CreateWorkspaceGroupRequest, v1.CreateWorkspaceGroupResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceCreateWorkspaceGroupProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("CreateWorkspaceGroup")),
-			connect.WithClientOptions(opts...),
-		),
-		updateWorkspaceGroup: connect.NewClient[v1.UpdateWorkspaceGroupRequest, v1.UpdateWorkspaceGroupResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceUpdateWorkspaceGroupProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("UpdateWorkspaceGroup")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteWorkspaceGroup: connect.NewClient[v1.DeleteWorkspaceGroupRequest, v1.DeleteWorkspaceGroupResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceDeleteWorkspaceGroupProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("DeleteWorkspaceGroup")),
-			connect.WithClientOptions(opts...),
-		),
-		listWorkspaceGroupMembers: connect.NewClient[v1.ListWorkspaceGroupMembersRequest, v1.ListWorkspaceGroupMembersResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceListWorkspaceGroupMembersProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceGroupMembers")),
-			connect.WithClientOptions(opts...),
-		),
-		addWorkspaceGroupMember: connect.NewClient[v1.AddWorkspaceGroupMemberRequest, v1.AddWorkspaceGroupMemberResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceAddWorkspaceGroupMemberProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("AddWorkspaceGroupMember")),
-			connect.WithClientOptions(opts...),
-		),
-		updateWorkspaceGroupMember: connect.NewClient[v1.UpdateWorkspaceGroupMemberRequest, v1.UpdateWorkspaceGroupMemberResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceUpdateWorkspaceGroupMemberProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("UpdateWorkspaceGroupMember")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteWorkspaceGroupMember: connect.NewClient[v1.DeleteWorkspaceGroupMemberRequest, v1.DeleteWorkspaceGroupMemberResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceDeleteWorkspaceGroupMemberProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("DeleteWorkspaceGroupMember")),
-			connect.WithClientOptions(opts...),
-		),
-		listWorkspaceOrgUnits: connect.NewClient[v1.ListWorkspaceOrgUnitsRequest, v1.ListWorkspaceOrgUnitsResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceListWorkspaceOrgUnitsProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceOrgUnits")),
-			connect.WithClientOptions(opts...),
-		),
-		createWorkspaceOrgUnit: connect.NewClient[v1.CreateWorkspaceOrgUnitRequest, v1.CreateWorkspaceOrgUnitResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceCreateWorkspaceOrgUnitProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("CreateWorkspaceOrgUnit")),
-			connect.WithClientOptions(opts...),
-		),
-		updateWorkspaceOrgUnit: connect.NewClient[v1.UpdateWorkspaceOrgUnitRequest, v1.UpdateWorkspaceOrgUnitResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceUpdateWorkspaceOrgUnitProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("UpdateWorkspaceOrgUnit")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteWorkspaceOrgUnit: connect.NewClient[v1.DeleteWorkspaceOrgUnitRequest, v1.DeleteWorkspaceOrgUnitResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceDeleteWorkspaceOrgUnitProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("DeleteWorkspaceOrgUnit")),
-			connect.WithClientOptions(opts...),
-		),
-		signOutWorkspaceUser: connect.NewClient[v1.SignOutWorkspaceUserRequest, v1.SignOutWorkspaceUserResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceSignOutWorkspaceUserProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("SignOutWorkspaceUser")),
-			connect.WithClientOptions(opts...),
-		),
-		listWorkspaceUserTokens: connect.NewClient[v1.ListWorkspaceUserTokensRequest, v1.ListWorkspaceUserTokensResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceListWorkspaceUserTokensProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceUserTokens")),
-			connect.WithClientOptions(opts...),
-		),
-		revokeWorkspaceUserToken: connect.NewClient[v1.RevokeWorkspaceUserTokenRequest, v1.RevokeWorkspaceUserTokenResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceRevokeWorkspaceUserTokenProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("RevokeWorkspaceUserToken")),
-			connect.WithClientOptions(opts...),
-		),
-		listWorkspaceOperations: connect.NewClient[v1.ListWorkspaceOperationsRequest, v1.ListWorkspaceOperationsResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceListWorkspaceOperationsProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceOperations")),
-			connect.WithClientOptions(opts...),
-		),
-		getWorkspaceOverview: connect.NewClient[v1.GetWorkspaceOverviewRequest, v1.GetWorkspaceOverviewResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceGetWorkspaceOverviewProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("GetWorkspaceOverview")),
-			connect.WithClientOptions(opts...),
-		),
-		listWorkspaceAuditActivities: connect.NewClient[v1.ListWorkspaceAuditActivitiesRequest, v1.ListWorkspaceAuditActivitiesResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceListWorkspaceAuditActivitiesProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceAuditActivities")),
-			connect.WithClientOptions(opts...),
-		),
-		getWorkspaceUserGmailSettings: connect.NewClient[v1.GetWorkspaceUserGmailSettingsRequest, v1.GetWorkspaceUserGmailSettingsResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceGetWorkspaceUserGmailSettingsProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("GetWorkspaceUserGmailSettings")),
-			connect.WithClientOptions(opts...),
-		),
-		updateWorkspaceUserGmailVacation: connect.NewClient[v1.UpdateWorkspaceUserGmailVacationRequest, v1.UpdateWorkspaceUserGmailVacationResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceUpdateWorkspaceUserGmailVacationProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("UpdateWorkspaceUserGmailVacation")),
-			connect.WithClientOptions(opts...),
-		),
-		listWorkspaceUserGmailLabels: connect.NewClient[v1.ListWorkspaceUserGmailLabelsRequest, v1.ListWorkspaceUserGmailLabelsResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceListWorkspaceUserGmailLabelsProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceUserGmailLabels")),
-			connect.WithClientOptions(opts...),
-		),
-		searchWorkspaceUserGmailMessages: connect.NewClient[v1.SearchWorkspaceUserGmailMessagesRequest, v1.SearchWorkspaceUserGmailMessagesResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceSearchWorkspaceUserGmailMessagesProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("SearchWorkspaceUserGmailMessages")),
-			connect.WithClientOptions(opts...),
-		),
-		getWorkspaceUserGmailMessage: connect.NewClient[v1.GetWorkspaceUserGmailMessageRequest, v1.GetWorkspaceUserGmailMessageResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceGetWorkspaceUserGmailMessageProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("GetWorkspaceUserGmailMessage")),
-			connect.WithClientOptions(opts...),
-		),
-		downloadWorkspaceUserGmailAttachment: connect.NewClient[v1.DownloadWorkspaceUserGmailAttachmentRequest, v1.DownloadWorkspaceUserGmailAttachmentResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceDownloadWorkspaceUserGmailAttachmentProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("DownloadWorkspaceUserGmailAttachment")),
-			connect.WithClientOptions(opts...),
-		),
-		listWorkspaceDriveActivities: connect.NewClient[v1.ListWorkspaceDriveActivitiesRequest, v1.ListWorkspaceDriveActivitiesResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceListWorkspaceDriveActivitiesProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceDriveActivities")),
-			connect.WithClientOptions(opts...),
-		),
-		listWorkspaceDriveUsage: connect.NewClient[v1.ListWorkspaceDriveUsageRequest, v1.ListWorkspaceDriveUsageResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceListWorkspaceDriveUsageProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceDriveUsage")),
-			connect.WithClientOptions(opts...),
-		),
-		listWorkspaceSharedDrives: connect.NewClient[v1.ListWorkspaceSharedDrivesRequest, v1.ListWorkspaceSharedDrivesResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceListWorkspaceSharedDrivesProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceSharedDrives")),
-			connect.WithClientOptions(opts...),
-		),
-		listWorkspaceUserExposedFiles: connect.NewClient[v1.ListWorkspaceUserExposedFilesRequest, v1.ListWorkspaceUserExposedFilesResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceListWorkspaceUserExposedFilesProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceUserExposedFiles")),
-			connect.WithClientOptions(opts...),
-		),
-		getWorkspaceUserUsage: connect.NewClient[v1.GetWorkspaceUserUsageRequest, v1.GetWorkspaceUserUsageResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceGetWorkspaceUserUsageProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("GetWorkspaceUserUsage")),
-			connect.WithClientOptions(opts...),
-		),
-		listWorkspaceStorageUsage: connect.NewClient[v1.ListWorkspaceStorageUsageRequest, v1.ListWorkspaceStorageUsageResponse](
-			httpClient,
-			baseURL+GoogleWorkspaceServiceListWorkspaceStorageUsageProcedure,
-			connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceStorageUsage")),
-			connect.WithClientOptions(opts...),
-		),
-	}
-}
-
-// googleWorkspaceServiceClient implements GoogleWorkspaceServiceClient.
-type googleWorkspaceServiceClient struct {
-	listWorkspaceTenants                 *connect.Client[v1.ListWorkspaceTenantsRequest, v1.ListWorkspaceTenantsResponse]
-	createWorkspaceTenant                *connect.Client[v1.CreateWorkspaceTenantRequest, v1.CreateWorkspaceTenantResponse]
-	updateWorkspaceTenant                *connect.Client[v1.UpdateWorkspaceTenantRequest, v1.UpdateWorkspaceTenantResponse]
-	deleteWorkspaceTenant                *connect.Client[v1.DeleteWorkspaceTenantRequest, v1.DeleteWorkspaceTenantResponse]
-	testWorkspaceTenant                  *connect.Client[v1.TestWorkspaceTenantRequest, v1.TestWorkspaceTenantResponse]
-	listWorkspaceUsers                   *connect.Client[v1.ListWorkspaceUsersRequest, v1.ListWorkspaceUsersResponse]
-	getWorkspaceUser                     *connect.Client[v1.GetWorkspaceUserRequest, v1.GetWorkspaceUserResponse]
-	createWorkspaceUser                  *connect.Client[v1.CreateWorkspaceUserRequest, v1.CreateWorkspaceUserResponse]
-	updateWorkspaceUser                  *connect.Client[v1.UpdateWorkspaceUserRequest, v1.UpdateWorkspaceUserResponse]
-	resetWorkspaceUserPassword           *connect.Client[v1.ResetWorkspaceUserPasswordRequest, v1.ResetWorkspaceUserPasswordResponse]
-	setWorkspaceUserSuspended            *connect.Client[v1.SetWorkspaceUserSuspendedRequest, v1.SetWorkspaceUserSuspendedResponse]
-	listWorkspaceUserAliases             *connect.Client[v1.ListWorkspaceUserAliasesRequest, v1.ListWorkspaceUserAliasesResponse]
-	addWorkspaceUserAlias                *connect.Client[v1.AddWorkspaceUserAliasRequest, v1.AddWorkspaceUserAliasResponse]
-	deleteWorkspaceUserAlias             *connect.Client[v1.DeleteWorkspaceUserAliasRequest, v1.DeleteWorkspaceUserAliasResponse]
-	listWorkspaceGroups                  *connect.Client[v1.ListWorkspaceGroupsRequest, v1.ListWorkspaceGroupsResponse]
-	listWorkspaceUserGroups              *connect.Client[v1.ListWorkspaceUserGroupsRequest, v1.ListWorkspaceUserGroupsResponse]
-	createWorkspaceGroup                 *connect.Client[v1.CreateWorkspaceGroupRequest, v1.CreateWorkspaceGroupResponse]
-	updateWorkspaceGroup                 *connect.Client[v1.UpdateWorkspaceGroupRequest, v1.UpdateWorkspaceGroupResponse]
-	deleteWorkspaceGroup                 *connect.Client[v1.DeleteWorkspaceGroupRequest, v1.DeleteWorkspaceGroupResponse]
-	listWorkspaceGroupMembers            *connect.Client[v1.ListWorkspaceGroupMembersRequest, v1.ListWorkspaceGroupMembersResponse]
-	addWorkspaceGroupMember              *connect.Client[v1.AddWorkspaceGroupMemberRequest, v1.AddWorkspaceGroupMemberResponse]
-	updateWorkspaceGroupMember           *connect.Client[v1.UpdateWorkspaceGroupMemberRequest, v1.UpdateWorkspaceGroupMemberResponse]
-	deleteWorkspaceGroupMember           *connect.Client[v1.DeleteWorkspaceGroupMemberRequest, v1.DeleteWorkspaceGroupMemberResponse]
-	listWorkspaceOrgUnits                *connect.Client[v1.ListWorkspaceOrgUnitsRequest, v1.ListWorkspaceOrgUnitsResponse]
-	createWorkspaceOrgUnit               *connect.Client[v1.CreateWorkspaceOrgUnitRequest, v1.CreateWorkspaceOrgUnitResponse]
-	updateWorkspaceOrgUnit               *connect.Client[v1.UpdateWorkspaceOrgUnitRequest, v1.UpdateWorkspaceOrgUnitResponse]
-	deleteWorkspaceOrgUnit               *connect.Client[v1.DeleteWorkspaceOrgUnitRequest, v1.DeleteWorkspaceOrgUnitResponse]
-	signOutWorkspaceUser                 *connect.Client[v1.SignOutWorkspaceUserRequest, v1.SignOutWorkspaceUserResponse]
-	listWorkspaceUserTokens              *connect.Client[v1.ListWorkspaceUserTokensRequest, v1.ListWorkspaceUserTokensResponse]
-	revokeWorkspaceUserToken             *connect.Client[v1.RevokeWorkspaceUserTokenRequest, v1.RevokeWorkspaceUserTokenResponse]
-	listWorkspaceOperations              *connect.Client[v1.ListWorkspaceOperationsRequest, v1.ListWorkspaceOperationsResponse]
-	getWorkspaceOverview                 *connect.Client[v1.GetWorkspaceOverviewRequest, v1.GetWorkspaceOverviewResponse]
-	listWorkspaceAuditActivities         *connect.Client[v1.ListWorkspaceAuditActivitiesRequest, v1.ListWorkspaceAuditActivitiesResponse]
-	getWorkspaceUserGmailSettings        *connect.Client[v1.GetWorkspaceUserGmailSettingsRequest, v1.GetWorkspaceUserGmailSettingsResponse]
-	updateWorkspaceUserGmailVacation     *connect.Client[v1.UpdateWorkspaceUserGmailVacationRequest, v1.UpdateWorkspaceUserGmailVacationResponse]
-	listWorkspaceUserGmailLabels         *connect.Client[v1.ListWorkspaceUserGmailLabelsRequest, v1.ListWorkspaceUserGmailLabelsResponse]
-	searchWorkspaceUserGmailMessages     *connect.Client[v1.SearchWorkspaceUserGmailMessagesRequest, v1.SearchWorkspaceUserGmailMessagesResponse]
-	getWorkspaceUserGmailMessage         *connect.Client[v1.GetWorkspaceUserGmailMessageRequest, v1.GetWorkspaceUserGmailMessageResponse]
-	downloadWorkspaceUserGmailAttachment *connect.Client[v1.DownloadWorkspaceUserGmailAttachmentRequest, v1.DownloadWorkspaceUserGmailAttachmentResponse]
-	listWorkspaceDriveActivities         *connect.Client[v1.ListWorkspaceDriveActivitiesRequest, v1.ListWorkspaceDriveActivitiesResponse]
-	listWorkspaceDriveUsage              *connect.Client[v1.ListWorkspaceDriveUsageRequest, v1.ListWorkspaceDriveUsageResponse]
-	listWorkspaceSharedDrives            *connect.Client[v1.ListWorkspaceSharedDrivesRequest, v1.ListWorkspaceSharedDrivesResponse]
-	listWorkspaceUserExposedFiles        *connect.Client[v1.ListWorkspaceUserExposedFilesRequest, v1.ListWorkspaceUserExposedFilesResponse]
-	getWorkspaceUserUsage                *connect.Client[v1.GetWorkspaceUserUsageRequest, v1.GetWorkspaceUserUsageResponse]
-	listWorkspaceStorageUsage            *connect.Client[v1.ListWorkspaceStorageUsageRequest, v1.ListWorkspaceStorageUsageResponse]
-}
-
-// ListWorkspaceTenants calls neobox.v1.GoogleWorkspaceService.ListWorkspaceTenants.
-func (c *googleWorkspaceServiceClient) ListWorkspaceTenants(ctx context.Context, req *connect.Request[v1.ListWorkspaceTenantsRequest]) (*connect.Response[v1.ListWorkspaceTenantsResponse], error) {
-	return c.listWorkspaceTenants.CallUnary(ctx, req)
-}
-
-// CreateWorkspaceTenant calls neobox.v1.GoogleWorkspaceService.CreateWorkspaceTenant.
-func (c *googleWorkspaceServiceClient) CreateWorkspaceTenant(ctx context.Context, req *connect.Request[v1.CreateWorkspaceTenantRequest]) (*connect.Response[v1.CreateWorkspaceTenantResponse], error) {
-	return c.createWorkspaceTenant.CallUnary(ctx, req)
-}
-
-// UpdateWorkspaceTenant calls neobox.v1.GoogleWorkspaceService.UpdateWorkspaceTenant.
-func (c *googleWorkspaceServiceClient) UpdateWorkspaceTenant(ctx context.Context, req *connect.Request[v1.UpdateWorkspaceTenantRequest]) (*connect.Response[v1.UpdateWorkspaceTenantResponse], error) {
-	return c.updateWorkspaceTenant.CallUnary(ctx, req)
-}
-
-// DeleteWorkspaceTenant calls neobox.v1.GoogleWorkspaceService.DeleteWorkspaceTenant.
-func (c *googleWorkspaceServiceClient) DeleteWorkspaceTenant(ctx context.Context, req *connect.Request[v1.DeleteWorkspaceTenantRequest]) (*connect.Response[v1.DeleteWorkspaceTenantResponse], error) {
-	return c.deleteWorkspaceTenant.CallUnary(ctx, req)
-}
-
-// TestWorkspaceTenant calls neobox.v1.GoogleWorkspaceService.TestWorkspaceTenant.
-func (c *googleWorkspaceServiceClient) TestWorkspaceTenant(ctx context.Context, req *connect.Request[v1.TestWorkspaceTenantRequest]) (*connect.Response[v1.TestWorkspaceTenantResponse], error) {
-	return c.testWorkspaceTenant.CallUnary(ctx, req)
-}
-
-// ListWorkspaceUsers calls neobox.v1.GoogleWorkspaceService.ListWorkspaceUsers.
-func (c *googleWorkspaceServiceClient) ListWorkspaceUsers(ctx context.Context, req *connect.Request[v1.ListWorkspaceUsersRequest]) (*connect.Response[v1.ListWorkspaceUsersResponse], error) {
-	return c.listWorkspaceUsers.CallUnary(ctx, req)
-}
-
-// GetWorkspaceUser calls neobox.v1.GoogleWorkspaceService.GetWorkspaceUser.
-func (c *googleWorkspaceServiceClient) GetWorkspaceUser(ctx context.Context, req *connect.Request[v1.GetWorkspaceUserRequest]) (*connect.Response[v1.GetWorkspaceUserResponse], error) {
-	return c.getWorkspaceUser.CallUnary(ctx, req)
-}
-
-// CreateWorkspaceUser calls neobox.v1.GoogleWorkspaceService.CreateWorkspaceUser.
-func (c *googleWorkspaceServiceClient) CreateWorkspaceUser(ctx context.Context, req *connect.Request[v1.CreateWorkspaceUserRequest]) (*connect.Response[v1.CreateWorkspaceUserResponse], error) {
-	return c.createWorkspaceUser.CallUnary(ctx, req)
-}
-
-// UpdateWorkspaceUser calls neobox.v1.GoogleWorkspaceService.UpdateWorkspaceUser.
-func (c *googleWorkspaceServiceClient) UpdateWorkspaceUser(ctx context.Context, req *connect.Request[v1.UpdateWorkspaceUserRequest]) (*connect.Response[v1.UpdateWorkspaceUserResponse], error) {
-	return c.updateWorkspaceUser.CallUnary(ctx, req)
-}
-
-// ResetWorkspaceUserPassword calls neobox.v1.GoogleWorkspaceService.ResetWorkspaceUserPassword.
-func (c *googleWorkspaceServiceClient) ResetWorkspaceUserPassword(ctx context.Context, req *connect.Request[v1.ResetWorkspaceUserPasswordRequest]) (*connect.Response[v1.ResetWorkspaceUserPasswordResponse], error) {
-	return c.resetWorkspaceUserPassword.CallUnary(ctx, req)
-}
-
-// SetWorkspaceUserSuspended calls neobox.v1.GoogleWorkspaceService.SetWorkspaceUserSuspended.
-func (c *googleWorkspaceServiceClient) SetWorkspaceUserSuspended(ctx context.Context, req *connect.Request[v1.SetWorkspaceUserSuspendedRequest]) (*connect.Response[v1.SetWorkspaceUserSuspendedResponse], error) {
-	return c.setWorkspaceUserSuspended.CallUnary(ctx, req)
-}
-
-// ListWorkspaceUserAliases calls neobox.v1.GoogleWorkspaceService.ListWorkspaceUserAliases.
-func (c *googleWorkspaceServiceClient) ListWorkspaceUserAliases(ctx context.Context, req *connect.Request[v1.ListWorkspaceUserAliasesRequest]) (*connect.Response[v1.ListWorkspaceUserAliasesResponse], error) {
-	return c.listWorkspaceUserAliases.CallUnary(ctx, req)
-}
-
-// AddWorkspaceUserAlias calls neobox.v1.GoogleWorkspaceService.AddWorkspaceUserAlias.
-func (c *googleWorkspaceServiceClient) AddWorkspaceUserAlias(ctx context.Context, req *connect.Request[v1.AddWorkspaceUserAliasRequest]) (*connect.Response[v1.AddWorkspaceUserAliasResponse], error) {
-	return c.addWorkspaceUserAlias.CallUnary(ctx, req)
-}
-
-// DeleteWorkspaceUserAlias calls neobox.v1.GoogleWorkspaceService.DeleteWorkspaceUserAlias.
-func (c *googleWorkspaceServiceClient) DeleteWorkspaceUserAlias(ctx context.Context, req *connect.Request[v1.DeleteWorkspaceUserAliasRequest]) (*connect.Response[v1.DeleteWorkspaceUserAliasResponse], error) {
-	return c.deleteWorkspaceUserAlias.CallUnary(ctx, req)
-}
-
-// ListWorkspaceGroups calls neobox.v1.GoogleWorkspaceService.ListWorkspaceGroups.
-func (c *googleWorkspaceServiceClient) ListWorkspaceGroups(ctx context.Context, req *connect.Request[v1.ListWorkspaceGroupsRequest]) (*connect.Response[v1.ListWorkspaceGroupsResponse], error) {
-	return c.listWorkspaceGroups.CallUnary(ctx, req)
-}
-
-// ListWorkspaceUserGroups calls neobox.v1.GoogleWorkspaceService.ListWorkspaceUserGroups.
-func (c *googleWorkspaceServiceClient) ListWorkspaceUserGroups(ctx context.Context, req *connect.Request[v1.ListWorkspaceUserGroupsRequest]) (*connect.Response[v1.ListWorkspaceUserGroupsResponse], error) {
-	return c.listWorkspaceUserGroups.CallUnary(ctx, req)
-}
-
-// CreateWorkspaceGroup calls neobox.v1.GoogleWorkspaceService.CreateWorkspaceGroup.
-func (c *googleWorkspaceServiceClient) CreateWorkspaceGroup(ctx context.Context, req *connect.Request[v1.CreateWorkspaceGroupRequest]) (*connect.Response[v1.CreateWorkspaceGroupResponse], error) {
-	return c.createWorkspaceGroup.CallUnary(ctx, req)
-}
-
-// UpdateWorkspaceGroup calls neobox.v1.GoogleWorkspaceService.UpdateWorkspaceGroup.
-func (c *googleWorkspaceServiceClient) UpdateWorkspaceGroup(ctx context.Context, req *connect.Request[v1.UpdateWorkspaceGroupRequest]) (*connect.Response[v1.UpdateWorkspaceGroupResponse], error) {
-	return c.updateWorkspaceGroup.CallUnary(ctx, req)
-}
-
-// DeleteWorkspaceGroup calls neobox.v1.GoogleWorkspaceService.DeleteWorkspaceGroup.
-func (c *googleWorkspaceServiceClient) DeleteWorkspaceGroup(ctx context.Context, req *connect.Request[v1.DeleteWorkspaceGroupRequest]) (*connect.Response[v1.DeleteWorkspaceGroupResponse], error) {
-	return c.deleteWorkspaceGroup.CallUnary(ctx, req)
-}
-
-// ListWorkspaceGroupMembers calls neobox.v1.GoogleWorkspaceService.ListWorkspaceGroupMembers.
-func (c *googleWorkspaceServiceClient) ListWorkspaceGroupMembers(ctx context.Context, req *connect.Request[v1.ListWorkspaceGroupMembersRequest]) (*connect.Response[v1.ListWorkspaceGroupMembersResponse], error) {
-	return c.listWorkspaceGroupMembers.CallUnary(ctx, req)
-}
-
-// AddWorkspaceGroupMember calls neobox.v1.GoogleWorkspaceService.AddWorkspaceGroupMember.
-func (c *googleWorkspaceServiceClient) AddWorkspaceGroupMember(ctx context.Context, req *connect.Request[v1.AddWorkspaceGroupMemberRequest]) (*connect.Response[v1.AddWorkspaceGroupMemberResponse], error) {
-	return c.addWorkspaceGroupMember.CallUnary(ctx, req)
-}
-
-// UpdateWorkspaceGroupMember calls neobox.v1.GoogleWorkspaceService.UpdateWorkspaceGroupMember.
-func (c *googleWorkspaceServiceClient) UpdateWorkspaceGroupMember(ctx context.Context, req *connect.Request[v1.UpdateWorkspaceGroupMemberRequest]) (*connect.Response[v1.UpdateWorkspaceGroupMemberResponse], error) {
-	return c.updateWorkspaceGroupMember.CallUnary(ctx, req)
-}
-
-// DeleteWorkspaceGroupMember calls neobox.v1.GoogleWorkspaceService.DeleteWorkspaceGroupMember.
-func (c *googleWorkspaceServiceClient) DeleteWorkspaceGroupMember(ctx context.Context, req *connect.Request[v1.DeleteWorkspaceGroupMemberRequest]) (*connect.Response[v1.DeleteWorkspaceGroupMemberResponse], error) {
-	return c.deleteWorkspaceGroupMember.CallUnary(ctx, req)
-}
-
-// ListWorkspaceOrgUnits calls neobox.v1.GoogleWorkspaceService.ListWorkspaceOrgUnits.
-func (c *googleWorkspaceServiceClient) ListWorkspaceOrgUnits(ctx context.Context, req *connect.Request[v1.ListWorkspaceOrgUnitsRequest]) (*connect.Response[v1.ListWorkspaceOrgUnitsResponse], error) {
-	return c.listWorkspaceOrgUnits.CallUnary(ctx, req)
-}
-
-// CreateWorkspaceOrgUnit calls neobox.v1.GoogleWorkspaceService.CreateWorkspaceOrgUnit.
-func (c *googleWorkspaceServiceClient) CreateWorkspaceOrgUnit(ctx context.Context, req *connect.Request[v1.CreateWorkspaceOrgUnitRequest]) (*connect.Response[v1.CreateWorkspaceOrgUnitResponse], error) {
-	return c.createWorkspaceOrgUnit.CallUnary(ctx, req)
-}
-
-// UpdateWorkspaceOrgUnit calls neobox.v1.GoogleWorkspaceService.UpdateWorkspaceOrgUnit.
-func (c *googleWorkspaceServiceClient) UpdateWorkspaceOrgUnit(ctx context.Context, req *connect.Request[v1.UpdateWorkspaceOrgUnitRequest]) (*connect.Response[v1.UpdateWorkspaceOrgUnitResponse], error) {
-	return c.updateWorkspaceOrgUnit.CallUnary(ctx, req)
-}
-
-// DeleteWorkspaceOrgUnit calls neobox.v1.GoogleWorkspaceService.DeleteWorkspaceOrgUnit.
-func (c *googleWorkspaceServiceClient) DeleteWorkspaceOrgUnit(ctx context.Context, req *connect.Request[v1.DeleteWorkspaceOrgUnitRequest]) (*connect.Response[v1.DeleteWorkspaceOrgUnitResponse], error) {
-	return c.deleteWorkspaceOrgUnit.CallUnary(ctx, req)
-}
-
-// SignOutWorkspaceUser calls neobox.v1.GoogleWorkspaceService.SignOutWorkspaceUser.
-func (c *googleWorkspaceServiceClient) SignOutWorkspaceUser(ctx context.Context, req *connect.Request[v1.SignOutWorkspaceUserRequest]) (*connect.Response[v1.SignOutWorkspaceUserResponse], error) {
-	return c.signOutWorkspaceUser.CallUnary(ctx, req)
-}
-
-// ListWorkspaceUserTokens calls neobox.v1.GoogleWorkspaceService.ListWorkspaceUserTokens.
-func (c *googleWorkspaceServiceClient) ListWorkspaceUserTokens(ctx context.Context, req *connect.Request[v1.ListWorkspaceUserTokensRequest]) (*connect.Response[v1.ListWorkspaceUserTokensResponse], error) {
-	return c.listWorkspaceUserTokens.CallUnary(ctx, req)
-}
-
-// RevokeWorkspaceUserToken calls neobox.v1.GoogleWorkspaceService.RevokeWorkspaceUserToken.
-func (c *googleWorkspaceServiceClient) RevokeWorkspaceUserToken(ctx context.Context, req *connect.Request[v1.RevokeWorkspaceUserTokenRequest]) (*connect.Response[v1.RevokeWorkspaceUserTokenResponse], error) {
-	return c.revokeWorkspaceUserToken.CallUnary(ctx, req)
-}
-
-// ListWorkspaceOperations calls neobox.v1.GoogleWorkspaceService.ListWorkspaceOperations.
-func (c *googleWorkspaceServiceClient) ListWorkspaceOperations(ctx context.Context, req *connect.Request[v1.ListWorkspaceOperationsRequest]) (*connect.Response[v1.ListWorkspaceOperationsResponse], error) {
-	return c.listWorkspaceOperations.CallUnary(ctx, req)
-}
-
-// GetWorkspaceOverview calls neobox.v1.GoogleWorkspaceService.GetWorkspaceOverview.
-func (c *googleWorkspaceServiceClient) GetWorkspaceOverview(ctx context.Context, req *connect.Request[v1.GetWorkspaceOverviewRequest]) (*connect.Response[v1.GetWorkspaceOverviewResponse], error) {
-	return c.getWorkspaceOverview.CallUnary(ctx, req)
-}
-
-// ListWorkspaceAuditActivities calls neobox.v1.GoogleWorkspaceService.ListWorkspaceAuditActivities.
-func (c *googleWorkspaceServiceClient) ListWorkspaceAuditActivities(ctx context.Context, req *connect.Request[v1.ListWorkspaceAuditActivitiesRequest]) (*connect.Response[v1.ListWorkspaceAuditActivitiesResponse], error) {
-	return c.listWorkspaceAuditActivities.CallUnary(ctx, req)
-}
-
-// GetWorkspaceUserGmailSettings calls
-// neobox.v1.GoogleWorkspaceService.GetWorkspaceUserGmailSettings.
-func (c *googleWorkspaceServiceClient) GetWorkspaceUserGmailSettings(ctx context.Context, req *connect.Request[v1.GetWorkspaceUserGmailSettingsRequest]) (*connect.Response[v1.GetWorkspaceUserGmailSettingsResponse], error) {
-	return c.getWorkspaceUserGmailSettings.CallUnary(ctx, req)
-}
-
-// UpdateWorkspaceUserGmailVacation calls
-// neobox.v1.GoogleWorkspaceService.UpdateWorkspaceUserGmailVacation.
-func (c *googleWorkspaceServiceClient) UpdateWorkspaceUserGmailVacation(ctx context.Context, req *connect.Request[v1.UpdateWorkspaceUserGmailVacationRequest]) (*connect.Response[v1.UpdateWorkspaceUserGmailVacationResponse], error) {
-	return c.updateWorkspaceUserGmailVacation.CallUnary(ctx, req)
-}
-
-// ListWorkspaceUserGmailLabels calls neobox.v1.GoogleWorkspaceService.ListWorkspaceUserGmailLabels.
-func (c *googleWorkspaceServiceClient) ListWorkspaceUserGmailLabels(ctx context.Context, req *connect.Request[v1.ListWorkspaceUserGmailLabelsRequest]) (*connect.Response[v1.ListWorkspaceUserGmailLabelsResponse], error) {
-	return c.listWorkspaceUserGmailLabels.CallUnary(ctx, req)
-}
-
-// SearchWorkspaceUserGmailMessages calls
-// neobox.v1.GoogleWorkspaceService.SearchWorkspaceUserGmailMessages.
-func (c *googleWorkspaceServiceClient) SearchWorkspaceUserGmailMessages(ctx context.Context, req *connect.Request[v1.SearchWorkspaceUserGmailMessagesRequest]) (*connect.Response[v1.SearchWorkspaceUserGmailMessagesResponse], error) {
-	return c.searchWorkspaceUserGmailMessages.CallUnary(ctx, req)
-}
-
-// GetWorkspaceUserGmailMessage calls neobox.v1.GoogleWorkspaceService.GetWorkspaceUserGmailMessage.
-func (c *googleWorkspaceServiceClient) GetWorkspaceUserGmailMessage(ctx context.Context, req *connect.Request[v1.GetWorkspaceUserGmailMessageRequest]) (*connect.Response[v1.GetWorkspaceUserGmailMessageResponse], error) {
-	return c.getWorkspaceUserGmailMessage.CallUnary(ctx, req)
-}
-
-// DownloadWorkspaceUserGmailAttachment calls
-// neobox.v1.GoogleWorkspaceService.DownloadWorkspaceUserGmailAttachment.
-func (c *googleWorkspaceServiceClient) DownloadWorkspaceUserGmailAttachment(ctx context.Context, req *connect.Request[v1.DownloadWorkspaceUserGmailAttachmentRequest]) (*connect.Response[v1.DownloadWorkspaceUserGmailAttachmentResponse], error) {
-	return c.downloadWorkspaceUserGmailAttachment.CallUnary(ctx, req)
-}
-
-// ListWorkspaceDriveActivities calls neobox.v1.GoogleWorkspaceService.ListWorkspaceDriveActivities.
-func (c *googleWorkspaceServiceClient) ListWorkspaceDriveActivities(ctx context.Context, req *connect.Request[v1.ListWorkspaceDriveActivitiesRequest]) (*connect.Response[v1.ListWorkspaceDriveActivitiesResponse], error) {
-	return c.listWorkspaceDriveActivities.CallUnary(ctx, req)
-}
-
-// ListWorkspaceDriveUsage calls neobox.v1.GoogleWorkspaceService.ListWorkspaceDriveUsage.
-func (c *googleWorkspaceServiceClient) ListWorkspaceDriveUsage(ctx context.Context, req *connect.Request[v1.ListWorkspaceDriveUsageRequest]) (*connect.Response[v1.ListWorkspaceDriveUsageResponse], error) {
-	return c.listWorkspaceDriveUsage.CallUnary(ctx, req)
-}
-
-// ListWorkspaceSharedDrives calls neobox.v1.GoogleWorkspaceService.ListWorkspaceSharedDrives.
-func (c *googleWorkspaceServiceClient) ListWorkspaceSharedDrives(ctx context.Context, req *connect.Request[v1.ListWorkspaceSharedDrivesRequest]) (*connect.Response[v1.ListWorkspaceSharedDrivesResponse], error) {
-	return c.listWorkspaceSharedDrives.CallUnary(ctx, req)
-}
-
-// ListWorkspaceUserExposedFiles calls
-// neobox.v1.GoogleWorkspaceService.ListWorkspaceUserExposedFiles.
-func (c *googleWorkspaceServiceClient) ListWorkspaceUserExposedFiles(ctx context.Context, req *connect.Request[v1.ListWorkspaceUserExposedFilesRequest]) (*connect.Response[v1.ListWorkspaceUserExposedFilesResponse], error) {
-	return c.listWorkspaceUserExposedFiles.CallUnary(ctx, req)
-}
-
-// GetWorkspaceUserUsage calls neobox.v1.GoogleWorkspaceService.GetWorkspaceUserUsage.
-func (c *googleWorkspaceServiceClient) GetWorkspaceUserUsage(ctx context.Context, req *connect.Request[v1.GetWorkspaceUserUsageRequest]) (*connect.Response[v1.GetWorkspaceUserUsageResponse], error) {
-	return c.getWorkspaceUserUsage.CallUnary(ctx, req)
-}
-
-// ListWorkspaceStorageUsage calls neobox.v1.GoogleWorkspaceService.ListWorkspaceStorageUsage.
-func (c *googleWorkspaceServiceClient) ListWorkspaceStorageUsage(ctx context.Context, req *connect.Request[v1.ListWorkspaceStorageUsageRequest]) (*connect.Response[v1.ListWorkspaceStorageUsageResponse], error) {
-	return c.listWorkspaceStorageUsage.CallUnary(ctx, req)
+// service. Multiple service clients may share a single connect.Client.
+func NewGoogleWorkspaceServiceClient(client *connect.Client) GoogleWorkspaceServiceClient {
+	return &googleWorkspaceServiceClient{client: client}
 }
 
 // GoogleWorkspaceServiceHandler is an implementation of the neobox.v1.GoogleWorkspaceService
 // service.
 type GoogleWorkspaceServiceHandler interface {
-	ListWorkspaceTenants(context.Context, *connect.Request[v1.ListWorkspaceTenantsRequest]) (*connect.Response[v1.ListWorkspaceTenantsResponse], error)
-	CreateWorkspaceTenant(context.Context, *connect.Request[v1.CreateWorkspaceTenantRequest]) (*connect.Response[v1.CreateWorkspaceTenantResponse], error)
-	UpdateWorkspaceTenant(context.Context, *connect.Request[v1.UpdateWorkspaceTenantRequest]) (*connect.Response[v1.UpdateWorkspaceTenantResponse], error)
-	DeleteWorkspaceTenant(context.Context, *connect.Request[v1.DeleteWorkspaceTenantRequest]) (*connect.Response[v1.DeleteWorkspaceTenantResponse], error)
-	TestWorkspaceTenant(context.Context, *connect.Request[v1.TestWorkspaceTenantRequest]) (*connect.Response[v1.TestWorkspaceTenantResponse], error)
-	ListWorkspaceUsers(context.Context, *connect.Request[v1.ListWorkspaceUsersRequest]) (*connect.Response[v1.ListWorkspaceUsersResponse], error)
-	GetWorkspaceUser(context.Context, *connect.Request[v1.GetWorkspaceUserRequest]) (*connect.Response[v1.GetWorkspaceUserResponse], error)
-	CreateWorkspaceUser(context.Context, *connect.Request[v1.CreateWorkspaceUserRequest]) (*connect.Response[v1.CreateWorkspaceUserResponse], error)
-	UpdateWorkspaceUser(context.Context, *connect.Request[v1.UpdateWorkspaceUserRequest]) (*connect.Response[v1.UpdateWorkspaceUserResponse], error)
-	ResetWorkspaceUserPassword(context.Context, *connect.Request[v1.ResetWorkspaceUserPasswordRequest]) (*connect.Response[v1.ResetWorkspaceUserPasswordResponse], error)
-	SetWorkspaceUserSuspended(context.Context, *connect.Request[v1.SetWorkspaceUserSuspendedRequest]) (*connect.Response[v1.SetWorkspaceUserSuspendedResponse], error)
-	ListWorkspaceUserAliases(context.Context, *connect.Request[v1.ListWorkspaceUserAliasesRequest]) (*connect.Response[v1.ListWorkspaceUserAliasesResponse], error)
-	AddWorkspaceUserAlias(context.Context, *connect.Request[v1.AddWorkspaceUserAliasRequest]) (*connect.Response[v1.AddWorkspaceUserAliasResponse], error)
-	DeleteWorkspaceUserAlias(context.Context, *connect.Request[v1.DeleteWorkspaceUserAliasRequest]) (*connect.Response[v1.DeleteWorkspaceUserAliasResponse], error)
-	ListWorkspaceGroups(context.Context, *connect.Request[v1.ListWorkspaceGroupsRequest]) (*connect.Response[v1.ListWorkspaceGroupsResponse], error)
-	ListWorkspaceUserGroups(context.Context, *connect.Request[v1.ListWorkspaceUserGroupsRequest]) (*connect.Response[v1.ListWorkspaceUserGroupsResponse], error)
-	CreateWorkspaceGroup(context.Context, *connect.Request[v1.CreateWorkspaceGroupRequest]) (*connect.Response[v1.CreateWorkspaceGroupResponse], error)
-	UpdateWorkspaceGroup(context.Context, *connect.Request[v1.UpdateWorkspaceGroupRequest]) (*connect.Response[v1.UpdateWorkspaceGroupResponse], error)
-	DeleteWorkspaceGroup(context.Context, *connect.Request[v1.DeleteWorkspaceGroupRequest]) (*connect.Response[v1.DeleteWorkspaceGroupResponse], error)
-	ListWorkspaceGroupMembers(context.Context, *connect.Request[v1.ListWorkspaceGroupMembersRequest]) (*connect.Response[v1.ListWorkspaceGroupMembersResponse], error)
-	AddWorkspaceGroupMember(context.Context, *connect.Request[v1.AddWorkspaceGroupMemberRequest]) (*connect.Response[v1.AddWorkspaceGroupMemberResponse], error)
-	UpdateWorkspaceGroupMember(context.Context, *connect.Request[v1.UpdateWorkspaceGroupMemberRequest]) (*connect.Response[v1.UpdateWorkspaceGroupMemberResponse], error)
-	DeleteWorkspaceGroupMember(context.Context, *connect.Request[v1.DeleteWorkspaceGroupMemberRequest]) (*connect.Response[v1.DeleteWorkspaceGroupMemberResponse], error)
-	ListWorkspaceOrgUnits(context.Context, *connect.Request[v1.ListWorkspaceOrgUnitsRequest]) (*connect.Response[v1.ListWorkspaceOrgUnitsResponse], error)
-	CreateWorkspaceOrgUnit(context.Context, *connect.Request[v1.CreateWorkspaceOrgUnitRequest]) (*connect.Response[v1.CreateWorkspaceOrgUnitResponse], error)
-	UpdateWorkspaceOrgUnit(context.Context, *connect.Request[v1.UpdateWorkspaceOrgUnitRequest]) (*connect.Response[v1.UpdateWorkspaceOrgUnitResponse], error)
-	DeleteWorkspaceOrgUnit(context.Context, *connect.Request[v1.DeleteWorkspaceOrgUnitRequest]) (*connect.Response[v1.DeleteWorkspaceOrgUnitResponse], error)
-	SignOutWorkspaceUser(context.Context, *connect.Request[v1.SignOutWorkspaceUserRequest]) (*connect.Response[v1.SignOutWorkspaceUserResponse], error)
-	ListWorkspaceUserTokens(context.Context, *connect.Request[v1.ListWorkspaceUserTokensRequest]) (*connect.Response[v1.ListWorkspaceUserTokensResponse], error)
-	RevokeWorkspaceUserToken(context.Context, *connect.Request[v1.RevokeWorkspaceUserTokenRequest]) (*connect.Response[v1.RevokeWorkspaceUserTokenResponse], error)
-	ListWorkspaceOperations(context.Context, *connect.Request[v1.ListWorkspaceOperationsRequest]) (*connect.Response[v1.ListWorkspaceOperationsResponse], error)
-	GetWorkspaceOverview(context.Context, *connect.Request[v1.GetWorkspaceOverviewRequest]) (*connect.Response[v1.GetWorkspaceOverviewResponse], error)
-	ListWorkspaceAuditActivities(context.Context, *connect.Request[v1.ListWorkspaceAuditActivitiesRequest]) (*connect.Response[v1.ListWorkspaceAuditActivitiesResponse], error)
+	ListWorkspaceTenants(context.Context, *v1.ListWorkspaceTenantsRequest) (*v1.ListWorkspaceTenantsResponse, error)
+	CreateWorkspaceTenant(context.Context, *v1.CreateWorkspaceTenantRequest) (*v1.CreateWorkspaceTenantResponse, error)
+	UpdateWorkspaceTenant(context.Context, *v1.UpdateWorkspaceTenantRequest) (*v1.UpdateWorkspaceTenantResponse, error)
+	DeleteWorkspaceTenant(context.Context, *v1.DeleteWorkspaceTenantRequest) (*v1.DeleteWorkspaceTenantResponse, error)
+	TestWorkspaceTenant(context.Context, *v1.TestWorkspaceTenantRequest) (*v1.TestWorkspaceTenantResponse, error)
+	ListWorkspaceUsers(context.Context, *v1.ListWorkspaceUsersRequest) (*v1.ListWorkspaceUsersResponse, error)
+	GetWorkspaceUser(context.Context, *v1.GetWorkspaceUserRequest) (*v1.GetWorkspaceUserResponse, error)
+	CreateWorkspaceUser(context.Context, *v1.CreateWorkspaceUserRequest) (*v1.CreateWorkspaceUserResponse, error)
+	UpdateWorkspaceUser(context.Context, *v1.UpdateWorkspaceUserRequest) (*v1.UpdateWorkspaceUserResponse, error)
+	ResetWorkspaceUserPassword(context.Context, *v1.ResetWorkspaceUserPasswordRequest) (*v1.ResetWorkspaceUserPasswordResponse, error)
+	SetWorkspaceUserSuspended(context.Context, *v1.SetWorkspaceUserSuspendedRequest) (*v1.SetWorkspaceUserSuspendedResponse, error)
+	ListWorkspaceUserAliases(context.Context, *v1.ListWorkspaceUserAliasesRequest) (*v1.ListWorkspaceUserAliasesResponse, error)
+	AddWorkspaceUserAlias(context.Context, *v1.AddWorkspaceUserAliasRequest) (*v1.AddWorkspaceUserAliasResponse, error)
+	DeleteWorkspaceUserAlias(context.Context, *v1.DeleteWorkspaceUserAliasRequest) (*v1.DeleteWorkspaceUserAliasResponse, error)
+	ListWorkspaceGroups(context.Context, *v1.ListWorkspaceGroupsRequest) (*v1.ListWorkspaceGroupsResponse, error)
+	ListWorkspaceUserGroups(context.Context, *v1.ListWorkspaceUserGroupsRequest) (*v1.ListWorkspaceUserGroupsResponse, error)
+	CreateWorkspaceGroup(context.Context, *v1.CreateWorkspaceGroupRequest) (*v1.CreateWorkspaceGroupResponse, error)
+	UpdateWorkspaceGroup(context.Context, *v1.UpdateWorkspaceGroupRequest) (*v1.UpdateWorkspaceGroupResponse, error)
+	DeleteWorkspaceGroup(context.Context, *v1.DeleteWorkspaceGroupRequest) (*v1.DeleteWorkspaceGroupResponse, error)
+	ListWorkspaceGroupMembers(context.Context, *v1.ListWorkspaceGroupMembersRequest) (*v1.ListWorkspaceGroupMembersResponse, error)
+	AddWorkspaceGroupMember(context.Context, *v1.AddWorkspaceGroupMemberRequest) (*v1.AddWorkspaceGroupMemberResponse, error)
+	UpdateWorkspaceGroupMember(context.Context, *v1.UpdateWorkspaceGroupMemberRequest) (*v1.UpdateWorkspaceGroupMemberResponse, error)
+	DeleteWorkspaceGroupMember(context.Context, *v1.DeleteWorkspaceGroupMemberRequest) (*v1.DeleteWorkspaceGroupMemberResponse, error)
+	ListWorkspaceOrgUnits(context.Context, *v1.ListWorkspaceOrgUnitsRequest) (*v1.ListWorkspaceOrgUnitsResponse, error)
+	CreateWorkspaceOrgUnit(context.Context, *v1.CreateWorkspaceOrgUnitRequest) (*v1.CreateWorkspaceOrgUnitResponse, error)
+	UpdateWorkspaceOrgUnit(context.Context, *v1.UpdateWorkspaceOrgUnitRequest) (*v1.UpdateWorkspaceOrgUnitResponse, error)
+	DeleteWorkspaceOrgUnit(context.Context, *v1.DeleteWorkspaceOrgUnitRequest) (*v1.DeleteWorkspaceOrgUnitResponse, error)
+	SignOutWorkspaceUser(context.Context, *v1.SignOutWorkspaceUserRequest) (*v1.SignOutWorkspaceUserResponse, error)
+	ListWorkspaceUserTokens(context.Context, *v1.ListWorkspaceUserTokensRequest) (*v1.ListWorkspaceUserTokensResponse, error)
+	RevokeWorkspaceUserToken(context.Context, *v1.RevokeWorkspaceUserTokenRequest) (*v1.RevokeWorkspaceUserTokenResponse, error)
+	ListWorkspaceOperations(context.Context, *v1.ListWorkspaceOperationsRequest) (*v1.ListWorkspaceOperationsResponse, error)
+	GetWorkspaceOverview(context.Context, *v1.GetWorkspaceOverviewRequest) (*v1.GetWorkspaceOverviewResponse, error)
+	ListWorkspaceAuditActivities(context.Context, *v1.ListWorkspaceAuditActivitiesRequest) (*v1.ListWorkspaceAuditActivitiesResponse, error)
 	// Gmail settings are read and changed by impersonating one tenant user
 	// (ADR 0008). Settings requests never read message content.
-	GetWorkspaceUserGmailSettings(context.Context, *connect.Request[v1.GetWorkspaceUserGmailSettingsRequest]) (*connect.Response[v1.GetWorkspaceUserGmailSettingsResponse], error)
-	UpdateWorkspaceUserGmailVacation(context.Context, *connect.Request[v1.UpdateWorkspaceUserGmailVacationRequest]) (*connect.Response[v1.UpdateWorkspaceUserGmailVacationResponse], error)
+	GetWorkspaceUserGmailSettings(context.Context, *v1.GetWorkspaceUserGmailSettingsRequest) (*v1.GetWorkspaceUserGmailSettingsResponse, error)
+	UpdateWorkspaceUserGmailVacation(context.Context, *v1.UpdateWorkspaceUserGmailVacationRequest) (*v1.UpdateWorkspaceUserGmailVacationResponse, error)
 	// Gmail mail is read-only (ADR 0010): labels, search, one message and one
 	// attachment, read live by impersonating the user with gmail.readonly. Each
 	// call carries the same access confirmation and is logged before it is sent;
 	// nothing changes the mailbox.
-	ListWorkspaceUserGmailLabels(context.Context, *connect.Request[v1.ListWorkspaceUserGmailLabelsRequest]) (*connect.Response[v1.ListWorkspaceUserGmailLabelsResponse], error)
-	SearchWorkspaceUserGmailMessages(context.Context, *connect.Request[v1.SearchWorkspaceUserGmailMessagesRequest]) (*connect.Response[v1.SearchWorkspaceUserGmailMessagesResponse], error)
-	GetWorkspaceUserGmailMessage(context.Context, *connect.Request[v1.GetWorkspaceUserGmailMessageRequest]) (*connect.Response[v1.GetWorkspaceUserGmailMessageResponse], error)
-	DownloadWorkspaceUserGmailAttachment(context.Context, *connect.Request[v1.DownloadWorkspaceUserGmailAttachmentRequest]) (*connect.Response[v1.DownloadWorkspaceUserGmailAttachmentResponse], error)
+	ListWorkspaceUserGmailLabels(context.Context, *v1.ListWorkspaceUserGmailLabelsRequest) (*v1.ListWorkspaceUserGmailLabelsResponse, error)
+	SearchWorkspaceUserGmailMessages(context.Context, *v1.SearchWorkspaceUserGmailMessagesRequest) (*v1.SearchWorkspaceUserGmailMessagesResponse, error)
+	GetWorkspaceUserGmailMessage(context.Context, *v1.GetWorkspaceUserGmailMessageRequest) (*v1.GetWorkspaceUserGmailMessageResponse, error)
+	DownloadWorkspaceUserGmailAttachment(context.Context, *v1.DownloadWorkspaceUserGmailAttachmentRequest) (*v1.DownloadWorkspaceUserGmailAttachmentResponse, error)
 	// Drive governance reads Google's Reports API only (ADR 0009); no file
 	// content is reachable with these scopes.
-	ListWorkspaceDriveActivities(context.Context, *connect.Request[v1.ListWorkspaceDriveActivitiesRequest]) (*connect.Response[v1.ListWorkspaceDriveActivitiesResponse], error)
-	ListWorkspaceDriveUsage(context.Context, *connect.Request[v1.ListWorkspaceDriveUsageRequest]) (*connect.Response[v1.ListWorkspaceDriveUsageResponse], error)
+	ListWorkspaceDriveActivities(context.Context, *v1.ListWorkspaceDriveActivitiesRequest) (*v1.ListWorkspaceDriveActivitiesResponse, error)
+	ListWorkspaceDriveUsage(context.Context, *v1.ListWorkspaceDriveUsageRequest) (*v1.ListWorkspaceDriveUsageResponse, error)
 	// Shared drive inventory (drives.list as the tenant's administrator).
 	// Needs drive.readonly, a scope that could read file content; Neo Box
 	// calls only drives.list and records each read with its reason first. See
 	// docs/adr/0009.
-	ListWorkspaceSharedDrives(context.Context, *connect.Request[v1.ListWorkspaceSharedDrivesRequest]) (*connect.Response[v1.ListWorkspaceSharedDrivesResponse], error)
+	ListWorkspaceSharedDrives(context.Context, *v1.ListWorkspaceSharedDrivesRequest) (*v1.ListWorkspaceSharedDrivesResponse, error)
 	// One user's files that are visible beyond named people (files.list as that
 	// user, drive.metadata.readonly: metadata only). Reason and typed primary
 	// email on every request, recorded first. See docs/adr/0009.
-	ListWorkspaceUserExposedFiles(context.Context, *connect.Request[v1.ListWorkspaceUserExposedFilesRequest]) (*connect.Response[v1.ListWorkspaceUserExposedFilesResponse], error)
+	ListWorkspaceUserExposedFiles(context.Context, *v1.ListWorkspaceUserExposedFilesRequest) (*v1.ListWorkspaceUserExposedFilesResponse, error)
 	// One user's storage and Gmail activity per day, from Google's usage
 	// reports (admin.reports.usage.readonly). Aggregate figures only: it never
 	// reads the mailbox, so it needs no access reason and is not recorded.
-	GetWorkspaceUserUsage(context.Context, *connect.Request[v1.GetWorkspaceUserUsageRequest]) (*connect.Response[v1.GetWorkspaceUserUsageResponse], error)
+	GetWorkspaceUserUsage(context.Context, *v1.GetWorkspaceUserUsageRequest) (*v1.GetWorkspaceUserUsageResponse, error)
 	// Every user's storage (Gmail, Drive, Photos, total, quota) from the newest
 	// usage report, joined with the Directory for each user's organizational
 	// unit and summarised per unit. Read-only: the quota shown is what Google
 	// reports; Google has no API to set a user storage limit, which stays in the
 	// Admin console.
-	ListWorkspaceStorageUsage(context.Context, *connect.Request[v1.ListWorkspaceStorageUsageRequest]) (*connect.Response[v1.ListWorkspaceStorageUsageResponse], error)
+	ListWorkspaceStorageUsage(context.Context, *v1.ListWorkspaceStorageUsageRequest) (*v1.ListWorkspaceStorageUsageResponse, error)
 }
 
-// NewGoogleWorkspaceServiceHandler builds an HTTP handler from the service implementation. It
-// returns the path on which to mount the handler and the handler itself.
-//
-// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
-// and JSON codecs. They also support gzip compression.
-func NewGoogleWorkspaceServiceHandler(svc GoogleWorkspaceServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
-	googleWorkspaceServiceMethods := v1.File_neobox_v1_google_workspace_proto.Services().ByName("GoogleWorkspaceService").Methods()
-	googleWorkspaceServiceListWorkspaceTenantsHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceListWorkspaceTenantsProcedure,
-		svc.ListWorkspaceTenants,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceTenants")),
-		connect.WithHandlerOptions(opts...),
+// RegisterGoogleWorkspaceServiceHandler registers svc as the neobox.v1.GoogleWorkspaceService
+// implementation on server.
+func RegisterGoogleWorkspaceServiceHandler(server *connect.Server, svc GoogleWorkspaceServiceHandler) {
+	adapter := googleWorkspaceServiceHandler{svc: svc}
+	server.Register(
+		connect.Method{Spec: googleWorkspaceServiceListWorkspaceTenantsSpec(), Handler: adapter.listWorkspaceTenants},
+		connect.Method{Spec: googleWorkspaceServiceCreateWorkspaceTenantSpec(), Handler: adapter.createWorkspaceTenant},
+		connect.Method{Spec: googleWorkspaceServiceUpdateWorkspaceTenantSpec(), Handler: adapter.updateWorkspaceTenant},
+		connect.Method{Spec: googleWorkspaceServiceDeleteWorkspaceTenantSpec(), Handler: adapter.deleteWorkspaceTenant},
+		connect.Method{Spec: googleWorkspaceServiceTestWorkspaceTenantSpec(), Handler: adapter.testWorkspaceTenant},
+		connect.Method{Spec: googleWorkspaceServiceListWorkspaceUsersSpec(), Handler: adapter.listWorkspaceUsers},
+		connect.Method{Spec: googleWorkspaceServiceGetWorkspaceUserSpec(), Handler: adapter.getWorkspaceUser},
+		connect.Method{Spec: googleWorkspaceServiceCreateWorkspaceUserSpec(), Handler: adapter.createWorkspaceUser},
+		connect.Method{Spec: googleWorkspaceServiceUpdateWorkspaceUserSpec(), Handler: adapter.updateWorkspaceUser},
+		connect.Method{Spec: googleWorkspaceServiceResetWorkspaceUserPasswordSpec(), Handler: adapter.resetWorkspaceUserPassword},
+		connect.Method{Spec: googleWorkspaceServiceSetWorkspaceUserSuspendedSpec(), Handler: adapter.setWorkspaceUserSuspended},
+		connect.Method{Spec: googleWorkspaceServiceListWorkspaceUserAliasesSpec(), Handler: adapter.listWorkspaceUserAliases},
+		connect.Method{Spec: googleWorkspaceServiceAddWorkspaceUserAliasSpec(), Handler: adapter.addWorkspaceUserAlias},
+		connect.Method{Spec: googleWorkspaceServiceDeleteWorkspaceUserAliasSpec(), Handler: adapter.deleteWorkspaceUserAlias},
+		connect.Method{Spec: googleWorkspaceServiceListWorkspaceGroupsSpec(), Handler: adapter.listWorkspaceGroups},
+		connect.Method{Spec: googleWorkspaceServiceListWorkspaceUserGroupsSpec(), Handler: adapter.listWorkspaceUserGroups},
+		connect.Method{Spec: googleWorkspaceServiceCreateWorkspaceGroupSpec(), Handler: adapter.createWorkspaceGroup},
+		connect.Method{Spec: googleWorkspaceServiceUpdateWorkspaceGroupSpec(), Handler: adapter.updateWorkspaceGroup},
+		connect.Method{Spec: googleWorkspaceServiceDeleteWorkspaceGroupSpec(), Handler: adapter.deleteWorkspaceGroup},
+		connect.Method{Spec: googleWorkspaceServiceListWorkspaceGroupMembersSpec(), Handler: adapter.listWorkspaceGroupMembers},
+		connect.Method{Spec: googleWorkspaceServiceAddWorkspaceGroupMemberSpec(), Handler: adapter.addWorkspaceGroupMember},
+		connect.Method{Spec: googleWorkspaceServiceUpdateWorkspaceGroupMemberSpec(), Handler: adapter.updateWorkspaceGroupMember},
+		connect.Method{Spec: googleWorkspaceServiceDeleteWorkspaceGroupMemberSpec(), Handler: adapter.deleteWorkspaceGroupMember},
+		connect.Method{Spec: googleWorkspaceServiceListWorkspaceOrgUnitsSpec(), Handler: adapter.listWorkspaceOrgUnits},
+		connect.Method{Spec: googleWorkspaceServiceCreateWorkspaceOrgUnitSpec(), Handler: adapter.createWorkspaceOrgUnit},
+		connect.Method{Spec: googleWorkspaceServiceUpdateWorkspaceOrgUnitSpec(), Handler: adapter.updateWorkspaceOrgUnit},
+		connect.Method{Spec: googleWorkspaceServiceDeleteWorkspaceOrgUnitSpec(), Handler: adapter.deleteWorkspaceOrgUnit},
+		connect.Method{Spec: googleWorkspaceServiceSignOutWorkspaceUserSpec(), Handler: adapter.signOutWorkspaceUser},
+		connect.Method{Spec: googleWorkspaceServiceListWorkspaceUserTokensSpec(), Handler: adapter.listWorkspaceUserTokens},
+		connect.Method{Spec: googleWorkspaceServiceRevokeWorkspaceUserTokenSpec(), Handler: adapter.revokeWorkspaceUserToken},
+		connect.Method{Spec: googleWorkspaceServiceListWorkspaceOperationsSpec(), Handler: adapter.listWorkspaceOperations},
+		connect.Method{Spec: googleWorkspaceServiceGetWorkspaceOverviewSpec(), Handler: adapter.getWorkspaceOverview},
+		connect.Method{Spec: googleWorkspaceServiceListWorkspaceAuditActivitiesSpec(), Handler: adapter.listWorkspaceAuditActivities},
+		connect.Method{Spec: googleWorkspaceServiceGetWorkspaceUserGmailSettingsSpec(), Handler: adapter.getWorkspaceUserGmailSettings},
+		connect.Method{Spec: googleWorkspaceServiceUpdateWorkspaceUserGmailVacationSpec(), Handler: adapter.updateWorkspaceUserGmailVacation},
+		connect.Method{Spec: googleWorkspaceServiceListWorkspaceUserGmailLabelsSpec(), Handler: adapter.listWorkspaceUserGmailLabels},
+		connect.Method{Spec: googleWorkspaceServiceSearchWorkspaceUserGmailMessagesSpec(), Handler: adapter.searchWorkspaceUserGmailMessages},
+		connect.Method{Spec: googleWorkspaceServiceGetWorkspaceUserGmailMessageSpec(), Handler: adapter.getWorkspaceUserGmailMessage},
+		connect.Method{Spec: googleWorkspaceServiceDownloadWorkspaceUserGmailAttachmentSpec(), Handler: adapter.downloadWorkspaceUserGmailAttachment},
+		connect.Method{Spec: googleWorkspaceServiceListWorkspaceDriveActivitiesSpec(), Handler: adapter.listWorkspaceDriveActivities},
+		connect.Method{Spec: googleWorkspaceServiceListWorkspaceDriveUsageSpec(), Handler: adapter.listWorkspaceDriveUsage},
+		connect.Method{Spec: googleWorkspaceServiceListWorkspaceSharedDrivesSpec(), Handler: adapter.listWorkspaceSharedDrives},
+		connect.Method{Spec: googleWorkspaceServiceListWorkspaceUserExposedFilesSpec(), Handler: adapter.listWorkspaceUserExposedFiles},
+		connect.Method{Spec: googleWorkspaceServiceGetWorkspaceUserUsageSpec(), Handler: adapter.getWorkspaceUserUsage},
+		connect.Method{Spec: googleWorkspaceServiceListWorkspaceStorageUsageSpec(), Handler: adapter.listWorkspaceStorageUsage},
 	)
-	googleWorkspaceServiceCreateWorkspaceTenantHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceCreateWorkspaceTenantProcedure,
-		svc.CreateWorkspaceTenant,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("CreateWorkspaceTenant")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceUpdateWorkspaceTenantHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceUpdateWorkspaceTenantProcedure,
-		svc.UpdateWorkspaceTenant,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("UpdateWorkspaceTenant")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceDeleteWorkspaceTenantHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceDeleteWorkspaceTenantProcedure,
-		svc.DeleteWorkspaceTenant,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("DeleteWorkspaceTenant")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceTestWorkspaceTenantHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceTestWorkspaceTenantProcedure,
-		svc.TestWorkspaceTenant,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("TestWorkspaceTenant")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceListWorkspaceUsersHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceListWorkspaceUsersProcedure,
-		svc.ListWorkspaceUsers,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceUsers")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceGetWorkspaceUserHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceGetWorkspaceUserProcedure,
-		svc.GetWorkspaceUser,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("GetWorkspaceUser")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceCreateWorkspaceUserHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceCreateWorkspaceUserProcedure,
-		svc.CreateWorkspaceUser,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("CreateWorkspaceUser")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceUpdateWorkspaceUserHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceUpdateWorkspaceUserProcedure,
-		svc.UpdateWorkspaceUser,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("UpdateWorkspaceUser")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceResetWorkspaceUserPasswordHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceResetWorkspaceUserPasswordProcedure,
-		svc.ResetWorkspaceUserPassword,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ResetWorkspaceUserPassword")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceSetWorkspaceUserSuspendedHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceSetWorkspaceUserSuspendedProcedure,
-		svc.SetWorkspaceUserSuspended,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("SetWorkspaceUserSuspended")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceListWorkspaceUserAliasesHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceListWorkspaceUserAliasesProcedure,
-		svc.ListWorkspaceUserAliases,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceUserAliases")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceAddWorkspaceUserAliasHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceAddWorkspaceUserAliasProcedure,
-		svc.AddWorkspaceUserAlias,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("AddWorkspaceUserAlias")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceDeleteWorkspaceUserAliasHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceDeleteWorkspaceUserAliasProcedure,
-		svc.DeleteWorkspaceUserAlias,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("DeleteWorkspaceUserAlias")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceListWorkspaceGroupsHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceListWorkspaceGroupsProcedure,
-		svc.ListWorkspaceGroups,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceGroups")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceListWorkspaceUserGroupsHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceListWorkspaceUserGroupsProcedure,
-		svc.ListWorkspaceUserGroups,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceUserGroups")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceCreateWorkspaceGroupHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceCreateWorkspaceGroupProcedure,
-		svc.CreateWorkspaceGroup,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("CreateWorkspaceGroup")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceUpdateWorkspaceGroupHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceUpdateWorkspaceGroupProcedure,
-		svc.UpdateWorkspaceGroup,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("UpdateWorkspaceGroup")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceDeleteWorkspaceGroupHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceDeleteWorkspaceGroupProcedure,
-		svc.DeleteWorkspaceGroup,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("DeleteWorkspaceGroup")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceListWorkspaceGroupMembersHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceListWorkspaceGroupMembersProcedure,
-		svc.ListWorkspaceGroupMembers,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceGroupMembers")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceAddWorkspaceGroupMemberHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceAddWorkspaceGroupMemberProcedure,
-		svc.AddWorkspaceGroupMember,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("AddWorkspaceGroupMember")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceUpdateWorkspaceGroupMemberHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceUpdateWorkspaceGroupMemberProcedure,
-		svc.UpdateWorkspaceGroupMember,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("UpdateWorkspaceGroupMember")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceDeleteWorkspaceGroupMemberHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceDeleteWorkspaceGroupMemberProcedure,
-		svc.DeleteWorkspaceGroupMember,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("DeleteWorkspaceGroupMember")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceListWorkspaceOrgUnitsHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceListWorkspaceOrgUnitsProcedure,
-		svc.ListWorkspaceOrgUnits,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceOrgUnits")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceCreateWorkspaceOrgUnitHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceCreateWorkspaceOrgUnitProcedure,
-		svc.CreateWorkspaceOrgUnit,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("CreateWorkspaceOrgUnit")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceUpdateWorkspaceOrgUnitHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceUpdateWorkspaceOrgUnitProcedure,
-		svc.UpdateWorkspaceOrgUnit,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("UpdateWorkspaceOrgUnit")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceDeleteWorkspaceOrgUnitHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceDeleteWorkspaceOrgUnitProcedure,
-		svc.DeleteWorkspaceOrgUnit,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("DeleteWorkspaceOrgUnit")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceSignOutWorkspaceUserHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceSignOutWorkspaceUserProcedure,
-		svc.SignOutWorkspaceUser,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("SignOutWorkspaceUser")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceListWorkspaceUserTokensHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceListWorkspaceUserTokensProcedure,
-		svc.ListWorkspaceUserTokens,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceUserTokens")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceRevokeWorkspaceUserTokenHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceRevokeWorkspaceUserTokenProcedure,
-		svc.RevokeWorkspaceUserToken,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("RevokeWorkspaceUserToken")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceListWorkspaceOperationsHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceListWorkspaceOperationsProcedure,
-		svc.ListWorkspaceOperations,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceOperations")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceGetWorkspaceOverviewHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceGetWorkspaceOverviewProcedure,
-		svc.GetWorkspaceOverview,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("GetWorkspaceOverview")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceListWorkspaceAuditActivitiesHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceListWorkspaceAuditActivitiesProcedure,
-		svc.ListWorkspaceAuditActivities,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceAuditActivities")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceGetWorkspaceUserGmailSettingsHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceGetWorkspaceUserGmailSettingsProcedure,
-		svc.GetWorkspaceUserGmailSettings,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("GetWorkspaceUserGmailSettings")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceUpdateWorkspaceUserGmailVacationHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceUpdateWorkspaceUserGmailVacationProcedure,
-		svc.UpdateWorkspaceUserGmailVacation,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("UpdateWorkspaceUserGmailVacation")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceListWorkspaceUserGmailLabelsHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceListWorkspaceUserGmailLabelsProcedure,
-		svc.ListWorkspaceUserGmailLabels,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceUserGmailLabels")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceSearchWorkspaceUserGmailMessagesHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceSearchWorkspaceUserGmailMessagesProcedure,
-		svc.SearchWorkspaceUserGmailMessages,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("SearchWorkspaceUserGmailMessages")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceGetWorkspaceUserGmailMessageHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceGetWorkspaceUserGmailMessageProcedure,
-		svc.GetWorkspaceUserGmailMessage,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("GetWorkspaceUserGmailMessage")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceDownloadWorkspaceUserGmailAttachmentHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceDownloadWorkspaceUserGmailAttachmentProcedure,
-		svc.DownloadWorkspaceUserGmailAttachment,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("DownloadWorkspaceUserGmailAttachment")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceListWorkspaceDriveActivitiesHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceListWorkspaceDriveActivitiesProcedure,
-		svc.ListWorkspaceDriveActivities,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceDriveActivities")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceListWorkspaceDriveUsageHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceListWorkspaceDriveUsageProcedure,
-		svc.ListWorkspaceDriveUsage,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceDriveUsage")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceListWorkspaceSharedDrivesHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceListWorkspaceSharedDrivesProcedure,
-		svc.ListWorkspaceSharedDrives,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceSharedDrives")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceListWorkspaceUserExposedFilesHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceListWorkspaceUserExposedFilesProcedure,
-		svc.ListWorkspaceUserExposedFiles,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceUserExposedFiles")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceGetWorkspaceUserUsageHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceGetWorkspaceUserUsageProcedure,
-		svc.GetWorkspaceUserUsage,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("GetWorkspaceUserUsage")),
-		connect.WithHandlerOptions(opts...),
-	)
-	googleWorkspaceServiceListWorkspaceStorageUsageHandler := connect.NewUnaryHandler(
-		GoogleWorkspaceServiceListWorkspaceStorageUsageProcedure,
-		svc.ListWorkspaceStorageUsage,
-		connect.WithSchema(googleWorkspaceServiceMethods.ByName("ListWorkspaceStorageUsage")),
-		connect.WithHandlerOptions(opts...),
-	)
-	return "/neobox.v1.GoogleWorkspaceService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case GoogleWorkspaceServiceListWorkspaceTenantsProcedure:
-			googleWorkspaceServiceListWorkspaceTenantsHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceCreateWorkspaceTenantProcedure:
-			googleWorkspaceServiceCreateWorkspaceTenantHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceUpdateWorkspaceTenantProcedure:
-			googleWorkspaceServiceUpdateWorkspaceTenantHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceDeleteWorkspaceTenantProcedure:
-			googleWorkspaceServiceDeleteWorkspaceTenantHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceTestWorkspaceTenantProcedure:
-			googleWorkspaceServiceTestWorkspaceTenantHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceListWorkspaceUsersProcedure:
-			googleWorkspaceServiceListWorkspaceUsersHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceGetWorkspaceUserProcedure:
-			googleWorkspaceServiceGetWorkspaceUserHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceCreateWorkspaceUserProcedure:
-			googleWorkspaceServiceCreateWorkspaceUserHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceUpdateWorkspaceUserProcedure:
-			googleWorkspaceServiceUpdateWorkspaceUserHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceResetWorkspaceUserPasswordProcedure:
-			googleWorkspaceServiceResetWorkspaceUserPasswordHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceSetWorkspaceUserSuspendedProcedure:
-			googleWorkspaceServiceSetWorkspaceUserSuspendedHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceListWorkspaceUserAliasesProcedure:
-			googleWorkspaceServiceListWorkspaceUserAliasesHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceAddWorkspaceUserAliasProcedure:
-			googleWorkspaceServiceAddWorkspaceUserAliasHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceDeleteWorkspaceUserAliasProcedure:
-			googleWorkspaceServiceDeleteWorkspaceUserAliasHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceListWorkspaceGroupsProcedure:
-			googleWorkspaceServiceListWorkspaceGroupsHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceListWorkspaceUserGroupsProcedure:
-			googleWorkspaceServiceListWorkspaceUserGroupsHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceCreateWorkspaceGroupProcedure:
-			googleWorkspaceServiceCreateWorkspaceGroupHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceUpdateWorkspaceGroupProcedure:
-			googleWorkspaceServiceUpdateWorkspaceGroupHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceDeleteWorkspaceGroupProcedure:
-			googleWorkspaceServiceDeleteWorkspaceGroupHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceListWorkspaceGroupMembersProcedure:
-			googleWorkspaceServiceListWorkspaceGroupMembersHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceAddWorkspaceGroupMemberProcedure:
-			googleWorkspaceServiceAddWorkspaceGroupMemberHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceUpdateWorkspaceGroupMemberProcedure:
-			googleWorkspaceServiceUpdateWorkspaceGroupMemberHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceDeleteWorkspaceGroupMemberProcedure:
-			googleWorkspaceServiceDeleteWorkspaceGroupMemberHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceListWorkspaceOrgUnitsProcedure:
-			googleWorkspaceServiceListWorkspaceOrgUnitsHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceCreateWorkspaceOrgUnitProcedure:
-			googleWorkspaceServiceCreateWorkspaceOrgUnitHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceUpdateWorkspaceOrgUnitProcedure:
-			googleWorkspaceServiceUpdateWorkspaceOrgUnitHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceDeleteWorkspaceOrgUnitProcedure:
-			googleWorkspaceServiceDeleteWorkspaceOrgUnitHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceSignOutWorkspaceUserProcedure:
-			googleWorkspaceServiceSignOutWorkspaceUserHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceListWorkspaceUserTokensProcedure:
-			googleWorkspaceServiceListWorkspaceUserTokensHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceRevokeWorkspaceUserTokenProcedure:
-			googleWorkspaceServiceRevokeWorkspaceUserTokenHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceListWorkspaceOperationsProcedure:
-			googleWorkspaceServiceListWorkspaceOperationsHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceGetWorkspaceOverviewProcedure:
-			googleWorkspaceServiceGetWorkspaceOverviewHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceListWorkspaceAuditActivitiesProcedure:
-			googleWorkspaceServiceListWorkspaceAuditActivitiesHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceGetWorkspaceUserGmailSettingsProcedure:
-			googleWorkspaceServiceGetWorkspaceUserGmailSettingsHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceUpdateWorkspaceUserGmailVacationProcedure:
-			googleWorkspaceServiceUpdateWorkspaceUserGmailVacationHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceListWorkspaceUserGmailLabelsProcedure:
-			googleWorkspaceServiceListWorkspaceUserGmailLabelsHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceSearchWorkspaceUserGmailMessagesProcedure:
-			googleWorkspaceServiceSearchWorkspaceUserGmailMessagesHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceGetWorkspaceUserGmailMessageProcedure:
-			googleWorkspaceServiceGetWorkspaceUserGmailMessageHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceDownloadWorkspaceUserGmailAttachmentProcedure:
-			googleWorkspaceServiceDownloadWorkspaceUserGmailAttachmentHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceListWorkspaceDriveActivitiesProcedure:
-			googleWorkspaceServiceListWorkspaceDriveActivitiesHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceListWorkspaceDriveUsageProcedure:
-			googleWorkspaceServiceListWorkspaceDriveUsageHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceListWorkspaceSharedDrivesProcedure:
-			googleWorkspaceServiceListWorkspaceSharedDrivesHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceListWorkspaceUserExposedFilesProcedure:
-			googleWorkspaceServiceListWorkspaceUserExposedFilesHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceGetWorkspaceUserUsageProcedure:
-			googleWorkspaceServiceGetWorkspaceUserUsageHandler.ServeHTTP(w, r)
-		case GoogleWorkspaceServiceListWorkspaceStorageUsageProcedure:
-			googleWorkspaceServiceListWorkspaceStorageUsageHandler.ServeHTTP(w, r)
-		default:
-			http.NotFound(w, r)
-		}
-	})
 }
 
 // UnimplementedGoogleWorkspaceServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedGoogleWorkspaceServiceHandler struct{}
 
-func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceTenants(context.Context, *connect.Request[v1.ListWorkspaceTenantsRequest]) (*connect.Response[v1.ListWorkspaceTenantsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceTenants is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceTenants(context.Context, *v1.ListWorkspaceTenantsRequest) (*v1.ListWorkspaceTenantsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.ListWorkspaceTenants is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) CreateWorkspaceTenant(context.Context, *connect.Request[v1.CreateWorkspaceTenantRequest]) (*connect.Response[v1.CreateWorkspaceTenantResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.CreateWorkspaceTenant is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) CreateWorkspaceTenant(context.Context, *v1.CreateWorkspaceTenantRequest) (*v1.CreateWorkspaceTenantResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.CreateWorkspaceTenant is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) UpdateWorkspaceTenant(context.Context, *connect.Request[v1.UpdateWorkspaceTenantRequest]) (*connect.Response[v1.UpdateWorkspaceTenantResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.UpdateWorkspaceTenant is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) UpdateWorkspaceTenant(context.Context, *v1.UpdateWorkspaceTenantRequest) (*v1.UpdateWorkspaceTenantResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.UpdateWorkspaceTenant is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) DeleteWorkspaceTenant(context.Context, *connect.Request[v1.DeleteWorkspaceTenantRequest]) (*connect.Response[v1.DeleteWorkspaceTenantResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.DeleteWorkspaceTenant is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) DeleteWorkspaceTenant(context.Context, *v1.DeleteWorkspaceTenantRequest) (*v1.DeleteWorkspaceTenantResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.DeleteWorkspaceTenant is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) TestWorkspaceTenant(context.Context, *connect.Request[v1.TestWorkspaceTenantRequest]) (*connect.Response[v1.TestWorkspaceTenantResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.TestWorkspaceTenant is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) TestWorkspaceTenant(context.Context, *v1.TestWorkspaceTenantRequest) (*v1.TestWorkspaceTenantResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.TestWorkspaceTenant is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceUsers(context.Context, *connect.Request[v1.ListWorkspaceUsersRequest]) (*connect.Response[v1.ListWorkspaceUsersResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceUsers is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceUsers(context.Context, *v1.ListWorkspaceUsersRequest) (*v1.ListWorkspaceUsersResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.ListWorkspaceUsers is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) GetWorkspaceUser(context.Context, *connect.Request[v1.GetWorkspaceUserRequest]) (*connect.Response[v1.GetWorkspaceUserResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.GetWorkspaceUser is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) GetWorkspaceUser(context.Context, *v1.GetWorkspaceUserRequest) (*v1.GetWorkspaceUserResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.GetWorkspaceUser is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) CreateWorkspaceUser(context.Context, *connect.Request[v1.CreateWorkspaceUserRequest]) (*connect.Response[v1.CreateWorkspaceUserResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.CreateWorkspaceUser is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) CreateWorkspaceUser(context.Context, *v1.CreateWorkspaceUserRequest) (*v1.CreateWorkspaceUserResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.CreateWorkspaceUser is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) UpdateWorkspaceUser(context.Context, *connect.Request[v1.UpdateWorkspaceUserRequest]) (*connect.Response[v1.UpdateWorkspaceUserResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.UpdateWorkspaceUser is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) UpdateWorkspaceUser(context.Context, *v1.UpdateWorkspaceUserRequest) (*v1.UpdateWorkspaceUserResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.UpdateWorkspaceUser is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) ResetWorkspaceUserPassword(context.Context, *connect.Request[v1.ResetWorkspaceUserPasswordRequest]) (*connect.Response[v1.ResetWorkspaceUserPasswordResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ResetWorkspaceUserPassword is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) ResetWorkspaceUserPassword(context.Context, *v1.ResetWorkspaceUserPasswordRequest) (*v1.ResetWorkspaceUserPasswordResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.ResetWorkspaceUserPassword is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) SetWorkspaceUserSuspended(context.Context, *connect.Request[v1.SetWorkspaceUserSuspendedRequest]) (*connect.Response[v1.SetWorkspaceUserSuspendedResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.SetWorkspaceUserSuspended is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) SetWorkspaceUserSuspended(context.Context, *v1.SetWorkspaceUserSuspendedRequest) (*v1.SetWorkspaceUserSuspendedResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.SetWorkspaceUserSuspended is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceUserAliases(context.Context, *connect.Request[v1.ListWorkspaceUserAliasesRequest]) (*connect.Response[v1.ListWorkspaceUserAliasesResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceUserAliases is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceUserAliases(context.Context, *v1.ListWorkspaceUserAliasesRequest) (*v1.ListWorkspaceUserAliasesResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.ListWorkspaceUserAliases is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) AddWorkspaceUserAlias(context.Context, *connect.Request[v1.AddWorkspaceUserAliasRequest]) (*connect.Response[v1.AddWorkspaceUserAliasResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.AddWorkspaceUserAlias is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) AddWorkspaceUserAlias(context.Context, *v1.AddWorkspaceUserAliasRequest) (*v1.AddWorkspaceUserAliasResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.AddWorkspaceUserAlias is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) DeleteWorkspaceUserAlias(context.Context, *connect.Request[v1.DeleteWorkspaceUserAliasRequest]) (*connect.Response[v1.DeleteWorkspaceUserAliasResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.DeleteWorkspaceUserAlias is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) DeleteWorkspaceUserAlias(context.Context, *v1.DeleteWorkspaceUserAliasRequest) (*v1.DeleteWorkspaceUserAliasResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.DeleteWorkspaceUserAlias is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceGroups(context.Context, *connect.Request[v1.ListWorkspaceGroupsRequest]) (*connect.Response[v1.ListWorkspaceGroupsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceGroups is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceGroups(context.Context, *v1.ListWorkspaceGroupsRequest) (*v1.ListWorkspaceGroupsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.ListWorkspaceGroups is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceUserGroups(context.Context, *connect.Request[v1.ListWorkspaceUserGroupsRequest]) (*connect.Response[v1.ListWorkspaceUserGroupsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceUserGroups is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceUserGroups(context.Context, *v1.ListWorkspaceUserGroupsRequest) (*v1.ListWorkspaceUserGroupsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.ListWorkspaceUserGroups is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) CreateWorkspaceGroup(context.Context, *connect.Request[v1.CreateWorkspaceGroupRequest]) (*connect.Response[v1.CreateWorkspaceGroupResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.CreateWorkspaceGroup is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) CreateWorkspaceGroup(context.Context, *v1.CreateWorkspaceGroupRequest) (*v1.CreateWorkspaceGroupResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.CreateWorkspaceGroup is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) UpdateWorkspaceGroup(context.Context, *connect.Request[v1.UpdateWorkspaceGroupRequest]) (*connect.Response[v1.UpdateWorkspaceGroupResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.UpdateWorkspaceGroup is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) UpdateWorkspaceGroup(context.Context, *v1.UpdateWorkspaceGroupRequest) (*v1.UpdateWorkspaceGroupResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.UpdateWorkspaceGroup is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) DeleteWorkspaceGroup(context.Context, *connect.Request[v1.DeleteWorkspaceGroupRequest]) (*connect.Response[v1.DeleteWorkspaceGroupResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.DeleteWorkspaceGroup is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) DeleteWorkspaceGroup(context.Context, *v1.DeleteWorkspaceGroupRequest) (*v1.DeleteWorkspaceGroupResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.DeleteWorkspaceGroup is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceGroupMembers(context.Context, *connect.Request[v1.ListWorkspaceGroupMembersRequest]) (*connect.Response[v1.ListWorkspaceGroupMembersResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceGroupMembers is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceGroupMembers(context.Context, *v1.ListWorkspaceGroupMembersRequest) (*v1.ListWorkspaceGroupMembersResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.ListWorkspaceGroupMembers is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) AddWorkspaceGroupMember(context.Context, *connect.Request[v1.AddWorkspaceGroupMemberRequest]) (*connect.Response[v1.AddWorkspaceGroupMemberResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.AddWorkspaceGroupMember is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) AddWorkspaceGroupMember(context.Context, *v1.AddWorkspaceGroupMemberRequest) (*v1.AddWorkspaceGroupMemberResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.AddWorkspaceGroupMember is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) UpdateWorkspaceGroupMember(context.Context, *connect.Request[v1.UpdateWorkspaceGroupMemberRequest]) (*connect.Response[v1.UpdateWorkspaceGroupMemberResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.UpdateWorkspaceGroupMember is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) UpdateWorkspaceGroupMember(context.Context, *v1.UpdateWorkspaceGroupMemberRequest) (*v1.UpdateWorkspaceGroupMemberResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.UpdateWorkspaceGroupMember is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) DeleteWorkspaceGroupMember(context.Context, *connect.Request[v1.DeleteWorkspaceGroupMemberRequest]) (*connect.Response[v1.DeleteWorkspaceGroupMemberResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.DeleteWorkspaceGroupMember is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) DeleteWorkspaceGroupMember(context.Context, *v1.DeleteWorkspaceGroupMemberRequest) (*v1.DeleteWorkspaceGroupMemberResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.DeleteWorkspaceGroupMember is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceOrgUnits(context.Context, *connect.Request[v1.ListWorkspaceOrgUnitsRequest]) (*connect.Response[v1.ListWorkspaceOrgUnitsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceOrgUnits is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceOrgUnits(context.Context, *v1.ListWorkspaceOrgUnitsRequest) (*v1.ListWorkspaceOrgUnitsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.ListWorkspaceOrgUnits is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) CreateWorkspaceOrgUnit(context.Context, *connect.Request[v1.CreateWorkspaceOrgUnitRequest]) (*connect.Response[v1.CreateWorkspaceOrgUnitResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.CreateWorkspaceOrgUnit is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) CreateWorkspaceOrgUnit(context.Context, *v1.CreateWorkspaceOrgUnitRequest) (*v1.CreateWorkspaceOrgUnitResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.CreateWorkspaceOrgUnit is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) UpdateWorkspaceOrgUnit(context.Context, *connect.Request[v1.UpdateWorkspaceOrgUnitRequest]) (*connect.Response[v1.UpdateWorkspaceOrgUnitResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.UpdateWorkspaceOrgUnit is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) UpdateWorkspaceOrgUnit(context.Context, *v1.UpdateWorkspaceOrgUnitRequest) (*v1.UpdateWorkspaceOrgUnitResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.UpdateWorkspaceOrgUnit is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) DeleteWorkspaceOrgUnit(context.Context, *connect.Request[v1.DeleteWorkspaceOrgUnitRequest]) (*connect.Response[v1.DeleteWorkspaceOrgUnitResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.DeleteWorkspaceOrgUnit is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) DeleteWorkspaceOrgUnit(context.Context, *v1.DeleteWorkspaceOrgUnitRequest) (*v1.DeleteWorkspaceOrgUnitResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.DeleteWorkspaceOrgUnit is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) SignOutWorkspaceUser(context.Context, *connect.Request[v1.SignOutWorkspaceUserRequest]) (*connect.Response[v1.SignOutWorkspaceUserResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.SignOutWorkspaceUser is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) SignOutWorkspaceUser(context.Context, *v1.SignOutWorkspaceUserRequest) (*v1.SignOutWorkspaceUserResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.SignOutWorkspaceUser is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceUserTokens(context.Context, *connect.Request[v1.ListWorkspaceUserTokensRequest]) (*connect.Response[v1.ListWorkspaceUserTokensResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceUserTokens is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceUserTokens(context.Context, *v1.ListWorkspaceUserTokensRequest) (*v1.ListWorkspaceUserTokensResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.ListWorkspaceUserTokens is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) RevokeWorkspaceUserToken(context.Context, *connect.Request[v1.RevokeWorkspaceUserTokenRequest]) (*connect.Response[v1.RevokeWorkspaceUserTokenResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.RevokeWorkspaceUserToken is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) RevokeWorkspaceUserToken(context.Context, *v1.RevokeWorkspaceUserTokenRequest) (*v1.RevokeWorkspaceUserTokenResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.RevokeWorkspaceUserToken is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceOperations(context.Context, *connect.Request[v1.ListWorkspaceOperationsRequest]) (*connect.Response[v1.ListWorkspaceOperationsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceOperations is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceOperations(context.Context, *v1.ListWorkspaceOperationsRequest) (*v1.ListWorkspaceOperationsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.ListWorkspaceOperations is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) GetWorkspaceOverview(context.Context, *connect.Request[v1.GetWorkspaceOverviewRequest]) (*connect.Response[v1.GetWorkspaceOverviewResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.GetWorkspaceOverview is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) GetWorkspaceOverview(context.Context, *v1.GetWorkspaceOverviewRequest) (*v1.GetWorkspaceOverviewResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.GetWorkspaceOverview is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceAuditActivities(context.Context, *connect.Request[v1.ListWorkspaceAuditActivitiesRequest]) (*connect.Response[v1.ListWorkspaceAuditActivitiesResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceAuditActivities is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceAuditActivities(context.Context, *v1.ListWorkspaceAuditActivitiesRequest) (*v1.ListWorkspaceAuditActivitiesResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.ListWorkspaceAuditActivities is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) GetWorkspaceUserGmailSettings(context.Context, *connect.Request[v1.GetWorkspaceUserGmailSettingsRequest]) (*connect.Response[v1.GetWorkspaceUserGmailSettingsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.GetWorkspaceUserGmailSettings is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) GetWorkspaceUserGmailSettings(context.Context, *v1.GetWorkspaceUserGmailSettingsRequest) (*v1.GetWorkspaceUserGmailSettingsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.GetWorkspaceUserGmailSettings is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) UpdateWorkspaceUserGmailVacation(context.Context, *connect.Request[v1.UpdateWorkspaceUserGmailVacationRequest]) (*connect.Response[v1.UpdateWorkspaceUserGmailVacationResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.UpdateWorkspaceUserGmailVacation is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) UpdateWorkspaceUserGmailVacation(context.Context, *v1.UpdateWorkspaceUserGmailVacationRequest) (*v1.UpdateWorkspaceUserGmailVacationResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.UpdateWorkspaceUserGmailVacation is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceUserGmailLabels(context.Context, *connect.Request[v1.ListWorkspaceUserGmailLabelsRequest]) (*connect.Response[v1.ListWorkspaceUserGmailLabelsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceUserGmailLabels is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceUserGmailLabels(context.Context, *v1.ListWorkspaceUserGmailLabelsRequest) (*v1.ListWorkspaceUserGmailLabelsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.ListWorkspaceUserGmailLabels is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) SearchWorkspaceUserGmailMessages(context.Context, *connect.Request[v1.SearchWorkspaceUserGmailMessagesRequest]) (*connect.Response[v1.SearchWorkspaceUserGmailMessagesResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.SearchWorkspaceUserGmailMessages is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) SearchWorkspaceUserGmailMessages(context.Context, *v1.SearchWorkspaceUserGmailMessagesRequest) (*v1.SearchWorkspaceUserGmailMessagesResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.SearchWorkspaceUserGmailMessages is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) GetWorkspaceUserGmailMessage(context.Context, *connect.Request[v1.GetWorkspaceUserGmailMessageRequest]) (*connect.Response[v1.GetWorkspaceUserGmailMessageResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.GetWorkspaceUserGmailMessage is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) GetWorkspaceUserGmailMessage(context.Context, *v1.GetWorkspaceUserGmailMessageRequest) (*v1.GetWorkspaceUserGmailMessageResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.GetWorkspaceUserGmailMessage is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) DownloadWorkspaceUserGmailAttachment(context.Context, *connect.Request[v1.DownloadWorkspaceUserGmailAttachmentRequest]) (*connect.Response[v1.DownloadWorkspaceUserGmailAttachmentResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.DownloadWorkspaceUserGmailAttachment is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) DownloadWorkspaceUserGmailAttachment(context.Context, *v1.DownloadWorkspaceUserGmailAttachmentRequest) (*v1.DownloadWorkspaceUserGmailAttachmentResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.DownloadWorkspaceUserGmailAttachment is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceDriveActivities(context.Context, *connect.Request[v1.ListWorkspaceDriveActivitiesRequest]) (*connect.Response[v1.ListWorkspaceDriveActivitiesResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceDriveActivities is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceDriveActivities(context.Context, *v1.ListWorkspaceDriveActivitiesRequest) (*v1.ListWorkspaceDriveActivitiesResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.ListWorkspaceDriveActivities is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceDriveUsage(context.Context, *connect.Request[v1.ListWorkspaceDriveUsageRequest]) (*connect.Response[v1.ListWorkspaceDriveUsageResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceDriveUsage is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceDriveUsage(context.Context, *v1.ListWorkspaceDriveUsageRequest) (*v1.ListWorkspaceDriveUsageResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.ListWorkspaceDriveUsage is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceSharedDrives(context.Context, *connect.Request[v1.ListWorkspaceSharedDrivesRequest]) (*connect.Response[v1.ListWorkspaceSharedDrivesResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceSharedDrives is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceSharedDrives(context.Context, *v1.ListWorkspaceSharedDrivesRequest) (*v1.ListWorkspaceSharedDrivesResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.ListWorkspaceSharedDrives is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceUserExposedFiles(context.Context, *connect.Request[v1.ListWorkspaceUserExposedFilesRequest]) (*connect.Response[v1.ListWorkspaceUserExposedFilesResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceUserExposedFiles is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceUserExposedFiles(context.Context, *v1.ListWorkspaceUserExposedFilesRequest) (*v1.ListWorkspaceUserExposedFilesResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.ListWorkspaceUserExposedFiles is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) GetWorkspaceUserUsage(context.Context, *connect.Request[v1.GetWorkspaceUserUsageRequest]) (*connect.Response[v1.GetWorkspaceUserUsageResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.GetWorkspaceUserUsage is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) GetWorkspaceUserUsage(context.Context, *v1.GetWorkspaceUserUsageRequest) (*v1.GetWorkspaceUserUsageResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.GetWorkspaceUserUsage is not implemented")
 }
 
-func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceStorageUsage(context.Context, *connect.Request[v1.ListWorkspaceStorageUsageRequest]) (*connect.Response[v1.ListWorkspaceStorageUsageResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neobox.v1.GoogleWorkspaceService.ListWorkspaceStorageUsage is not implemented"))
+func (UnimplementedGoogleWorkspaceServiceHandler) ListWorkspaceStorageUsage(context.Context, *v1.ListWorkspaceStorageUsageRequest) (*v1.ListWorkspaceStorageUsageResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neobox.v1.GoogleWorkspaceService.ListWorkspaceStorageUsage is not implemented")
+}
+
+type googleWorkspaceServiceClient struct {
+	client *connect.Client
+}
+
+func (c *googleWorkspaceServiceClient) ListWorkspaceTenants(ctx context.Context, req *v1.ListWorkspaceTenantsRequest) (*v1.ListWorkspaceTenantsResponse, error) {
+	var res v1.ListWorkspaceTenantsResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceListWorkspaceTenantsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) CreateWorkspaceTenant(ctx context.Context, req *v1.CreateWorkspaceTenantRequest) (*v1.CreateWorkspaceTenantResponse, error) {
+	var res v1.CreateWorkspaceTenantResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceCreateWorkspaceTenantSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) UpdateWorkspaceTenant(ctx context.Context, req *v1.UpdateWorkspaceTenantRequest) (*v1.UpdateWorkspaceTenantResponse, error) {
+	var res v1.UpdateWorkspaceTenantResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceUpdateWorkspaceTenantSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) DeleteWorkspaceTenant(ctx context.Context, req *v1.DeleteWorkspaceTenantRequest) (*v1.DeleteWorkspaceTenantResponse, error) {
+	var res v1.DeleteWorkspaceTenantResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceDeleteWorkspaceTenantSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) TestWorkspaceTenant(ctx context.Context, req *v1.TestWorkspaceTenantRequest) (*v1.TestWorkspaceTenantResponse, error) {
+	var res v1.TestWorkspaceTenantResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceTestWorkspaceTenantSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) ListWorkspaceUsers(ctx context.Context, req *v1.ListWorkspaceUsersRequest) (*v1.ListWorkspaceUsersResponse, error) {
+	var res v1.ListWorkspaceUsersResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceListWorkspaceUsersSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) GetWorkspaceUser(ctx context.Context, req *v1.GetWorkspaceUserRequest) (*v1.GetWorkspaceUserResponse, error) {
+	var res v1.GetWorkspaceUserResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceGetWorkspaceUserSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) CreateWorkspaceUser(ctx context.Context, req *v1.CreateWorkspaceUserRequest) (*v1.CreateWorkspaceUserResponse, error) {
+	var res v1.CreateWorkspaceUserResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceCreateWorkspaceUserSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) UpdateWorkspaceUser(ctx context.Context, req *v1.UpdateWorkspaceUserRequest) (*v1.UpdateWorkspaceUserResponse, error) {
+	var res v1.UpdateWorkspaceUserResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceUpdateWorkspaceUserSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) ResetWorkspaceUserPassword(ctx context.Context, req *v1.ResetWorkspaceUserPasswordRequest) (*v1.ResetWorkspaceUserPasswordResponse, error) {
+	var res v1.ResetWorkspaceUserPasswordResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceResetWorkspaceUserPasswordSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) SetWorkspaceUserSuspended(ctx context.Context, req *v1.SetWorkspaceUserSuspendedRequest) (*v1.SetWorkspaceUserSuspendedResponse, error) {
+	var res v1.SetWorkspaceUserSuspendedResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceSetWorkspaceUserSuspendedSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) ListWorkspaceUserAliases(ctx context.Context, req *v1.ListWorkspaceUserAliasesRequest) (*v1.ListWorkspaceUserAliasesResponse, error) {
+	var res v1.ListWorkspaceUserAliasesResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceListWorkspaceUserAliasesSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) AddWorkspaceUserAlias(ctx context.Context, req *v1.AddWorkspaceUserAliasRequest) (*v1.AddWorkspaceUserAliasResponse, error) {
+	var res v1.AddWorkspaceUserAliasResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceAddWorkspaceUserAliasSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) DeleteWorkspaceUserAlias(ctx context.Context, req *v1.DeleteWorkspaceUserAliasRequest) (*v1.DeleteWorkspaceUserAliasResponse, error) {
+	var res v1.DeleteWorkspaceUserAliasResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceDeleteWorkspaceUserAliasSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) ListWorkspaceGroups(ctx context.Context, req *v1.ListWorkspaceGroupsRequest) (*v1.ListWorkspaceGroupsResponse, error) {
+	var res v1.ListWorkspaceGroupsResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceListWorkspaceGroupsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) ListWorkspaceUserGroups(ctx context.Context, req *v1.ListWorkspaceUserGroupsRequest) (*v1.ListWorkspaceUserGroupsResponse, error) {
+	var res v1.ListWorkspaceUserGroupsResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceListWorkspaceUserGroupsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) CreateWorkspaceGroup(ctx context.Context, req *v1.CreateWorkspaceGroupRequest) (*v1.CreateWorkspaceGroupResponse, error) {
+	var res v1.CreateWorkspaceGroupResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceCreateWorkspaceGroupSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) UpdateWorkspaceGroup(ctx context.Context, req *v1.UpdateWorkspaceGroupRequest) (*v1.UpdateWorkspaceGroupResponse, error) {
+	var res v1.UpdateWorkspaceGroupResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceUpdateWorkspaceGroupSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) DeleteWorkspaceGroup(ctx context.Context, req *v1.DeleteWorkspaceGroupRequest) (*v1.DeleteWorkspaceGroupResponse, error) {
+	var res v1.DeleteWorkspaceGroupResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceDeleteWorkspaceGroupSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) ListWorkspaceGroupMembers(ctx context.Context, req *v1.ListWorkspaceGroupMembersRequest) (*v1.ListWorkspaceGroupMembersResponse, error) {
+	var res v1.ListWorkspaceGroupMembersResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceListWorkspaceGroupMembersSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) AddWorkspaceGroupMember(ctx context.Context, req *v1.AddWorkspaceGroupMemberRequest) (*v1.AddWorkspaceGroupMemberResponse, error) {
+	var res v1.AddWorkspaceGroupMemberResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceAddWorkspaceGroupMemberSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) UpdateWorkspaceGroupMember(ctx context.Context, req *v1.UpdateWorkspaceGroupMemberRequest) (*v1.UpdateWorkspaceGroupMemberResponse, error) {
+	var res v1.UpdateWorkspaceGroupMemberResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceUpdateWorkspaceGroupMemberSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) DeleteWorkspaceGroupMember(ctx context.Context, req *v1.DeleteWorkspaceGroupMemberRequest) (*v1.DeleteWorkspaceGroupMemberResponse, error) {
+	var res v1.DeleteWorkspaceGroupMemberResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceDeleteWorkspaceGroupMemberSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) ListWorkspaceOrgUnits(ctx context.Context, req *v1.ListWorkspaceOrgUnitsRequest) (*v1.ListWorkspaceOrgUnitsResponse, error) {
+	var res v1.ListWorkspaceOrgUnitsResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceListWorkspaceOrgUnitsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) CreateWorkspaceOrgUnit(ctx context.Context, req *v1.CreateWorkspaceOrgUnitRequest) (*v1.CreateWorkspaceOrgUnitResponse, error) {
+	var res v1.CreateWorkspaceOrgUnitResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceCreateWorkspaceOrgUnitSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) UpdateWorkspaceOrgUnit(ctx context.Context, req *v1.UpdateWorkspaceOrgUnitRequest) (*v1.UpdateWorkspaceOrgUnitResponse, error) {
+	var res v1.UpdateWorkspaceOrgUnitResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceUpdateWorkspaceOrgUnitSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) DeleteWorkspaceOrgUnit(ctx context.Context, req *v1.DeleteWorkspaceOrgUnitRequest) (*v1.DeleteWorkspaceOrgUnitResponse, error) {
+	var res v1.DeleteWorkspaceOrgUnitResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceDeleteWorkspaceOrgUnitSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) SignOutWorkspaceUser(ctx context.Context, req *v1.SignOutWorkspaceUserRequest) (*v1.SignOutWorkspaceUserResponse, error) {
+	var res v1.SignOutWorkspaceUserResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceSignOutWorkspaceUserSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) ListWorkspaceUserTokens(ctx context.Context, req *v1.ListWorkspaceUserTokensRequest) (*v1.ListWorkspaceUserTokensResponse, error) {
+	var res v1.ListWorkspaceUserTokensResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceListWorkspaceUserTokensSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) RevokeWorkspaceUserToken(ctx context.Context, req *v1.RevokeWorkspaceUserTokenRequest) (*v1.RevokeWorkspaceUserTokenResponse, error) {
+	var res v1.RevokeWorkspaceUserTokenResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceRevokeWorkspaceUserTokenSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) ListWorkspaceOperations(ctx context.Context, req *v1.ListWorkspaceOperationsRequest) (*v1.ListWorkspaceOperationsResponse, error) {
+	var res v1.ListWorkspaceOperationsResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceListWorkspaceOperationsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) GetWorkspaceOverview(ctx context.Context, req *v1.GetWorkspaceOverviewRequest) (*v1.GetWorkspaceOverviewResponse, error) {
+	var res v1.GetWorkspaceOverviewResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceGetWorkspaceOverviewSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) ListWorkspaceAuditActivities(ctx context.Context, req *v1.ListWorkspaceAuditActivitiesRequest) (*v1.ListWorkspaceAuditActivitiesResponse, error) {
+	var res v1.ListWorkspaceAuditActivitiesResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceListWorkspaceAuditActivitiesSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) GetWorkspaceUserGmailSettings(ctx context.Context, req *v1.GetWorkspaceUserGmailSettingsRequest) (*v1.GetWorkspaceUserGmailSettingsResponse, error) {
+	var res v1.GetWorkspaceUserGmailSettingsResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceGetWorkspaceUserGmailSettingsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) UpdateWorkspaceUserGmailVacation(ctx context.Context, req *v1.UpdateWorkspaceUserGmailVacationRequest) (*v1.UpdateWorkspaceUserGmailVacationResponse, error) {
+	var res v1.UpdateWorkspaceUserGmailVacationResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceUpdateWorkspaceUserGmailVacationSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) ListWorkspaceUserGmailLabels(ctx context.Context, req *v1.ListWorkspaceUserGmailLabelsRequest) (*v1.ListWorkspaceUserGmailLabelsResponse, error) {
+	var res v1.ListWorkspaceUserGmailLabelsResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceListWorkspaceUserGmailLabelsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) SearchWorkspaceUserGmailMessages(ctx context.Context, req *v1.SearchWorkspaceUserGmailMessagesRequest) (*v1.SearchWorkspaceUserGmailMessagesResponse, error) {
+	var res v1.SearchWorkspaceUserGmailMessagesResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceSearchWorkspaceUserGmailMessagesSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) GetWorkspaceUserGmailMessage(ctx context.Context, req *v1.GetWorkspaceUserGmailMessageRequest) (*v1.GetWorkspaceUserGmailMessageResponse, error) {
+	var res v1.GetWorkspaceUserGmailMessageResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceGetWorkspaceUserGmailMessageSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) DownloadWorkspaceUserGmailAttachment(ctx context.Context, req *v1.DownloadWorkspaceUserGmailAttachmentRequest) (*v1.DownloadWorkspaceUserGmailAttachmentResponse, error) {
+	var res v1.DownloadWorkspaceUserGmailAttachmentResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceDownloadWorkspaceUserGmailAttachmentSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) ListWorkspaceDriveActivities(ctx context.Context, req *v1.ListWorkspaceDriveActivitiesRequest) (*v1.ListWorkspaceDriveActivitiesResponse, error) {
+	var res v1.ListWorkspaceDriveActivitiesResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceListWorkspaceDriveActivitiesSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) ListWorkspaceDriveUsage(ctx context.Context, req *v1.ListWorkspaceDriveUsageRequest) (*v1.ListWorkspaceDriveUsageResponse, error) {
+	var res v1.ListWorkspaceDriveUsageResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceListWorkspaceDriveUsageSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) ListWorkspaceSharedDrives(ctx context.Context, req *v1.ListWorkspaceSharedDrivesRequest) (*v1.ListWorkspaceSharedDrivesResponse, error) {
+	var res v1.ListWorkspaceSharedDrivesResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceListWorkspaceSharedDrivesSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) ListWorkspaceUserExposedFiles(ctx context.Context, req *v1.ListWorkspaceUserExposedFilesRequest) (*v1.ListWorkspaceUserExposedFilesResponse, error) {
+	var res v1.ListWorkspaceUserExposedFilesResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceListWorkspaceUserExposedFilesSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) GetWorkspaceUserUsage(ctx context.Context, req *v1.GetWorkspaceUserUsageRequest) (*v1.GetWorkspaceUserUsageResponse, error) {
+	var res v1.GetWorkspaceUserUsageResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceGetWorkspaceUserUsageSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *googleWorkspaceServiceClient) ListWorkspaceStorageUsage(ctx context.Context, req *v1.ListWorkspaceStorageUsageRequest) (*v1.ListWorkspaceStorageUsageResponse, error) {
+	var res v1.ListWorkspaceStorageUsageResponse
+	if err := c.client.CallUnary(ctx, googleWorkspaceServiceListWorkspaceStorageUsageSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+type googleWorkspaceServiceHandler struct{ svc GoogleWorkspaceServiceHandler }
+
+func (h googleWorkspaceServiceHandler) listWorkspaceTenants(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListWorkspaceTenantsRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListWorkspaceTenants(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) createWorkspaceTenant(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.CreateWorkspaceTenantRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.CreateWorkspaceTenant(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) updateWorkspaceTenant(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.UpdateWorkspaceTenantRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.UpdateWorkspaceTenant(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) deleteWorkspaceTenant(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteWorkspaceTenantRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteWorkspaceTenant(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) testWorkspaceTenant(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.TestWorkspaceTenantRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.TestWorkspaceTenant(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) listWorkspaceUsers(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListWorkspaceUsersRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListWorkspaceUsers(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) getWorkspaceUser(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.GetWorkspaceUserRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.GetWorkspaceUser(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) createWorkspaceUser(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.CreateWorkspaceUserRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.CreateWorkspaceUser(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) updateWorkspaceUser(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.UpdateWorkspaceUserRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.UpdateWorkspaceUser(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) resetWorkspaceUserPassword(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ResetWorkspaceUserPasswordRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ResetWorkspaceUserPassword(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) setWorkspaceUserSuspended(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.SetWorkspaceUserSuspendedRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.SetWorkspaceUserSuspended(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) listWorkspaceUserAliases(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListWorkspaceUserAliasesRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListWorkspaceUserAliases(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) addWorkspaceUserAlias(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.AddWorkspaceUserAliasRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.AddWorkspaceUserAlias(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) deleteWorkspaceUserAlias(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteWorkspaceUserAliasRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteWorkspaceUserAlias(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) listWorkspaceGroups(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListWorkspaceGroupsRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListWorkspaceGroups(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) listWorkspaceUserGroups(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListWorkspaceUserGroupsRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListWorkspaceUserGroups(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) createWorkspaceGroup(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.CreateWorkspaceGroupRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.CreateWorkspaceGroup(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) updateWorkspaceGroup(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.UpdateWorkspaceGroupRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.UpdateWorkspaceGroup(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) deleteWorkspaceGroup(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteWorkspaceGroupRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteWorkspaceGroup(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) listWorkspaceGroupMembers(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListWorkspaceGroupMembersRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListWorkspaceGroupMembers(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) addWorkspaceGroupMember(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.AddWorkspaceGroupMemberRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.AddWorkspaceGroupMember(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) updateWorkspaceGroupMember(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.UpdateWorkspaceGroupMemberRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.UpdateWorkspaceGroupMember(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) deleteWorkspaceGroupMember(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteWorkspaceGroupMemberRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteWorkspaceGroupMember(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) listWorkspaceOrgUnits(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListWorkspaceOrgUnitsRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListWorkspaceOrgUnits(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) createWorkspaceOrgUnit(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.CreateWorkspaceOrgUnitRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.CreateWorkspaceOrgUnit(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) updateWorkspaceOrgUnit(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.UpdateWorkspaceOrgUnitRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.UpdateWorkspaceOrgUnit(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) deleteWorkspaceOrgUnit(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteWorkspaceOrgUnitRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteWorkspaceOrgUnit(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) signOutWorkspaceUser(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.SignOutWorkspaceUserRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.SignOutWorkspaceUser(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) listWorkspaceUserTokens(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListWorkspaceUserTokensRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListWorkspaceUserTokens(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) revokeWorkspaceUserToken(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.RevokeWorkspaceUserTokenRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.RevokeWorkspaceUserToken(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) listWorkspaceOperations(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListWorkspaceOperationsRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListWorkspaceOperations(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) getWorkspaceOverview(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.GetWorkspaceOverviewRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.GetWorkspaceOverview(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) listWorkspaceAuditActivities(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListWorkspaceAuditActivitiesRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListWorkspaceAuditActivities(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) getWorkspaceUserGmailSettings(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.GetWorkspaceUserGmailSettingsRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.GetWorkspaceUserGmailSettings(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) updateWorkspaceUserGmailVacation(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.UpdateWorkspaceUserGmailVacationRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.UpdateWorkspaceUserGmailVacation(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) listWorkspaceUserGmailLabels(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListWorkspaceUserGmailLabelsRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListWorkspaceUserGmailLabels(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) searchWorkspaceUserGmailMessages(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.SearchWorkspaceUserGmailMessagesRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.SearchWorkspaceUserGmailMessages(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) getWorkspaceUserGmailMessage(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.GetWorkspaceUserGmailMessageRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.GetWorkspaceUserGmailMessage(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) downloadWorkspaceUserGmailAttachment(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DownloadWorkspaceUserGmailAttachmentRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DownloadWorkspaceUserGmailAttachment(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) listWorkspaceDriveActivities(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListWorkspaceDriveActivitiesRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListWorkspaceDriveActivities(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) listWorkspaceDriveUsage(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListWorkspaceDriveUsageRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListWorkspaceDriveUsage(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) listWorkspaceSharedDrives(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListWorkspaceSharedDrivesRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListWorkspaceSharedDrives(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) listWorkspaceUserExposedFiles(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListWorkspaceUserExposedFilesRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListWorkspaceUserExposedFiles(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) getWorkspaceUserUsage(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.GetWorkspaceUserUsageRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.GetWorkspaceUserUsage(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h googleWorkspaceServiceHandler) listWorkspaceStorageUsage(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListWorkspaceStorageUsageRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListWorkspaceStorageUsage(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
 }

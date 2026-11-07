@@ -9,7 +9,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"github.com/google/uuid"
 	"go.orx.me/apps/neo-box/internal/connection"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
@@ -90,13 +90,13 @@ type workspaceDeps struct {
 func (s *GoogleWorkspaceServiceServer) deps(ctx context.Context, id string) (*workspaceDeps, error) {
 	user, ok := auth.UserFromContext(ctx)
 	if !ok {
-		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
+		return nil, connect.NewError(connect.CodeUnauthenticated, "unauthenticated")
 	}
 	s.mu.RLock()
 	r, c, f, gm, ml, dr := s.repo, s.conns, s.newClient, s.newGmail, s.newMail, s.newDrive
 	s.mu.RUnlock()
 	if r == nil || c == nil {
-		return nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("Google Workspace is not available"))
+		return nil, connect.NewError(connect.CodeFailedPrecondition, "Google Workspace is not available")
 	}
 	conn, err := loadConnection(ctx, c, user.GetId(), id)
 	if err != nil {
@@ -113,11 +113,11 @@ func (s *GoogleWorkspaceServiceServer) deps(ctx context.Context, id string) (*wo
 }
 func (d *workspaceDeps) tenant(ctx context.Context, id string) (*repo.Tenant, error) {
 	if strings.TrimSpace(id) == "" {
-		return nil, connectx.RequiredArgument("tenant_id")
+		return nil, connectx.RequiredArgument(ctx, "tenant_id")
 	}
 	t, err := d.repo.Get(ctx, d.c.UserID, d.c.ID, id)
 	if err != nil {
-		return nil, mapWorkspaceErr(err)
+		return nil, mapWorkspaceErr(ctx, err)
 	}
 	return t, nil
 }
@@ -129,7 +129,7 @@ func (d *workspaceDeps) client(ctx context.Context, t *repo.Tenant, scopes ...st
 	}
 	c, err := d.factory(ctx, cfg, sec, t.CustomerID, t.DelegatedAdminEmail, scopes...)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeFailedPrecondition, err)
+		return nil, connect.NewError(connect.CodeFailedPrecondition, err.Error()).WithCause(err)
 	}
 	c.SetWriteRecorder(workspaceRecorder{repo: d.repo, connection: d.c, tenant: t, actorName: d.actorName})
 	return c, nil
@@ -142,8 +142,8 @@ func (d *workspaceDeps) record(ctx context.Context, t *repo.Tenant, err error) e
 	}
 	return d.repo.SetStatus(ctx, t)
 }
-func (s *GoogleWorkspaceServiceServer) ListWorkspaceTenants(ctx context.Context, req *connect.Request[neoboxv1.ListWorkspaceTenantsRequest]) (*connect.Response[neoboxv1.ListWorkspaceTenantsResponse], error) {
-	d, err := s.deps(ctx, req.Msg.GetConnectionId())
+func (s *GoogleWorkspaceServiceServer) ListWorkspaceTenants(ctx context.Context, req *neoboxv1.ListWorkspaceTenantsRequest) (*neoboxv1.ListWorkspaceTenantsResponse, error) {
+	d, err := s.deps(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
@@ -155,90 +155,90 @@ func (s *GoogleWorkspaceServiceServer) ListWorkspaceTenants(ctx context.Context,
 	for _, t := range ts {
 		out.Tenants = append(out.Tenants, workspaceTenantToProto(t))
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }
-func validateWorkspaceTenant(name, admin string) error {
+func validateWorkspaceTenant(ctx context.Context, name, admin string) error {
 	if strings.TrimSpace(name) == "" {
-		return connectx.RequiredArgument("name")
+		return connectx.RequiredArgument(ctx, "name")
 	}
 	if !googleworkspace.ValidEmail(strings.TrimSpace(admin)) {
-		return connectx.InvalidArgument("delegated_admin_email", "must be an administrator email in this tenant")
+		return connectx.InvalidArgument(ctx, "delegated_admin_email", "must be an administrator email in this tenant")
 	}
 	return nil
 }
-func (s *GoogleWorkspaceServiceServer) CreateWorkspaceTenant(ctx context.Context, req *connect.Request[neoboxv1.CreateWorkspaceTenantRequest]) (*connect.Response[neoboxv1.CreateWorkspaceTenantResponse], error) {
-	d, err := s.deps(ctx, req.Msg.GetConnectionId())
+func (s *GoogleWorkspaceServiceServer) CreateWorkspaceTenant(ctx context.Context, req *neoboxv1.CreateWorkspaceTenantRequest) (*neoboxv1.CreateWorkspaceTenantResponse, error) {
+	d, err := s.deps(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	if err = validateWorkspaceTenant(req.Msg.GetName(), req.Msg.GetDelegatedAdminEmail()); err != nil {
+	if err = validateWorkspaceTenant(ctx, req.GetName(), req.GetDelegatedAdminEmail()); err != nil {
 		return nil, err
 	}
-	customer := strings.TrimSpace(req.Msg.GetCustomerId())
+	customer := strings.TrimSpace(req.GetCustomerId())
 	if !googleworkspace.ValidCustomerID(customer) {
-		return nil, connectx.InvalidArgument("customer_id", "must be the explicit Google Customer ID (C...), not my_customer or a domain")
+		return nil, connectx.InvalidArgument(ctx, "customer_id", "must be the explicit Google Customer ID (C...), not my_customer or a domain")
 	}
 	now := time.Now().UTC()
-	t := &repo.Tenant{ID: uuid.NewString(), UserID: d.c.UserID, ConnectionID: d.c.ID, Name: strings.TrimSpace(req.Msg.GetName()), CustomerID: customer, DelegatedAdminEmail: strings.TrimSpace(req.Msg.GetDelegatedAdminEmail()), Status: "ok", StatusCheckedAt: now, CreatedAt: now, UpdatedAt: now}
+	t := &repo.Tenant{ID: uuid.NewString(), UserID: d.c.UserID, ConnectionID: d.c.ID, Name: strings.TrimSpace(req.GetName()), CustomerID: customer, DelegatedAdminEmail: strings.TrimSpace(req.GetDelegatedAdminEmail()), Status: "ok", StatusCheckedAt: now, CreatedAt: now, UpdatedAt: now}
 	api, err := d.client(ctx, t)
 	if err != nil {
 		return nil, err
 	}
 	if err = api.Verify(ctx); err != nil {
-		return nil, mapWorkspaceErr(err)
+		return nil, mapWorkspaceErr(ctx, err)
 	}
 	if err = d.localMutation(ctx, t, "tenant_create", map[string]any{"name": t.Name, "customerId": t.CustomerID, "delegated_admin_email": t.DelegatedAdminEmail}, func() error { return d.repo.Create(ctx, t) }); err != nil {
-		return nil, mapWorkspaceErr(err)
+		return nil, mapWorkspaceErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.CreateWorkspaceTenantResponse{Tenant: workspaceTenantToProto(t)}), nil
+	return &neoboxv1.CreateWorkspaceTenantResponse{Tenant: workspaceTenantToProto(t)}, nil
 }
-func (s *GoogleWorkspaceServiceServer) UpdateWorkspaceTenant(ctx context.Context, req *connect.Request[neoboxv1.UpdateWorkspaceTenantRequest]) (*connect.Response[neoboxv1.UpdateWorkspaceTenantResponse], error) {
-	d, err := s.deps(ctx, req.Msg.GetConnectionId())
+func (s *GoogleWorkspaceServiceServer) UpdateWorkspaceTenant(ctx context.Context, req *neoboxv1.UpdateWorkspaceTenantRequest) (*neoboxv1.UpdateWorkspaceTenantResponse, error) {
+	d, err := s.deps(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	t, err := d.tenant(ctx, req.Msg.GetTenantId())
+	t, err := d.tenant(ctx, req.GetTenantId())
 	if err != nil {
 		return nil, err
 	}
-	if err = validateWorkspaceTenant(req.Msg.GetName(), req.Msg.GetDelegatedAdminEmail()); err != nil {
+	if err = validateWorkspaceTenant(ctx, req.GetName(), req.GetDelegatedAdminEmail()); err != nil {
 		return nil, err
 	}
-	t.Name, t.DelegatedAdminEmail = strings.TrimSpace(req.Msg.GetName()), strings.TrimSpace(req.Msg.GetDelegatedAdminEmail())
+	t.Name, t.DelegatedAdminEmail = strings.TrimSpace(req.GetName()), strings.TrimSpace(req.GetDelegatedAdminEmail())
 	api, err := d.client(ctx, t)
 	if err != nil {
 		return nil, err
 	}
 	if err = api.Verify(ctx); err != nil {
-		return nil, mapWorkspaceErr(err)
+		return nil, mapWorkspaceErr(ctx, err)
 	}
 	t.Status, t.StatusMessage, t.StatusCheckedAt = "ok", "", time.Now().UTC()
 	t.UpdatedAt = t.StatusCheckedAt
 	if err = d.localMutation(ctx, t, "tenant_update", map[string]any{"name": t.Name, "delegated_admin_email": t.DelegatedAdminEmail}, func() error { return d.repo.Update(ctx, t) }); err != nil {
-		return nil, mapWorkspaceErr(err)
+		return nil, mapWorkspaceErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.UpdateWorkspaceTenantResponse{Tenant: workspaceTenantToProto(t)}), nil
+	return &neoboxv1.UpdateWorkspaceTenantResponse{Tenant: workspaceTenantToProto(t)}, nil
 }
-func (s *GoogleWorkspaceServiceServer) DeleteWorkspaceTenant(ctx context.Context, req *connect.Request[neoboxv1.DeleteWorkspaceTenantRequest]) (*connect.Response[neoboxv1.DeleteWorkspaceTenantResponse], error) {
-	d, err := s.deps(ctx, req.Msg.GetConnectionId())
+func (s *GoogleWorkspaceServiceServer) DeleteWorkspaceTenant(ctx context.Context, req *neoboxv1.DeleteWorkspaceTenantRequest) (*neoboxv1.DeleteWorkspaceTenantResponse, error) {
+	d, err := s.deps(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	t, err := d.tenant(ctx, req.Msg.GetTenantId())
+	t, err := d.tenant(ctx, req.GetTenantId())
 	if err != nil {
 		return nil, err
 	}
 	if err = d.localMutation(ctx, t, "tenant_delete", map[string]any{"name": t.Name}, func() error { return d.repo.Delete(ctx, d.c.UserID, d.c.ID, t.ID) }); err != nil {
-		return nil, mapWorkspaceErr(err)
+		return nil, mapWorkspaceErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.DeleteWorkspaceTenantResponse{}), nil
+	return &neoboxv1.DeleteWorkspaceTenantResponse{}, nil
 }
-func (s *GoogleWorkspaceServiceServer) TestWorkspaceTenant(ctx context.Context, req *connect.Request[neoboxv1.TestWorkspaceTenantRequest]) (*connect.Response[neoboxv1.TestWorkspaceTenantResponse], error) {
-	d, err := s.deps(ctx, req.Msg.GetConnectionId())
+func (s *GoogleWorkspaceServiceServer) TestWorkspaceTenant(ctx context.Context, req *neoboxv1.TestWorkspaceTenantRequest) (*neoboxv1.TestWorkspaceTenantResponse, error) {
+	d, err := s.deps(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	t, err := d.tenant(ctx, req.Msg.GetTenantId())
+	t, err := d.tenant(ctx, req.GetTenantId())
 	if err != nil {
 		return nil, err
 	}
@@ -250,7 +250,7 @@ func (s *GoogleWorkspaceServiceServer) TestWorkspaceTenant(ctx context.Context, 
 	if err = d.record(ctx, t, check); err != nil {
 		return nil, connectx.InternalWith(err)
 	}
-	return connect.NewResponse(&neoboxv1.TestWorkspaceTenantResponse{Tenant: workspaceTenantToProto(t)}), nil
+	return &neoboxv1.TestWorkspaceTenantResponse{Tenant: workspaceTenantToProto(t)}, nil
 }
 func (s *GoogleWorkspaceServiceServer) open(ctx context.Context, connectionID, tenantID string, scopes ...string) (*workspaceDeps, *repo.Tenant, workspaceAPI, error) {
 	d, err := s.deps(ctx, connectionID)
@@ -273,66 +273,66 @@ func workspaceReadStatus(ctx context.Context, d *workspaceDeps, t *repo.Tenant, 
 		_ = d.record(ctx, t, err)
 	}
 }
-func (s *GoogleWorkspaceServiceServer) ListWorkspaceUsers(ctx context.Context, req *connect.Request[neoboxv1.ListWorkspaceUsersRequest]) (*connect.Response[neoboxv1.ListWorkspaceUsersResponse], error) {
-	d, t, api, err := s.open(ctx, req.Msg.GetConnectionId(), req.Msg.GetTenantId())
+func (s *GoogleWorkspaceServiceServer) ListWorkspaceUsers(ctx context.Context, req *neoboxv1.ListWorkspaceUsersRequest) (*neoboxv1.ListWorkspaceUsersResponse, error) {
+	d, t, api, err := s.open(ctx, req.GetConnectionId(), req.GetTenantId())
 	if err != nil {
 		return nil, err
 	}
-	size := int(req.Msg.GetPageSize())
+	size := int(req.GetPageSize())
 	if size == 0 {
 		size = 50
 	}
 	if size < 1 || size > 500 {
-		return nil, connectx.InvalidArgument("page_size", "must be between 1 and 500")
+		return nil, connectx.InvalidArgument(ctx, "page_size", "must be between 1 and 500")
 	}
-	page, err := api.ListUsers(ctx, strings.TrimSpace(req.Msg.GetQuery()), req.Msg.GetPageToken(), size)
+	page, err := api.ListUsers(ctx, strings.TrimSpace(req.GetQuery()), req.GetPageToken(), size)
 	workspaceReadStatus(ctx, d, t, err)
 	if err != nil {
-		return nil, mapWorkspaceErr(err)
+		return nil, mapWorkspaceErr(ctx, err)
 	}
 	out := &neoboxv1.ListWorkspaceUsersResponse{NextPageToken: page.NextPageToken}
 	for i := range page.Users {
 		out.Users = append(out.Users, workspaceUserToProto(&page.Users[i]))
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }
-func (s *GoogleWorkspaceServiceServer) GetWorkspaceUser(ctx context.Context, req *connect.Request[neoboxv1.GetWorkspaceUserRequest]) (*connect.Response[neoboxv1.GetWorkspaceUserResponse], error) {
-	d, t, api, err := s.open(ctx, req.Msg.GetConnectionId(), req.Msg.GetTenantId())
+func (s *GoogleWorkspaceServiceServer) GetWorkspaceUser(ctx context.Context, req *neoboxv1.GetWorkspaceUserRequest) (*neoboxv1.GetWorkspaceUserResponse, error) {
+	d, t, api, err := s.open(ctx, req.GetConnectionId(), req.GetTenantId())
 	if err != nil {
 		return nil, err
 	}
-	if strings.TrimSpace(req.Msg.GetUserId()) == "" {
-		return nil, connectx.RequiredArgument("user_id")
+	if strings.TrimSpace(req.GetUserId()) == "" {
+		return nil, connectx.RequiredArgument(ctx, "user_id")
 	}
-	u, err := api.GetUser(ctx, req.Msg.GetUserId())
+	u, err := api.GetUser(ctx, req.GetUserId())
 	workspaceReadStatus(ctx, d, t, err)
 	if err != nil {
-		return nil, mapWorkspaceErr(err)
+		return nil, mapWorkspaceErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.GetWorkspaceUserResponse{User: workspaceUserToProto(u)}), nil
+	return &neoboxv1.GetWorkspaceUserResponse{User: workspaceUserToProto(u)}, nil
 }
-func workspaceProfile(p *neoboxv1.WorkspaceUserProfile) (map[string]any, error) {
+func workspaceProfile(ctx context.Context, p *neoboxv1.WorkspaceUserProfile) (map[string]any, error) {
 	if p == nil {
-		return nil, connectx.RequiredArgument("profile")
+		return nil, connectx.RequiredArgument(ctx, "profile")
 	}
 	given, family := strings.TrimSpace(p.GetGivenName()), strings.TrimSpace(p.GetFamilyName())
 	if given == "" || family == "" {
-		return nil, connectx.InvalidArgument("profile", "given and family name are required")
+		return nil, connectx.InvalidArgument(ctx, "profile", "given and family name are required")
 	}
 	path := strings.TrimSpace(p.GetOrgUnitPath())
 	if path == "" {
 		path = "/"
 	}
 	if !strings.HasPrefix(path, "/") {
-		return nil, connectx.InvalidArgument("org_unit_path", "must start with /")
+		return nil, connectx.InvalidArgument(ctx, "org_unit_path", "must start with /")
 	}
 	return map[string]any{"name": map[string]string{"givenName": given, "familyName": family}, "orgUnitPath": path}, nil
 }
-func workspacePassword(password string) error {
+func workspacePassword(ctx context.Context, password string) error {
 	// Google requires 8..100 characters. Never trim a password.
 	n := utf8.RuneCountInString(password)
 	if n < 8 || n > 100 {
-		return connectx.InvalidArgument("password", "must contain 8 to 100 characters")
+		return connectx.InvalidArgument(ctx, "password", "must contain 8 to 100 characters")
 	}
 	return nil
 }
@@ -349,124 +349,124 @@ func workspaceUserToProto(u *googleworkspace.User) *neoboxv1.WorkspaceUser {
 	}
 	return &neoboxv1.WorkspaceUser{Id: u.ID, PrimaryEmail: u.PrimaryEmail, CustomerId: u.CustomerID, GivenName: u.Name.GivenName, FamilyName: u.Name.FamilyName, OrgUnitPath: u.OrgUnitPath, Suspended: u.Suspended, IsAdmin: u.IsAdmin != nil && *u.IsAdmin, ChangePasswordAtNextLogin: u.ChangePasswordAtNextLogin, SuperAdmin: u.IsAdmin, DelegatedAdmin: u.IsDelegatedAdmin, TwoStepEnrolled: u.TwoStepEnrolled, TwoStepEnforced: u.TwoStepEnforced, LastLoginTime: u.LastLoginTime, CreationTime: u.CreationTime}
 }
-func mapWorkspaceErr(err error) error {
+func mapWorkspaceErr(ctx context.Context, err error) error {
 	var ce *connect.Error
 	var ae *googleworkspace.APIError
 	var field *googleworkspace.FieldError
 	switch {
 	case errors.As(err, &field):
-		return connectx.InvalidArgument(field.Field, field.Message)
+		return connectx.InvalidArgument(ctx, field.Field, field.Message)
 	case errors.As(err, &ce):
 		return ce
 	case errors.Is(err, repo.ErrNotFound), errors.Is(err, googleworkspace.ErrTenantMismatch):
 		return connectx.NotFound(err.Error())
 	case errors.Is(err, repo.ErrDuplicate):
-		return connect.NewError(connect.CodeAlreadyExists, err)
+		return connect.NewError(connect.CodeAlreadyExists, err.Error()).WithCause(err)
 	case errors.Is(err, googleworkspace.ErrDelegation):
-		return connect.NewError(connect.CodeFailedPrecondition, err)
+		return connect.NewError(connect.CodeFailedPrecondition, err.Error()).WithCause(err)
 	case errors.Is(err, googleworkspace.ErrLogUnavailable):
-		return connect.NewError(connect.CodeUnavailable, err)
+		return connect.NewError(connect.CodeUnavailable, err.Error()).WithCause(err)
 	case errors.Is(err, googleworkspace.ErrOutcomeLogUnavailable):
-		return connect.NewError(connect.CodeUnknown, err)
+		return connect.NewError(connect.CodeUnknown, err.Error()).WithCause(err)
 	case errors.Is(err, googleworkspace.ErrUncertain):
-		return connect.NewError(connect.CodeUnknown, err)
+		return connect.NewError(connect.CodeUnknown, err.Error()).WithCause(err)
 	case errors.Is(err, context.Canceled):
-		return connect.NewError(connect.CodeCanceled, err)
+		return connect.NewError(connect.CodeCanceled, err.Error()).WithCause(err)
 	case errors.Is(err, context.DeadlineExceeded):
-		return connect.NewError(connect.CodeDeadlineExceeded, err)
+		return connect.NewError(connect.CodeDeadlineExceeded, err.Error()).WithCause(err)
 	case errors.As(err, &ae):
 		switch ae.Status {
 		case 401:
-			return connect.NewError(connect.CodeFailedPrecondition, err)
+			return connect.NewError(connect.CodeFailedPrecondition, err.Error()).WithCause(err)
 		case 403:
-			return connect.NewError(connect.CodePermissionDenied, err)
+			return connect.NewError(connect.CodePermissionDenied, err.Error()).WithCause(err)
 		case 404:
 			return connectx.NotFound("user or tenant not found at Google")
 		case 409:
-			return connect.NewError(connect.CodeAlreadyExists, err)
+			return connect.NewError(connect.CodeAlreadyExists, err.Error()).WithCause(err)
 		case 400:
-			return connect.NewError(connect.CodeInvalidArgument, err)
+			return connect.NewError(connect.CodeInvalidArgument, err.Error()).WithCause(err)
 		case 429:
-			return connect.NewError(connect.CodeResourceExhausted, err)
+			return connect.NewError(connect.CodeResourceExhausted, err.Error()).WithCause(err)
 		}
 	}
-	return connect.NewError(connect.CodeUnavailable, errors.New("Google Workspace request failed; check authorization and connectivity"))
+	return connect.NewError(connect.CodeUnavailable, "Google Workspace request failed; check authorization and connectivity")
 }
 
-func (s *GoogleWorkspaceServiceServer) CreateWorkspaceUser(ctx context.Context, req *connect.Request[neoboxv1.CreateWorkspaceUserRequest]) (*connect.Response[neoboxv1.CreateWorkspaceUserResponse], error) {
-	_, _, api, err := s.open(ctx, req.Msg.GetConnectionId(), req.Msg.GetTenantId())
+func (s *GoogleWorkspaceServiceServer) CreateWorkspaceUser(ctx context.Context, req *neoboxv1.CreateWorkspaceUserRequest) (*neoboxv1.CreateWorkspaceUserResponse, error) {
+	_, _, api, err := s.open(ctx, req.GetConnectionId(), req.GetTenantId())
 	if err != nil {
 		return nil, err
 	}
-	email := strings.TrimSpace(req.Msg.GetPrimaryEmail())
+	email := strings.TrimSpace(req.GetPrimaryEmail())
 	if !googleworkspace.ValidEmail(email) {
-		return nil, connectx.InvalidArgument("primary_email", "must be a valid email")
+		return nil, connectx.InvalidArgument(ctx, "primary_email", "must be a valid email")
 	}
-	body, err := workspaceProfile(req.Msg.GetProfile())
+	body, err := workspaceProfile(ctx, req.GetProfile())
 	if err != nil {
 		return nil, err
 	}
-	if err = workspacePassword(req.Msg.GetPassword()); err != nil {
+	if err = workspacePassword(ctx, req.GetPassword()); err != nil {
 		return nil, err
 	}
-	body["password"], body["changePasswordAtNextLogin"] = req.Msg.GetPassword(), req.Msg.GetChangePasswordAtNextLogin()
+	body["password"], body["changePasswordAtNextLogin"] = req.GetPassword(), req.GetChangePasswordAtNextLogin()
 	u, err := api.CreateUser(ctx, email, body)
 	if err != nil {
-		return nil, mapWorkspaceErr(err)
+		return nil, mapWorkspaceErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.CreateWorkspaceUserResponse{User: workspaceUserToProto(u)}), nil
+	return &neoboxv1.CreateWorkspaceUserResponse{User: workspaceUserToProto(u)}, nil
 }
 
-func (s *GoogleWorkspaceServiceServer) UpdateWorkspaceUser(ctx context.Context, req *connect.Request[neoboxv1.UpdateWorkspaceUserRequest]) (*connect.Response[neoboxv1.UpdateWorkspaceUserResponse], error) {
-	_, _, api, err := s.open(ctx, req.Msg.GetConnectionId(), req.Msg.GetTenantId())
+func (s *GoogleWorkspaceServiceServer) UpdateWorkspaceUser(ctx context.Context, req *neoboxv1.UpdateWorkspaceUserRequest) (*neoboxv1.UpdateWorkspaceUserResponse, error) {
+	_, _, api, err := s.open(ctx, req.GetConnectionId(), req.GetTenantId())
 	if err != nil {
 		return nil, err
 	}
-	if strings.TrimSpace(req.Msg.GetUserId()) == "" {
-		return nil, connectx.RequiredArgument("user_id")
+	if strings.TrimSpace(req.GetUserId()) == "" {
+		return nil, connectx.RequiredArgument(ctx, "user_id")
 	}
-	body, err := workspaceProfile(req.Msg.GetProfile())
+	body, err := workspaceProfile(ctx, req.GetProfile())
 	if err != nil {
 		return nil, err
 	}
-	u, err := api.UpdateUser(ctx, req.Msg.GetUserId(), body)
+	u, err := api.UpdateUser(ctx, req.GetUserId(), body)
 	if err != nil {
-		return nil, mapWorkspaceErr(err)
+		return nil, mapWorkspaceErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.UpdateWorkspaceUserResponse{User: workspaceUserToProto(u)}), nil
+	return &neoboxv1.UpdateWorkspaceUserResponse{User: workspaceUserToProto(u)}, nil
 }
 
-func (s *GoogleWorkspaceServiceServer) ResetWorkspaceUserPassword(ctx context.Context, req *connect.Request[neoboxv1.ResetWorkspaceUserPasswordRequest]) (*connect.Response[neoboxv1.ResetWorkspaceUserPasswordResponse], error) {
-	_, _, api, err := s.open(ctx, req.Msg.GetConnectionId(), req.Msg.GetTenantId())
+func (s *GoogleWorkspaceServiceServer) ResetWorkspaceUserPassword(ctx context.Context, req *neoboxv1.ResetWorkspaceUserPasswordRequest) (*neoboxv1.ResetWorkspaceUserPasswordResponse, error) {
+	_, _, api, err := s.open(ctx, req.GetConnectionId(), req.GetTenantId())
 	if err != nil {
 		return nil, err
 	}
-	if strings.TrimSpace(req.Msg.GetUserId()) == "" {
-		return nil, connectx.RequiredArgument("user_id")
+	if strings.TrimSpace(req.GetUserId()) == "" {
+		return nil, connectx.RequiredArgument(ctx, "user_id")
 	}
-	if err = workspacePassword(req.Msg.GetPassword()); err != nil {
+	if err = workspacePassword(ctx, req.GetPassword()); err != nil {
 		return nil, err
 	}
-	body := map[string]any{"password": req.Msg.GetPassword(), "changePasswordAtNextLogin": req.Msg.GetChangePasswordAtNextLogin()}
-	u, err := api.UpdateUser(ctx, req.Msg.GetUserId(), body)
+	body := map[string]any{"password": req.GetPassword(), "changePasswordAtNextLogin": req.GetChangePasswordAtNextLogin()}
+	u, err := api.UpdateUser(ctx, req.GetUserId(), body)
 	if err != nil {
-		return nil, mapWorkspaceErr(err)
+		return nil, mapWorkspaceErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.ResetWorkspaceUserPasswordResponse{User: workspaceUserToProto(u)}), nil
+	return &neoboxv1.ResetWorkspaceUserPasswordResponse{User: workspaceUserToProto(u)}, nil
 }
 
-func (s *GoogleWorkspaceServiceServer) SetWorkspaceUserSuspended(ctx context.Context, req *connect.Request[neoboxv1.SetWorkspaceUserSuspendedRequest]) (*connect.Response[neoboxv1.SetWorkspaceUserSuspendedResponse], error) {
-	_, _, api, err := s.open(ctx, req.Msg.GetConnectionId(), req.Msg.GetTenantId())
+func (s *GoogleWorkspaceServiceServer) SetWorkspaceUserSuspended(ctx context.Context, req *neoboxv1.SetWorkspaceUserSuspendedRequest) (*neoboxv1.SetWorkspaceUserSuspendedResponse, error) {
+	_, _, api, err := s.open(ctx, req.GetConnectionId(), req.GetTenantId())
 	if err != nil {
 		return nil, err
 	}
-	if strings.TrimSpace(req.Msg.GetUserId()) == "" {
-		return nil, connectx.RequiredArgument("user_id")
+	if strings.TrimSpace(req.GetUserId()) == "" {
+		return nil, connectx.RequiredArgument(ctx, "user_id")
 	}
-	body := map[string]any{"suspended": req.Msg.GetSuspended()}
-	u, err := api.UpdateUser(ctx, req.Msg.GetUserId(), body)
+	body := map[string]any{"suspended": req.GetSuspended()}
+	u, err := api.UpdateUser(ctx, req.GetUserId(), body)
 	if err != nil {
-		return nil, mapWorkspaceErr(err)
+		return nil, mapWorkspaceErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.SetWorkspaceUserSuspendedResponse{User: workspaceUserToProto(u)}), nil
+	return &neoboxv1.SetWorkspaceUserSuspendedResponse{User: workspaceUserToProto(u)}, nil
 }

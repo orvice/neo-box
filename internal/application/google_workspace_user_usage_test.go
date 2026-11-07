@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	neoboxv1 "go.orx.me/apps/neo-box/pkg/proto/neobox/v1"
 )
@@ -26,11 +26,11 @@ func userUsageHandler(customer string) http.HandlerFunc {
 
 func TestUserUsageResolvesTheUserAsksOnlyForTheUsageScopeAndLogsNothing(t *testing.T) {
 	f := newDriveFixture(t, userUsageHandler("Ca"))
-	res, err := f.srv.GetWorkspaceUserUsage(asUser("owner"), connect.NewRequest(&neoboxv1.GetWorkspaceUserUsageRequest{ConnectionId: f.conn, TenantId: "a", UserId: "u1", Days: 3}))
+	res, err := f.srv.GetWorkspaceUserUsage(asUser("owner"), &neoboxv1.GetWorkspaceUserUsageRequest{ConnectionId: f.conn, TenantId: "a", UserId: "u1", Days: 3})
 	if err != nil {
 		t.Fatal(err)
 	}
-	m := res.Msg
+	m := res
 	if m.UserEmail != "ada@a.example" || m.DaysRequested != 3 || len(m.Days) != 3 {
 		t.Fatalf("res=%v", m)
 	}
@@ -48,15 +48,15 @@ func TestUserUsageResolvesTheUserAsksOnlyForTheUsageScopeAndLogsNothing(t *testi
 
 func TestUserUsageDefaultsToFourteenDays(t *testing.T) {
 	f := newDriveFixture(t, userUsageHandler("Ca"))
-	res, err := f.srv.GetWorkspaceUserUsage(asUser("owner"), connect.NewRequest(&neoboxv1.GetWorkspaceUserUsageRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada@a.example"}))
-	if err != nil || res.Msg.DaysRequested != 14 {
+	res, err := f.srv.GetWorkspaceUserUsage(asUser("owner"), &neoboxv1.GetWorkspaceUserUsageRequest{ConnectionId: f.conn, TenantId: "a", UserId: "ada@a.example"})
+	if err != nil || res.DaysRequested != 14 {
 		t.Fatalf("res=%v err=%v", res, err)
 	}
 }
 
 func TestUserUsageIsRefusedForAnotherCustomersUserBeforeAnyReportIsRead(t *testing.T) {
 	f := newDriveFixture(t, userUsageHandler("Cother"))
-	_, err := f.srv.GetWorkspaceUserUsage(asUser("owner"), connect.NewRequest(&neoboxv1.GetWorkspaceUserUsageRequest{ConnectionId: f.conn, TenantId: "a", UserId: "u1"}))
+	_, err := f.srv.GetWorkspaceUserUsage(asUser("owner"), &neoboxv1.GetWorkspaceUserUsageRequest{ConnectionId: f.conn, TenantId: "a", UserId: "u1"})
 	if err == nil {
 		t.Fatal("another customer's user accepted")
 	}
@@ -70,7 +70,7 @@ func TestUserUsageIsRefusedForAnotherCustomersUserBeforeAnyReportIsRead(t *testi
 func TestUserUsageRequestsAreRejectedBeforeGoogleIsReached(t *testing.T) {
 	f := newDriveFixture(t, userUsageHandler("Ca"))
 	call := func(ctxUser, tenant, user string, days int32) error {
-		_, err := f.srv.GetWorkspaceUserUsage(asUser(ctxUser), connect.NewRequest(&neoboxv1.GetWorkspaceUserUsageRequest{ConnectionId: f.conn, TenantId: tenant, UserId: user, Days: days}))
+		_, err := f.srv.GetWorkspaceUserUsage(asUser(ctxUser), &neoboxv1.GetWorkspaceUserUsageRequest{ConnectionId: f.conn, TenantId: tenant, UserId: user, Days: days})
 		return err
 	}
 	if connect.CodeOf(call("owner", "a", "", 0)) != connect.CodeInvalidArgument {

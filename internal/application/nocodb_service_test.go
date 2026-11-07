@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 
 	"go.orx.me/apps/neo-box/internal/backup"
 	"go.orx.me/apps/neo-box/internal/blobstore"
@@ -83,8 +83,8 @@ func TestDefaultRestoreTitle(t *testing.T) {
 	}
 }
 
-func restoreReq(snapshotID, target, title string) *connect.Request[neoboxv1.RestoreSnapshotRequest] {
-	return connect.NewRequest(&neoboxv1.RestoreSnapshotRequest{SnapshotId: snapshotID, TargetConnectionId: target, Title: title})
+func restoreReq(snapshotID, target, title string) *neoboxv1.RestoreSnapshotRequest {
+	return &neoboxv1.RestoreSnapshotRequest{SnapshotId: snapshotID, TargetConnectionId: target, Title: title}
 }
 
 func TestRestoreSnapshot(t *testing.T) {
@@ -95,7 +95,7 @@ func TestRestoreSnapshot(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	r := resp.Msg.GetRestore()
+	r := resp.GetRestore()
 	if r.GetStatus() != neoboxv1.RestoreStatus_RESTORE_STATUS_PENDING || r.GetTargetConnectionId() != "c1" ||
 		r.GetTargetBaseTitle() != "CRM (restored from 2026-10-01)" ||
 		r.GetSourceConnectionId() != "c1" || r.GetSourceBaseId() != "p1" || r.GetSourceBaseTitle() != "CRM" {
@@ -106,12 +106,12 @@ func TestRestoreSnapshot(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if r := resp.Msg.GetRestore(); r.GetTargetConnectionId() != "c2" || r.GetTargetBaseTitle() != "CRM copy" {
+	if r := resp.GetRestore(); r.GetTargetConnectionId() != "c2" || r.GetTargetBaseTitle() != "CRM copy" {
 		t.Fatalf("restore = %v", r)
 	}
 
 	for name, tc := range map[string]struct {
-		req  *connect.Request[neoboxv1.RestoreSnapshotRequest]
+		req  *neoboxv1.RestoreSnapshotRequest
 		code connect.Code
 	}{
 		"missing snapshot id":      {restoreReq("", "", ""), connect.CodeInvalidArgument},
@@ -130,11 +130,11 @@ func TestRestoreSnapshot(t *testing.T) {
 func TestGetSnapshotHookCounts(t *testing.T) {
 	srv, _ := newNocoDBServer(t)
 	ctx := asUser("u1")
-	resp, err := srv.GetSnapshot(ctx, connect.NewRequest(&neoboxv1.GetSnapshotRequest{Id: "s1"}))
+	resp, err := srv.GetSnapshot(ctx, &neoboxv1.GetSnapshotRequest{Id: "s1"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	snap := resp.Msg.GetSnapshot()
+	snap := resp.GetSnapshot()
 	if snap.GetHookCount() != 3 || len(snap.GetTables()) != 1 || snap.GetTables()[0].GetHookCount() != 3 {
 		t.Fatalf("snapshot = %v", snap)
 	}
@@ -150,7 +150,7 @@ func TestGetAndListRestores(t *testing.T) {
 	if _, err := srv.RestoreSnapshot(ctx, restoreReq("s1", "c2", "")); err != nil {
 		t.Fatal(err)
 	}
-	id := first.Msg.GetRestore().GetId()
+	id := first.GetRestore().GetId()
 	stored, err := store.GetRestore(ctx, "u1", id)
 	if err != nil {
 		t.Fatal(err)
@@ -161,22 +161,22 @@ func TestGetAndListRestores(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got, err := srv.GetRestore(ctx, connect.NewRequest(&neoboxv1.GetRestoreRequest{Id: id}))
-	if err != nil || got.Msg.GetRestore().GetId() != id || got.Msg.GetRestore().GetHookCount() != 2 ||
-		len(got.Msg.GetRestore().GetWarnings()) != 1 || got.Msg.GetRestore().GetWarnings()[0].GetCode() != "hooks_disabled" {
+	got, err := srv.GetRestore(ctx, &neoboxv1.GetRestoreRequest{Id: id})
+	if err != nil || got.GetRestore().GetId() != id || got.GetRestore().GetHookCount() != 2 ||
+		len(got.GetRestore().GetWarnings()) != 1 || got.GetRestore().GetWarnings()[0].GetCode() != "hooks_disabled" {
 		t.Fatalf("GetRestore = %v, %v", got, err)
 	}
-	if _, err := srv.GetRestore(asUser("u2"), connect.NewRequest(&neoboxv1.GetRestoreRequest{Id: id})); connect.CodeOf(err) != connect.CodeNotFound {
+	if _, err := srv.GetRestore(asUser("u2"), &neoboxv1.GetRestoreRequest{Id: id}); connect.CodeOf(err) != connect.CodeNotFound {
 		t.Fatalf("GetRestore by another user = %v, want NotFound", err)
 	}
 
 	count := func(ctx context.Context, req *neoboxv1.ListRestoresRequest) int {
 		t.Helper()
-		resp, err := srv.ListRestores(ctx, connect.NewRequest(req))
+		resp, err := srv.ListRestores(ctx, req)
 		if err != nil {
 			t.Fatal(err)
 		}
-		return len(resp.Msg.GetRestores())
+		return len(resp.GetRestores())
 	}
 	if n := count(ctx, &neoboxv1.ListRestoresRequest{SnapshotId: "s1"}); n != 2 {
 		t.Errorf("by snapshot = %d, want 2", n)
@@ -199,20 +199,20 @@ func TestDeleteSnapshotRefusedWhileRestoring(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	del := connect.NewRequest(&neoboxv1.DeleteSnapshotRequest{Id: "s1"})
+	del := &neoboxv1.DeleteSnapshotRequest{Id: "s1"}
 	if _, err := srv.DeleteSnapshot(ctx, del); connect.CodeOf(err) != connect.CodeFailedPrecondition {
 		t.Fatalf("DeleteSnapshot while restoring = %v, want FailedPrecondition", err)
 	}
 
-	r, _ := store.GetRestore(context.Background(), "", resp.Msg.GetRestore().GetId())
+	r, _ := store.GetRestore(context.Background(), "", resp.GetRestore().GetId())
 	r.Status = repo.RestoreSucceeded
 	_ = store.UpdateRestore(context.Background(), r)
 	if _, err := srv.DeleteSnapshot(ctx, del); err != nil {
 		t.Fatalf("DeleteSnapshot after restore: %v", err)
 	}
 	// The restore keeps its history after the snapshot is gone.
-	got, err := srv.GetRestore(ctx, connect.NewRequest(&neoboxv1.GetRestoreRequest{Id: r.ID}))
-	if err != nil || got.Msg.GetRestore().GetSourceBaseTitle() != "CRM" {
+	got, err := srv.GetRestore(ctx, &neoboxv1.GetRestoreRequest{Id: r.ID})
+	if err != nil || got.GetRestore().GetSourceBaseTitle() != "CRM" {
 		t.Fatalf("GetRestore after snapshot delete = %v, %v", got, err)
 	}
 }
@@ -222,13 +222,13 @@ func TestUpsertBackupPolicyIncludeAttachments(t *testing.T) {
 	ctx := asUser("u1")
 	upsert := func(include *bool) *neoboxv1.BackupPolicy {
 		t.Helper()
-		resp, err := srv.UpsertBackupPolicy(ctx, connect.NewRequest(&neoboxv1.UpsertBackupPolicyRequest{
+		resp, err := srv.UpsertBackupPolicy(ctx, &neoboxv1.UpsertBackupPolicyRequest{
 			ConnectionId: "c1", BaseId: "p1", Enabled: true, Cron: "@daily", Retention: 3, IncludeAttachments: include,
-		}))
+		})
 		if err != nil {
 			t.Fatal(err)
 		}
-		return resp.Msg.GetPolicy()
+		return resp.GetPolicy()
 	}
 	off, on := false, true
 	// A new policy includes attachments unless told otherwise; an update

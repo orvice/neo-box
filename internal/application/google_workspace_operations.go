@@ -1,10 +1,13 @@
 package application
 
 import (
-	"connectrpc.com/connect"
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/google/uuid"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	connrepo "go.orx.me/apps/neo-box/internal/repo/connection"
@@ -13,9 +16,6 @@ import (
 	neoboxv1 "go.orx.me/apps/neo-box/pkg/proto/neobox/v1"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"net/http"
-	"strings"
-	"time"
 )
 
 type workspaceRecorder struct {
@@ -118,19 +118,19 @@ func operationToWorkspaceProto(o *repo.Operation) *neoboxv1.WorkspaceOperation {
 	}
 	return out
 }
-func (s *GoogleWorkspaceServiceServer) ListWorkspaceOperations(ctx context.Context, req *connect.Request[neoboxv1.ListWorkspaceOperationsRequest]) (*connect.Response[neoboxv1.ListWorkspaceOperationsResponse], error) {
-	d, err := s.deps(ctx, req.Msg.GetConnectionId())
+func (s *GoogleWorkspaceServiceServer) ListWorkspaceOperations(ctx context.Context, req *neoboxv1.ListWorkspaceOperationsRequest) (*neoboxv1.ListWorkspaceOperationsResponse, error) {
+	d, err := s.deps(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	status, ok := workspaceOpStatusKey(req.Msg.GetStatus())
+	status, ok := workspaceOpStatusKey(req.GetStatus())
 	if !ok {
-		return nil, connectx.InvalidArgument("status", "unknown operation status")
+		return nil, connectx.InvalidArgument(ctx, "status", "unknown operation status")
 	}
-	page, size := pageArgs(req.Msg.GetPage(), req.Msg.GetPageSize(), 20, 1, 100)
+	page, size := pageArgs(req.GetPage(), req.GetPageSize(), 20, 1, 100)
 	// A deleted tenant has no configuration to load but its history stays scoped
 	// by the owning connection and user.
-	ops, total, err := d.repo.ListOperations(ctx, repo.OperationFilter{UserID: d.c.UserID, ConnectionID: d.c.ID, TenantID: req.Msg.GetTenantId(), Query: strings.TrimSpace(req.Msg.GetQuery()), Status: status, Offset: (page - 1) * size, Limit: size})
+	ops, total, err := d.repo.ListOperations(ctx, repo.OperationFilter{UserID: d.c.UserID, ConnectionID: d.c.ID, TenantID: req.GetTenantId(), Query: strings.TrimSpace(req.GetQuery()), Status: status, Offset: (page - 1) * size, Limit: size})
 	if err != nil {
 		return nil, connectx.InternalWith(err)
 	}
@@ -138,5 +138,5 @@ func (s *GoogleWorkspaceServiceServer) ListWorkspaceOperations(ctx context.Conte
 	for _, o := range ops {
 		out.Operations = append(out.Operations, operationToWorkspaceProto(o))
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }

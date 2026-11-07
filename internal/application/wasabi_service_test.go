@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"go.orx.me/apps/neo-box/internal/connection"
@@ -34,10 +34,10 @@ type fakeSyncer struct{ refreshed []string }
 func (f *fakeSyncer) Syncing(string) bool { return false }
 func (f *fakeSyncer) Refresh(id string)   { f.refreshed = append(f.refreshed, id) }
 func wasabiDay(s string) time.Time        { t, _ := time.Parse(wasabi.DateLayout, s); return t }
-func wasabiCreate(name string, s *neoboxv1.WasabiConnectionSettings) *connect.Request[neoboxv1.CreateConnectionRequest] {
-	return connect.NewRequest(&neoboxv1.CreateConnectionRequest{
+func wasabiCreate(name string, s *neoboxv1.WasabiConnectionSettings) *neoboxv1.CreateConnectionRequest {
+	return &neoboxv1.CreateConnectionRequest{
 		Name: name, Settings: &neoboxv1.CreateConnectionRequest_Wasabi{Wasabi: s},
-	})
+	}
 }
 
 func TestWasabiConnectionSettings(t *testing.T) {
@@ -68,19 +68,19 @@ func TestWasabiConnectionSettings(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Create: %v", err)
 	}
-	cfg := created.Msg.GetConnection().GetWasabi()
+	cfg := created.GetConnection().GetWasabi()
 	if cfg.GetAccessKeyId() != "AK" || cfg.GetPricePerTbMonth() != wasabi.DefaultPricePerTBMonth ||
 		cfg.GetBillingCycleAnchor() != "2026-08-01" || !cfg.GetCostEstimateEnabled() || cfg.GetBudgetUsd() != 25 ||
-		created.Msg.GetConnection().GetProvider() != neoboxv1.Provider_PROVIDER_WASABI {
-		t.Fatalf("config = %+v", created.Msg.GetConnection())
+		created.GetConnection().GetProvider() != neoboxv1.Provider_PROVIDER_WASABI {
+		t.Fatalf("config = %+v", created.GetConnection())
 	}
-	raw, _ := protojson.Marshal(created.Msg)
+	raw, _ := protojson.Marshal(created)
 	if strings.Contains(string(raw), "SK-SECRET") {
 		t.Fatalf("response leaks the secret key: %s", raw)
 	}
 
-	list, err := srv.ListConnections(ctx, connect.NewRequest(&neoboxv1.ListConnectionsRequest{Provider: neoboxv1.Provider_PROVIDER_WASABI}))
-	if err != nil || len(list.Msg.GetConnections()) != 1 {
+	list, err := srv.ListConnections(ctx, &neoboxv1.ListConnectionsRequest{Provider: neoboxv1.Provider_PROVIDER_WASABI})
+	if err != nil || len(list.GetConnections()) != 1 {
 		t.Fatalf("List(wasabi) = %v, %v", list, err)
 	}
 }
@@ -127,11 +127,11 @@ func newWasabiFixture(t *testing.T, costEstimate bool) *wasabiFixture {
 
 func TestWasabiOverview(t *testing.T) {
 	f := newWasabiFixture(t, true)
-	resp, err := f.srv.GetWasabiOverview(asUser("u1"), connect.NewRequest(&neoboxv1.GetWasabiOverviewRequest{ConnectionId: "w1"}))
+	resp, err := f.srv.GetWasabiOverview(asUser("u1"), &neoboxv1.GetWasabiOverviewRequest{ConnectionId: "w1"})
 	if err != nil {
 		t.Fatalf("GetWasabiOverview: %v", err)
 	}
-	m := resp.Msg
+	m := resp
 	if m.GetLatest().GetDay() != "2026-09-29" || m.GetLatest().GetActiveStorageBytes() != 2<<40 || m.GetBucketCount() != 1 {
 		t.Fatalf("latest = %+v, buckets = %d", m.GetLatest(), m.GetBucketCount())
 	}
@@ -148,8 +148,8 @@ func TestWasabiOverview(t *testing.T) {
 	}
 
 	off := newWasabiFixture(t, false)
-	resp, err = off.srv.GetWasabiOverview(asUser("u1"), connect.NewRequest(&neoboxv1.GetWasabiOverviewRequest{ConnectionId: "w1"}))
-	if err != nil || resp.Msg.GetCostEstimate() != nil {
+	resp, err = off.srv.GetWasabiOverview(asUser("u1"), &neoboxv1.GetWasabiOverviewRequest{ConnectionId: "w1"})
+	if err != nil || resp.GetCostEstimate() != nil {
 		t.Fatalf("estimate should be omitted when disabled: %+v, %v", resp, err)
 	}
 }
@@ -158,29 +158,29 @@ func TestWasabiBucketsAndUsage(t *testing.T) {
 	f := newWasabiFixture(t, true)
 	ctx := asUser("u1")
 
-	list, err := f.srv.ListWasabiBuckets(ctx, connect.NewRequest(&neoboxv1.ListWasabiBucketsRequest{ConnectionId: "w1"}))
-	if err != nil || len(list.Msg.GetBuckets()) != 1 || list.Msg.GetBuckets()[0].GetName() != "media" {
+	list, err := f.srv.ListWasabiBuckets(ctx, &neoboxv1.ListWasabiBucketsRequest{ConnectionId: "w1"})
+	if err != nil || len(list.GetBuckets()) != 1 || list.GetBuckets()[0].GetName() != "media" {
 		t.Fatalf("ListWasabiBuckets = %+v, %v", list, err)
 	}
-	all, _ := f.srv.ListWasabiBuckets(ctx, connect.NewRequest(&neoboxv1.ListWasabiBucketsRequest{ConnectionId: "w1", IncludeDeleted: true}))
-	if b := all.Msg.GetBuckets(); len(b) != 2 || b[1].GetName() != "old" || !b[1].GetDeleted() || b[1].GetRegion() != "eu-central-1" {
+	all, _ := f.srv.ListWasabiBuckets(ctx, &neoboxv1.ListWasabiBucketsRequest{ConnectionId: "w1", IncludeDeleted: true})
+	if b := all.GetBuckets(); len(b) != 2 || b[1].GetName() != "old" || !b[1].GetDeleted() || b[1].GetRegion() != "eu-central-1" {
 		t.Fatalf("ListWasabiBuckets(include_deleted) = %+v", b)
 	}
 
-	usage, err := f.srv.GetWasabiUsage(ctx, connect.NewRequest(&neoboxv1.GetWasabiUsageRequest{ConnectionId: "w1", From: "2026-09-20"}))
-	if err != nil || len(usage.Msg.GetDays()) != 10 || usage.Msg.GetDays()[0].GetDay() != "2026-09-20" {
-		t.Fatalf("GetWasabiUsage = %d days, %v", len(usage.Msg.GetDays()), err)
+	usage, err := f.srv.GetWasabiUsage(ctx, &neoboxv1.GetWasabiUsageRequest{ConnectionId: "w1", From: "2026-09-20"})
+	if err != nil || len(usage.GetDays()) != 10 || usage.GetDays()[0].GetDay() != "2026-09-20" {
+		t.Fatalf("GetWasabiUsage = %d days, %v", len(usage.GetDays()), err)
 	}
-	bucket, _ := f.srv.GetWasabiUsage(ctx, connect.NewRequest(&neoboxv1.GetWasabiUsageRequest{ConnectionId: "w1", Bucket: "media"}))
-	if len(bucket.Msg.GetDays()) != 29 || bucket.Msg.GetDays()[0].GetBucket() != "media" {
-		t.Fatalf("bucket usage = %d days", len(bucket.Msg.GetDays()))
+	bucket, _ := f.srv.GetWasabiUsage(ctx, &neoboxv1.GetWasabiUsageRequest{ConnectionId: "w1", Bucket: "media"})
+	if len(bucket.GetDays()) != 29 || bucket.GetDays()[0].GetBucket() != "media" {
+		t.Fatalf("bucket usage = %d days", len(bucket.GetDays()))
 	}
 	for _, bad := range []*neoboxv1.GetWasabiUsageRequest{
 		{ConnectionId: "w1", From: "2026-09-30", To: "2026-09-01"},
 		{ConnectionId: "w1", From: "Sept 1"},
 		{ConnectionId: "w1", From: "2020-01-01"},
 	} {
-		if _, err := f.srv.GetWasabiUsage(ctx, connect.NewRequest(bad)); connect.CodeOf(err) != connect.CodeInvalidArgument {
+		if _, err := f.srv.GetWasabiUsage(ctx, bad); connect.CodeOf(err) != connect.CodeInvalidArgument {
 			t.Errorf("GetWasabiUsage(%+v) = %v, want InvalidArgument", bad, err)
 		}
 	}
@@ -188,7 +188,7 @@ func TestWasabiBucketsAndUsage(t *testing.T) {
 
 func TestWasabiSyncAndScoping(t *testing.T) {
 	f := newWasabiFixture(t, true)
-	if _, err := f.srv.SyncWasabiConnection(asUser("u1"), connect.NewRequest(&neoboxv1.SyncWasabiConnectionRequest{ConnectionId: "w1"})); err != nil {
+	if _, err := f.srv.SyncWasabiConnection(asUser("u1"), &neoboxv1.SyncWasabiConnectionRequest{ConnectionId: "w1"}); err != nil {
 		t.Fatalf("SyncWasabiConnection: %v", err)
 	}
 	if len(f.syncer.refreshed) != 1 || f.syncer.refreshed[0] != "w1" {
@@ -200,7 +200,7 @@ func TestWasabiSyncAndScoping(t *testing.T) {
 		if what == "a NocoDB connection" {
 			id = "n1"
 		}
-		_, err := f.srv.GetWasabiOverview(ctx, connect.NewRequest(&neoboxv1.GetWasabiOverviewRequest{ConnectionId: id}))
+		_, err := f.srv.GetWasabiOverview(ctx, &neoboxv1.GetWasabiOverviewRequest{ConnectionId: id})
 		if connect.CodeOf(err) != connect.CodeNotFound {
 			t.Errorf("%s: err = %v, want NotFound", what, err)
 		}
@@ -209,19 +209,19 @@ func TestWasabiSyncAndScoping(t *testing.T) {
 
 func TestWasabiCostBreakdown(t *testing.T) {
 	f := newWasabiFixture(t, true)
-	resp, err := f.srv.GetWasabiCostBreakdown(asUser("u1"), connect.NewRequest(&neoboxv1.GetWasabiCostBreakdownRequest{ConnectionId: "w1"}))
+	resp, err := f.srv.GetWasabiCostBreakdown(asUser("u1"), &neoboxv1.GetWasabiCostBreakdownRequest{ConnectionId: "w1"})
 	if err != nil {
 		t.Fatalf("GetWasabiCostBreakdown: %v", err)
 	}
-	b := resp.Msg.GetBreakdown()
+	b := resp.GetBreakdown()
 	if !b.GetRolling() || b.GetPeriodStart() != "2026-09-01" || b.GetDaysWithData() != 29 || b.GetPricePerTbMonth() != wasabi.DefaultPricePerTBMonth {
 		t.Fatalf("period = %+v", b)
 	}
 	// It matches the overview's cost to date.
-	over, _ := f.srv.GetWasabiOverview(asUser("u1"), connect.NewRequest(&neoboxv1.GetWasabiOverviewRequest{ConnectionId: "w1"}))
+	over, _ := f.srv.GetWasabiOverview(asUser("u1"), &neoboxv1.GetWasabiOverviewRequest{ConnectionId: "w1"})
 	total := b.GetActiveCost() + b.GetDeletedCost() + b.GetMinimumCost()
-	if d := total - over.Msg.GetCostEstimate().GetCostToDate(); d > 1e-9 || d < -1e-9 {
-		t.Fatalf("breakdown total %v != estimate %v", total, over.Msg.GetCostEstimate().GetCostToDate())
+	if d := total - over.GetCostEstimate().GetCostToDate(); d > 1e-9 || d < -1e-9 {
+		t.Fatalf("breakdown total %v != estimate %v", total, over.GetCostEstimate().GetCostToDate())
 	}
 	// "media" holds everything; "old" (gone, empty) costs nothing.
 	if len(b.GetBuckets()) != 2 || b.GetBuckets()[0].GetBucket() != "media" || b.GetBuckets()[0].GetDeleted() ||
@@ -237,7 +237,7 @@ func TestWasabiCostBreakdown(t *testing.T) {
 		"a NocoDB connection":       {"u1", "n1", connect.CodeNotFound},
 		"missing id":                {"u1", "", connect.CodeInvalidArgument},
 	} {
-		_, err := f.srv.GetWasabiCostBreakdown(asUser(tc.user), connect.NewRequest(&neoboxv1.GetWasabiCostBreakdownRequest{ConnectionId: tc.conn}))
+		_, err := f.srv.GetWasabiCostBreakdown(asUser(tc.user), &neoboxv1.GetWasabiCostBreakdownRequest{ConnectionId: tc.conn})
 		if connect.CodeOf(err) != tc.code {
 			t.Errorf("%s: err = %v, want %v", name, err, tc.code)
 		}
@@ -258,11 +258,11 @@ func TestWasabiBucketSettings(t *testing.T) {
 	st.ConfigFetchedAt = wasabiDay("2026-09-30")
 	_ = f.usage.SaveSyncState(ctx, st)
 
-	resp, err := f.srv.ListWasabiBuckets(asUser("u1"), connect.NewRequest(&neoboxv1.ListWasabiBucketsRequest{ConnectionId: "w1"}))
+	resp, err := f.srv.ListWasabiBuckets(asUser("u1"), &neoboxv1.ListWasabiBucketsRequest{ConnectionId: "w1"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	media := resp.Msg.GetBuckets()[0]
+	media := resp.GetBuckets()[0]
 	c := media.GetConfig()
 	if media.GetName() != "media" || c == nil || !c.GetPublic() || c.GetVersioning().GetStatus() != "Enabled" ||
 		c.GetPolicy().GetDocument() == "" || len(c.GetLifecycleRules()) != 1 || c.GetErrors()["acl"] != "access_denied" {
@@ -277,8 +277,8 @@ func TestWasabiBucketSettings(t *testing.T) {
 		t.Fatalf("findings = %+v", c.GetFindings())
 	}
 
-	over, _ := f.srv.GetWasabiOverview(asUser("u1"), connect.NewRequest(&neoboxv1.GetWasabiOverviewRequest{ConnectionId: "w1"}))
-	if over.Msg.GetSync().GetConfigFetchedAt() == nil || over.Msg.GetSync().GetConfigError() != "" {
-		t.Fatalf("sync = %+v", over.Msg.GetSync())
+	over, _ := f.srv.GetWasabiOverview(asUser("u1"), &neoboxv1.GetWasabiOverviewRequest{ConnectionId: "w1"})
+	if over.GetSync().GetConfigFetchedAt() == nil || over.GetSync().GetConfigError() != "" {
+		t.Fatalf("sync = %+v", over.GetSync())
 	}
 }

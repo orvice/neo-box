@@ -4,7 +4,6 @@ import (
 	"context"
 	"strings"
 
-	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"go.orx.me/apps/neo-box/internal/cloudflare"
@@ -27,31 +26,31 @@ func (s *CloudflareServiceServer) openAccount(ctx context.Context, connectionID 
 	return d, a, nil
 }
 
-func (s *CloudflareServiceServer) ListCloudflareTunnels(ctx context.Context, req *connect.Request[neoboxv1.ListCloudflareTunnelsRequest]) (*connect.Response[neoboxv1.ListCloudflareTunnelsResponse], error) {
-	_, a, err := s.openAccount(ctx, req.Msg.GetConnectionId())
+func (s *CloudflareServiceServer) ListCloudflareTunnels(ctx context.Context, req *neoboxv1.ListCloudflareTunnelsRequest) (*neoboxv1.ListCloudflareTunnelsResponse, error) {
+	_, a, err := s.openAccount(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	page, size := pageArgs(req.Msg.GetPage(), req.Msg.GetPageSize(), defaultListSize, 1, maxListSize)
-	list, err := a.Tunnels(ctx, req.Msg.GetQuery(), page, size)
+	page, size := pageArgs(req.GetPage(), req.GetPageSize(), defaultListSize, 1, maxListSize)
+	list, err := a.Tunnels(ctx, req.GetQuery(), page, size)
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
 	out := &neoboxv1.ListCloudflareTunnelsResponse{PageInfo: pageInfoOf(page, size, list.Total)}
 	for i := range list.Items {
 		out.Tunnels = append(out.Tunnels, tunnelToProto(&list.Items[i]))
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }
 
-func (s *CloudflareServiceServer) GetCloudflareTunnel(ctx context.Context, req *connect.Request[neoboxv1.GetCloudflareTunnelRequest]) (*connect.Response[neoboxv1.GetCloudflareTunnelResponse], error) {
-	_, a, err := s.openAccount(ctx, req.Msg.GetConnectionId())
+func (s *CloudflareServiceServer) GetCloudflareTunnel(ctx context.Context, req *neoboxv1.GetCloudflareTunnelRequest) (*neoboxv1.GetCloudflareTunnelResponse, error) {
+	_, a, err := s.openAccount(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	d, err := a.TunnelDetail(ctx, strings.TrimSpace(req.Msg.GetTunnelId()))
+	d, err := a.TunnelDetail(ctx, strings.TrimSpace(req.GetTunnelId()))
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
 	out := &neoboxv1.GetCloudflareTunnelResponse{Tunnel: tunnelToProto(d.Tunnel), Issues: readIssuesToProto(d.Issues)}
 	for i := range d.Connectors {
@@ -64,108 +63,108 @@ func (s *CloudflareServiceServer) GetCloudflareTunnel(ctx context.Context, req *
 			out.Hostnames = append(out.Hostnames, hostnameToProto(r))
 		}
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }
 
-func (s *CloudflareServiceServer) CreateCloudflareTunnel(ctx context.Context, req *connect.Request[neoboxv1.CreateCloudflareTunnelRequest]) (*connect.Response[neoboxv1.CreateCloudflareTunnelResponse], error) {
-	_, a, err := s.openAccount(ctx, req.Msg.GetConnectionId())
+func (s *CloudflareServiceServer) CreateCloudflareTunnel(ctx context.Context, req *neoboxv1.CreateCloudflareTunnelRequest) (*neoboxv1.CreateCloudflareTunnelResponse, error) {
+	_, a, err := s.openAccount(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	t, err := a.CreateTunnel(ctx, req.Msg.GetName())
+	t, err := a.CreateTunnel(ctx, req.GetName())
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.CreateCloudflareTunnelResponse{Tunnel: tunnelToProto(t)}), nil
+	return &neoboxv1.CreateCloudflareTunnelResponse{Tunnel: tunnelToProto(t)}, nil
 }
 
-func (s *CloudflareServiceServer) DeleteCloudflareTunnel(ctx context.Context, req *connect.Request[neoboxv1.DeleteCloudflareTunnelRequest]) (*connect.Response[neoboxv1.DeleteCloudflareTunnelResponse], error) {
-	_, a, err := s.openAccount(ctx, req.Msg.GetConnectionId())
+func (s *CloudflareServiceServer) DeleteCloudflareTunnel(ctx context.Context, req *neoboxv1.DeleteCloudflareTunnelRequest) (*neoboxv1.DeleteCloudflareTunnelResponse, error) {
+	_, a, err := s.openAccount(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	if err := a.DeleteTunnel(ctx, strings.TrimSpace(req.Msg.GetTunnelId()), req.Msg.GetCleanupConnections()); err != nil {
-		return nil, mapCloudflareErr(err)
+	if err := a.DeleteTunnel(ctx, strings.TrimSpace(req.GetTunnelId()), req.GetCleanupConnections()); err != nil {
+		return nil, mapCloudflareErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.DeleteCloudflareTunnelResponse{}), nil
+	return &neoboxv1.DeleteCloudflareTunnelResponse{}, nil
 }
 
-func (s *CloudflareServiceServer) GetCloudflareTunnelToken(ctx context.Context, req *connect.Request[neoboxv1.GetCloudflareTunnelTokenRequest]) (*connect.Response[neoboxv1.GetCloudflareTunnelTokenResponse], error) {
-	_, a, err := s.openAccount(ctx, req.Msg.GetConnectionId())
+func (s *CloudflareServiceServer) GetCloudflareTunnelToken(ctx context.Context, req *neoboxv1.GetCloudflareTunnelTokenRequest) (*neoboxv1.GetCloudflareTunnelTokenResponse, error) {
+	_, a, err := s.openAccount(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	token, err := a.TunnelToken(ctx, strings.TrimSpace(req.Msg.GetTunnelId()))
+	token, err := a.TunnelToken(ctx, strings.TrimSpace(req.GetTunnelId()))
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.GetCloudflareTunnelTokenResponse{Token: token}), nil
+	return &neoboxv1.GetCloudflareTunnelTokenResponse{Token: token}, nil
 }
 
-func (s *CloudflareServiceServer) CleanupCloudflareTunnelConnections(ctx context.Context, req *connect.Request[neoboxv1.CleanupCloudflareTunnelConnectionsRequest]) (*connect.Response[neoboxv1.CleanupCloudflareTunnelConnectionsResponse], error) {
-	_, a, err := s.openAccount(ctx, req.Msg.GetConnectionId())
+func (s *CloudflareServiceServer) CleanupCloudflareTunnelConnections(ctx context.Context, req *neoboxv1.CleanupCloudflareTunnelConnectionsRequest) (*neoboxv1.CleanupCloudflareTunnelConnectionsResponse, error) {
+	_, a, err := s.openAccount(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	if err := a.CleanupTunnelConnections(ctx, strings.TrimSpace(req.Msg.GetTunnelId())); err != nil {
-		return nil, mapCloudflareErr(err)
+	if err := a.CleanupTunnelConnections(ctx, strings.TrimSpace(req.GetTunnelId())); err != nil {
+		return nil, mapCloudflareErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.CleanupCloudflareTunnelConnectionsResponse{}), nil
+	return &neoboxv1.CleanupCloudflareTunnelConnectionsResponse{}, nil
 }
 
 // --- hostnames ---
 
-func (s *CloudflareServiceServer) AddCloudflareTunnelHostname(ctx context.Context, req *connect.Request[neoboxv1.AddCloudflareTunnelHostnameRequest]) (*connect.Response[neoboxv1.AddCloudflareTunnelHostnameResponse], error) {
-	d, a, err := s.openAccount(ctx, req.Msg.GetConnectionId())
+func (s *CloudflareServiceServer) AddCloudflareTunnelHostname(ctx context.Context, req *neoboxv1.AddCloudflareTunnelHostnameRequest) (*neoboxv1.AddCloudflareTunnelHostnameResponse, error) {
+	d, a, err := s.openAccount(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	m := req.Msg
+	m := req
 	ch, err := a.AddHostname(ctx, d.user, strings.TrimSpace(m.GetTunnelId()), cloudflareacct.HostnameInput{
 		Hostname: m.GetHostname(), Path: m.GetPath(), Service: m.GetService(),
 	}, m.GetCreateDns())
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.AddCloudflareTunnelHostnameResponse{
+	return &neoboxv1.AddCloudflareTunnelHostnameResponse{
 		Hostname:      routeToProto(ch.Config, cloudflare.NormalizeHostname(m.GetHostname()), strings.TrimSpace(m.GetPath())),
 		ConfigVersion: int32(ch.Config.Version),
 		Record:        recordResultToProto(ch.Record),
-	}), nil
+	}, nil
 }
 
-func (s *CloudflareServiceServer) UpdateCloudflareTunnelHostname(ctx context.Context, req *connect.Request[neoboxv1.UpdateCloudflareTunnelHostnameRequest]) (*connect.Response[neoboxv1.UpdateCloudflareTunnelHostnameResponse], error) {
-	_, a, err := s.openAccount(ctx, req.Msg.GetConnectionId())
+func (s *CloudflareServiceServer) UpdateCloudflareTunnelHostname(ctx context.Context, req *neoboxv1.UpdateCloudflareTunnelHostnameRequest) (*neoboxv1.UpdateCloudflareTunnelHostnameResponse, error) {
+	_, a, err := s.openAccount(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	m := req.Msg
+	m := req
 	cfg, err := a.UpdateHostname(ctx, strings.TrimSpace(m.GetTunnelId()), m.GetHostname(), m.GetCurrentPath(), cloudflareacct.HostnameInput{
 		Path: m.GetPath(), Service: m.GetService(),
 	})
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.UpdateCloudflareTunnelHostnameResponse{
+	return &neoboxv1.UpdateCloudflareTunnelHostnameResponse{
 		Hostname:      routeToProto(cfg, cloudflare.NormalizeHostname(m.GetHostname()), strings.TrimSpace(m.GetPath())),
 		ConfigVersion: int32(cfg.Version),
-	}), nil
+	}, nil
 }
 
-func (s *CloudflareServiceServer) DeleteCloudflareTunnelHostname(ctx context.Context, req *connect.Request[neoboxv1.DeleteCloudflareTunnelHostnameRequest]) (*connect.Response[neoboxv1.DeleteCloudflareTunnelHostnameResponse], error) {
-	d, a, err := s.openAccount(ctx, req.Msg.GetConnectionId())
+func (s *CloudflareServiceServer) DeleteCloudflareTunnelHostname(ctx context.Context, req *neoboxv1.DeleteCloudflareTunnelHostnameRequest) (*neoboxv1.DeleteCloudflareTunnelHostnameResponse, error) {
+	d, a, err := s.openAccount(ctx, req.GetConnectionId())
 	if err != nil {
 		return nil, err
 	}
-	m := req.Msg
+	m := req
 	ch, err := a.DeleteHostname(ctx, d.user, strings.TrimSpace(m.GetTunnelId()), m.GetHostname(), m.GetPath(), m.GetDeleteDns())
 	if err != nil {
-		return nil, mapCloudflareErr(err)
+		return nil, mapCloudflareErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.DeleteCloudflareTunnelHostnameResponse{
+	return &neoboxv1.DeleteCloudflareTunnelHostnameResponse{
 		ConfigVersion: int32(ch.Config.Version),
 		Record:        recordResultToProto(ch.Record),
-	}), nil
+	}, nil
 }
 
 // --- conversion ---

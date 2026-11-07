@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"go.orx.me/apps/neo-box/internal/cloudflare"
@@ -63,14 +62,14 @@ func logErrResult(r *cloudflareacct.OperationResult) string {
 	}
 	return ""
 }
-func (s *CloudflareServiceServer) GetCloudflareZoneRules(ctx context.Context, req *connect.Request[neoboxv1.GetCloudflareZoneRulesRequest]) (*connect.Response[neoboxv1.GetCloudflareZoneRulesResponse], error) {
-	_, a, e := s.openAccount(ctx, req.Msg.GetConnectionId())
+func (s *CloudflareServiceServer) GetCloudflareZoneRules(ctx context.Context, req *neoboxv1.GetCloudflareZoneRulesRequest) (*neoboxv1.GetCloudflareZoneRulesResponse, error) {
+	_, a, e := s.openAccount(ctx, req.GetConnectionId())
 	if e != nil {
 		return nil, e
 	}
-	v, e := a.ZoneRules(ctx, req.Msg.GetZoneId())
+	v, e := a.ZoneRules(ctx, req.GetZoneId())
 	if e != nil {
-		return nil, mapCloudflareErr(e)
+		return nil, mapCloudflareErr(ctx, e)
 	}
 	out := &neoboxv1.GetCloudflareZoneRulesResponse{}
 	for _, p := range []cloudflare.ZoneRuleCategory{cloudflare.ZoneRuleSingleRedirect, cloudflare.ZoneRuleURLRewrite, cloudflare.ZoneRuleRequestHeader, cloudflare.ZoneRuleResponseHeader, cloudflare.ZoneRuleOrigin} {
@@ -84,7 +83,7 @@ func (s *CloudflareServiceServer) GetCloudflareZoneRules(ctx context.Context, re
 		}
 		out.Categories = append(out.Categories, x)
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }
 func inputRule(x *neoboxv1.CloudflareZoneRule) cloudflare.ZoneRule {
 	r := cloudflare.ZoneRule{ID: x.GetId(), Version: x.GetVersion(), Description: x.GetDescription(), Expression: x.GetExpression(), Action: x.GetAction(), Enabled: x.Enabled}
@@ -93,64 +92,64 @@ func inputRule(x *neoboxv1.CloudflareZoneRule) cloudflare.ZoneRule {
 	}
 	return r
 }
-func (s *CloudflareServiceServer) CreateCloudflareZoneRule(ctx context.Context, req *connect.Request[neoboxv1.CreateCloudflareZoneRuleRequest]) (*connect.Response[neoboxv1.CreateCloudflareZoneRuleResponse], error) {
-	d, a, e := s.openAccount(ctx, req.Msg.GetConnectionId())
+func (s *CloudflareServiceServer) CreateCloudflareZoneRule(ctx context.Context, req *neoboxv1.CreateCloudflareZoneRuleRequest) (*neoboxv1.CreateCloudflareZoneRuleResponse, error) {
+	d, a, e := s.openAccount(ctx, req.GetConnectionId())
 	if e != nil {
 		return nil, e
 	}
-	p, e := protoRuleCategory(req.Msg.GetCategory())
+	p, e := protoRuleCategory(req.GetCategory())
 	if e != nil {
-		return nil, connectx.InvalidArgument("category", e.Error())
+		return nil, connectx.InvalidArgument(ctx, "category", e.Error())
 	}
-	r, e := a.CreateZoneRule(ctx, d.user, req.Msg.GetZoneId(), p, inputRule(req.Msg.GetRule()))
+	r, e := a.CreateZoneRule(ctx, d.user, req.GetZoneId(), p, inputRule(req.GetRule()))
 	if e != nil {
-		return nil, mapCloudflareErr(e)
+		return nil, mapCloudflareErr(ctx, e)
 	}
-	return connect.NewResponse(&neoboxv1.CreateCloudflareZoneRuleResponse{Result: resultProto(r)}), nil
+	return &neoboxv1.CreateCloudflareZoneRuleResponse{Result: resultProto(r)}, nil
 }
-func (s *CloudflareServiceServer) UpdateCloudflareZoneRule(ctx context.Context, req *connect.Request[neoboxv1.UpdateCloudflareZoneRuleRequest]) (*connect.Response[neoboxv1.UpdateCloudflareZoneRuleResponse], error) {
-	d, a, e := s.openAccount(ctx, req.Msg.GetConnectionId())
+func (s *CloudflareServiceServer) UpdateCloudflareZoneRule(ctx context.Context, req *neoboxv1.UpdateCloudflareZoneRuleRequest) (*neoboxv1.UpdateCloudflareZoneRuleResponse, error) {
+	d, a, e := s.openAccount(ctx, req.GetConnectionId())
 	if e != nil {
 		return nil, e
 	}
-	p, e := protoRuleCategory(req.Msg.GetCategory())
+	p, e := protoRuleCategory(req.GetCategory())
 	if e != nil {
 		return nil, e
 	}
-	r, e := a.UpdateZoneRule(ctx, d.user, req.Msg.GetZoneId(), p, req.Msg.GetRuleId(), req.Msg.GetSnapshot(), inputRule(req.Msg.GetRule()))
+	r, e := a.UpdateZoneRule(ctx, d.user, req.GetZoneId(), p, req.GetRuleId(), req.GetSnapshot(), inputRule(req.GetRule()))
 	if e != nil {
-		return nil, mapCloudflareErr(e)
+		return nil, mapCloudflareErr(ctx, e)
 	}
-	return connect.NewResponse(&neoboxv1.UpdateCloudflareZoneRuleResponse{Result: resultProto(r)}), nil
+	return &neoboxv1.UpdateCloudflareZoneRuleResponse{Result: resultProto(r)}, nil
 }
-func (s *CloudflareServiceServer) DeleteCloudflareZoneRule(ctx context.Context, req *connect.Request[neoboxv1.DeleteCloudflareZoneRuleRequest]) (*connect.Response[neoboxv1.DeleteCloudflareZoneRuleResponse], error) {
-	d, a, e := s.openAccount(ctx, req.Msg.GetConnectionId())
+func (s *CloudflareServiceServer) DeleteCloudflareZoneRule(ctx context.Context, req *neoboxv1.DeleteCloudflareZoneRuleRequest) (*neoboxv1.DeleteCloudflareZoneRuleResponse, error) {
+	d, a, e := s.openAccount(ctx, req.GetConnectionId())
 	if e != nil {
 		return nil, e
 	}
-	p, e := protoRuleCategory(req.Msg.GetCategory())
+	p, e := protoRuleCategory(req.GetCategory())
 	if e != nil {
 		return nil, e
 	}
-	r, e := a.DeleteZoneRule(ctx, d.user, req.Msg.GetZoneId(), p, req.Msg.GetRuleId())
+	r, e := a.DeleteZoneRule(ctx, d.user, req.GetZoneId(), p, req.GetRuleId())
 	if e != nil {
-		return nil, mapCloudflareErr(e)
+		return nil, mapCloudflareErr(ctx, e)
 	}
-	return connect.NewResponse(&neoboxv1.DeleteCloudflareZoneRuleResponse{Result: resultProto(r)}), nil
+	return &neoboxv1.DeleteCloudflareZoneRuleResponse{Result: resultProto(r)}, nil
 }
 
-func (s *CloudflareServiceServer) ReorderCloudflareZoneRules(ctx context.Context, req *connect.Request[neoboxv1.ReorderCloudflareZoneRulesRequest]) (*connect.Response[neoboxv1.ReorderCloudflareZoneRulesResponse], error) {
-	d, a, e := s.openAccount(ctx, req.Msg.GetConnectionId())
+func (s *CloudflareServiceServer) ReorderCloudflareZoneRules(ctx context.Context, req *neoboxv1.ReorderCloudflareZoneRulesRequest) (*neoboxv1.ReorderCloudflareZoneRulesResponse, error) {
+	d, a, e := s.openAccount(ctx, req.GetConnectionId())
 	if e != nil {
 		return nil, e
 	}
-	p, e := protoRuleCategory(req.Msg.GetCategory())
+	p, e := protoRuleCategory(req.GetCategory())
 	if e != nil {
 		return nil, e
 	}
-	r, e := a.ReorderZoneRules(ctx, d.user, req.Msg.GetZoneId(), p, req.Msg.GetSnapshot(), req.Msg.GetRuleIds())
+	r, e := a.ReorderZoneRules(ctx, d.user, req.GetZoneId(), p, req.GetSnapshot(), req.GetRuleIds())
 	if e != nil {
-		return nil, mapCloudflareErr(e)
+		return nil, mapCloudflareErr(ctx, e)
 	}
-	return connect.NewResponse(&neoboxv1.ReorderCloudflareZoneRulesResponse{Result: resultProto(r)}), nil
+	return &neoboxv1.ReorderCloudflareZoneRulesResponse{Result: resultProto(r)}, nil
 }

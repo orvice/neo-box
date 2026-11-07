@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"go.orx.me/apps/neo-box/internal/connection"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	"go.orx.me/apps/neo-box/internal/repo/connection/memory"
@@ -86,16 +86,16 @@ func TestWorkspaceFeatureScopesAndOwnershipAtRPCBoundary(t *testing.T) {
 		}
 		return &googleworkspace.Client{HTTP: hc, Endpoint: fake.URL, CustomerID: customer, AdminEmail: admin}, nil
 	}
-	if _, err = srv.ListWorkspaceGroups(ctx, connect.NewRequest(&neoboxv1.ListWorkspaceGroupsRequest{ConnectionId: conn.ID, TenantId: "t"})); err != nil {
+	if _, err = srv.ListWorkspaceGroups(ctx, &neoboxv1.ListWorkspaceGroupsRequest{ConnectionId: conn.ID, TenantId: "t"}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err = srv.ListWorkspaceOrgUnits(ctx, connect.NewRequest(&neoboxv1.ListWorkspaceOrgUnitsRequest{ConnectionId: conn.ID, TenantId: "t"})); err != nil {
+	if _, err = srv.ListWorkspaceOrgUnits(ctx, &neoboxv1.ListWorkspaceOrgUnitsRequest{ConnectionId: conn.ID, TenantId: "t"}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err = srv.ListWorkspaceUserTokens(ctx, connect.NewRequest(&neoboxv1.ListWorkspaceUserTokensRequest{ConnectionId: conn.ID, TenantId: "t", UserId: "u"})); err != nil {
+	if _, err = srv.ListWorkspaceUserTokens(ctx, &neoboxv1.ListWorkspaceUserTokensRequest{ConnectionId: conn.ID, TenantId: "t", UserId: "u"}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err = srv.ListWorkspaceUsers(ctx, connect.NewRequest(&neoboxv1.ListWorkspaceUsersRequest{ConnectionId: conn.ID, TenantId: "t"})); err != nil {
+	if _, err = srv.ListWorkspaceUsers(ctx, &neoboxv1.ListWorkspaceUsersRequest{ConnectionId: conn.ID, TenantId: "t"}); err != nil {
 		t.Fatal(err)
 	}
 	for i, expected := range []string{googleworkspace.GroupScope, googleworkspace.OrgUnitScope, googleworkspace.SecurityScope, ""} {
@@ -108,37 +108,37 @@ func TestWorkspaceFeatureScopesAndOwnershipAtRPCBoundary(t *testing.T) {
 		}
 	}
 	before := len(scopes)
-	if _, err = srv.DeleteWorkspaceGroup(asUser("other"), connect.NewRequest(&neoboxv1.DeleteWorkspaceGroupRequest{ConnectionId: conn.ID, TenantId: "t", GroupId: "own"})); connect.CodeOf(err) != connect.CodeNotFound {
+	if _, err = srv.DeleteWorkspaceGroup(asUser("other"), &neoboxv1.DeleteWorkspaceGroupRequest{ConnectionId: conn.ID, TenantId: "t", GroupId: "own"}); connect.CodeOf(err) != connect.CodeNotFound {
 		t.Fatalf("other owner=%v", err)
 	}
-	if _, err = srv.SignOutWorkspaceUser(ctx, connect.NewRequest(&neoboxv1.SignOutWorkspaceUserRequest{ConnectionId: conn.ID, TenantId: "other", UserId: "u"})); connect.CodeOf(err) != connect.CodeNotFound {
+	if _, err = srv.SignOutWorkspaceUser(ctx, &neoboxv1.SignOutWorkspaceUserRequest{ConnectionId: conn.ID, TenantId: "other", UserId: "u"}); connect.CodeOf(err) != connect.CodeNotFound {
 		t.Fatalf("other tenant=%v", err)
 	}
 	if len(scopes) != before {
 		t.Fatal("unauthorized RPC opened client")
 	}
-	if _, err = srv.DeleteWorkspaceGroup(ctx, connect.NewRequest(&neoboxv1.DeleteWorkspaceGroupRequest{ConnectionId: conn.ID, TenantId: "t", GroupId: "foreign"})); connect.CodeOf(err) != connect.CodeNotFound {
+	if _, err = srv.DeleteWorkspaceGroup(ctx, &neoboxv1.DeleteWorkspaceGroupRequest{ConnectionId: conn.ID, TenantId: "t", GroupId: "foreign"}); connect.CodeOf(err) != connect.CodeNotFound {
 		t.Fatalf("foreign group=%v", err)
 	}
-	if _, err = srv.SignOutWorkspaceUser(ctx, connect.NewRequest(&neoboxv1.SignOutWorkspaceUserRequest{ConnectionId: conn.ID, TenantId: "t", UserId: "foreign"})); connect.CodeOf(err) != connect.CodeNotFound {
+	if _, err = srv.SignOutWorkspaceUser(ctx, &neoboxv1.SignOutWorkspaceUserRequest{ConnectionId: conn.ID, TenantId: "t", UserId: "foreign"}); connect.CodeOf(err) != connect.CodeNotFound {
 		t.Fatalf("foreign security action=%v", err)
 	}
 	if writes != 0 {
 		t.Fatal("unauthorized write sent")
 	}
-	if _, err = srv.AddWorkspaceGroupMember(ctx, connect.NewRequest(&neoboxv1.AddWorkspaceGroupMemberRequest{ConnectionId: conn.ID, TenantId: "t", GroupId: "own", Email: "u@a.example", Role: "INVALID"})); connect.CodeOf(err) != connect.CodeInvalidArgument {
+	if _, err = srv.AddWorkspaceGroupMember(ctx, &neoboxv1.AddWorkspaceGroupMemberRequest{ConnectionId: conn.ID, TenantId: "t", GroupId: "own", Email: "u@a.example", Role: "INVALID"}); connect.CodeOf(err) != connect.CodeInvalidArgument {
 		t.Fatalf("role validation=%v", err)
 	}
 	denyGroups = true
 	originalHealth := tenant.Status
-	_, err = srv.ListWorkspaceGroups(ctx, connect.NewRequest(&neoboxv1.ListWorkspaceGroupsRequest{ConnectionId: conn.ID, TenantId: "t"}))
+	_, err = srv.ListWorkspaceGroups(ctx, &neoboxv1.ListWorkspaceGroupsRequest{ConnectionId: conn.ID, TenantId: "t"})
 	if connect.CodeOf(err) != connect.CodeFailedPrecondition || !strings.Contains(err.Error(), googleworkspace.GroupScope) {
 		t.Fatalf("missing scope error=%v", err)
 	}
 	if tenant.Status != originalHealth {
 		t.Fatal("optional permission failure changed base health")
 	}
-	if _, err = srv.ListWorkspaceUsers(ctx, connect.NewRequest(&neoboxv1.ListWorkspaceUsersRequest{ConnectionId: conn.ID, TenantId: "t"})); err != nil {
+	if _, err = srv.ListWorkspaceUsers(ctx, &neoboxv1.ListWorkspaceUsersRequest{ConnectionId: conn.ID, TenantId: "t"}); err != nil {
 		t.Fatal("optional scope failure broke users", err)
 	}
 }

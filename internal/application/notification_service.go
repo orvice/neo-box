@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"go.orx.me/apps/neo-box/internal/notify"
@@ -47,17 +47,17 @@ func (s *NotificationServiceServer) SetService(svc *notify.Service) {
 func (s *NotificationServiceServer) deps(ctx context.Context) (string, *notify.Service, error) {
 	user, ok := auth.UserFromContext(ctx)
 	if !ok {
-		return "", nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
+		return "", nil, connect.NewError(connect.CodeUnauthenticated, "unauthenticated")
 	}
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	if s.svc == nil {
-		return "", nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("notifications are not available"))
+		return "", nil, connect.NewError(connect.CodeFailedPrecondition, "notifications are not available")
 	}
 	return user.GetId(), s.svc, nil
 }
 
-func (s *NotificationServiceServer) ListNotificationChannels(ctx context.Context, _ *connect.Request[neoboxv1.ListNotificationChannelsRequest]) (*connect.Response[neoboxv1.ListNotificationChannelsResponse], error) {
+func (s *NotificationServiceServer) ListNotificationChannels(ctx context.Context, _ *neoboxv1.ListNotificationChannelsRequest) (*neoboxv1.ListNotificationChannelsResponse, error) {
 	userID, svc, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
@@ -70,96 +70,96 @@ func (s *NotificationServiceServer) ListNotificationChannels(ctx context.Context
 	for _, c := range channels {
 		out = append(out, channelToProto(c))
 	}
-	return connect.NewResponse(&neoboxv1.ListNotificationChannelsResponse{Channels: out}), nil
+	return &neoboxv1.ListNotificationChannelsResponse{Channels: out}, nil
 }
 
-func (s *NotificationServiceServer) CreateNotificationChannel(ctx context.Context, req *connect.Request[neoboxv1.CreateNotificationChannelRequest]) (*connect.Response[neoboxv1.CreateNotificationChannelResponse], error) {
+func (s *NotificationServiceServer) CreateNotificationChannel(ctx context.Context, req *neoboxv1.CreateNotificationChannelRequest) (*neoboxv1.CreateNotificationChannelResponse, error) {
 	userID, svc, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	name := strings.TrimSpace(req.Msg.GetName())
+	name := strings.TrimSpace(req.GetName())
 	if name == "" {
-		return nil, connectx.RequiredArgument("name")
+		return nil, connectx.RequiredArgument(ctx, "name")
 	}
-	settings, err := channelSettingsFromProto(req.Msg.GetTelegram(), true)
+	settings, err := channelSettingsFromProto(ctx, req.GetTelegram(), true)
 	if err != nil {
 		return nil, err
 	}
 	c, err := svc.CreateChannel(ctx, userID, settings.typ, name, settings.config, settings.secret)
 	if err != nil {
-		return nil, mapNotifyErr(err)
+		return nil, mapNotifyErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.CreateNotificationChannelResponse{Channel: channelToProto(c)}), nil
+	return &neoboxv1.CreateNotificationChannelResponse{Channel: channelToProto(c)}, nil
 }
 
-func (s *NotificationServiceServer) UpdateNotificationChannel(ctx context.Context, req *connect.Request[neoboxv1.UpdateNotificationChannelRequest]) (*connect.Response[neoboxv1.UpdateNotificationChannelResponse], error) {
+func (s *NotificationServiceServer) UpdateNotificationChannel(ctx context.Context, req *neoboxv1.UpdateNotificationChannelRequest) (*neoboxv1.UpdateNotificationChannelResponse, error) {
 	userID, svc, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	c, err := svc.GetChannel(ctx, userID, req.Msg.GetId())
+	c, err := svc.GetChannel(ctx, userID, req.GetId())
 	if err != nil {
-		return nil, mapNotifyErr(err)
+		return nil, mapNotifyErr(ctx, err)
 	}
-	name := strings.TrimSpace(req.Msg.GetName())
+	name := strings.TrimSpace(req.GetName())
 	if name == "" {
-		return nil, connectx.RequiredArgument("name")
+		return nil, connectx.RequiredArgument(ctx, "name")
 	}
-	settings, err := channelSettingsFromProto(req.Msg.GetTelegram(), false)
+	settings, err := channelSettingsFromProto(ctx, req.GetTelegram(), false)
 	if err != nil {
 		return nil, err
 	}
 	if settings.typ != c.Type {
-		return nil, connectx.InvalidArgument("settings", "must match the channel's type")
+		return nil, connectx.InvalidArgument(ctx, "settings", "must match the channel's type")
 	}
-	if err := svc.UpdateChannel(ctx, c, name, req.Msg.GetEnabled(), settings.config, settings.secret); err != nil {
-		return nil, mapNotifyErr(err)
+	if err := svc.UpdateChannel(ctx, c, name, req.GetEnabled(), settings.config, settings.secret); err != nil {
+		return nil, mapNotifyErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.UpdateNotificationChannelResponse{Channel: channelToProto(c)}), nil
+	return &neoboxv1.UpdateNotificationChannelResponse{Channel: channelToProto(c)}, nil
 }
 
-func (s *NotificationServiceServer) DeleteNotificationChannel(ctx context.Context, req *connect.Request[neoboxv1.DeleteNotificationChannelRequest]) (*connect.Response[neoboxv1.DeleteNotificationChannelResponse], error) {
+func (s *NotificationServiceServer) DeleteNotificationChannel(ctx context.Context, req *neoboxv1.DeleteNotificationChannelRequest) (*neoboxv1.DeleteNotificationChannelResponse, error) {
 	userID, svc, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if err := svc.DeleteChannel(ctx, userID, req.Msg.GetId()); err != nil {
-		return nil, mapNotifyErr(err)
+	if err := svc.DeleteChannel(ctx, userID, req.GetId()); err != nil {
+		return nil, mapNotifyErr(ctx, err)
 	}
-	return connect.NewResponse(&neoboxv1.DeleteNotificationChannelResponse{}), nil
+	return &neoboxv1.DeleteNotificationChannelResponse{}, nil
 }
 
-func (s *NotificationServiceServer) TestNotificationChannel(ctx context.Context, req *connect.Request[neoboxv1.TestNotificationChannelRequest]) (*connect.Response[neoboxv1.TestNotificationChannelResponse], error) {
+func (s *NotificationServiceServer) TestNotificationChannel(ctx context.Context, req *neoboxv1.TestNotificationChannelRequest) (*neoboxv1.TestNotificationChannelResponse, error) {
 	userID, svc, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	c, err := svc.GetChannel(ctx, userID, req.Msg.GetId())
+	c, err := svc.GetChannel(ctx, userID, req.GetId())
 	if err != nil {
-		return nil, mapNotifyErr(err)
+		return nil, mapNotifyErr(ctx, err)
 	}
 	resp := &neoboxv1.TestNotificationChannelResponse{}
 	if terr := svc.TestChannel(ctx, c); terr != nil {
 		if errors.Is(terr, notify.ErrNoCipher) {
-			return nil, mapNotifyErr(terr)
+			return nil, mapNotifyErr(ctx, terr)
 		}
 		resp.Error = terr.Error()
 	}
 	// Re-read for the recorded outcome.
 	if c, err = svc.GetChannel(ctx, userID, c.ID); err != nil {
-		return nil, mapNotifyErr(err)
+		return nil, mapNotifyErr(ctx, err)
 	}
 	resp.Channel = channelToProto(c)
-	return connect.NewResponse(resp), nil
+	return resp, nil
 }
 
-func (s *NotificationServiceServer) ListAlerts(ctx context.Context, req *connect.Request[neoboxv1.ListAlertsRequest]) (*connect.Response[neoboxv1.ListAlertsResponse], error) {
+func (s *NotificationServiceServer) ListAlerts(ctx context.Context, req *neoboxv1.ListAlertsRequest) (*neoboxv1.ListAlertsResponse, error) {
 	userID, svc, err := s.deps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	limit := int(req.Msg.GetLimit())
+	limit := int(req.GetLimit())
 	if limit <= 0 {
 		limit = defaultAlertListLimit
 	}
@@ -171,7 +171,7 @@ func (s *NotificationServiceServer) ListAlerts(ctx context.Context, req *connect
 	for _, a := range alerts {
 		out = append(out, alertToProto(a))
 	}
-	return connect.NewResponse(&neoboxv1.ListAlertsResponse{Alerts: out}), nil
+	return &neoboxv1.ListAlertsResponse{Alerts: out}, nil
 }
 
 type channelSettings struct {
@@ -181,30 +181,30 @@ type channelSettings struct {
 
 // channelSettingsFromProto turns a settings oneof into a channel type and
 // its config and secret. requireSecret is set on create.
-func channelSettingsFromProto(tg *neoboxv1.TelegramChannelSettings, requireSecret bool) (*channelSettings, error) {
+func channelSettingsFromProto(ctx context.Context, tg *neoboxv1.TelegramChannelSettings, requireSecret bool) (*channelSettings, error) {
 	if tg == nil {
-		return nil, connectx.RequiredArgument("settings")
+		return nil, connectx.RequiredArgument(ctx, "settings")
 	}
 	chatID := strings.TrimSpace(tg.GetChatId())
 	if chatID == "" {
-		return nil, connectx.RequiredArgument("telegram.chat_id")
+		return nil, connectx.RequiredArgument(ctx, "telegram.chat_id")
 	}
 	out := &channelSettings{typ: notify.TelegramType, config: notify.TelegramConfig{ChatID: chatID}}
 	if token := strings.TrimSpace(tg.GetBotToken()); token != "" {
 		out.secret = notify.TelegramSecret{BotToken: token}
 	} else if requireSecret {
-		return nil, connectx.RequiredArgument("telegram.bot_token")
+		return nil, connectx.RequiredArgument(ctx, "telegram.bot_token")
 	}
 	return out, nil
 }
 
-func mapNotifyErr(err error) error {
+func mapNotifyErr(ctx context.Context, err error) error {
 	var cerr *notify.CheckError
 	switch {
 	case errors.As(err, &cerr), errors.Is(err, notify.ErrUnknownType):
-		return connect.NewError(connect.CodeInvalidArgument, err)
+		return connect.NewError(connect.CodeInvalidArgument, err.Error()).WithCause(err)
 	case errors.Is(err, notify.ErrNoCipher):
-		return connect.NewError(connect.CodeFailedPrecondition, err)
+		return connect.NewError(connect.CodeFailedPrecondition, err.Error()).WithCause(err)
 	case errors.Is(err, notifyrepo.ErrNotFound):
 		return connectx.NotFound("notification channel not found")
 	}

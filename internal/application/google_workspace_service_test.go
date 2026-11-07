@@ -13,7 +13,7 @@ import (
 	"strings"
 	"testing"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"go.orx.me/apps/neo-box/internal/connection"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	connrepo "go.orx.me/apps/neo-box/internal/repo/connection"
@@ -153,51 +153,51 @@ func TestWorkspaceSharedKeyAndIndependentTenants(t *testing.T) {
 	}
 	add := func(name, customer, admin string) *neoboxv1.WorkspaceTenant {
 		t.Helper()
-		res, err := srv.CreateWorkspaceTenant(ctx, connect.NewRequest(&neoboxv1.CreateWorkspaceTenantRequest{ConnectionId: shared.ID, Name: name, CustomerId: customer, DelegatedAdminEmail: admin}))
+		res, err := srv.CreateWorkspaceTenant(ctx, &neoboxv1.CreateWorkspaceTenantRequest{ConnectionId: shared.ID, Name: name, CustomerId: customer, DelegatedAdminEmail: admin})
 		if err != nil {
 			t.Fatal(err)
 		}
-		return res.Msg.Tenant
+		return res.Tenant
 	}
 	a := add("A", "Ca", "admin@a.example")
 	b := add("B", "Cb", "admin@b.example")
 	if a.Id == b.Id {
 		t.Fatal("independent tenants have same ID")
 	}
-	list, err := srv.ListWorkspaceTenants(ctx, connect.NewRequest(&neoboxv1.ListWorkspaceTenantsRequest{ConnectionId: shared.ID}))
-	if err != nil || len(list.Msg.Tenants) != 2 {
+	list, err := srv.ListWorkspaceTenants(ctx, &neoboxv1.ListWorkspaceTenantsRequest{ConnectionId: shared.ID})
+	if err != nil || len(list.Tenants) != 2 {
 		t.Fatalf("list=%v %v", list, err)
 	}
-	raw, _ := protojson.Marshal(list.Msg)
+	raw, _ := protojson.Marshal(list)
 	if strings.Contains(string(raw), "SECRET") {
 		t.Fatal("tenant response exposes key")
 	}
 	before := opened
-	if _, err = srv.ListWorkspaceTenants(asUser("other"), connect.NewRequest(&neoboxv1.ListWorkspaceTenantsRequest{ConnectionId: shared.ID})); connect.CodeOf(err) != connect.CodeNotFound {
+	if _, err = srv.ListWorkspaceTenants(asUser("other"), &neoboxv1.ListWorkspaceTenantsRequest{ConnectionId: shared.ID}); connect.CodeOf(err) != connect.CodeNotFound {
 		t.Fatalf("other owner=%v", err)
 	}
-	if _, err = srv.ListWorkspaceUsers(ctx, connect.NewRequest(&neoboxv1.ListWorkspaceUsersRequest{ConnectionId: shared.ID, TenantId: "missing"})); connect.CodeOf(err) != connect.CodeNotFound {
+	if _, err = srv.ListWorkspaceUsers(ctx, &neoboxv1.ListWorkspaceUsersRequest{ConnectionId: shared.ID, TenantId: "missing"}); connect.CodeOf(err) != connect.CodeNotFound {
 		t.Fatalf("other tenant=%v", err)
 	}
 	if opened != before {
 		t.Fatal("unauthorized requests opened Google client")
 	}
 	profile := &neoboxv1.WorkspaceUserProfile{GivenName: "Ada", FamilyName: "L", OrgUnitPath: "/"}
-	if _, err = srv.UpdateWorkspaceUser(ctx, connect.NewRequest(&neoboxv1.UpdateWorkspaceUserRequest{ConnectionId: shared.ID, TenantId: a.Id, UserId: "user-Cb", Profile: profile})); connect.CodeOf(err) != connect.CodeNotFound {
+	if _, err = srv.UpdateWorkspaceUser(ctx, &neoboxv1.UpdateWorkspaceUserRequest{ConnectionId: shared.ID, TenantId: a.Id, UserId: "user-Cb", Profile: profile}); connect.CodeOf(err) != connect.CodeNotFound {
 		t.Fatalf("cross tenant update=%v", err)
 	}
 	if writes != 0 {
 		t.Fatal("cross-tenant write sent")
 	}
-	if _, err = srv.CreateWorkspaceUser(ctx, connect.NewRequest(&neoboxv1.CreateWorkspaceUserRequest{ConnectionId: shared.ID, TenantId: a.Id, PrimaryEmail: "new@a.example", Profile: profile, Password: "secret-password", ChangePasswordAtNextLogin: true})); err != nil {
+	if _, err = srv.CreateWorkspaceUser(ctx, &neoboxv1.CreateWorkspaceUserRequest{ConnectionId: shared.ID, TenantId: a.Id, PrimaryEmail: "new@a.example", Profile: profile, Password: "secret-password", ChangePasswordAtNextLogin: true}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err = srv.ResetWorkspaceUserPassword(ctx, connect.NewRequest(&neoboxv1.ResetWorkspaceUserPasswordRequest{ConnectionId: shared.ID, TenantId: a.Id, UserId: "user-Ca", Password: "another-password", ChangePasswordAtNextLogin: true})); err != nil {
+	if _, err = srv.ResetWorkspaceUserPassword(ctx, &neoboxv1.ResetWorkspaceUserPasswordRequest{ConnectionId: shared.ID, TenantId: a.Id, UserId: "user-Ca", Password: "another-password", ChangePasswordAtNextLogin: true}); err != nil {
 		t.Fatal(err)
 	}
 	for _, v := range []bool{true, false} {
-		res, err := srv.SetWorkspaceUserSuspended(ctx, connect.NewRequest(&neoboxv1.SetWorkspaceUserSuspendedRequest{ConnectionId: shared.ID, TenantId: a.Id, UserId: "user-Ca", Suspended: v}))
-		if err != nil || res.Msg.User.Suspended != v {
+		res, err := srv.SetWorkspaceUserSuspended(ctx, &neoboxv1.SetWorkspaceUserSuspendedRequest{ConnectionId: shared.ID, TenantId: a.Id, UserId: "user-Ca", Suspended: v})
+		if err != nil || res.User.Suspended != v {
 			t.Fatalf("suspend=%v %v", res, err)
 		}
 	}
@@ -205,16 +205,16 @@ func TestWorkspaceSharedKeyAndIndependentTenants(t *testing.T) {
 		t.Fatalf("writes=%d", writes)
 	}
 	blockedA = true
-	if _, err = srv.ListWorkspaceUsers(ctx, connect.NewRequest(&neoboxv1.ListWorkspaceUsersRequest{ConnectionId: shared.ID, TenantId: a.Id})); connect.CodeOf(err) != connect.CodePermissionDenied {
+	if _, err = srv.ListWorkspaceUsers(ctx, &neoboxv1.ListWorkspaceUsersRequest{ConnectionId: shared.ID, TenantId: a.Id}); connect.CodeOf(err) != connect.CodePermissionDenied {
 		t.Fatalf("refusal=%v", err)
 	}
-	if _, err = srv.ListWorkspaceUsers(ctx, connect.NewRequest(&neoboxv1.ListWorkspaceUsersRequest{ConnectionId: shared.ID, TenantId: b.Id})); err != nil {
+	if _, err = srv.ListWorkspaceUsers(ctx, &neoboxv1.ListWorkspaceUsersRequest{ConnectionId: shared.ID, TenantId: b.Id}); err != nil {
 		t.Fatal(err)
 	}
 	if rows.rows[a.Id].Status != "error" || rows.rows[b.Id].Status != "ok" {
 		t.Fatal("health crossed tenants")
 	}
-	if _, err = srv.DeleteWorkspaceTenant(ctx, connect.NewRequest(&neoboxv1.DeleteWorkspaceTenantRequest{ConnectionId: shared.ID, TenantId: a.Id})); err != nil {
+	if _, err = srv.DeleteWorkspaceTenant(ctx, &neoboxv1.DeleteWorkspaceTenantRequest{ConnectionId: shared.ID, TenantId: a.Id}); err != nil {
 		t.Fatal(err)
 	}
 	if len(rows.rows) != 1 || writes != 4 {
@@ -234,23 +234,23 @@ func (t workspaceAdminTransport) RoundTrip(r *http.Request) (*http.Response, err
 }
 func TestWorkspaceErrorsAndPasswords(t *testing.T) {
 	for _, err := range []error{googleworkspace.ErrDelegation, &googleworkspace.APIError{Status: 401}, &googleworkspace.APIError{Status: 403}, googleworkspace.ErrUncertain} {
-		if connect.CodeOf(mapWorkspaceErr(err)) == connect.CodeUnauthenticated {
+		if connect.CodeOf(mapWorkspaceErr(context.Background(), err)) == connect.CodeUnauthenticated {
 			t.Fatal("provider failure signs Neo Box user out")
 		}
 	}
-	if connect.CodeOf(mapWorkspaceErr(googleworkspace.ErrDelegation)) != connect.CodeFailedPrecondition {
+	if connect.CodeOf(mapWorkspaceErr(context.Background(), googleworkspace.ErrDelegation)) != connect.CodeFailedPrecondition {
 		t.Fatal("wrong delegation code")
 	}
-	if connect.CodeOf(mapWorkspaceErr(googleworkspace.ErrUncertain)) != connect.CodeUnknown {
+	if connect.CodeOf(mapWorkspaceErr(context.Background(), googleworkspace.ErrUncertain)) != connect.CodeUnknown {
 		t.Fatal("wrong uncertain code")
 	}
-	if workspacePassword("short") == nil || workspacePassword(strings.Repeat("x", 101)) == nil || workspacePassword("  valid password  ") != nil {
+	if workspacePassword(context.Background(), "short") == nil || workspacePassword(context.Background(), strings.Repeat("x", 101)) == nil || workspacePassword(context.Background(), "  valid password  ") != nil {
 		t.Fatal("password validation")
 	}
-	if _, err := workspaceProfile(nil); err == nil {
+	if _, err := workspaceProfile(context.Background(), nil); err == nil {
 		t.Fatal("missing profile accepted")
 	}
-	if _, err := workspaceProfile(&neoboxv1.WorkspaceUserProfile{GivenName: "A", FamilyName: "B", OrgUnitPath: "relative"}); err == nil {
+	if _, err := workspaceProfile(context.Background(), &neoboxv1.WorkspaceUserProfile{GivenName: "A", FamilyName: "B", OrgUnitPath: "relative"}); err == nil {
 		t.Fatal("relative OU accepted")
 	}
 }
@@ -282,13 +282,13 @@ func TestWorkspaceConnectionKeyRotationAndSecretResponses(t *testing.T) {
 	srv := NewConnectionServiceServer()
 	srv.SetService(conns)
 	oldKey, newKey := workspaceKeyJSON(t, "123"), workspaceKeyJSON(t, "123")
-	created, err := srv.CreateConnection(ctx, connect.NewRequest(&neoboxv1.CreateConnectionRequest{Name: "Shared", Settings: &neoboxv1.CreateConnectionRequest_GoogleWorkspace{GoogleWorkspace: &neoboxv1.GoogleWorkspaceConnectionSettings{ServiceAccountJson: oldKey}}}))
+	created, err := srv.CreateConnection(ctx, &neoboxv1.CreateConnectionRequest{Name: "Shared", Settings: &neoboxv1.CreateConnectionRequest_GoogleWorkspace{GoogleWorkspace: &neoboxv1.GoogleWorkspaceConnectionSettings{ServiceAccountJson: oldKey}}})
 	if err != nil {
 		t.Fatal(err)
 	}
-	id := created.Msg.Connection.Id
-	update := func(raw string, clientID string) (*connect.Response[neoboxv1.UpdateConnectionResponse], error) {
-		return srv.UpdateConnection(ctx, connect.NewRequest(&neoboxv1.UpdateConnectionRequest{Id: id, Name: "Shared", Settings: &neoboxv1.UpdateConnectionRequest_GoogleWorkspace{GoogleWorkspace: &neoboxv1.GoogleWorkspaceConnectionSettings{ServiceAccountEmail: "shared@example.iam.gserviceaccount.com", ClientId: clientID, ServiceAccountJson: raw}}}))
+	id := created.Connection.Id
+	update := func(raw string, clientID string) (*neoboxv1.UpdateConnectionResponse, error) {
+		return srv.UpdateConnection(ctx, &neoboxv1.UpdateConnectionRequest{Id: id, Name: "Shared", Settings: &neoboxv1.UpdateConnectionRequest_GoogleWorkspace{GoogleWorkspace: &neoboxv1.GoogleWorkspaceConnectionSettings{ServiceAccountEmail: "shared@example.iam.gserviceaccount.com", ClientId: clientID, ServiceAccountJson: raw}}})
 	}
 	rotated, err := update(newKey, "123")
 	if err != nil {
@@ -312,7 +312,7 @@ func TestWorkspaceConnectionKeyRotationAndSecretResponses(t *testing.T) {
 	if _, err = update(workspaceKeyJSON(t, "999"), "999"); connect.CodeOf(err) != connect.CodeInvalidArgument {
 		t.Fatalf("identity change=%v", err)
 	}
-	for _, response := range []*neoboxv1.Connection{created.Msg.Connection, rotated.Msg.Connection} {
+	for _, response := range []*neoboxv1.Connection{created.Connection, rotated.Connection} {
 		raw, err := protojson.Marshal(response)
 		if err != nil {
 			t.Fatal(err)

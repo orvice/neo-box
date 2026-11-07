@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"connectrpc.com/connect"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	"go.orx.me/apps/neo-box/internal/transport/connectx"
 	neoboxv1 "go.orx.me/apps/neo-box/pkg/proto/neobox/v1"
@@ -17,14 +16,14 @@ import (
 // driveUsageTimeout bounds one usage read, like the overview's per-tenant limit.
 const driveUsageTimeout = 20 * time.Second
 
-func (s *GoogleWorkspaceServiceServer) ListWorkspaceDriveActivities(ctx context.Context, req *connect.Request[neoboxv1.ListWorkspaceDriveActivitiesRequest]) (*connect.Response[neoboxv1.ListWorkspaceDriveActivitiesResponse], error) {
-	in := req.Msg
+func (s *GoogleWorkspaceServiceServer) ListWorkspaceDriveActivities(ctx context.Context, req *neoboxv1.ListWorkspaceDriveActivitiesRequest) (*neoboxv1.ListWorkspaceDriveActivitiesResponse, error) {
+	in := req
 	preset, ok := googleworkspace.DrivePresetByKey(strings.TrimSpace(in.GetPreset()))
 	if !ok {
-		return nil, connectx.InvalidArgument("preset", "unknown Drive activity preset")
+		return nil, connectx.InvalidArgument(ctx, "preset", "unknown Drive activity preset")
 	}
 	// The time range, user and page rules are the Google audit page's.
-	q, err := workspaceAuditQuery(&neoboxv1.ListWorkspaceAuditActivitiesRequest{Application: "drive", UserKey: in.GetUserKey(), StartTime: in.GetStartTime(), EndTime: in.GetEndTime(), PageToken: in.GetPageToken(), PageSize: in.GetPageSize()}, time.Now().UTC())
+	q, err := workspaceAuditQuery(ctx, &neoboxv1.ListWorkspaceAuditActivitiesRequest{Application: "drive", UserKey: in.GetUserKey(), StartTime: in.GetStartTime(), EndTime: in.GetEndTime(), PageToken: in.GetPageToken(), PageSize: in.GetPageSize()}, time.Now().UTC())
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +34,7 @@ func (s *GoogleWorkspaceServiceServer) ListWorkspaceDriveActivities(ctx context.
 	}
 	page, err := api.ListAuditActivities(ctx, q)
 	if err != nil {
-		return nil, mapWorkspaceFeatureErr(err, googleworkspace.AuditScope)
+		return nil, mapWorkspaceFeatureErr(ctx, err, googleworkspace.AuditScope)
 	}
 	out := &neoboxv1.ListWorkspaceDriveActivitiesResponse{NextPageToken: page.NextPageToken, StartTime: q.Start.UTC().Format(time.RFC3339), EndTime: q.End.UTC().Format(time.RFC3339)}
 	for _, a := range page.Items {
@@ -53,7 +52,7 @@ func (s *GoogleWorkspaceServiceServer) ListWorkspaceDriveActivities(ctx context.
 			out.Activities = append(out.Activities, row)
 		}
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }
 
 func driveEventToProto(e googleworkspace.DriveEvent) *neoboxv1.WorkspaceDriveEvent {
@@ -66,11 +65,11 @@ func driveEventToProto(e googleworkspace.DriveEvent) *neoboxv1.WorkspaceDriveEve
 	}
 }
 
-func (s *GoogleWorkspaceServiceServer) ListWorkspaceDriveUsage(ctx context.Context, req *connect.Request[neoboxv1.ListWorkspaceDriveUsageRequest]) (*connect.Response[neoboxv1.ListWorkspaceDriveUsageResponse], error) {
-	in := req.Msg
+func (s *GoogleWorkspaceServiceServer) ListWorkspaceDriveUsage(ctx context.Context, req *neoboxv1.ListWorkspaceDriveUsageRequest) (*neoboxv1.ListWorkspaceDriveUsageResponse, error) {
+	in := req
 	sortBy := strings.TrimSpace(in.GetSort())
 	if sortBy != "" && sortBy != "used" && sortBy != "email" {
-		return nil, connectx.InvalidArgument("sort", "must be used or email")
+		return nil, connectx.InvalidArgument(ctx, "sort", "must be used or email")
 	}
 	_, _, api, err := s.open(ctx, in.GetConnectionId(), in.GetTenantId(), googleworkspace.UsageScope)
 	if err != nil {
@@ -81,10 +80,10 @@ func (s *GoogleWorkspaceServiceServer) ListWorkspaceDriveUsage(ctx context.Conte
 	defer cancel()
 	usage, err := api.ListDriveUsage(readCtx, time.Now().UTC())
 	if errors.Is(err, googleworkspace.ErrNoUsageData) {
-		return connect.NewResponse(&neoboxv1.ListWorkspaceDriveUsageResponse{Page: int32(page), PageSize: int32(size)}), nil
+		return &neoboxv1.ListWorkspaceDriveUsageResponse{Page: int32(page), PageSize: int32(size)}, nil
 	}
 	if err != nil {
-		return nil, mapWorkspaceFeatureErr(err, googleworkspace.UsageScope)
+		return nil, mapWorkspaceFeatureErr(ctx, err, googleworkspace.UsageScope)
 	}
 	out := &neoboxv1.ListWorkspaceDriveUsageResponse{HasData: true, Date: usage.Date, Page: int32(page), PageSize: int32(size), UsersRead: int64(len(usage.Users)), Partial: usage.Partial, PartialReason: usage.PartialReason}
 	for _, u := range usage.Users {
@@ -101,5 +100,5 @@ func (s *GoogleWorkspaceServiceServer) ListWorkspaceDriveUsage(ctx context.Conte
 		u := ranked[i]
 		out.Users = append(out.Users, &neoboxv1.WorkspaceDriveUsageUser{Email: u.Email, UsedMb: u.UsedMB, TotalMb: u.TotalMB, SharePercent: u.SharePercent()})
 	}
-	return connect.NewResponse(out), nil
+	return out, nil
 }
