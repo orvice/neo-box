@@ -165,6 +165,30 @@ func (f SessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SessionMutation", m)
 }
 
+// The TelegramBindingFunc type is an adapter to allow the use of ordinary
+// function as TelegramBinding mutator.
+type TelegramBindingFunc func(context.Context, *ent.TelegramBindingMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TelegramBindingFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TelegramBindingMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TelegramBindingMutation", m)
+}
+
+// The TelegramLinkTokenFunc type is an adapter to allow the use of ordinary
+// function as TelegramLinkToken mutator.
+type TelegramLinkTokenFunc func(context.Context, *ent.TelegramLinkTokenMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TelegramLinkTokenFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TelegramLinkTokenMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TelegramLinkTokenMutation", m)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)

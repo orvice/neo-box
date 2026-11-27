@@ -26,6 +26,7 @@ import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
+import { Route as AuthenticatedSettingsTelegramRouteImport } from './routes/_authenticated/settings/telegram'
 import { Route as AuthenticatedConnectionsConnectionIdIndexRouteImport } from './routes/_authenticated/connections/$connectionId/index'
 import { Route as authAuthOauthCallbackProviderRouteImport } from './routes/(auth)/auth.oauth.callback.$provider'
 import { Route as AuthenticatedConnectionsConnectionIdBucketsBucketRouteImport } from './routes/_authenticated/connections/$connectionId/buckets/$bucket'
@@ -126,6 +127,12 @@ const AuthenticatedSettingsNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
+const AuthenticatedSettingsTelegramRoute =
+  AuthenticatedSettingsTelegramRouteImport.update({
+    id: '/telegram',
+    path: '/telegram',
+    getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
 const AuthenticatedConnectionsConnectionIdIndexRoute =
   AuthenticatedConnectionsConnectionIdIndexRouteImport.update({
     id: '/connections/$connectionId/',
@@ -198,6 +205,7 @@ export interface FileRoutesByFullPath {
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/settings/telegram': typeof AuthenticatedSettingsTelegramRoute
   '/connections/': typeof AuthenticatedConnectionsIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/connections/$connectionId/': typeof AuthenticatedConnectionsConnectionIdIndexRoute
@@ -224,6 +232,7 @@ export interface FileRoutesByTo {
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/settings/telegram': typeof AuthenticatedSettingsTelegramRoute
   '/connections': typeof AuthenticatedConnectionsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/connections/$connectionId': typeof AuthenticatedConnectionsConnectionIdIndexRoute
@@ -253,6 +262,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/_authenticated/settings/telegram': typeof AuthenticatedSettingsTelegramRoute
   '/_authenticated/connections/': typeof AuthenticatedConnectionsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/connections/$connectionId/': typeof AuthenticatedConnectionsConnectionIdIndexRoute
@@ -282,6 +292,7 @@ export interface FileRouteTypes {
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
+    | '/settings/telegram'
     | '/connections/'
     | '/settings/'
     | '/connections/$connectionId/'
@@ -308,6 +319,7 @@ export interface FileRouteTypes {
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
+    | '/settings/telegram'
     | '/connections'
     | '/settings'
     | '/connections/$connectionId'
@@ -336,6 +348,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
     | '/_authenticated/settings/notifications'
+    | '/_authenticated/settings/telegram'
     | '/_authenticated/connections/'
     | '/_authenticated/settings/'
     | '/_authenticated/connections/$connectionId/'
@@ -481,6 +494,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsNotificationsRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
+    '/_authenticated/settings/telegram': {
+      id: '/_authenticated/settings/telegram'
+      path: '/telegram'
+      fullPath: '/settings/telegram'
+      preLoaderRoute: typeof AuthenticatedSettingsTelegramRouteImport
+      parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
     '/_authenticated/connections/$connectionId/': {
       id: '/_authenticated/connections/$connectionId/'
       path: '/connections/$connectionId'
@@ -551,6 +571,7 @@ interface AuthenticatedSettingsRouteRouteChildren {
   AuthenticatedSettingsAppearanceRoute: typeof AuthenticatedSettingsAppearanceRoute
   AuthenticatedSettingsDisplayRoute: typeof AuthenticatedSettingsDisplayRoute
   AuthenticatedSettingsNotificationsRoute: typeof AuthenticatedSettingsNotificationsRoute
+  AuthenticatedSettingsTelegramRoute: typeof AuthenticatedSettingsTelegramRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
 }
 
@@ -560,6 +581,7 @@ const AuthenticatedSettingsRouteRouteChildren: AuthenticatedSettingsRouteRouteCh
     AuthenticatedSettingsDisplayRoute: AuthenticatedSettingsDisplayRoute,
     AuthenticatedSettingsNotificationsRoute:
       AuthenticatedSettingsNotificationsRoute,
+    AuthenticatedSettingsTelegramRoute: AuthenticatedSettingsTelegramRoute,
     AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
   }
 

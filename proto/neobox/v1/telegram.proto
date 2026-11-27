@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package neobox.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "go.orx.me/apps/neo-box/pkg/proto/neobox/v1;neoboxv1";
+
+// TelegramService manages the calling user's link to the server-wide
+// Telegram bot used to view Connections from a private chat.
+service TelegramService {
+  // GetTelegramBotStatus reports whether the server has a Telegram bot
+  // configured and whether the calling user is linked to it.
+  rpc GetTelegramBotStatus(GetTelegramBotStatusRequest) returns (GetTelegramBotStatusResponse);
+  // CreateTelegramLinkToken issues a short-lived, single-use deep link
+  // (/start <token>) that links a Telegram private chat to the calling user.
+  rpc CreateTelegramLinkToken(CreateTelegramLinkTokenRequest) returns (CreateTelegramLinkTokenResponse);
+  // UnbindTelegram disconnects the calling user's linked Telegram account.
+  rpc UnbindTelegram(UnbindTelegramRequest) returns (UnbindTelegramResponse);
+}
+
+message TelegramBinding {
+  int64 telegram_user_id = 1;
+  string telegram_username = 2;
+  string display_name = 3;
+  google.protobuf.Timestamp linked_at = 4;
+}
+
+message GetTelegramBotStatusRequest {}
+
+message GetTelegramBotStatusResponse {
+  bool enabled = 1;
+  // Bot username without leading @, when known.
+  string bot_username = 2;
+  // Set when the calling user has linked a Telegram account.
+  TelegramBinding binding = 3;
+}
+
+message CreateTelegramLinkTokenRequest {}
+
+message CreateTelegramLinkTokenResponse {
+  // Deep link to open the bot with the token, e.g. https://t.me/<bot>?start=<token>.
+  // Empty when the bot username is not known yet.
+  string deep_link = 1;
+  // Fallback command the user can send in a private chat: "/start <token>".
+  string command = 2;
+  google.protobuf.Timestamp expires_at = 3;
+}
+
+message UnbindTelegramRequest {}
+
+message UnbindTelegramResponse {}

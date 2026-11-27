@@ -38,6 +38,10 @@ type Tx struct {
 	OAuthState *OAuthStateClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
+	// TelegramBinding is the client for interacting with the TelegramBinding builders.
+	TelegramBinding *TelegramBindingClient
+	// TelegramLinkToken is the client for interacting with the TelegramLinkToken builders.
+	TelegramLinkToken *TelegramLinkTokenClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// WasabiBucketConfig is the client for interacting with the WasabiBucketConfig builders.
@@ -194,6 +198,8 @@ func (tx *Tx) init() {
 	tx.NotificationChannel = NewNotificationChannelClient(tx.config)
 	tx.OAuthState = NewOAuthStateClient(tx.config)
 	tx.Session = NewSessionClient(tx.config)
+	tx.TelegramBinding = NewTelegramBindingClient(tx.config)
+	tx.TelegramLinkToken = NewTelegramLinkTokenClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.WasabiBucketConfig = NewWasabiBucketConfigClient(tx.config)
 	tx.WasabiDailyUsage = NewWasabiDailyUsageClient(tx.config)

@@ -281,6 +281,15 @@ can't be deleted while a Restore of it is pending or running.
   enabled channel of the User and are kept as a log with their delivery
   outcome.
 
+### Telegram Bot
+
+- **Telegram binding** — a 1-to-1 link between one Neo Box User and one
+  Telegram private chat for the server-wide Telegram bot, created via a
+  short-lived single-use deep link from **Settings → Telegram Bot** (only the
+  link token's sha256 is stored). Group chats are ignored, disabled Users are
+  refused, and the bot only reads Connection status and non-secret settings;
+  it never decrypts credentials or mutates Connections. See ADR 0014.
+
 ## Planned (not yet modeled)
 
 - More **Providers** beyond NocoDB, Wasabi and Cloudflare.

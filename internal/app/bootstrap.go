@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"net/http"
 	"time"
 
 	"butterfly.orx.me/core/log"
@@ -28,8 +29,10 @@ import (
 	nocodbpg "go.orx.me/apps/neo-box/internal/repo/nocodb/postgres"
 	notifypg "go.orx.me/apps/neo-box/internal/repo/notify/postgres"
 	oauthstatepg "go.orx.me/apps/neo-box/internal/repo/oauthstate/postgres"
+	telegrampg "go.orx.me/apps/neo-box/internal/repo/telegram/postgres"
 	wasabipg "go.orx.me/apps/neo-box/internal/repo/wasabi/postgres"
 	"go.orx.me/apps/neo-box/internal/secretbox"
+	"go.orx.me/apps/neo-box/internal/tgbot"
 	"go.orx.me/apps/neo-box/internal/wasabisync"
 )
 
@@ -84,8 +87,13 @@ func (h *Handlers) Bootstrap(ctx context.Context) error {
 	workspaceRepo := workspacepg.New(client)
 	conns.Register(googleworkspace.Provider{Repo: workspaceRepo})
 	h.workspaceSvcServer.SetDeps(workspaceRepo, conns)
+	telegramRepo := telegrampg.New(client)
+	if err := h.bootstrapTelegram(runCtx, telegramRepo, authRepo, conns); err != nil {
+		stop()
+		return err
+	}
 	h.stop = stop
-	go purgeExpired(runCtx, authRepo, stateRepo)
+	go purgeExpired(runCtx, authRepo, stateRepo, telegramRepo)
 	return nil
 }
 
@@ -127,9 +135,10 @@ func (h *Handlers) bootstrapNocoDB(ctx, runCtx context.Context, client *ent.Clie
 	return nil
 }
 
-// purgeExpired deletes expired sessions and OAuth states every hour until ctx
-// is done. Lookups already ignore expired rows; this only keeps tables small.
-func purgeExpired(ctx context.Context, sessions *authpg.Store, states *oauthstatepg.Store) {
+// purgeExpired deletes expired sessions, OAuth states, and Telegram link
+// tokens every hour until ctx is done. Lookups already ignore expired rows;
+// this only keeps tables small.
+func purgeExpired(ctx context.Context, sessions *authpg.Store, states *oauthstatepg.Store, telegrams *telegrampg.Store) {
 	logger := log.FromContext(ctx)
 	ticker := time.NewTicker(time.Hour)
 	defer ticker.Stop()
@@ -144,6 +153,11 @@ func purgeExpired(ctx context.Context, sessions *authpg.Store, states *oauthstat
 			logger.Warn("purge expired oauth states failed", "err", err)
 		} else if n > 0 {
 			logger.Info("purged expired oauth states", "count", n)
+		}
+		if n, err := telegrams.DeleteExpiredLinkTokens(ctx, now); err != nil {
+			logger.Warn("purge expired telegram link tokens failed", "err", err)
+		} else if n > 0 {
+			logger.Info("purged expired telegram link tokens", "count", n)
 		}
 		select {
 		case <-ctx.Done():
@@ -179,9 +193,41 @@ func (h *Handlers) bootstrapCloudflare(client *ent.Client, conns *connection.Ser
 	h.cloudflareSvcServer.SetDeps(manager, repo, conns)
 }
 
-// Shutdown stops the backup and Wasabi schedulers and workers. In-flight
-// snapshots are cancelled and recorded as failed (or on next startup); an
-// interrupted Wasabi sync resumes on the next start.
+func (h *Handlers) bootstrapTelegram(runCtx context.Context, repo *telegrampg.Store, authRepo *authpg.Store, conns *connection.Service) error {
+	tgCfg := h.cfg.Telegram
+	if !tgCfg.Enabled() {
+		return nil
+	}
+	dashboardURL := tgCfg.DashboardURL
+	if dashboardURL == "" {
+		dashboardURL = h.cfg.Notify.DashboardURL
+	}
+	bot, err := tgbot.New(tgbot.Config{
+		BotToken:       tgCfg.BotToken,
+		APIEndpoint:    tgCfg.APIEndpoint,
+		Mode:           tgCfg.EffectiveMode(),
+		WebhookURL:     tgCfg.WebhookURL,
+		WebhookSecret:  tgCfg.WebhookSecret,
+		AutoSetWebhook: tgCfg.AutoSetWebhookEnabled(),
+		DashboardURL:   dashboardURL,
+	}, repo, authRepo, conns)
+	if err != nil {
+		return err
+	}
+	if err := bot.Start(runCtx); err != nil {
+		return err
+	}
+	h.tgbot = bot
+	h.telegramSvcServer.SetService(bot)
+	if tgCfg.EffectiveMode() == tgbot.ModeWebhook {
+		h.telegramWebhook.Store(http.HandlerFunc(bot.HandleWebhook))
+	}
+	return nil
+}
+
+// Shutdown stops the backup, Wasabi, notification, and Telegram bot workers.
+// In-flight snapshots are cancelled and recorded as failed (or on next
+// startup); an interrupted Wasabi sync resumes on the next start.
 func (h *Handlers) Shutdown() error {
 	if h.stop == nil {
 		return nil
@@ -189,9 +235,18 @@ func (h *Handlers) Shutdown() error {
 	h.stop()
 	done := make(chan struct{})
 	go func() {
-		h.manager.Wait()
-		h.wasabi.Wait()
-		h.notifier.Wait()
+		if h.manager != nil {
+			h.manager.Wait()
+		}
+		if h.wasabi != nil {
+			h.wasabi.Wait()
+		}
+		if h.notifier != nil {
+			h.notifier.Wait()
+		}
+		if h.tgbot != nil {
+			h.tgbot.Wait()
+		}
 		close(done)
 	}()
 	select {

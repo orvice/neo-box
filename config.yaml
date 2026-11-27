@@ -63,3 +63,14 @@ storage:
   s3_store: ""
   key_prefix: "neobox"
   local_dir: "./data/blobs"
+
+# Optional system-level Telegram bot for viewing Connections from a linked
+# private chat. Leave bot_token empty to disable. Defaults to webhook mode
+# (multi-pod friendly); set mode: "polling" for local dev without HTTPS.
+# telegram:
+#   bot_token: ""
+#   mode: "webhook"
+#   webhook_url: "https://neobox.example.com/api/telegram/webhook"
+#   webhook_secret: ""
+#   auto_set_webhook: true
+#   dashboard_url: "https://neobox.example.com"

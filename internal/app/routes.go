@@ -17,6 +17,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/notify"
 	"go.orx.me/apps/neo-box/internal/repo/auth"
 	nocodbrepo "go.orx.me/apps/neo-box/internal/repo/nocodb"
+	"go.orx.me/apps/neo-box/internal/tgbot"
 	"go.orx.me/apps/neo-box/internal/transport/connectx"
 	"go.orx.me/apps/neo-box/internal/wasabisync"
 	"go.orx.me/apps/neo-box/pkg/proto/neobox/v1/neoboxv1connect"
@@ -34,13 +35,16 @@ type Handlers struct {
 	cloudflareSvcServer *application.CloudflareServiceServer
 	workspaceSvcServer  *application.GoogleWorkspaceServiceServer
 	notifySvcServer     *application.NotificationServiceServer
+	telegramSvcServer   *application.TelegramServiceServer
 	authRepo            atomic.Value // auth.Repository
 	snapshots           atomic.Value // *snapshotContent
+	telegramWebhook     atomic.Value // http.HandlerFunc
 
 	stop     context.CancelFunc
 	manager  *backup.Manager
 	wasabi   *wasabisync.Manager
 	notifier *notify.Service
+	tgbot    *tgbot.Service
 }
 
 func (h *Handlers) authRepoFromHolder() auth.Repository {
@@ -54,6 +58,11 @@ func (h *Handlers) snapshotContentFromHolder() httpHandler.SnapshotContent {
 		return nil
 	}
 	return src
+}
+
+func (h *Handlers) telegramWebhookFromHolder() http.HandlerFunc {
+	fn, _ := h.telegramWebhook.Load().(http.HandlerFunc)
+	return fn
 }
 
 // snapshotContent adapts the repo + manager to the download handler.
@@ -80,6 +89,7 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 	cloudflareSvcServer := application.NewCloudflareServiceServer()
 	workspaceSvcServer := application.NewGoogleWorkspaceServiceServer()
 	notifySvcServer := application.NewNotificationServiceServer()
+	telegramSvcServer := application.NewTelegramServiceServer()
 
 	// One Connect server serves every service: HTTP options (codecs, read
 	// limits) are applied once when the server is mounted on a mux.
@@ -91,6 +101,7 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 	neoboxv1connect.RegisterCloudflareServiceHandler(server, cloudflareSvcServer)
 	neoboxv1connect.RegisterGoogleWorkspaceServiceHandler(server, workspaceSvcServer)
 	neoboxv1connect.RegisterNotificationServiceHandler(server, notifySvcServer)
+	neoboxv1connect.RegisterTelegramServiceHandler(server, telegramSvcServer)
 
 	// RPCs keep their /api/neobox.v1.<Service>/<Method> paths: Gin matches the
 	// service prefix, strips /api, and the inner mux dispatches the procedure.
@@ -105,6 +116,7 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 		neoboxv1connect.CloudflareServiceName,
 		neoboxv1connect.GoogleWorkspaceServiceName,
 		neoboxv1connect.NotificationServiceName,
+		neoboxv1connect.TelegramServiceName,
 	}
 
 	handlers := &Handlers{
@@ -116,12 +128,14 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 		wasabiSvcServer:     wasabiSvcServer,
 		cloudflareSvcServer: cloudflareSvcServer,
 		notifySvcServer:     notifySvcServer,
+		telegramSvcServer:   telegramSvcServer,
 	}
 
 	router := func(r *gin.Engine) {
 		r.Use(httpHandler.AuthMiddleware(cfg, handlers.authRepoFromHolder))
 		httpHandler.RegisterHealth(r)
 		httpHandler.RegisterSnapshotDownload(r, handlers.snapshotContentFromHolder)
+		httpHandler.RegisterTelegramWebhook(r, handlers.telegramWebhookFromHolder)
 
 		// Only the RPC service prefixes go to the Connect mux; other /api
 		// routes (health, snapshot download) keep their own Gin handlers.

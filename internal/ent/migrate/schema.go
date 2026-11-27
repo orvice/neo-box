@@ -418,6 +418,43 @@ var (
 			},
 		},
 	}
+	// TelegramBindingsColumns holds the columns for the "telegram_bindings" table.
+	TelegramBindingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString, Unique: true},
+		{Name: "telegram_user_id", Type: field.TypeInt64, Unique: true},
+		{Name: "chat_id", Type: field.TypeInt64},
+		{Name: "telegram_username", Type: field.TypeString, Default: ""},
+		{Name: "display_name", Type: field.TypeString, Default: ""},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// TelegramBindingsTable holds the schema information for the "telegram_bindings" table.
+	TelegramBindingsTable = &schema.Table{
+		Name:       "telegram_bindings",
+		Columns:    TelegramBindingsColumns,
+		PrimaryKey: []*schema.Column{TelegramBindingsColumns[0]},
+	}
+	// TelegramLinkTokensColumns holds the columns for the "telegram_link_tokens" table.
+	TelegramLinkTokensColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "expires_at", Type: field.TypeTime},
+	}
+	// TelegramLinkTokensTable holds the schema information for the "telegram_link_tokens" table.
+	TelegramLinkTokensTable = &schema.Table{
+		Name:       "telegram_link_tokens",
+		Columns:    TelegramLinkTokensColumns,
+		PrimaryKey: []*schema.Column{TelegramLinkTokensColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "telegramlinktoken_expires_at",
+				Unique:  false,
+				Columns: []*schema.Column{TelegramLinkTokensColumns[3]},
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -612,6 +649,8 @@ var (
 		NotificationChannelsTable,
 		OauthStatesTable,
 		AuthSessionsTable,
+		TelegramBindingsTable,
+		TelegramLinkTokensTable,
 		UsersTable,
 		WasabiBucketConfigsTable,
 		WasabiDailyUsageTable,
@@ -660,6 +699,12 @@ func init() {
 	}
 	AuthSessionsTable.Annotation = &entsql.Annotation{
 		Table: "auth_sessions",
+	}
+	TelegramBindingsTable.Annotation = &entsql.Annotation{
+		Table: "telegram_bindings",
+	}
+	TelegramLinkTokensTable.Annotation = &entsql.Annotation{
+		Table: "telegram_link_tokens",
 	}
 	UsersTable.Annotation = &entsql.Annotation{
 		Table: "users",

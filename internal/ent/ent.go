@@ -25,6 +25,8 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent/notificationchannel"
 	"go.orx.me/apps/neo-box/internal/ent/oauthstate"
 	"go.orx.me/apps/neo-box/internal/ent/session"
+	"go.orx.me/apps/neo-box/internal/ent/telegrambinding"
+	"go.orx.me/apps/neo-box/internal/ent/telegramlinktoken"
 	"go.orx.me/apps/neo-box/internal/ent/user"
 	"go.orx.me/apps/neo-box/internal/ent/wasabibucketconfig"
 	"go.orx.me/apps/neo-box/internal/ent/wasabidailyusage"
@@ -104,6 +106,8 @@ func checkColumn(t, c string) error {
 			notificationchannel.Table:         notificationchannel.ValidColumn,
 			oauthstate.Table:                  oauthstate.ValidColumn,
 			session.Table:                     session.ValidColumn,
+			telegrambinding.Table:             telegrambinding.ValidColumn,
+			telegramlinktoken.Table:           telegramlinktoken.ValidColumn,
 			user.Table:                        user.ValidColumn,
 			wasabibucketconfig.Table:          wasabibucketconfig.ValidColumn,
 			wasabidailyusage.Table:            wasabidailyusage.ValidColumn,

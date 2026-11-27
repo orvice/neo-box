@@ -438,3 +438,29 @@ func TestSnapshotDownloadRouteStaysOutsideTheRPCMux(t *testing.T) {
 		t.Fatalf("download path reached the RPC mux: %d %s", rec.Code, rec.Body.String())
 	}
 }
+
+func TestTelegramWebhookRouteIsPublicAndDispatchesToHandler(t *testing.T) {
+	engine, handlers, _ := newTestRouter(t)
+
+	// Without a Bearer session, the webhook path still bypasses AuthMiddleware
+	// and answers 404 when no Telegram bot is enabled.
+	rec := do(t, engine, http.MethodPost, "/api/telegram/webhook", []byte(`{}`), map[string]string{
+		"Content-Type": "application/json",
+	})
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("disabled webhook = %d %s, want 404", rec.Code, rec.Body.String())
+	}
+
+	// Once Bootstrap stores the webhook handler, requests reach it directly.
+	called := false
+	handlers.telegramWebhook.Store(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called = true
+		w.WriteHeader(http.StatusAccepted)
+	}))
+	rec = do(t, engine, http.MethodPost, "/api/telegram/webhook", []byte(`{"update_id":1}`), map[string]string{
+		"Content-Type": "application/json",
+	})
+	if !called || rec.Code != http.StatusAccepted {
+		t.Fatalf("enabled webhook called=%v status=%d, want true/202", called, rec.Code)
+	}
+}
