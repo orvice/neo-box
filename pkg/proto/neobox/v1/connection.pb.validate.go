@@ -319,6 +319,47 @@ func (m *Connection) validate(all bool) error {
 			}
 		}
 
+	case *Connection_Porkbun:
+		if v == nil {
+			err := ConnectionValidationError{
+				field:  "Config",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetPorkbun()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ConnectionValidationError{
+						field:  "Porkbun",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ConnectionValidationError{
+						field:  "Porkbun",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetPorkbun()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ConnectionValidationError{
+					field:  "Porkbun",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	default:
 		_ = v // ensures v is used
 	}
@@ -1792,6 +1833,48 @@ func (m *CreateConnectionRequest) validate(all bool) error {
 			}
 		}
 
+	case *CreateConnectionRequest_Porkbun:
+		if v == nil {
+			err := CreateConnectionRequestValidationError{
+				field:  "Settings",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+		oneofSettingsPresent = true
+
+		if all {
+			switch v := interface{}(m.GetPorkbun()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, CreateConnectionRequestValidationError{
+						field:  "Porkbun",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, CreateConnectionRequestValidationError{
+						field:  "Porkbun",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetPorkbun()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return CreateConnectionRequestValidationError{
+					field:  "Porkbun",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	default:
 		_ = v // ensures v is used
 	}
@@ -2225,6 +2308,48 @@ func (m *UpdateConnectionRequest) validate(all bool) error {
 			if err := v.Validate(); err != nil {
 				return UpdateConnectionRequestValidationError{
 					field:  "GoogleWorkspace",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *UpdateConnectionRequest_Porkbun:
+		if v == nil {
+			err := UpdateConnectionRequestValidationError{
+				field:  "Settings",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+		oneofSettingsPresent = true
+
+		if all {
+			switch v := interface{}(m.GetPorkbun()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, UpdateConnectionRequestValidationError{
+						field:  "Porkbun",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, UpdateConnectionRequestValidationError{
+						field:  "Porkbun",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetPorkbun()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return UpdateConnectionRequestValidationError{
+					field:  "Porkbun",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
@@ -3132,3 +3257,224 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GoogleWorkspaceConnectionSettingsValidationError{}
+
+// Validate checks the field values on PorkbunConnectionConfig with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *PorkbunConnectionConfig) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PorkbunConnectionConfig with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// PorkbunConnectionConfigMultiError, or nil if none found.
+func (m *PorkbunConnectionConfig) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PorkbunConnectionConfig) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ApiKey
+
+	// no validation rules for IsSandbox
+
+	if len(errors) > 0 {
+		return PorkbunConnectionConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// PorkbunConnectionConfigMultiError is an error wrapping multiple validation
+// errors returned by PorkbunConnectionConfig.ValidateAll() if the designated
+// constraints aren't met.
+type PorkbunConnectionConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PorkbunConnectionConfigMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PorkbunConnectionConfigMultiError) AllErrors() []error { return m }
+
+// PorkbunConnectionConfigValidationError is the validation error returned by
+// PorkbunConnectionConfig.Validate if the designated constraints aren't met.
+type PorkbunConnectionConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PorkbunConnectionConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PorkbunConnectionConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PorkbunConnectionConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PorkbunConnectionConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PorkbunConnectionConfigValidationError) ErrorName() string {
+	return "PorkbunConnectionConfigValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PorkbunConnectionConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPorkbunConnectionConfig.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PorkbunConnectionConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PorkbunConnectionConfigValidationError{}
+
+// Validate checks the field values on PorkbunConnectionSettings with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *PorkbunConnectionSettings) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PorkbunConnectionSettings with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// PorkbunConnectionSettingsMultiError, or nil if none found.
+func (m *PorkbunConnectionSettings) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PorkbunConnectionSettings) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetApiKey()) < 1 {
+		err := PorkbunConnectionSettingsValidationError{
+			field:  "ApiKey",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for SecretApiKey
+
+	if len(errors) > 0 {
+		return PorkbunConnectionSettingsMultiError(errors)
+	}
+
+	return nil
+}
+
+// PorkbunConnectionSettingsMultiError is an error wrapping multiple validation
+// errors returned by PorkbunConnectionSettings.ValidateAll() if the
+// designated constraints aren't met.
+type PorkbunConnectionSettingsMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PorkbunConnectionSettingsMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PorkbunConnectionSettingsMultiError) AllErrors() []error { return m }
+
+// PorkbunConnectionSettingsValidationError is the validation error returned by
+// PorkbunConnectionSettings.Validate if the designated constraints aren't met.
+type PorkbunConnectionSettingsValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PorkbunConnectionSettingsValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PorkbunConnectionSettingsValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PorkbunConnectionSettingsValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PorkbunConnectionSettingsValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PorkbunConnectionSettingsValidationError) ErrorName() string {
+	return "PorkbunConnectionSettingsValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PorkbunConnectionSettingsValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPorkbunConnectionSettings.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PorkbunConnectionSettingsValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PorkbunConnectionSettingsValidationError{}

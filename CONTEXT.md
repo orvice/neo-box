@@ -12,7 +12,7 @@ one place.
 - **Session** — a bearer token issued at sign-in. Only its sha256 is stored;
   it expires after `auth.session_ttl`.
 - **Provider** — a kind of third-party service Neo Box integrates with
-  (today: NocoDB, Wasabi, Cloudflare and Google Workspace). Each Provider decides what it
+  (today: NocoDB, Wasabi, Cloudflare, Porkbun and Google Workspace). Each Provider decides what it
   shows and does for a Connection; Neo Box has no provider-independent model
   of resources. Not to be confused with the OAuth sign-in providers above.
 - **Connection** — access to a Provider, owned by one User: a name,
@@ -221,6 +221,26 @@ can't be deleted while a Restore of it is pending or running.
   snapshot against the user's edit, logs intent before sending, and refreshes
   the affected category after a confirmed response. A successful save means
   Cloudflare accepted configuration; it does not verify traffic behavior.
+
+### Porkbun
+
+- **Porkbun Connection** — a Connection whose Provider is Porkbun: one Porkbun
+  account reached with an API key pair (`pk1_...` / `sk1_...`, or sandbox
+  `pk1_sb_...` / `sk1_sb_...`). Verified via `/ping` without changing anything;
+  the secret key is stored encrypted and never returned. Neo Box only performs
+  read-only queries (never edits or billable operations), so a read-only API
+  key is sufficient. Credentials Porkbun no longer accepts mark the Connection
+  error.
+- **Porkbun Domain** — a domain in the Connection's Porkbun account, read live
+  from `domain/listAll` (never stored): status, TLD, creation and expiry dates,
+  auto-renew, transfer security lock, WHOIS privacy, API access opt-in,
+  external nameserver flag (`notLocal`) and labels.
+- **Domain details (read-only)** — a domain's authoritative nameservers, DNS
+  records, URL forwarding rules, DNSSEC DS records and custom nameserver glue
+  records, read live on demand per tab. Each domain must be opted into API
+  access in Porkbun before these details can be read; if nameservers point
+  outside `*.porkbun.com`, Neo Box flags that DNS records stored at Porkbun are
+  not authoritative.
 
 ### Google Workspace
 
