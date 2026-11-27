@@ -16,6 +16,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/connection"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	"go.orx.me/apps/neo-box/internal/nocodb"
+	"go.orx.me/apps/neo-box/internal/porkbun"
 	"go.orx.me/apps/neo-box/internal/repo/auth"
 	connrepo "go.orx.me/apps/neo-box/internal/repo/connection"
 	"go.orx.me/apps/neo-box/internal/transport/connectx"
@@ -203,6 +204,8 @@ func createSettings(ctx context.Context, m *neoboxv1.CreateConnectionRequest) (*
 		return workspaceSettings(ctx, v.GoogleWorkspace)
 	case *neoboxv1.CreateConnectionRequest_Cloudflare:
 		return cloudflareSettings(ctx, v.Cloudflare)
+	case *neoboxv1.CreateConnectionRequest_Porkbun:
+		return porkbunSettings(ctx, v.Porkbun)
 	}
 	return nil, connectx.RequiredArgument(ctx, "settings")
 }
@@ -217,6 +220,8 @@ func updateSettings(ctx context.Context, m *neoboxv1.UpdateConnectionRequest) (*
 		return workspaceSettings(ctx, v.GoogleWorkspace)
 	case *neoboxv1.UpdateConnectionRequest_Cloudflare:
 		return cloudflareSettings(ctx, v.Cloudflare)
+	case *neoboxv1.UpdateConnectionRequest_Porkbun:
+		return porkbunSettings(ctx, v.Porkbun)
 	}
 	return nil, connectx.RequiredArgument(ctx, "settings")
 }
@@ -294,6 +299,25 @@ func cloudflareSettings(ctx context.Context, in *neoboxv1.CloudflareConnectionSe
 	return out, nil
 }
 
+func porkbunSettings(ctx context.Context, in *neoboxv1.PorkbunConnectionSettings) (*providerSettings, error) {
+	if strings.TrimSpace(in.GetApiKey()) == "" {
+		return nil, connectx.RequiredArgument(ctx, "api_key")
+	}
+	apiKey, err := porkbun.NormalizeAPIKey(in.GetApiKey())
+	if err != nil {
+		return nil, connectx.InvalidArgument(ctx, "api_key", err.Error())
+	}
+	out := &providerSettings{
+		provider:    porkbun.ProviderType,
+		config:      porkbun.ConnectionConfig{APIKey: apiKey, IsSandbox: porkbun.IsSandboxKey(apiKey)},
+		secretField: "secret_api_key",
+	}
+	if secret := strings.TrimSpace(in.GetSecretApiKey()); secret != "" {
+		out.secret = porkbun.ConnectionSecret{SecretAPIKey: secret}
+	}
+	return out, nil
+}
+
 func configToProto(c *connrepo.Connection, out *neoboxv1.Connection) {
 	switch c.Provider {
 	case googleworkspace.ProviderType:
@@ -322,6 +346,14 @@ func configToProto(c *connrepo.Connection, out *neoboxv1.Connection) {
 		if json.Unmarshal(c.Config, &cfg) == nil {
 			out.Config = &neoboxv1.Connection_Cloudflare{Cloudflare: &neoboxv1.CloudflareConnectionConfig{AccountId: cfg.AccountID}}
 		}
+	case porkbun.ProviderType:
+		var cfg porkbun.ConnectionConfig
+		if json.Unmarshal(c.Config, &cfg) == nil {
+			out.Config = &neoboxv1.Connection_Porkbun{Porkbun: &neoboxv1.PorkbunConnectionConfig{
+				ApiKey:    cfg.APIKey,
+				IsSandbox: cfg.IsSandbox || porkbun.IsSandboxKey(cfg.APIKey),
+			}}
+		}
 	}
 }
 
@@ -335,6 +367,8 @@ func providerKey(p neoboxv1.Provider) (string, bool) {
 		return wasabi.ProviderType, true
 	case neoboxv1.Provider_PROVIDER_CLOUDFLARE:
 		return cloudflare.ProviderType, true
+	case neoboxv1.Provider_PROVIDER_PORKBUN:
+		return porkbun.ProviderType, true
 	}
 	return "", false
 }
@@ -349,6 +383,8 @@ func providerToProto(key string) neoboxv1.Provider {
 		return neoboxv1.Provider_PROVIDER_WASABI
 	case cloudflare.ProviderType:
 		return neoboxv1.Provider_PROVIDER_CLOUDFLARE
+	case porkbun.ProviderType:
+		return neoboxv1.Provider_PROVIDER_PORKBUN
 	}
 	return neoboxv1.Provider_PROVIDER_UNSPECIFIED
 }

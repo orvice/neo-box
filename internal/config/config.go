@@ -16,6 +16,7 @@ type AppConfig struct {
 	NocoDB     NocoDBConfig     `yaml:"nocodb"`
 	Wasabi     WasabiConfig     `yaml:"wasabi"`
 	Cloudflare CloudflareConfig `yaml:"cloudflare"`
+	Porkbun    PorkbunConfig    `yaml:"porkbun"`
 	Notify     NotifyConfig     `yaml:"notify"`
 }
 
@@ -23,6 +24,13 @@ type AppConfig struct {
 type CloudflareConfig struct {
 	// APIEndpoint overrides the API base URL
 	// (https://api.cloudflare.com/client/v4).
+	APIEndpoint string `yaml:"api_endpoint"`
+}
+
+// PorkbunConfig tunes Porkbun API access.
+type PorkbunConfig struct {
+	// APIEndpoint overrides the API base URL
+	// (https://api.porkbun.com/api/json/v3).
 	APIEndpoint string `yaml:"api_endpoint"`
 }
 

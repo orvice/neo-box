@@ -1,0 +1,186 @@
+syntax = "proto3";
+
+package neobox.v1;
+
+import "google/protobuf/timestamp.proto";
+import "validate/validate.proto";
+
+option go_package = "go.orx.me/apps/neo-box/pkg/proto/neobox/v1;neoboxv1";
+
+// PorkbunService reads a Porkbun connection's domains, nameservers, DNS
+// records, URL forwards, DNSSEC records and glue records live from Porkbun's
+// v3 API. All RPCs are strictly read-only and never modify Porkbun state.
+// Every connection_id must belong to the calling user and be a Porkbun
+// connection.
+service PorkbunService {
+  // ListPorkbunDomains reads the account's domains live, computes portfolio
+  // summary counts, and applies optional search, filter and pagination.
+  rpc ListPorkbunDomains(ListPorkbunDomainsRequest) returns (ListPorkbunDomainsResponse);
+  // GetPorkbunDomain reads one domain's metadata and authoritative nameservers.
+  // If nameservers cannot be read (e.g. API access is disabled for the domain),
+  // nameservers_issue explains why while still returning domain metadata.
+  rpc GetPorkbunDomain(GetPorkbunDomainRequest) returns (GetPorkbunDomainResponse);
+  // ListPorkbunDNSRecords reads one domain's DNS records live with optional
+  // search, record type filter and pagination.
+  rpc ListPorkbunDNSRecords(ListPorkbunDNSRecordsRequest) returns (ListPorkbunDNSRecordsResponse);
+  // ListPorkbunURLForwards reads one domain's URL forwarding rules live.
+  rpc ListPorkbunURLForwards(ListPorkbunURLForwardsRequest) returns (ListPorkbunURLForwardsResponse);
+  // ListPorkbunDNSSECRecords reads one domain's DNSSEC DS records live.
+  rpc ListPorkbunDNSSECRecords(ListPorkbunDNSSECRecordsRequest) returns (ListPorkbunDNSSECRecordsResponse);
+  // ListPorkbunGlueRecords reads one domain's custom nameserver glue records live.
+  rpc ListPorkbunGlueRecords(ListPorkbunGlueRecordsRequest) returns (ListPorkbunGlueRecordsResponse);
+}
+
+// PorkbunDomainFilter narrows the domain portfolio list.
+enum PorkbunDomainFilter {
+  PORKBUN_DOMAIN_FILTER_UNSPECIFIED = 0;
+  // Domains expiring within 30 days (including already expired domains).
+  PORKBUN_DOMAIN_FILTER_EXPIRING_SOON = 1;
+  // Domains with auto-renew disabled.
+  PORKBUN_DOMAIN_FILTER_AUTO_RENEW_OFF = 2;
+  // Domains with Porkbun API access disabled.
+  PORKBUN_DOMAIN_FILTER_API_ACCESS_OFF = 3;
+  // Domains flagged as notLocal (using external DNS / hosting).
+  PORKBUN_DOMAIN_FILTER_EXTERNAL_NAMESERVERS = 4;
+}
+
+message PorkbunPageInfo {
+  int32 page = 1;
+  int32 page_size = 2;
+  int32 total_pages = 3;
+  int64 total_count = 4;
+}
+
+message PorkbunDomainLabel {
+  string id = 1;
+  string title = 2;
+  string color = 3;
+}
+
+message PorkbunDomain {
+  string domain = 1;
+  string status = 2;
+  string tld = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp expires_at = 5;
+  bool security_lock = 6;
+  bool whois_privacy = 7;
+  bool auto_renew = 8;
+  bool not_local = 9;
+  bool api_access = 10;
+  repeated PorkbunDomainLabel labels = 11;
+}
+
+message PorkbunPortfolioSummary {
+  int32 total_domains = 1;
+  int32 expiring_soon_count = 2;
+  int32 expired_count = 3;
+  int32 auto_renew_off_count = 4;
+  int32 security_lock_off_count = 5;
+  int32 api_access_off_count = 6;
+  int32 external_nameservers_count = 7;
+}
+
+message PorkbunDNSRecord {
+  string id = 1;
+  string name = 2;
+  string type = 3;
+  string content = 4;
+  int32 ttl = 5;
+  string priority = 6;
+  string notes = 7;
+}
+
+message PorkbunURLForward {
+  string id = 1;
+  string subdomain = 2;
+  string location = 3;
+  string type = 4;
+  bool include_path = 5;
+  bool wildcard = 6;
+}
+
+message PorkbunDNSSECRecord {
+  string key_tag = 1;
+  string algorithm = 2;
+  string digest_type = 3;
+  string digest = 4;
+}
+
+message PorkbunGlueHost {
+  string host = 1;
+  repeated string ipv4 = 2;
+  repeated string ipv6 = 3;
+}
+
+message ListPorkbunDomainsRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  // Optional substring filter matched against domain name, TLD or label title.
+  string query = 2;
+  PorkbunDomainFilter filter = 3;
+  int32 page = 4;
+  int32 page_size = 5;
+}
+
+message ListPorkbunDomainsResponse {
+  repeated PorkbunDomain domains = 1;
+  PorkbunPageInfo page_info = 2;
+  PorkbunPortfolioSummary summary = 3;
+}
+
+message GetPorkbunDomainRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string domain = 2 [(validate.rules).string.min_len = 1];
+}
+
+message GetPorkbunDomainResponse {
+  PorkbunDomain domain = 1;
+  repeated string nameservers = 2;
+  // True when all reported nameservers belong to Porkbun (*.porkbun.com).
+  bool uses_porkbun_nameservers = 3;
+  // Non-empty when nameservers could not be read; domain metadata is still set.
+  string nameservers_issue = 4;
+}
+
+message ListPorkbunDNSRecordsRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string domain = 2 [(validate.rules).string.min_len = 1];
+  string query = 3;
+  string type = 4;
+  int32 page = 5;
+  int32 page_size = 6;
+}
+
+message ListPorkbunDNSRecordsResponse {
+  repeated PorkbunDNSRecord records = 1;
+  PorkbunPageInfo page_info = 2;
+  // Distinct DNS record types present in the zone, sorted alphabetically.
+  repeated string record_types = 3;
+}
+
+message ListPorkbunURLForwardsRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string domain = 2 [(validate.rules).string.min_len = 1];
+}
+
+message ListPorkbunURLForwardsResponse {
+  repeated PorkbunURLForward forwards = 1;
+}
+
+message ListPorkbunDNSSECRecordsRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string domain = 2 [(validate.rules).string.min_len = 1];
+}
+
+message ListPorkbunDNSSECRecordsResponse {
+  repeated PorkbunDNSSECRecord records = 1;
+}
+
+message ListPorkbunGlueRecordsRequest {
+  string connection_id = 1 [(validate.rules).string.min_len = 1];
+  string domain = 2 [(validate.rules).string.min_len = 1];
+}
+
+message ListPorkbunGlueRecordsResponse {
+  repeated PorkbunGlueHost hosts = 1;
+}
