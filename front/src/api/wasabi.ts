@@ -11,6 +11,7 @@ export {
   type WasabiBucketCost,
   type WasabiCostBreakdown,
   type WasabiCostEstimate,
+  type WasabiLifecycleRule,
   type WasabiSyncState,
   type WasabiUsage,
 } from '@/gen/neobox/v1/wasabi_pb'

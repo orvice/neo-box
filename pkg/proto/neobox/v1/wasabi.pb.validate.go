@@ -1468,6 +1468,20 @@ func (m *WasabiLifecycleRule) validate(all bool) error {
 
 	// no validation rules for AbortMultipartDays
 
+	// no validation rules for Tags
+
+	// no validation rules for ExpirationDate
+
+	// no validation rules for NewerNoncurrentVersions
+
+	if m.ObjectSizeGreaterThan != nil {
+		// no validation rules for ObjectSizeGreaterThan
+	}
+
+	if m.ObjectSizeLessThan != nil {
+		// no validation rules for ObjectSizeLessThan
+	}
+
 	if len(errors) > 0 {
 		return WasabiLifecycleRuleMultiError(errors)
 	}

@@ -359,11 +359,27 @@ func bucketConfigToProto(c wasabi.BucketConfig) *neoboxv1.WasabiBucketConfig {
 		}
 	}
 	for _, r := range c.Lifecycle {
-		out.LifecycleRules = append(out.LifecycleRules, &neoboxv1.WasabiLifecycleRule{
-			Id: r.ID, Enabled: r.Enabled, Prefix: r.Prefix, ExpirationDays: int32(r.ExpirationDays),
-			ExpiredObjectDeleteMarker: r.ExpiredObjectDeleteMarker, NoncurrentDays: int32(r.NoncurrentDays),
-			AbortMultipartDays: int32(r.AbortMultipartDays),
-		})
+		rule := &neoboxv1.WasabiLifecycleRule{
+			Id:                        r.ID,
+			Enabled:                   r.Enabled,
+			Prefix:                    r.Prefix,
+			Tags:                      r.Tags,
+			ExpirationDays:            int32(r.ExpirationDays),
+			ExpirationDate:            r.ExpirationDate,
+			ExpiredObjectDeleteMarker: r.ExpiredObjectDeleteMarker,
+			NoncurrentDays:            int32(r.NoncurrentDays),
+			NewerNoncurrentVersions:   int32(r.NewerNoncurrentVersions),
+			AbortMultipartDays:        int32(r.AbortMultipartDays),
+		}
+		if r.ObjectSizeGreaterThan != nil {
+			v := *r.ObjectSizeGreaterThan
+			rule.ObjectSizeGreaterThan = &v
+		}
+		if r.ObjectSizeLessThan != nil {
+			v := *r.ObjectSizeLessThan
+			rule.ObjectSizeLessThan = &v
+		}
+		out.LifecycleRules = append(out.LifecycleRules, rule)
 	}
 	if p := c.Policy; p != nil {
 		out.Policy = &neoboxv1.WasabiBucketPolicy{Document: p.Document, Public: p.Public}

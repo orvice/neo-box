@@ -3,6 +3,7 @@ import { timestampDate } from '@bufbuild/protobuf/wkt'
 import {
   ChevronDown,
   CircleAlert,
+  Clock,
   Globe,
   Info,
   Lock,
@@ -38,6 +39,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  formatAbortMultipartAction,
+  formatCurrentVersionAction,
+  formatNoncurrentVersionAction,
+  formatRuleScope,
+  lifecycleBadge,
+  shortestEarlyDeletionDays,
+  WASABI_DEFAULT_ABORT_MULTIPART_DAYS,
+  WASABI_MIN_STORAGE_DAYS,
+  type LifecycleRuleView,
+} from './lifecycle'
 
 export const POLICY_GUIDE = 'https://github.com/orvice/neo-box#bucket-settings'
 
@@ -67,12 +79,13 @@ const severityStyle: Record<
   },
 }
 
-/** Compact badges for the bucket list: versioning, retention, public. */
+/** Compact badges for the bucket list: versioning, retention, lifecycle, public. */
 export function SettingsBadges({ config }: { config?: WasabiBucketConfig }) {
   if (!config) return <span className='text-xs text-muted-foreground'>-</span>
   const warnings = config.findings.filter(
     (f) => f.severity === WasabiFindingSeverity.WARNING
   ).length
+  const lcBadge = lifecycleBadge(config.lifecycleRules)
   return (
     <div className='flex flex-wrap items-center gap-1'>
       {config.public && (
@@ -97,6 +110,15 @@ export function SettingsBadges({ config }: { config?: WasabiBucketConfig }) {
         <Badge variant='secondary' className='gap-1'>
           <ShieldCheck className='h-3 w-3' />
           Compliance
+        </Badge>
+      )}
+      {lcBadge && (
+        <Badge
+          variant='secondary'
+          className={cn('gap-1', !lcBadge.active && 'text-muted-foreground')}
+        >
+          <Clock className='h-3 w-3' />
+          {lcBadge.label}
         </Badge>
       )}
       {warnings > 0 && (
@@ -253,8 +275,59 @@ export function BucketSettingsCard({ config }: { config: WasabiBucketConfig }) {
   )
 }
 
+export function LifecycleRuleScopeCell({ rule }: { rule: LifecycleRuleView }) {
+  const scope = formatRuleScope(rule)
+  if (scope.allObjects) {
+    return <span className='text-xs text-muted-foreground'>All objects</span>
+  }
+  return (
+    <div className='flex flex-wrap items-center gap-1 text-xs'>
+      {scope.prefix && <span className='font-mono'>{scope.prefix}</span>}
+      {scope.size && (
+        <Badge variant='outline' className='font-mono text-[11px] font-normal'>
+          {scope.size}
+        </Badge>
+      )}
+      {scope.tags.map((tag) => (
+        <Badge
+          key={tag}
+          variant='secondary'
+          className='font-mono text-[11px] font-normal'
+        >
+          {tag}
+        </Badge>
+      ))}
+    </div>
+  )
+}
+
+export function LifecycleRuleNameCell({
+  rule,
+  index,
+}: {
+  rule: LifecycleRuleView
+  index: number
+}) {
+  const earlyDays = shortestEarlyDeletionDays(rule)
+  return (
+    <div className='flex flex-wrap items-center gap-1.5'>
+      <span>{rule.id || `Rule ${index + 1}`}</span>
+      {!rule.enabled && <Badge variant='secondary'>Off</Badge>}
+      {earlyDays !== undefined && (
+        <Badge
+          variant='outline'
+          className='gap-1 border-warning-foreground/30 text-warning-foreground'
+          title={`Deletes after ${earlyDays} day(s), below Wasabi's ${WASABI_MIN_STORAGE_DAYS}-day Pay-Go minimum storage duration`}
+        >
+          <TriangleAlert className='h-3 w-3' />
+          &lt; {WASABI_MIN_STORAGE_DAYS}d
+        </Badge>
+      )}
+    </div>
+  )
+}
+
 function Lifecycle({ config }: { config: WasabiBucketConfig }) {
-  const days = (n: number) => (n > 0 ? `${n} days` : '-')
   return (
     <div className='space-y-2'>
       <div className='text-sm font-medium'>Lifecycle rules</div>
@@ -262,7 +335,9 @@ function Lifecycle({ config }: { config: WasabiBucketConfig }) {
         <Unreadable reason={config.errors.lifecycle} />
       ) : config.lifecycleRules.length === 0 ? (
         <p className='text-sm text-muted-foreground'>
-          No rules: objects and old versions stay until deleted.
+          {config.versioning?.mfaDelete
+            ? 'No rules: MFA-Delete is enabled on this bucket, and Wasabi does not allow lifecycle rules alongside MFA-Delete.'
+            : 'No rules: objects and old versions stay until deleted.'}
         </p>
       ) : (
         <div className='overflow-x-auto rounded-md border'>
@@ -271,9 +346,9 @@ function Lifecycle({ config }: { config: WasabiBucketConfig }) {
               <TableRow>
                 <TableHead>Rule</TableHead>
                 <TableHead>Applies to</TableHead>
-                <TableHead>Delete objects after</TableHead>
-                <TableHead>Delete old versions after</TableHead>
-                <TableHead>Abort uploads after</TableHead>
+                <TableHead>Current versions</TableHead>
+                <TableHead>Noncurrent versions</TableHead>
+                <TableHead>Incomplete uploads</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -283,25 +358,26 @@ function Lifecycle({ config }: { config: WasabiBucketConfig }) {
                   className={cn(!r.enabled && 'text-muted-foreground')}
                 >
                   <TableCell>
-                    {r.id || `Rule ${i + 1}`}
-                    {!r.enabled && (
-                      <Badge variant='secondary' className='ms-2'>
-                        Off
-                      </Badge>
-                    )}
+                    <LifecycleRuleNameCell rule={r} index={i} />
                   </TableCell>
-                  <TableCell className='font-mono text-xs'>
-                    {r.prefix || 'all objects'}
+                  <TableCell>
+                    <LifecycleRuleScopeCell rule={r} />
                   </TableCell>
-                  <TableCell>{days(r.expirationDays)}</TableCell>
-                  <TableCell>{days(r.noncurrentDays)}</TableCell>
-                  <TableCell>{days(r.abortMultipartDays)}</TableCell>
+                  <TableCell>{formatCurrentVersionAction(r)}</TableCell>
+                  <TableCell>{formatNoncurrentVersionAction(r)}</TableCell>
+                  <TableCell>{formatAbortMultipartAction(r)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </div>
       )}
+      <p className='text-xs text-muted-foreground'>
+        Wasabi evaluates lifecycle rules once daily at 00:00 UTC (new or changed
+        rules can take 24–48 hours to run). Without an abort rule, incomplete
+        multipart uploads are cleared after ~
+        {WASABI_DEFAULT_ABORT_MULTIPART_DAYS} days.
+      </p>
     </div>
   )
 }

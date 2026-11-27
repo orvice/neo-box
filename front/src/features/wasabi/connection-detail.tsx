@@ -28,6 +28,7 @@ import { DataTable, type Column } from '@/components/data-table'
 import { POLICY_GUIDE, SettingsBadges } from './bucket-settings'
 import { CostBreakdownCard } from './cost-breakdown'
 import { formatCompact, formatDayLong, formatUSD, wasabiConfig } from './format'
+import { LifecycleOverviewCard } from './lifecycle-overview'
 import { BLUE } from './palette'
 import { StatTile } from './stat-tile'
 import { SyncButton, SyncStatus } from './sync-status'
@@ -132,6 +133,7 @@ export function WasabiConnectionDetail({
         )}
         <UsageCharts connectionId={connection.id} bucket='' />
         <BucketsCard connectionId={connection.id} />
+        <LifecycleOverviewCard connectionId={connection.id} />
         {latest && <UsageDetailsCard usage={latest} account />}
       </PageScroll>
     </Page>
