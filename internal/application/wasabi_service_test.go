@@ -247,12 +247,26 @@ func TestWasabiCostBreakdown(t *testing.T) {
 func TestWasabiBucketSettings(t *testing.T) {
 	f := newWasabiFixture(t, true)
 	ctx := context.Background()
+	minSize := int64(1024)
+	maxSize := int64(1048576)
 	_ = f.usage.ReplaceBucketConfigs(ctx, "w1", []wasabi.BucketConfig{{
 		Bucket: "media", Region: "us-east-1", FetchedAt: wasabiDay("2026-09-30"),
 		Versioning: &wasabi.Versioning{Status: "Enabled"},
 		Policy:     &wasabi.BucketPolicy{Document: `{"Statement":[]}`, Public: true},
-		Lifecycle:  []wasabi.LifecycleRule{{ID: "r1", Enabled: true, ExpirationDays: 30}},
-		Errors:     map[string]string{wasabi.SettingACL: wasabi.ErrAccessDenied},
+		Lifecycle: []wasabi.LifecycleRule{{
+			ID:                        "r1",
+			Enabled:                   true,
+			Prefix:                    "logs/",
+			ObjectSizeGreaterThan:     &minSize,
+			ObjectSizeLessThan:        &maxSize,
+			Tags:                      map[string]string{"env": "prod"},
+			ExpirationDays:            30,
+			ExpirationDate:            "2027-01-15",
+			ExpiredObjectDeleteMarker: true,
+			NewerNoncurrentVersions:   5,
+			AbortMultipartDays:        3,
+		}},
+		Errors: map[string]string{wasabi.SettingACL: wasabi.ErrAccessDenied},
 	}})
 	st, _ := f.usage.GetSyncState(ctx, "w1")
 	st.ConfigFetchedAt = wasabiDay("2026-09-30")
@@ -268,11 +282,21 @@ func TestWasabiBucketSettings(t *testing.T) {
 		c.GetPolicy().GetDocument() == "" || len(c.GetLifecycleRules()) != 1 || c.GetErrors()["acl"] != "access_denied" {
 		t.Fatalf("media config = %+v", c)
 	}
+	r0 := c.GetLifecycleRules()[0]
+	if r0.GetId() != "r1" || r0.GetPrefix() != "logs/" ||
+		r0.ObjectSizeGreaterThan == nil || r0.GetObjectSizeGreaterThan() != 1024 ||
+		r0.ObjectSizeLessThan == nil || r0.GetObjectSizeLessThan() != 1048576 ||
+		r0.GetTags()["env"] != "prod" ||
+		r0.GetExpirationDays() != 30 || r0.GetExpirationDate() != "2027-01-15" ||
+		!r0.GetExpiredObjectDeleteMarker() || r0.GetNewerNoncurrentVersions() != 5 ||
+		r0.GetAbortMultipartDays() != 3 {
+		t.Fatalf("lifecycle rule = %+v", r0)
+	}
 	var codes []string
 	for _, fd := range c.GetFindings() {
 		codes = append(codes, fd.GetCode())
 	}
-	if strings.Join(codes, ",") != "public_policy,old_versions_kept,settings_unreadable" ||
+	if strings.Join(codes, ",") != "public_policy,old_versions_kept,early_deletion_lifecycle,settings_unreadable" ||
 		c.GetFindings()[0].GetSeverity() != neoboxv1.WasabiFindingSeverity_WASABI_FINDING_SEVERITY_CRITICAL {
 		t.Fatalf("findings = %+v", c.GetFindings())
 	}

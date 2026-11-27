@@ -102,10 +102,14 @@ can't be deleted while a Restore of it is pending or running.
   months.
 - **Bucket settings** — a bucket's configuration as read through the S3 API
   after each sync: versioning, Object Lock, Wasabi compliance, lifecycle
-  rules, policy and ACL, logging, replication, tags. Only the latest read is
-  kept. A setting the key may not read is shown as such rather than as off.
-  Risky settings are flagged (a public bucket, versioning without a rule that
-  expires old versions) but raise no Alert. "Public" covers the policy and
+  rules (scope by prefix, size bounds and tags; expiration by days, date or
+  expired delete markers; noncurrent version expiry and retention count;
+  incomplete multipart abort), policy and ACL, logging, replication, tags.
+  Only the latest read is kept. A setting the key may not read is shown as
+  such rather than as off. Risky settings are flagged (a public bucket,
+  versioning without full old-version expiry, lifecycle rules deleting under
+  the 90-day Pay-Go minimum, or lifecycle rules shorter than Object Lock /
+  compliance retention) but raise no Alert. "Public" covers the policy and
   ACL; Wasabi's console Public Access Override can't be read.
 
 ### Cloudflare

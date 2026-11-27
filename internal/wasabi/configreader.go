@@ -215,22 +215,58 @@ func (r *ConfigReader) Read(ctx context.Context, b BucketInfo) BucketConfig {
 
 func lifecycleRule(r s3types.LifecycleRule) LifecycleRule {
 	out := LifecycleRule{ID: aws.ToString(r.ID), Enabled: r.Status == s3types.ExpirationStatusEnabled}
-	if r.Filter != nil && r.Filter.Prefix != nil {
-		out.Prefix = aws.ToString(r.Filter.Prefix)
+	if f := r.Filter; f != nil {
+		if and := f.And; and != nil {
+			out.Prefix = aws.ToString(and.Prefix)
+			out.ObjectSizeGreaterThan = cloneInt64Ptr(and.ObjectSizeGreaterThan)
+			out.ObjectSizeLessThan = cloneInt64Ptr(and.ObjectSizeLessThan)
+			if len(and.Tags) > 0 {
+				tags := make(map[string]string, len(and.Tags))
+				for _, t := range and.Tags {
+					if k := aws.ToString(t.Key); k != "" {
+						tags[k] = aws.ToString(t.Value)
+					}
+				}
+				if len(tags) > 0 {
+					out.Tags = tags
+				}
+			}
+		} else {
+			out.Prefix = aws.ToString(f.Prefix)
+			out.ObjectSizeGreaterThan = cloneInt64Ptr(f.ObjectSizeGreaterThan)
+			out.ObjectSizeLessThan = cloneInt64Ptr(f.ObjectSizeLessThan)
+			if f.Tag != nil {
+				if k := aws.ToString(f.Tag.Key); k != "" {
+					out.Tags = map[string]string{k: aws.ToString(f.Tag.Value)}
+				}
+			}
+		}
 	} else if r.Prefix != nil { //nolint:staticcheck // Wasabi may still use the legacy field
 		out.Prefix = aws.ToString(r.Prefix) //nolint:staticcheck
 	}
 	if e := r.Expiration; e != nil {
 		out.ExpirationDays = int(aws.ToInt32(e.Days))
+		if e.Date != nil && !e.Date.IsZero() {
+			out.ExpirationDate = e.Date.UTC().Format(DateLayout)
+		}
 		out.ExpiredObjectDeleteMarker = aws.ToBool(e.ExpiredObjectDeleteMarker)
 	}
 	if n := r.NoncurrentVersionExpiration; n != nil {
 		out.NoncurrentDays = int(aws.ToInt32(n.NoncurrentDays))
+		out.NewerNoncurrentVersions = int(aws.ToInt32(n.NewerNoncurrentVersions))
 	}
 	if a := r.AbortIncompleteMultipartUpload; a != nil {
 		out.AbortMultipartDays = int(aws.ToInt32(a.DaysAfterInitiation))
 	}
 	return out
+}
+
+func cloneInt64Ptr(p *int64) *int64 {
+	if p == nil {
+		return nil
+	}
+	v := *p
+	return &v
 }
 
 // Group URIs that make an ACL grant public.

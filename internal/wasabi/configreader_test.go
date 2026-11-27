@@ -117,7 +117,8 @@ func TestConfigReader(t *testing.T) {
 	if media.Compliance != nil {
 		t.Fatalf("disabled compliance = %+v", media.Compliance)
 	}
-	if lc := media.Lifecycle; len(lc) != 1 || lc[0] != (LifecycleRule{ID: "r1", Enabled: true, Prefix: "tmp/", ExpirationDays: 30, NoncurrentDays: 7, AbortMultipartDays: 3}) {
+	if lc := media.Lifecycle; len(lc) != 1 || lc[0].ID != "r1" || !lc[0].Enabled || lc[0].Prefix != "tmp/" ||
+		lc[0].ExpirationDays != 30 || lc[0].NoncurrentDays != 7 || lc[0].AbortMultipartDays != 3 {
 		t.Fatalf("lifecycle = %+v", lc)
 	}
 	if p := media.Policy; p == nil || !p.Public {
@@ -156,6 +157,94 @@ func TestConfigReader(t *testing.T) {
 	}
 }
 
+func int64Ptr(v int64) *int64 { return &v }
+
+func TestConfigReaderLifecycleVariants(t *testing.T) {
+	f := &fakeS3{auth: map[string]string{}, replies: map[string]s3Reply{
+		"lc?location":   ok(`<LocationConstraint xmlns="http://s3.amazonaws.com/doc/2006-03-01/"></LocationConstraint>`),
+		"lc?versioning": ok(`<VersioningConfiguration><Status>Enabled</Status></VersioningConfiguration>`),
+		"lc?object-lock": s3Err(404, "ObjectLockConfigurationNotFoundError"),
+		"lc?compliance":  s3Err(404, "NoSuchComplianceConfiguration"),
+		"lc?lifecycle": ok(`<LifecycleConfiguration>
+			<Rule>
+				<ID>and-size</ID>
+				<Filter><And>
+					<Prefix>logs/</Prefix>
+					<ObjectSizeGreaterThan>1048576</ObjectSizeGreaterThan>
+					<ObjectSizeLessThan>104857600</ObjectSizeLessThan>
+					<Tag><Key>env</Key><Value>prod</Value></Tag>
+				</And></Filter>
+				<Status>Enabled</Status>
+				<Expiration><Date>2027-01-15T00:00:00Z</Date></Expiration>
+				<NoncurrentVersionExpiration><NoncurrentDays>120</NoncurrentDays><NewerNoncurrentVersions>3</NewerNoncurrentVersions></NoncurrentVersionExpiration>
+			</Rule>
+			<Rule>
+				<ID>size-zero</ID>
+				<Filter><ObjectSizeGreaterThan>0</ObjectSizeGreaterThan></Filter>
+				<Status>Disabled</Status>
+				<Expiration><ExpiredObjectDeleteMarker>true</ExpiredObjectDeleteMarker></Expiration>
+			</Rule>
+			<Rule>
+				<ID>single-tag</ID>
+				<Filter><Tag><Key>tier</Key><Value>temp</Value></Tag></Filter>
+				<Status>Enabled</Status>
+				<Expiration><Days>100</Days></Expiration>
+			</Rule>
+			<Rule>
+				<ID>legacy-prefix</ID>
+				<Prefix>old/</Prefix>
+				<Status>Enabled</Status>
+				<AbortIncompleteMultipartUpload><DaysAfterInitiation>5</DaysAfterInitiation></AbortIncompleteMultipartUpload>
+			</Rule>
+		</LifecycleConfiguration>`),
+		"lc?policy":      s3Err(404, "NoSuchBucketPolicy"),
+		"lc?acl":         ok(`<AccessControlPolicy><Owner><ID>o1</ID></Owner><AccessControlList></AccessControlList></AccessControlPolicy>`),
+		"lc?logging":     ok(`<BucketLoggingStatus></BucketLoggingStatus>`),
+		"lc?replication": s3Err(404, "NoSuchReplicationConfiguration"),
+		"lc?tagging":     s3Err(404, "NoSuchTagSet"),
+	}}
+	srv := httptest.NewServer(f)
+	defer srv.Close()
+	r := NewConfigReader("AKID", "SECRET", WithS3Endpoint(srv.URL))
+	cfg := r.Read(context.Background(), BucketInfo{Name: "lc"})
+
+	if len(cfg.Errors) != 0 {
+		t.Fatalf("unexpected errors = %+v", cfg.Errors)
+	}
+	if len(cfg.Lifecycle) != 4 {
+		t.Fatalf("lifecycle count = %d, want 4: %+v", len(cfg.Lifecycle), cfg.Lifecycle)
+	}
+
+	r0 := cfg.Lifecycle[0]
+	if r0.ID != "and-size" || !r0.Enabled || r0.Prefix != "logs/" ||
+		r0.ObjectSizeGreaterThan == nil || *r0.ObjectSizeGreaterThan != 1048576 ||
+		r0.ObjectSizeLessThan == nil || *r0.ObjectSizeLessThan != 104857600 ||
+		r0.Tags["env"] != "prod" ||
+		r0.ExpirationDate != "2027-01-15" || r0.ExpirationDays != 0 ||
+		r0.NoncurrentDays != 120 || r0.NewerNoncurrentVersions != 3 ||
+		r0.AppliesToAllObjects() {
+		t.Fatalf("rule 0 = %+v", r0)
+	}
+
+	r1 := cfg.Lifecycle[1]
+	if r1.ID != "size-zero" || r1.Enabled || r1.Prefix != "" ||
+		r1.ObjectSizeGreaterThan == nil || *r1.ObjectSizeGreaterThan != 0 ||
+		r1.ObjectSizeLessThan != nil || !r1.ExpiredObjectDeleteMarker ||
+		r1.AppliesToAllObjects() {
+		t.Fatalf("rule 1 = %+v", r1)
+	}
+
+	r2 := cfg.Lifecycle[2]
+	if r2.ID != "single-tag" || !r2.Enabled || r2.Tags["tier"] != "temp" || r2.ExpirationDays != 100 || r2.AppliesToAllObjects() {
+		t.Fatalf("rule 2 = %+v", r2)
+	}
+
+	r3 := cfg.Lifecycle[3]
+	if r3.ID != "legacy-prefix" || r3.Prefix != "old/" || r3.AbortMultipartDays != 5 || r3.AppliesToAllObjects() {
+		t.Fatalf("rule 3 = %+v", r3)
+	}
+}
+
 func TestBucketFindings(t *testing.T) {
 	codes := func(c BucketConfig) string {
 		var out []string
@@ -170,12 +259,58 @@ func TestBucketFindings(t *testing.T) {
 	}{
 		"nothing set": {BucketConfig{}, ""},
 		"public both": {BucketConfig{Policy: &BucketPolicy{Public: true}, ACL: &BucketACL{Public: true}}, "public_policy,public_acl"},
-		"versioning without cleanup": {BucketConfig{Versioning: &Versioning{Status: "Enabled"},
-			Lifecycle: []LifecycleRule{{Enabled: true, ExpirationDays: 30}}}, "old_versions_kept"},
-		"versioning with cleanup": {BucketConfig{Versioning: &Versioning{Status: "Enabled"},
-			Lifecycle: []LifecycleRule{{Enabled: true, NoncurrentDays: 7}}}, ""},
+		"versioning without cleanup (90d expiry)": {BucketConfig{Versioning: &Versioning{Status: "Enabled"},
+			Lifecycle: []LifecycleRule{{Enabled: true, ExpirationDays: 90}}}, "old_versions_kept"},
+		"versioning without cleanup and early expiry": {BucketConfig{Versioning: &Versioning{Status: "Enabled"},
+			Lifecycle: []LifecycleRule{{Enabled: true, ExpirationDays: 30}}}, "old_versions_kept,early_deletion_lifecycle"},
+		"versioning with full cleanup >= 90d": {BucketConfig{Versioning: &Versioning{Status: "Enabled"},
+			Lifecycle: []LifecycleRule{{Enabled: true, NoncurrentDays: 90}}}, ""},
+		"versioning with partial prefix cleanup": {BucketConfig{Versioning: &Versioning{Status: "Enabled"},
+			Lifecycle: []LifecycleRule{{Enabled: true, Prefix: "tmp/", NoncurrentDays: 90}}}, "old_versions_partially_expired"},
+		"versioning with partial size cleanup": {BucketConfig{Versioning: &Versioning{Status: "Enabled"},
+			Lifecycle: []LifecycleRule{{Enabled: true, ObjectSizeGreaterThan: int64Ptr(0), NoncurrentDays: 120}}}, "old_versions_partially_expired"},
+		"versioning with both partial and full cleanup": {BucketConfig{Versioning: &Versioning{Status: "Enabled"},
+			Lifecycle: []LifecycleRule{
+				{Enabled: true, Prefix: "tmp/", NoncurrentDays: 90},
+				{Enabled: true, NoncurrentDays: 180},
+			}}, ""},
 		"cleanup rule disabled": {BucketConfig{Versioning: &Versioning{Status: "Enabled"},
 			Lifecycle: []LifecycleRule{{Enabled: false, NoncurrentDays: 7}}}, "old_versions_kept"},
+		"early deletion disabled ignored": {BucketConfig{
+			Lifecycle: []LifecycleRule{{Enabled: false, ExpirationDays: 7, NoncurrentDays: 7}}}, ""},
+		"early deletion aggregated once": {BucketConfig{
+			Lifecycle: []LifecycleRule{
+				{Enabled: true, ExpirationDays: 30},
+				{Enabled: true, NoncurrentDays: 7},
+			}}, "early_deletion_lifecycle"},
+		"object lock blocks shorter noncurrent expiry": {BucketConfig{
+			Versioning: &Versioning{Status: "Enabled"},
+			ObjectLock: &ObjectLock{Enabled: true, Mode: "COMPLIANCE", Days: 180},
+			Lifecycle:  []LifecycleRule{{Enabled: true, NoncurrentDays: 90}},
+		}, "lifecycle_blocked_by_retention"},
+		"object lock equal to noncurrent expiry ok": {BucketConfig{
+			Versioning: &Versioning{Status: "Enabled"},
+			ObjectLock: &ObjectLock{Enabled: true, Mode: "COMPLIANCE", Days: 90},
+			Lifecycle:  []LifecycleRule{{Enabled: true, NoncurrentDays: 90}},
+		}, ""},
+		"object lock years blocks shorter noncurrent": {BucketConfig{
+			Versioning: &Versioning{Status: "Enabled"},
+			ObjectLock: &ObjectLock{Enabled: true, Mode: "GOVERNANCE", Years: 1},
+			Lifecycle:  []LifecycleRule{{Enabled: true, NoncurrentDays: 180}},
+		}, "lifecycle_blocked_by_retention"},
+		"object lock does not flag current-version delete marker expiry": {BucketConfig{
+			Versioning: &Versioning{Status: "Enabled"},
+			ObjectLock: &ObjectLock{Enabled: true, Mode: "COMPLIANCE", Days: 180},
+			Lifecycle:  []LifecycleRule{{Enabled: true, ExpirationDays: 90, NoncurrentDays: 180}},
+		}, ""},
+		"compliance blocks shorter current expiry": {BucketConfig{
+			Compliance: &Compliance{Enabled: true, RetentionDays: 365},
+			Lifecycle:  []LifecycleRule{{Enabled: true, ExpirationDays: 180}},
+		}, "lifecycle_blocked_by_retention"},
+		"compliance equal to expiry ok": {BucketConfig{
+			Compliance: &Compliance{Enabled: true, RetentionDays: 90},
+			Lifecycle:  []LifecycleRule{{Enabled: true, ExpirationDays: 90}},
+		}, ""},
 		"lifecycle unreadable": {BucketConfig{Versioning: &Versioning{Status: "Enabled"},
 			Errors: map[string]string{SettingLifecycle: ErrAccessDenied}}, "settings_unreadable"},
 		"suspended":        {BucketConfig{Versioning: &Versioning{Status: "Suspended"}}, "versioning_suspended"},
