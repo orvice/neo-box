@@ -129,6 +129,7 @@ export function CloudflareZonePage() {
               <TabsList>
                 <TabsTrigger value='records'>DNS records</TabsTrigger>
                 <TabsTrigger value='email'>Email routing</TabsTrigger>
+                <TabsTrigger value='email-logs'>Email logs</TabsTrigger>
                 <TabsTrigger value='rules'>Zone Rules</TabsTrigger>
                 <TabsTrigger value='operations'>Operation log</TabsTrigger>
               </TabsList>
@@ -151,7 +152,11 @@ export function CloudflareZonePage() {
                 <EmailLogsTab connectionId={connectionId} zoneId={zoneId} />
               </TabsContent>
               <TabsContent value='rules' className='pt-2'>
-                <ZoneRulesTab connectionId={connectionId} zoneId={zoneId} />
+                <ZoneRulesTab
+                  connectionId={connectionId}
+                  zoneId={zoneId}
+                  zoneName={zone.data?.name ?? ''}
+                />
               </TabsContent>
               <TabsContent value='operations' className='pt-2'>
                 <OperationsLog connectionId={connectionId} zoneId={zoneId} />

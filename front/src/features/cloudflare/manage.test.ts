@@ -239,3 +239,24 @@ describe('email routing log wording', () => {
     )
   })
 })
+
+describe('zone rules log wording', () => {
+  it('words the Zone Rules HTTP rule actions distinctly from Email Routing', () => {
+    expect(actionLabel({ action: 'create_http_rule' })).toBe('Added HTTP rule')
+    expect(actionLabel({ action: 'update_http_rule' })).toBe(
+      'Changed HTTP rule'
+    )
+    expect(actionLabel({ action: 'enable_http_rule' })).toBe(
+      'Enabled HTTP rule'
+    )
+    expect(actionLabel({ action: 'disable_http_rule' })).toBe(
+      'Disabled HTTP rule'
+    )
+    expect(actionLabel({ action: 'delete_http_rule' })).toBe(
+      'Deleted HTTP rule'
+    )
+    expect(actionLabel({ action: 'reorder_http_rules' })).toBe(
+      'Reordered HTTP rules'
+    )
+  })
+})

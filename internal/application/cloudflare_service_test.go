@@ -58,6 +58,7 @@ func newCFFixture(t *testing.T) *cfFixture {
 		cftest.PermWorkersEdit, cftest.PermRoutesEdit, cftest.PermPagesEdit,
 		cftest.PermEmailRulesRead, cftest.PermEmailRulesEdit, cftest.PermEmailAddrRead, cftest.PermEmailAddrEdit,
 		cftest.PermAnalyticsRead,
+		cftest.PermZoneRulesRead, cftest.PermZoneRulesEdit,
 	}
 	cf.AddToken("full", &cftest.Token{Accounts: []string{cfAccA, cfAccB}, Perms: all,
 		ZonePermissions: []string{"#zone:read", "#dns_records:read", "#dns_records:edit"}})

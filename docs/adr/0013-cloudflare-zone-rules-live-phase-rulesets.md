@@ -14,20 +14,24 @@ Neo Box owns rules created in Cloudflare.
 
 Neo Box manages five Cloudflare product phases independently:
 
-- `http_request_redirect` (Single Redirects)
+- `http_request_dynamic_redirect` (Single Redirects)
 - `http_request_transform` (URL Rewrite Rules)
 - `http_request_late_transform` (Request Header Transform Rules)
 - `http_response_headers_transform` (Response Header Transform Rules)
 - `http_request_origin` (Origin Rules)
 
-The Cloudflare client represents action parameters as raw JSON and retains
-unknown rule fields. Before each mutation the Account manager reads the live
-ruleset, checks the user's snapshot and ownership constraints, and sends one
-operation through the existing resource operation wrapper. A missing ruleset
-uses the same logged initialization path as an ordinary write. Unknown or
-unsupported writable configuration is shown read-only and cannot be moved
-indirectly. Cloudflare remains the source of truth; Neo Box stores operation
-history only.
+The Cloudflare client reads each phase through its entrypoint endpoint
+(`GET /zones/{zone_id}/rulesets/phases/{phase}/entrypoint`), represents raw
+action parameters for unknown-field preservation, and exposes typed v1 codecs
+and validation. Before each mutation the Account manager acquires a per-phase
+lock, re-reads the live ruleset, checks the user's snapshot and ownership
+constraints, and sends one operation through the existing resource operation
+wrapper (never logging header values). A missing ruleset uses the same logged
+initialization path as an ordinary write. Unknown or unsupported writable
+configuration is shown read-only and cannot be edited, deleted, or moved
+directly or indirectly; supported rules may still be reordered within
+intervening groups. Cloudflare remains the source of truth; Neo Box stores
+operation history only.
 
 The API contract uses Cloudflare's product names and typed category/action
 messages. The frontend exposes independent loading and error states for each

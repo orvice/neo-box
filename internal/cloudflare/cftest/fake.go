@@ -30,6 +30,12 @@ const (
 	PermRoutesEdit    = "routes:edit"  // Workers Routes Edit (zone)
 	PermZoneRulesRead = "zone_rules:read"
 	PermZoneRulesEdit = "zone_rules:edit"
+	PermRedirectRead  = "redirect:read"
+	PermRedirectEdit  = "redirect:edit"
+	PermTransformRead = "transform:read"
+	PermTransformEdit = "transform:edit"
+	PermOriginRead    = "origin:read"
+	PermOriginEdit    = "origin:edit"
 	PermPagesEdit     = "pages:edit" // Cloudflare Pages Edit (account)
 )
 
