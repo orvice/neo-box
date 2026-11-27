@@ -360,7 +360,7 @@ function ChartCard({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {[...rows].reverse().map((r) => (
+                {rows.toReversed().map((r) => (
                   <TableRow key={r.day}>
                     <TableCell>{formatDayLong(r.day)}</TableCell>
                     {columns.map((c) => (
