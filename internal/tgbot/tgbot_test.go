@@ -15,6 +15,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/connection"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	"go.orx.me/apps/neo-box/internal/nocodb"
+	"go.orx.me/apps/neo-box/internal/porkbun"
 	authrepo "go.orx.me/apps/neo-box/internal/repo/auth"
 	connrepo "go.orx.me/apps/neo-box/internal/repo/connection"
 	connmem "go.orx.me/apps/neo-box/internal/repo/connection/memory"
@@ -220,6 +221,12 @@ func TestLinkViewConnectionsDetailStatusAndUnbind(t *testing.T) {
 			SecretCiphertext: "SHOULD_NEVER_APPEAR_GWS_SECRET",
 		},
 		{
+			ID: "55555555-5555-5555-5555-555555555555", UserID: "u1", Provider: porkbun.ProviderType,
+			Name: "Domains Porkbun", Status: connrepo.StatusOK, StatusCheckedAt: now, CreatedAt: now, UpdatedAt: now,
+			Config:           json.RawMessage(`{"api_key":"pk1_prod_key","is_sandbox":false}`),
+			SecretCiphertext: "SHOULD_NEVER_APPEAR_PORKBUN_SECRET",
+		},
+		{
 			ID: "99999999-9999-9999-9999-999999999999", UserID: "u2", Provider: cloudflare.ProviderType,
 			Name: "Bob Private CF", Status: connrepo.StatusOK, StatusCheckedAt: now, CreatedAt: now, UpdatedAt: now,
 			Config: json.RawMessage(`{"account_id":"ffffffffffffffffffffffffffffffff"}`),
@@ -309,7 +316,7 @@ func TestLinkViewConnectionsDetailStatusAndUnbind(t *testing.T) {
 	})
 	waitForCount(t, 4, func() int { return len(fakeTG.SentMessages()) })
 	listMsg := fakeTG.SentMessages()[3]
-	if !strings.Contains(listMsg.Text, "Showing 1–4 of 4") || !strings.Contains(listMsg.Text, "Prod NocoDB &lt;main&gt;") {
+	if !strings.Contains(listMsg.Text, "Showing 1–5 of 5") || !strings.Contains(listMsg.Text, "Prod NocoDB &lt;main&gt;") {
 		t.Fatalf("unexpected list message: %s", listMsg.Text)
 	}
 	if strings.Contains(listMsg.Text, "Bob Private CF") {
@@ -341,6 +348,7 @@ func TestLinkViewConnectionsDetailStatusAndUnbind(t *testing.T) {
 		{"22222222-2222-2222-2222-222222222222", "AKIA_WASABI", "SHOULD_NEVER_APPEAR_WASABI_SECRET"},
 		{"33333333-3333-3333-3333-333333333333", "0123456789abcdef0123456789abcdef", "SHOULD_NEVER_APPEAR_CF_SECRET"},
 		{"44444444-4444-4444-4444-444444444444", "sa@proj.iam.gserviceaccount.com", "SHOULD_NEVER_APPEAR_GWS_SECRET"},
+		{"55555555-5555-5555-5555-555555555555", "pk1_prod_key", "SHOULD_NEVER_APPEAR_PORKBUN_SECRET"},
 	}
 	for i, dc := range detailChecks {
 		cbData := fmt.Sprintf("cv:%s:a:1", dc.id)
@@ -388,9 +396,9 @@ func TestLinkViewConnectionsDetailStatusAndUnbind(t *testing.T) {
 			Data:    "cv:99999999-9999-9999-9999-999999999999:a:1",
 		},
 	})
-	waitForCount(t, 6, func() int { return len(fakeTG.CallbackAnswers()) })
-	if !strings.Contains(fakeTG.CallbackAnswers()[5].Text, "no longer exists") {
-		t.Fatalf("expected not found answer for cross-user view, got: %+v", fakeTG.CallbackAnswers()[5])
+	waitForCount(t, 7, func() int { return len(fakeTG.CallbackAnswers()) })
+	if !strings.Contains(fakeTG.CallbackAnswers()[6].Text, "no longer exists") {
+		t.Fatalf("expected not found answer for cross-user view, got: %+v", fakeTG.CallbackAnswers()[6])
 	}
 
 	// /status shows summary and failing Wasabi connection.
@@ -405,7 +413,7 @@ func TestLinkViewConnectionsDetailStatusAndUnbind(t *testing.T) {
 	})
 	waitForCount(t, 5, func() int { return len(fakeTG.SentMessages()) })
 	statusMsg := fakeTG.SentMessages()[4].Text
-	if !strings.Contains(statusMsg, "Total: <b>4</b>") || !strings.Contains(statusMsg, "Backup Wasabi") || !strings.Contains(statusMsg, "403 forbidden") {
+	if !strings.Contains(statusMsg, "Total: <b>5</b>") || !strings.Contains(statusMsg, "Backup Wasabi") || !strings.Contains(statusMsg, "403 forbidden") {
 		t.Fatalf("unexpected /status text:\n%s", statusMsg)
 	}
 
@@ -446,7 +454,7 @@ func TestLinkViewConnectionsDetailStatusAndUnbind(t *testing.T) {
 			Data:    "ub:y",
 		},
 	})
-	waitForCount(t, 7, func() int { return len(fakeTG.CallbackAnswers()) })
+	waitForCount(t, 8, func() int { return len(fakeTG.CallbackAnswers()) })
 	if _, err := svc.GetBinding(ctx, "u1"); err == nil {
 		t.Fatal("expected binding to be deleted after ub:y")
 	}

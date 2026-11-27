@@ -2,6 +2,7 @@ import { Provider } from '@/api/connections'
 import { cloudflareViews } from '@/features/cloudflare/provider'
 import { workspaceViews } from '@/features/google-workspace/provider'
 import { nocodbViews } from '@/features/nocodb/provider'
+import { porkbunViews } from '@/features/porkbun/provider'
 import { wasabiViews } from '@/features/wasabi/provider'
 import { providerInfos, type ProviderInfo } from './provider-info'
 import type { ProviderViews } from './types'
@@ -12,6 +13,7 @@ const views: Partial<Record<Provider, ProviderViews>> = {
   [Provider.NOCODB]: nocodbViews,
   [Provider.WASABI]: wasabiViews,
   [Provider.CLOUDFLARE]: cloudflareViews,
+  [Provider.PORKBUN]: porkbunViews,
   [Provider.GOOGLE_WORKSPACE]: workspaceViews,
 }
 

@@ -13,6 +13,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/cloudflare"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	"go.orx.me/apps/neo-box/internal/nocodb"
+	"go.orx.me/apps/neo-box/internal/porkbun"
 	authrepo "go.orx.me/apps/neo-box/internal/repo/auth"
 	connrepo "go.orx.me/apps/neo-box/internal/repo/connection"
 	tgrepo "go.orx.me/apps/neo-box/internal/repo/telegram"
@@ -406,6 +407,7 @@ var providerCatalog = []providerMeta{
 	{code: "n", key: nocodb.ProviderType, label: "NocoDB", short: "NocoDB"},
 	{code: "w", key: wasabi.ProviderType, label: "Wasabi", short: "Wasabi"},
 	{code: "c", key: cloudflare.ProviderType, label: "Cloudflare", short: "Cloudflare"},
+	{code: "p", key: porkbun.ProviderType, label: "Porkbun", short: "Porkbun"},
 	{code: "g", key: googleworkspace.ProviderType, label: "Google Workspace", short: "Workspace"},
 }
 

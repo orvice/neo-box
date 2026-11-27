@@ -182,6 +182,15 @@ message WasabiLifecycleRule {
   bool expired_object_delete_marker = 5;
   int32 noncurrent_days = 6;
   int32 abort_multipart_days = 7;
+  // Size bounds in bytes, when filtered by object size.
+  optional int64 object_size_greater_than = 8;
+  optional int64 object_size_less_than = 9;
+  // Object tags on the filter, if returned by the S3 API.
+  map<string, string> tags = 10;
+  // UTC YYYY-MM-DD date for current-version expiration, if set instead of days.
+  string expiration_date = 11;
+  // Minimum number of newer noncurrent versions retained before expiry.
+  int32 newer_noncurrent_versions = 12;
 }
 
 message WasabiBucketPolicy {
@@ -223,7 +232,9 @@ enum WasabiFindingSeverity {
 
 message WasabiBucketFinding {
   // "public_policy", "public_acl", "old_versions_kept",
-  // "versioning_suspended", or "settings_unreadable".
+  // "old_versions_partially_expired", "early_deletion_lifecycle",
+  // "lifecycle_blocked_by_retention", "versioning_suspended", or
+  // "settings_unreadable".
   string code = 1;
   WasabiFindingSeverity severity = 2;
   string message = 3;

@@ -35,6 +35,7 @@ enum Provider {
   PROVIDER_WASABI = 2;
   PROVIDER_CLOUDFLARE = 3;
   PROVIDER_GOOGLE_WORKSPACE = 4;
+  PROVIDER_PORKBUN = 5;
 }
 
 // ConnectionStatus is the outcome of the last credential check or
@@ -61,6 +62,7 @@ message Connection {
     WasabiConnectionConfig wasabi = 21;
     CloudflareConnectionConfig cloudflare = 22;
     GoogleWorkspaceConnectionConfig google_workspace = 23;
+    PorkbunConnectionConfig porkbun = 24;
   }
 }
 
@@ -153,6 +155,7 @@ message CreateConnectionRequest {
     WasabiConnectionSettings wasabi = 21;
     CloudflareConnectionSettings cloudflare = 22;
     GoogleWorkspaceConnectionSettings google_workspace = 23;
+    PorkbunConnectionSettings porkbun = 24;
   }
 }
 
@@ -169,6 +172,7 @@ message UpdateConnectionRequest {
     WasabiConnectionSettings wasabi = 21;
     CloudflareConnectionSettings cloudflare = 22;
     GoogleWorkspaceConnectionSettings google_workspace = 23;
+    PorkbunConnectionSettings porkbun = 24;
   }
 }
 
@@ -201,4 +205,20 @@ message GoogleWorkspaceConnectionSettings {
   string client_id = 2;
   // Service Account key JSON. Required on create; empty keeps the key on update.
   string service_account_json = 3;
+}
+
+// PorkbunConnectionConfig is the non-secret part of a Porkbun connection.
+message PorkbunConnectionConfig {
+  // Public API key (pk1_... or pk1_sb_...).
+  string api_key = 1;
+  // True when the API key is a Porkbun sandbox key (pk1_sb_...).
+  bool is_sandbox = 2;
+}
+
+// PorkbunConnectionSettings is what a user enters for a Porkbun connection:
+// an API key pair. Only read access is required.
+message PorkbunConnectionSettings {
+  string api_key = 1 [(validate.rules).string.min_len = 1];
+  // Secret API key. Required on create; on update, empty keeps the stored key.
+  string secret_api_key = 2;
 }

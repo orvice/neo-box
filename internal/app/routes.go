@@ -33,6 +33,7 @@ type Handlers struct {
 	nocodbSvcServer     *application.NocoDBServiceServer
 	wasabiSvcServer     *application.WasabiServiceServer
 	cloudflareSvcServer *application.CloudflareServiceServer
+	porkbunSvcServer    *application.PorkbunServiceServer
 	workspaceSvcServer  *application.GoogleWorkspaceServiceServer
 	notifySvcServer     *application.NotificationServiceServer
 	telegramSvcServer   *application.TelegramServiceServer
@@ -87,6 +88,7 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 	nocodbSvcServer := application.NewNocoDBServiceServer()
 	wasabiSvcServer := application.NewWasabiServiceServer()
 	cloudflareSvcServer := application.NewCloudflareServiceServer()
+	porkbunSvcServer := application.NewPorkbunServiceServer()
 	workspaceSvcServer := application.NewGoogleWorkspaceServiceServer()
 	notifySvcServer := application.NewNotificationServiceServer()
 	telegramSvcServer := application.NewTelegramServiceServer()
@@ -99,6 +101,7 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 	neoboxv1connect.RegisterNocoDBServiceHandler(server, nocodbSvcServer)
 	neoboxv1connect.RegisterWasabiServiceHandler(server, wasabiSvcServer)
 	neoboxv1connect.RegisterCloudflareServiceHandler(server, cloudflareSvcServer)
+	neoboxv1connect.RegisterPorkbunServiceHandler(server, porkbunSvcServer)
 	neoboxv1connect.RegisterGoogleWorkspaceServiceHandler(server, workspaceSvcServer)
 	neoboxv1connect.RegisterNotificationServiceHandler(server, notifySvcServer)
 	neoboxv1connect.RegisterTelegramServiceHandler(server, telegramSvcServer)
@@ -114,6 +117,7 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 		neoboxv1connect.NocoDBServiceName,
 		neoboxv1connect.WasabiServiceName,
 		neoboxv1connect.CloudflareServiceName,
+		neoboxv1connect.PorkbunServiceName,
 		neoboxv1connect.GoogleWorkspaceServiceName,
 		neoboxv1connect.NotificationServiceName,
 		neoboxv1connect.TelegramServiceName,
@@ -127,6 +131,7 @@ func SetupRoutes(cfg *config.AppConfig) (func(r *gin.Engine), *Handlers) {
 		nocodbSvcServer:     nocodbSvcServer,
 		wasabiSvcServer:     wasabiSvcServer,
 		cloudflareSvcServer: cloudflareSvcServer,
+		porkbunSvcServer:    porkbunSvcServer,
 		notifySvcServer:     notifySvcServer,
 		telegramSvcServer:   telegramSvcServer,
 	}

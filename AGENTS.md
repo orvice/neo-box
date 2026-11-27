@@ -168,6 +168,16 @@ shadcn/ui + Connect-Web on the frontend.
   30-day chunks that resumes after failures, daily run at 02:30 UTC from the
   last synced day, `Refresh` for the last 7 days, catch-up at startup. Also
   the "wasabi" connection Provider (`Activate` queues the first sync).
+- `internal/porkbun/` — read-only Porkbun API v3 client (`X-API-Key` /
+  `X-Secret-API-Key` headers plus standard JSON body auth, conservative
+  per-connection rate limiter, 429/5xx/network read retries, defensive decoders
+  for mixed integer/string flags and DNSSEC/glue response shapes), connection
+  settings, and `pbtest/` stateful fake server.
+- `internal/porkbunacct/` — `Manager`: the read-only "porkbun" Provider
+  (`Verify` calls `POST /ping`; `Cleanup` drops the in-memory limiter; no
+  provider database tables or background work), live domain portfolio listing
+  with summary counts and filtering, plus per-domain nameservers, DNS records,
+  URL forwards, DNSSEC DS records and glue records.
 - `internal/telegram/` — lightweight zero-dependency Telegram Bot API HTTP
   client (token redaction, 429 retry, HTML escaping/truncation, and
   `tgtest/` fake Bot API server).
@@ -234,6 +244,13 @@ changes nothing. No code upload.
 `connection_id` must be the caller's Cloudflare connection. A missing
 permission is PermissionDenied, a rejected token FailedPrecondition (never
 Unauthenticated, which signs the user out), an unconfirmed write Unknown.
+
+**Porkbun** (`proto/neobox/v1/porkbun.proto`, `PorkbunService`): strictly
+read-only live queries for domains (portfolio summary, search, filter, paging),
+per-domain nameservers, DNS records, URL forwarding rules, DNSSEC DS records
+and glue records. No edits or billable calls. `connection_id` must be the
+caller's Porkbun connection; rejected keys return FailedPrecondition (never
+Unauthenticated) and mark the connection error.
 
 **Notifications** (`proto/neobox/v1/notification.proto`,
 `NotificationService`): channel list / create / update / delete / test

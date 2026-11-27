@@ -2,6 +2,7 @@ import {
   Cloud,
   DatabaseBackup,
   Globe,
+  Globe2,
   Users,
   type LucideIcon,
 } from 'lucide-react'
@@ -52,6 +53,14 @@ export const providerInfos: ProviderInfo[] = [
     description:
       'Zones and DNS records to edit, plus Workers and Pages with their addresses, for one Cloudflare account.',
     icon: Globe,
+  },
+  {
+    provider: Provider.PORKBUN,
+    key: 'porkbun',
+    label: 'Porkbun',
+    description:
+      'Read-only view of domains, expiry dates, nameservers, DNS records, URL forwards, DNSSEC and glue records.',
+    icon: Globe2,
   },
 ]
 

@@ -11,6 +11,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/cloudflare"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	"go.orx.me/apps/neo-box/internal/nocodb"
+	"go.orx.me/apps/neo-box/internal/porkbun"
 	connrepo "go.orx.me/apps/neo-box/internal/repo/connection"
 	"go.orx.me/apps/neo-box/internal/telegram"
 	"go.orx.me/apps/neo-box/internal/wasabi"
@@ -92,6 +93,7 @@ func (s *Service) buildConnectionList(ctx context.Context, userID, providerCode 
 		[]telegram.InlineKeyboardButton{
 			filterButton(providerCatalog[3], pm.code),
 			filterButton(providerCatalog[4], pm.code),
+			filterButton(providerCatalog[5], pm.code),
 		},
 	)
 
@@ -314,6 +316,19 @@ func nonSecretConfigLines(c *connrepo.Connection) []string {
 		}
 		return []string{
 			fmt.Sprintf("• Account ID: <code>%s</code>", telegram.Escape(telegram.Truncate(cfg.AccountID, 120))),
+		}
+	case porkbun.ProviderType:
+		var cfg porkbun.ConnectionConfig
+		if json.Unmarshal(c.Config, &cfg) != nil {
+			return nil
+		}
+		env := "Production"
+		if cfg.IsSandbox {
+			env = "Sandbox"
+		}
+		return []string{
+			fmt.Sprintf("• API key: <code>%s</code>", telegram.Escape(telegram.Truncate(cfg.APIKey, 120))),
+			fmt.Sprintf("• Environment: %s", env),
 		}
 	case googleworkspace.ProviderType:
 		var cfg googleworkspace.ConnectionConfig

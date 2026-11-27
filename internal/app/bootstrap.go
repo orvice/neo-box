@@ -22,6 +22,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent"
 	"go.orx.me/apps/neo-box/internal/googleworkspace"
 	"go.orx.me/apps/neo-box/internal/notify"
+	"go.orx.me/apps/neo-box/internal/porkbunacct"
 	authpg "go.orx.me/apps/neo-box/internal/repo/auth/postgres"
 	cloudflarepg "go.orx.me/apps/neo-box/internal/repo/cloudflare/postgres"
 	connectionpg "go.orx.me/apps/neo-box/internal/repo/connection/postgres"
@@ -84,6 +85,7 @@ func (h *Handlers) Bootstrap(ctx context.Context) error {
 		return err
 	}
 	h.bootstrapCloudflare(client, conns)
+	h.bootstrapPorkbun(conns)
 	workspaceRepo := workspacepg.New(client)
 	conns.Register(googleworkspace.Provider{Repo: workspaceRepo})
 	h.workspaceSvcServer.SetDeps(workspaceRepo, conns)
@@ -191,6 +193,14 @@ func (h *Handlers) bootstrapCloudflare(client *ent.Client, conns *connection.Ser
 	manager := cloudflareacct.New(cloudflareacct.Config{Endpoint: h.cfg.Cloudflare.APIEndpoint}, repo, conns)
 	conns.Register(manager.ConnectionProvider())
 	h.cloudflareSvcServer.SetDeps(manager, repo, conns)
+}
+
+// bootstrapPorkbun registers the read-only Porkbun provider. It has no
+// background work and stores no provider-specific rows.
+func (h *Handlers) bootstrapPorkbun(conns *connection.Service) {
+	manager := porkbunacct.New(porkbunacct.Config{Endpoint: h.cfg.Porkbun.APIEndpoint}, conns)
+	conns.Register(manager.ConnectionProvider())
+	h.porkbunSvcServer.SetDeps(manager, conns)
 }
 
 func (h *Handlers) bootstrapTelegram(runCtx context.Context, repo *telegrampg.Store, authRepo *authpg.Store, conns *connection.Service) error {
