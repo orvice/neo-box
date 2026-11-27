@@ -26,6 +26,8 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent/oauthstate"
 	"go.orx.me/apps/neo-box/internal/ent/predicate"
 	"go.orx.me/apps/neo-box/internal/ent/session"
+	"go.orx.me/apps/neo-box/internal/ent/telegrambinding"
+	"go.orx.me/apps/neo-box/internal/ent/telegramlinktoken"
 	"go.orx.me/apps/neo-box/internal/ent/user"
 	"go.orx.me/apps/neo-box/internal/ent/wasabibucketconfig"
 	"go.orx.me/apps/neo-box/internal/ent/wasabidailyusage"
@@ -57,6 +59,8 @@ const (
 	TypeNotificationChannel         = "NotificationChannel"
 	TypeOAuthState                  = "OAuthState"
 	TypeSession                     = "Session"
+	TypeTelegramBinding             = "TelegramBinding"
+	TypeTelegramLinkToken           = "TelegramLinkToken"
 	TypeUser                        = "User"
 	TypeWasabiBucketConfig          = "WasabiBucketConfig"
 	TypeWasabiDailyUsage            = "WasabiDailyUsage"
@@ -12081,6 +12085,1171 @@ func (m *SessionMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *SessionMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Session edge %s", name)
+}
+
+// TelegramBindingMutation represents an operation that mutates the TelegramBinding nodes in the graph.
+type TelegramBindingMutation struct {
+	config
+	op                  Op
+	typ                 string
+	id                  *string
+	user_id             *string
+	telegram_user_id    *int64
+	addtelegram_user_id *int64
+	chat_id             *int64
+	addchat_id          *int64
+	telegram_username   *string
+	display_name        *string
+	created_at          *time.Time
+	updated_at          *time.Time
+	clearedFields       map[string]struct{}
+	done                bool
+	oldValue            func(context.Context) (*TelegramBinding, error)
+	predicates          []predicate.TelegramBinding
+}
+
+var _ ent.Mutation = (*TelegramBindingMutation)(nil)
+
+// telegrambindingOption allows management of the mutation configuration using functional options.
+type telegrambindingOption func(*TelegramBindingMutation)
+
+// newTelegramBindingMutation creates new mutation for the TelegramBinding entity.
+func newTelegramBindingMutation(c config, op Op, opts ...telegrambindingOption) *TelegramBindingMutation {
+	m := &TelegramBindingMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTelegramBinding,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withTelegramBindingID sets the ID field of the mutation.
+func withTelegramBindingID(id string) telegrambindingOption {
+	return func(m *TelegramBindingMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *TelegramBinding
+		)
+		m.oldValue = func(ctx context.Context) (*TelegramBinding, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().TelegramBinding.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTelegramBinding sets the old TelegramBinding of the mutation.
+func withTelegramBinding(node *TelegramBinding) telegrambindingOption {
+	return func(m *TelegramBindingMutation) {
+		m.oldValue = func(context.Context) (*TelegramBinding, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m TelegramBindingMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m TelegramBindingMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of TelegramBinding entities.
+func (m *TelegramBindingMutation) SetID(id string) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *TelegramBindingMutation) ID() (id string, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *TelegramBindingMutation) IDs(ctx context.Context) ([]string, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []string{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().TelegramBinding.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetUserID sets the "user_id" field.
+func (m *TelegramBindingMutation) SetUserID(s string) {
+	m.user_id = &s
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *TelegramBindingMutation) UserID() (r string, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the TelegramBinding entity.
+// If the TelegramBinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TelegramBindingMutation) OldUserID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *TelegramBindingMutation) ResetUserID() {
+	m.user_id = nil
+}
+
+// SetTelegramUserID sets the "telegram_user_id" field.
+func (m *TelegramBindingMutation) SetTelegramUserID(i int64) {
+	m.telegram_user_id = &i
+	m.addtelegram_user_id = nil
+}
+
+// TelegramUserID returns the value of the "telegram_user_id" field in the mutation.
+func (m *TelegramBindingMutation) TelegramUserID() (r int64, exists bool) {
+	v := m.telegram_user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTelegramUserID returns the old "telegram_user_id" field's value of the TelegramBinding entity.
+// If the TelegramBinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TelegramBindingMutation) OldTelegramUserID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTelegramUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTelegramUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTelegramUserID: %w", err)
+	}
+	return oldValue.TelegramUserID, nil
+}
+
+// AddTelegramUserID adds i to the "telegram_user_id" field.
+func (m *TelegramBindingMutation) AddTelegramUserID(i int64) {
+	if m.addtelegram_user_id != nil {
+		*m.addtelegram_user_id += i
+	} else {
+		m.addtelegram_user_id = &i
+	}
+}
+
+// AddedTelegramUserID returns the value that was added to the "telegram_user_id" field in this mutation.
+func (m *TelegramBindingMutation) AddedTelegramUserID() (r int64, exists bool) {
+	v := m.addtelegram_user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTelegramUserID resets all changes to the "telegram_user_id" field.
+func (m *TelegramBindingMutation) ResetTelegramUserID() {
+	m.telegram_user_id = nil
+	m.addtelegram_user_id = nil
+}
+
+// SetChatID sets the "chat_id" field.
+func (m *TelegramBindingMutation) SetChatID(i int64) {
+	m.chat_id = &i
+	m.addchat_id = nil
+}
+
+// ChatID returns the value of the "chat_id" field in the mutation.
+func (m *TelegramBindingMutation) ChatID() (r int64, exists bool) {
+	v := m.chat_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldChatID returns the old "chat_id" field's value of the TelegramBinding entity.
+// If the TelegramBinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TelegramBindingMutation) OldChatID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldChatID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldChatID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldChatID: %w", err)
+	}
+	return oldValue.ChatID, nil
+}
+
+// AddChatID adds i to the "chat_id" field.
+func (m *TelegramBindingMutation) AddChatID(i int64) {
+	if m.addchat_id != nil {
+		*m.addchat_id += i
+	} else {
+		m.addchat_id = &i
+	}
+}
+
+// AddedChatID returns the value that was added to the "chat_id" field in this mutation.
+func (m *TelegramBindingMutation) AddedChatID() (r int64, exists bool) {
+	v := m.addchat_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetChatID resets all changes to the "chat_id" field.
+func (m *TelegramBindingMutation) ResetChatID() {
+	m.chat_id = nil
+	m.addchat_id = nil
+}
+
+// SetTelegramUsername sets the "telegram_username" field.
+func (m *TelegramBindingMutation) SetTelegramUsername(s string) {
+	m.telegram_username = &s
+}
+
+// TelegramUsername returns the value of the "telegram_username" field in the mutation.
+func (m *TelegramBindingMutation) TelegramUsername() (r string, exists bool) {
+	v := m.telegram_username
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTelegramUsername returns the old "telegram_username" field's value of the TelegramBinding entity.
+// If the TelegramBinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TelegramBindingMutation) OldTelegramUsername(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTelegramUsername is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTelegramUsername requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTelegramUsername: %w", err)
+	}
+	return oldValue.TelegramUsername, nil
+}
+
+// ResetTelegramUsername resets all changes to the "telegram_username" field.
+func (m *TelegramBindingMutation) ResetTelegramUsername() {
+	m.telegram_username = nil
+}
+
+// SetDisplayName sets the "display_name" field.
+func (m *TelegramBindingMutation) SetDisplayName(s string) {
+	m.display_name = &s
+}
+
+// DisplayName returns the value of the "display_name" field in the mutation.
+func (m *TelegramBindingMutation) DisplayName() (r string, exists bool) {
+	v := m.display_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDisplayName returns the old "display_name" field's value of the TelegramBinding entity.
+// If the TelegramBinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TelegramBindingMutation) OldDisplayName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDisplayName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDisplayName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDisplayName: %w", err)
+	}
+	return oldValue.DisplayName, nil
+}
+
+// ResetDisplayName resets all changes to the "display_name" field.
+func (m *TelegramBindingMutation) ResetDisplayName() {
+	m.display_name = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *TelegramBindingMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *TelegramBindingMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the TelegramBinding entity.
+// If the TelegramBinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TelegramBindingMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *TelegramBindingMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *TelegramBindingMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *TelegramBindingMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the TelegramBinding entity.
+// If the TelegramBinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TelegramBindingMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *TelegramBindingMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the TelegramBindingMutation builder.
+func (m *TelegramBindingMutation) Where(ps ...predicate.TelegramBinding) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the TelegramBindingMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *TelegramBindingMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.TelegramBinding, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *TelegramBindingMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *TelegramBindingMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (TelegramBinding).
+func (m *TelegramBindingMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *TelegramBindingMutation) Fields() []string {
+	fields := make([]string, 0, 7)
+	if m.user_id != nil {
+		fields = append(fields, telegrambinding.FieldUserID)
+	}
+	if m.telegram_user_id != nil {
+		fields = append(fields, telegrambinding.FieldTelegramUserID)
+	}
+	if m.chat_id != nil {
+		fields = append(fields, telegrambinding.FieldChatID)
+	}
+	if m.telegram_username != nil {
+		fields = append(fields, telegrambinding.FieldTelegramUsername)
+	}
+	if m.display_name != nil {
+		fields = append(fields, telegrambinding.FieldDisplayName)
+	}
+	if m.created_at != nil {
+		fields = append(fields, telegrambinding.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, telegrambinding.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *TelegramBindingMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case telegrambinding.FieldUserID:
+		return m.UserID()
+	case telegrambinding.FieldTelegramUserID:
+		return m.TelegramUserID()
+	case telegrambinding.FieldChatID:
+		return m.ChatID()
+	case telegrambinding.FieldTelegramUsername:
+		return m.TelegramUsername()
+	case telegrambinding.FieldDisplayName:
+		return m.DisplayName()
+	case telegrambinding.FieldCreatedAt:
+		return m.CreatedAt()
+	case telegrambinding.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *TelegramBindingMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case telegrambinding.FieldUserID:
+		return m.OldUserID(ctx)
+	case telegrambinding.FieldTelegramUserID:
+		return m.OldTelegramUserID(ctx)
+	case telegrambinding.FieldChatID:
+		return m.OldChatID(ctx)
+	case telegrambinding.FieldTelegramUsername:
+		return m.OldTelegramUsername(ctx)
+	case telegrambinding.FieldDisplayName:
+		return m.OldDisplayName(ctx)
+	case telegrambinding.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case telegrambinding.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown TelegramBinding field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TelegramBindingMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case telegrambinding.FieldUserID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case telegrambinding.FieldTelegramUserID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTelegramUserID(v)
+		return nil
+	case telegrambinding.FieldChatID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetChatID(v)
+		return nil
+	case telegrambinding.FieldTelegramUsername:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTelegramUsername(v)
+		return nil
+	case telegrambinding.FieldDisplayName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDisplayName(v)
+		return nil
+	case telegrambinding.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case telegrambinding.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown TelegramBinding field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *TelegramBindingMutation) AddedFields() []string {
+	var fields []string
+	if m.addtelegram_user_id != nil {
+		fields = append(fields, telegrambinding.FieldTelegramUserID)
+	}
+	if m.addchat_id != nil {
+		fields = append(fields, telegrambinding.FieldChatID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *TelegramBindingMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case telegrambinding.FieldTelegramUserID:
+		return m.AddedTelegramUserID()
+	case telegrambinding.FieldChatID:
+		return m.AddedChatID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TelegramBindingMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case telegrambinding.FieldTelegramUserID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTelegramUserID(v)
+		return nil
+	case telegrambinding.FieldChatID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddChatID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown TelegramBinding numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *TelegramBindingMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *TelegramBindingMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *TelegramBindingMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown TelegramBinding nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *TelegramBindingMutation) ResetField(name string) error {
+	switch name {
+	case telegrambinding.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case telegrambinding.FieldTelegramUserID:
+		m.ResetTelegramUserID()
+		return nil
+	case telegrambinding.FieldChatID:
+		m.ResetChatID()
+		return nil
+	case telegrambinding.FieldTelegramUsername:
+		m.ResetTelegramUsername()
+		return nil
+	case telegrambinding.FieldDisplayName:
+		m.ResetDisplayName()
+		return nil
+	case telegrambinding.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case telegrambinding.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown TelegramBinding field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *TelegramBindingMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *TelegramBindingMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *TelegramBindingMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *TelegramBindingMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *TelegramBindingMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *TelegramBindingMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *TelegramBindingMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown TelegramBinding unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *TelegramBindingMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown TelegramBinding edge %s", name)
+}
+
+// TelegramLinkTokenMutation represents an operation that mutates the TelegramLinkToken nodes in the graph.
+type TelegramLinkTokenMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *string
+	user_id       *string
+	created_at    *time.Time
+	expires_at    *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*TelegramLinkToken, error)
+	predicates    []predicate.TelegramLinkToken
+}
+
+var _ ent.Mutation = (*TelegramLinkTokenMutation)(nil)
+
+// telegramlinktokenOption allows management of the mutation configuration using functional options.
+type telegramlinktokenOption func(*TelegramLinkTokenMutation)
+
+// newTelegramLinkTokenMutation creates new mutation for the TelegramLinkToken entity.
+func newTelegramLinkTokenMutation(c config, op Op, opts ...telegramlinktokenOption) *TelegramLinkTokenMutation {
+	m := &TelegramLinkTokenMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTelegramLinkToken,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withTelegramLinkTokenID sets the ID field of the mutation.
+func withTelegramLinkTokenID(id string) telegramlinktokenOption {
+	return func(m *TelegramLinkTokenMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *TelegramLinkToken
+		)
+		m.oldValue = func(ctx context.Context) (*TelegramLinkToken, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().TelegramLinkToken.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTelegramLinkToken sets the old TelegramLinkToken of the mutation.
+func withTelegramLinkToken(node *TelegramLinkToken) telegramlinktokenOption {
+	return func(m *TelegramLinkTokenMutation) {
+		m.oldValue = func(context.Context) (*TelegramLinkToken, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m TelegramLinkTokenMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m TelegramLinkTokenMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of TelegramLinkToken entities.
+func (m *TelegramLinkTokenMutation) SetID(id string) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *TelegramLinkTokenMutation) ID() (id string, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *TelegramLinkTokenMutation) IDs(ctx context.Context) ([]string, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []string{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().TelegramLinkToken.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetUserID sets the "user_id" field.
+func (m *TelegramLinkTokenMutation) SetUserID(s string) {
+	m.user_id = &s
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *TelegramLinkTokenMutation) UserID() (r string, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the TelegramLinkToken entity.
+// If the TelegramLinkToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TelegramLinkTokenMutation) OldUserID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *TelegramLinkTokenMutation) ResetUserID() {
+	m.user_id = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *TelegramLinkTokenMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *TelegramLinkTokenMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the TelegramLinkToken entity.
+// If the TelegramLinkToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TelegramLinkTokenMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *TelegramLinkTokenMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (m *TelegramLinkTokenMutation) SetExpiresAt(t time.Time) {
+	m.expires_at = &t
+}
+
+// ExpiresAt returns the value of the "expires_at" field in the mutation.
+func (m *TelegramLinkTokenMutation) ExpiresAt() (r time.Time, exists bool) {
+	v := m.expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExpiresAt returns the old "expires_at" field's value of the TelegramLinkToken entity.
+// If the TelegramLinkToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TelegramLinkTokenMutation) OldExpiresAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExpiresAt: %w", err)
+	}
+	return oldValue.ExpiresAt, nil
+}
+
+// ResetExpiresAt resets all changes to the "expires_at" field.
+func (m *TelegramLinkTokenMutation) ResetExpiresAt() {
+	m.expires_at = nil
+}
+
+// Where appends a list predicates to the TelegramLinkTokenMutation builder.
+func (m *TelegramLinkTokenMutation) Where(ps ...predicate.TelegramLinkToken) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the TelegramLinkTokenMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *TelegramLinkTokenMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.TelegramLinkToken, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *TelegramLinkTokenMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *TelegramLinkTokenMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (TelegramLinkToken).
+func (m *TelegramLinkTokenMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *TelegramLinkTokenMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.user_id != nil {
+		fields = append(fields, telegramlinktoken.FieldUserID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, telegramlinktoken.FieldCreatedAt)
+	}
+	if m.expires_at != nil {
+		fields = append(fields, telegramlinktoken.FieldExpiresAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *TelegramLinkTokenMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case telegramlinktoken.FieldUserID:
+		return m.UserID()
+	case telegramlinktoken.FieldCreatedAt:
+		return m.CreatedAt()
+	case telegramlinktoken.FieldExpiresAt:
+		return m.ExpiresAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *TelegramLinkTokenMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case telegramlinktoken.FieldUserID:
+		return m.OldUserID(ctx)
+	case telegramlinktoken.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case telegramlinktoken.FieldExpiresAt:
+		return m.OldExpiresAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown TelegramLinkToken field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TelegramLinkTokenMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case telegramlinktoken.FieldUserID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case telegramlinktoken.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case telegramlinktoken.FieldExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExpiresAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown TelegramLinkToken field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *TelegramLinkTokenMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *TelegramLinkTokenMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TelegramLinkTokenMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown TelegramLinkToken numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *TelegramLinkTokenMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *TelegramLinkTokenMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *TelegramLinkTokenMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown TelegramLinkToken nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *TelegramLinkTokenMutation) ResetField(name string) error {
+	switch name {
+	case telegramlinktoken.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case telegramlinktoken.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case telegramlinktoken.FieldExpiresAt:
+		m.ResetExpiresAt()
+		return nil
+	}
+	return fmt.Errorf("unknown TelegramLinkToken field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *TelegramLinkTokenMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *TelegramLinkTokenMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *TelegramLinkTokenMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *TelegramLinkTokenMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *TelegramLinkTokenMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *TelegramLinkTokenMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *TelegramLinkTokenMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown TelegramLinkToken unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *TelegramLinkTokenMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown TelegramLinkToken edge %s", name)
 }
 
 // UserMutation represents an operation that mutates the User nodes in the graph.

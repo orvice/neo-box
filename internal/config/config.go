@@ -18,6 +18,54 @@ type AppConfig struct {
 	Cloudflare CloudflareConfig `yaml:"cloudflare"`
 	Porkbun    PorkbunConfig    `yaml:"porkbun"`
 	Notify     NotifyConfig     `yaml:"notify"`
+	Telegram   TelegramConfig   `yaml:"telegram"`
+}
+
+// TelegramConfig configures the optional system-level Telegram bot used to
+// view Connections from a linked private chat. Leave BotToken empty to
+// disable the bot.
+type TelegramConfig struct {
+	// BotToken is the token issued by @BotFather. Empty disables the bot.
+	BotToken string `yaml:"bot_token"`
+	// APIEndpoint overrides the Bot API host (https://api.telegram.org).
+	APIEndpoint string `yaml:"api_endpoint"`
+	// Mode selects how updates are received: "webhook" (default, multi-pod
+	// safe) or "polling" (local development without public HTTPS).
+	Mode string `yaml:"mode"`
+	// WebhookURL is the public HTTPS URL Telegram sends updates to when
+	// Mode is "webhook", e.g. "https://neobox.example.com/api/telegram/webhook".
+	WebhookURL string `yaml:"webhook_url"`
+	// WebhookSecret is the shared secret checked against Telegram's
+	// X-Telegram-Bot-Api-Secret-Token header. Required in webhook mode so
+	// every pod verifies the same secret.
+	WebhookSecret string `yaml:"webhook_secret"`
+	// AutoSetWebhook controls whether the server registers WebhookURL with
+	// Telegram on startup. Defaults to true when nil.
+	AutoSetWebhook *bool `yaml:"auto_set_webhook"`
+	// DashboardURL overrides notify.dashboard_url for "Open in Neo Box"
+	// buttons on Connection detail messages.
+	DashboardURL string `yaml:"dashboard_url"`
+}
+
+// Enabled reports whether a bot token is configured.
+func (c TelegramConfig) Enabled() bool {
+	return c.BotToken != ""
+}
+
+// EffectiveMode returns "webhook" (the default) or the configured mode.
+func (c TelegramConfig) EffectiveMode() string {
+	if c.Mode == "" {
+		return "webhook"
+	}
+	return c.Mode
+}
+
+// AutoSetWebhookEnabled reports whether startup should call setWebhook.
+func (c TelegramConfig) AutoSetWebhookEnabled() bool {
+	if c.AutoSetWebhook == nil {
+		return true
+	}
+	return *c.AutoSetWebhook
 }
 
 // CloudflareConfig tunes Cloudflare API access.

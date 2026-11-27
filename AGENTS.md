@@ -178,6 +178,16 @@ shadcn/ui + Connect-Web on the frontend.
   provider database tables or background work), live domain portfolio listing
   with summary counts and filtering, plus per-domain nameservers, DNS records,
   URL forwards, DNSSEC DS records and glue records.
+- `internal/telegram/` — lightweight zero-dependency Telegram Bot API HTTP
+  client (token redaction, 429 retry, HTML escaping/truncation, and
+  `tgtest/` fake Bot API server).
+- `internal/tgbot/` — system-level Telegram bot for read-only Connection
+  viewing (`/connections`, `/status`, `/unbind`, `/help`), defaulting to
+  multi-pod stateless webhook mode (`POST /api/telegram/webhook`, verified
+  via `X-Telegram-Bot-Api-Secret-Token`, bypassing Bearer auth via
+  `isPublicPath`) with optional `polling` mode for local dev. Private chats
+  only; binds via single-use hashed deep link tokens (`telegram_link_tokens`)
+  stored in PostgreSQL alongside `telegram_bindings` (`docs/adr/0014`).
 
 **User center** (`proto/neobox/v1/auth.proto`, `AuthService`): password
 login, OAuth login (`BeginOAuthFlow` → provider → `CompleteOAuthFlow`, CSRF
@@ -246,6 +256,12 @@ Unauthenticated) and mark the connection error.
 `NotificationService`): channel list / create / update / delete / test
 (settings are a typed oneof, secrets write-only) and `ListAlerts`. Scoped
 to the calling user. The dashboard page is Settings → Notifications.
+
+**Telegram Bot** (`proto/neobox/v1/telegram.proto`, `TelegramService`):
+`GetTelegramBotStatus`, `CreateTelegramLinkToken`, `UnbindTelegram`. Scoped
+to the calling user; links a private Telegram chat to the server-wide bot
+for read-only Connection viewing. The dashboard page is Settings → Telegram
+Bot.
 
 **Frontend** (`front/`): `src/api/transport.ts` is the Connect transport
 (binary protobuf, Bearer interceptor, redirect to `/sign-in` on

@@ -214,6 +214,14 @@ store:
 # notify:
 #   dashboard_url: "https://neobox.example.com"  # alerts link here; empty = no links
 #   telegram_endpoint: "https://api.telegram.org"
+# telegram:
+#   bot_token: ""                                # empty disables the bot
+#   api_endpoint: "https://api.telegram.org"
+#   mode: "webhook"                              # "webhook" (default, multi-pod) | "polling" (local dev)
+#   webhook_url: "https://neobox.example.com/api/telegram/webhook"
+#   webhook_secret: "<shared random secret>"     # required in webhook mode; shared across pods
+#   auto_set_webhook: true                       # register webhook on startup
+#   dashboard_url: "https://neobox.example.com"  # defaults to notify.dashboard_url
 ```
 
 Cron schedules are evaluated in the server's time zone. The container image is
@@ -235,6 +243,23 @@ look costly. Each problem is reported once. Alerts are listed under
 4. Add the channel under **Settings → Notifications** and press **Test**.
 
 Set `notify.dashboard_url` so messages link back to the dashboard.
+
+### Telegram Bot
+
+Neo Box can optionally run one server-wide Telegram bot so users can view
+their Connections and health status from a private Telegram chat:
+
+1. Create a bot via `@BotFather` (`/newbot`) and copy the bot token.
+2. Generate a shared webhook secret (e.g. `openssl rand -hex 32`).
+3. Set `telegram.bot_token`, `telegram.webhook_url`
+   (`https://<your-host>/api/telegram/webhook`), and `telegram.webhook_secret`
+   in `config.yaml` (use the same config across all pods; for local development
+   without public HTTPS you can set `telegram.mode: "polling"`).
+4. In the dashboard, open **Settings → Telegram Bot**, click **Connect
+   Telegram**, and open the one-time deep link in a private chat.
+
+The bot ignores group chats, never decrypts stored credentials, and supports
+`/connections`, `/status`, `/unbind`, and `/help`.
 
 ### Wasabi
 

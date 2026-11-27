@@ -14,6 +14,7 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent/oauthstate"
 	"go.orx.me/apps/neo-box/internal/ent/schema"
 	"go.orx.me/apps/neo-box/internal/ent/session"
+	"go.orx.me/apps/neo-box/internal/ent/telegrambinding"
 	"go.orx.me/apps/neo-box/internal/ent/user"
 	"go.orx.me/apps/neo-box/internal/ent/wasabidailyusage"
 	"go.orx.me/apps/neo-box/internal/ent/wasabisyncstate"
@@ -217,6 +218,16 @@ func init() {
 	sessionDescRevoked := sessionFields[6].Descriptor()
 	// session.DefaultRevoked holds the default value on creation for the revoked field.
 	session.DefaultRevoked = sessionDescRevoked.Default.(bool)
+	telegrambindingFields := schema.TelegramBinding{}.Fields()
+	_ = telegrambindingFields
+	// telegrambindingDescTelegramUsername is the schema descriptor for telegram_username field.
+	telegrambindingDescTelegramUsername := telegrambindingFields[4].Descriptor()
+	// telegrambinding.DefaultTelegramUsername holds the default value on creation for the telegram_username field.
+	telegrambinding.DefaultTelegramUsername = telegrambindingDescTelegramUsername.Default.(string)
+	// telegrambindingDescDisplayName is the schema descriptor for display_name field.
+	telegrambindingDescDisplayName := telegrambindingFields[5].Descriptor()
+	// telegrambinding.DefaultDisplayName holds the default value on creation for the display_name field.
+	telegrambinding.DefaultDisplayName = telegrambindingDescDisplayName.Default.(string)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescDisplayName is the schema descriptor for display_name field.

@@ -27,6 +27,8 @@ import (
 	"go.orx.me/apps/neo-box/internal/ent/notificationchannel"
 	"go.orx.me/apps/neo-box/internal/ent/oauthstate"
 	"go.orx.me/apps/neo-box/internal/ent/session"
+	"go.orx.me/apps/neo-box/internal/ent/telegrambinding"
+	"go.orx.me/apps/neo-box/internal/ent/telegramlinktoken"
 	"go.orx.me/apps/neo-box/internal/ent/user"
 	"go.orx.me/apps/neo-box/internal/ent/wasabibucketconfig"
 	"go.orx.me/apps/neo-box/internal/ent/wasabidailyusage"
@@ -66,6 +68,10 @@ type Client struct {
 	OAuthState *OAuthStateClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
+	// TelegramBinding is the client for interacting with the TelegramBinding builders.
+	TelegramBinding *TelegramBindingClient
+	// TelegramLinkToken is the client for interacting with the TelegramLinkToken builders.
+	TelegramLinkToken *TelegramLinkTokenClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// WasabiBucketConfig is the client for interacting with the WasabiBucketConfig builders.
@@ -102,6 +108,8 @@ func (c *Client) init() {
 	c.NotificationChannel = NewNotificationChannelClient(c.config)
 	c.OAuthState = NewOAuthStateClient(c.config)
 	c.Session = NewSessionClient(c.config)
+	c.TelegramBinding = NewTelegramBindingClient(c.config)
+	c.TelegramLinkToken = NewTelegramLinkTokenClient(c.config)
 	c.User = NewUserClient(c.config)
 	c.WasabiBucketConfig = NewWasabiBucketConfigClient(c.config)
 	c.WasabiDailyUsage = NewWasabiDailyUsageClient(c.config)
@@ -213,6 +221,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		NotificationChannel:         NewNotificationChannelClient(cfg),
 		OAuthState:                  NewOAuthStateClient(cfg),
 		Session:                     NewSessionClient(cfg),
+		TelegramBinding:             NewTelegramBindingClient(cfg),
+		TelegramLinkToken:           NewTelegramLinkTokenClient(cfg),
 		User:                        NewUserClient(cfg),
 		WasabiBucketConfig:          NewWasabiBucketConfigClient(cfg),
 		WasabiDailyUsage:            NewWasabiDailyUsageClient(cfg),
@@ -251,6 +261,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		NotificationChannel:         NewNotificationChannelClient(cfg),
 		OAuthState:                  NewOAuthStateClient(cfg),
 		Session:                     NewSessionClient(cfg),
+		TelegramBinding:             NewTelegramBindingClient(cfg),
+		TelegramLinkToken:           NewTelegramLinkTokenClient(cfg),
 		User:                        NewUserClient(cfg),
 		WasabiBucketConfig:          NewWasabiBucketConfigClient(cfg),
 		WasabiDailyUsage:            NewWasabiDailyUsageClient(cfg),
@@ -289,7 +301,8 @@ func (c *Client) Use(hooks ...Hook) {
 		c.Alert, c.CloudflareDNSOperation, c.CloudflareResourceOperation, c.Connection,
 		c.NocoDBBackupPolicy, c.NocoDBFile, c.NocoDBFileSource, c.NocoDBRestore,
 		c.NocoDBSnapshot, c.NocoDBSnapshotFile, c.NotificationChannel, c.OAuthState,
-		c.Session, c.User, c.WasabiBucketConfig, c.WasabiDailyUsage, c.WasabiSyncState,
+		c.Session, c.TelegramBinding, c.TelegramLinkToken, c.User,
+		c.WasabiBucketConfig, c.WasabiDailyUsage, c.WasabiSyncState,
 		c.WorkspaceOperation, c.WorkspaceTenant,
 	} {
 		n.Use(hooks...)
@@ -303,7 +316,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.Alert, c.CloudflareDNSOperation, c.CloudflareResourceOperation, c.Connection,
 		c.NocoDBBackupPolicy, c.NocoDBFile, c.NocoDBFileSource, c.NocoDBRestore,
 		c.NocoDBSnapshot, c.NocoDBSnapshotFile, c.NotificationChannel, c.OAuthState,
-		c.Session, c.User, c.WasabiBucketConfig, c.WasabiDailyUsage, c.WasabiSyncState,
+		c.Session, c.TelegramBinding, c.TelegramLinkToken, c.User,
+		c.WasabiBucketConfig, c.WasabiDailyUsage, c.WasabiSyncState,
 		c.WorkspaceOperation, c.WorkspaceTenant,
 	} {
 		n.Intercept(interceptors...)
@@ -339,6 +353,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.OAuthState.mutate(ctx, m)
 	case *SessionMutation:
 		return c.Session.mutate(ctx, m)
+	case *TelegramBindingMutation:
+		return c.TelegramBinding.mutate(ctx, m)
+	case *TelegramLinkTokenMutation:
+		return c.TelegramLinkToken.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	case *WasabiBucketConfigMutation:
@@ -2085,6 +2103,272 @@ func (c *SessionClient) mutate(ctx context.Context, m *SessionMutation) (Value, 
 	}
 }
 
+// TelegramBindingClient is a client for the TelegramBinding schema.
+type TelegramBindingClient struct {
+	config
+}
+
+// NewTelegramBindingClient returns a client for the TelegramBinding from the given config.
+func NewTelegramBindingClient(c config) *TelegramBindingClient {
+	return &TelegramBindingClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `telegrambinding.Hooks(f(g(h())))`.
+func (c *TelegramBindingClient) Use(hooks ...Hook) {
+	c.hooks.TelegramBinding = append(c.hooks.TelegramBinding, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `telegrambinding.Intercept(f(g(h())))`.
+func (c *TelegramBindingClient) Intercept(interceptors ...Interceptor) {
+	c.inters.TelegramBinding = append(c.inters.TelegramBinding, interceptors...)
+}
+
+// Create returns a builder for creating a TelegramBinding entity.
+func (c *TelegramBindingClient) Create() *TelegramBindingCreate {
+	mutation := newTelegramBindingMutation(c.config, OpCreate)
+	return &TelegramBindingCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of TelegramBinding entities.
+func (c *TelegramBindingClient) CreateBulk(builders ...*TelegramBindingCreate) *TelegramBindingCreateBulk {
+	return &TelegramBindingCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TelegramBindingClient) MapCreateBulk(slice any, setFunc func(*TelegramBindingCreate, int)) *TelegramBindingCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TelegramBindingCreateBulk{err: fmt.Errorf("calling to TelegramBindingClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TelegramBindingCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TelegramBindingCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for TelegramBinding.
+func (c *TelegramBindingClient) Update() *TelegramBindingUpdate {
+	mutation := newTelegramBindingMutation(c.config, OpUpdate)
+	return &TelegramBindingUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TelegramBindingClient) UpdateOne(_m *TelegramBinding) *TelegramBindingUpdateOne {
+	mutation := newTelegramBindingMutation(c.config, OpUpdateOne, withTelegramBinding(_m))
+	return &TelegramBindingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TelegramBindingClient) UpdateOneID(id string) *TelegramBindingUpdateOne {
+	mutation := newTelegramBindingMutation(c.config, OpUpdateOne, withTelegramBindingID(id))
+	return &TelegramBindingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for TelegramBinding.
+func (c *TelegramBindingClient) Delete() *TelegramBindingDelete {
+	mutation := newTelegramBindingMutation(c.config, OpDelete)
+	return &TelegramBindingDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TelegramBindingClient) DeleteOne(_m *TelegramBinding) *TelegramBindingDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TelegramBindingClient) DeleteOneID(id string) *TelegramBindingDeleteOne {
+	builder := c.Delete().Where(telegrambinding.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TelegramBindingDeleteOne{builder}
+}
+
+// Query returns a query builder for TelegramBinding.
+func (c *TelegramBindingClient) Query() *TelegramBindingQuery {
+	return &TelegramBindingQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTelegramBinding},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a TelegramBinding entity by its id.
+func (c *TelegramBindingClient) Get(ctx context.Context, id string) (*TelegramBinding, error) {
+	return c.Query().Where(telegrambinding.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TelegramBindingClient) GetX(ctx context.Context, id string) *TelegramBinding {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *TelegramBindingClient) Hooks() []Hook {
+	return c.hooks.TelegramBinding
+}
+
+// Interceptors returns the client interceptors.
+func (c *TelegramBindingClient) Interceptors() []Interceptor {
+	return c.inters.TelegramBinding
+}
+
+func (c *TelegramBindingClient) mutate(ctx context.Context, m *TelegramBindingMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TelegramBindingCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TelegramBindingUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TelegramBindingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TelegramBindingDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown TelegramBinding mutation op: %q", m.Op())
+	}
+}
+
+// TelegramLinkTokenClient is a client for the TelegramLinkToken schema.
+type TelegramLinkTokenClient struct {
+	config
+}
+
+// NewTelegramLinkTokenClient returns a client for the TelegramLinkToken from the given config.
+func NewTelegramLinkTokenClient(c config) *TelegramLinkTokenClient {
+	return &TelegramLinkTokenClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `telegramlinktoken.Hooks(f(g(h())))`.
+func (c *TelegramLinkTokenClient) Use(hooks ...Hook) {
+	c.hooks.TelegramLinkToken = append(c.hooks.TelegramLinkToken, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `telegramlinktoken.Intercept(f(g(h())))`.
+func (c *TelegramLinkTokenClient) Intercept(interceptors ...Interceptor) {
+	c.inters.TelegramLinkToken = append(c.inters.TelegramLinkToken, interceptors...)
+}
+
+// Create returns a builder for creating a TelegramLinkToken entity.
+func (c *TelegramLinkTokenClient) Create() *TelegramLinkTokenCreate {
+	mutation := newTelegramLinkTokenMutation(c.config, OpCreate)
+	return &TelegramLinkTokenCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of TelegramLinkToken entities.
+func (c *TelegramLinkTokenClient) CreateBulk(builders ...*TelegramLinkTokenCreate) *TelegramLinkTokenCreateBulk {
+	return &TelegramLinkTokenCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TelegramLinkTokenClient) MapCreateBulk(slice any, setFunc func(*TelegramLinkTokenCreate, int)) *TelegramLinkTokenCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TelegramLinkTokenCreateBulk{err: fmt.Errorf("calling to TelegramLinkTokenClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TelegramLinkTokenCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TelegramLinkTokenCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for TelegramLinkToken.
+func (c *TelegramLinkTokenClient) Update() *TelegramLinkTokenUpdate {
+	mutation := newTelegramLinkTokenMutation(c.config, OpUpdate)
+	return &TelegramLinkTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TelegramLinkTokenClient) UpdateOne(_m *TelegramLinkToken) *TelegramLinkTokenUpdateOne {
+	mutation := newTelegramLinkTokenMutation(c.config, OpUpdateOne, withTelegramLinkToken(_m))
+	return &TelegramLinkTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TelegramLinkTokenClient) UpdateOneID(id string) *TelegramLinkTokenUpdateOne {
+	mutation := newTelegramLinkTokenMutation(c.config, OpUpdateOne, withTelegramLinkTokenID(id))
+	return &TelegramLinkTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for TelegramLinkToken.
+func (c *TelegramLinkTokenClient) Delete() *TelegramLinkTokenDelete {
+	mutation := newTelegramLinkTokenMutation(c.config, OpDelete)
+	return &TelegramLinkTokenDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TelegramLinkTokenClient) DeleteOne(_m *TelegramLinkToken) *TelegramLinkTokenDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TelegramLinkTokenClient) DeleteOneID(id string) *TelegramLinkTokenDeleteOne {
+	builder := c.Delete().Where(telegramlinktoken.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TelegramLinkTokenDeleteOne{builder}
+}
+
+// Query returns a query builder for TelegramLinkToken.
+func (c *TelegramLinkTokenClient) Query() *TelegramLinkTokenQuery {
+	return &TelegramLinkTokenQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTelegramLinkToken},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a TelegramLinkToken entity by its id.
+func (c *TelegramLinkTokenClient) Get(ctx context.Context, id string) (*TelegramLinkToken, error) {
+	return c.Query().Where(telegramlinktoken.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TelegramLinkTokenClient) GetX(ctx context.Context, id string) *TelegramLinkToken {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *TelegramLinkTokenClient) Hooks() []Hook {
+	return c.hooks.TelegramLinkToken
+}
+
+// Interceptors returns the client interceptors.
+func (c *TelegramLinkTokenClient) Interceptors() []Interceptor {
+	return c.inters.TelegramLinkToken
+}
+
+func (c *TelegramLinkTokenClient) mutate(ctx context.Context, m *TelegramLinkTokenMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TelegramLinkTokenCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TelegramLinkTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TelegramLinkTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TelegramLinkTokenDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown TelegramLinkToken mutation op: %q", m.Op())
+	}
+}
+
 // UserClient is a client for the User schema.
 type UserClient struct {
 	config
@@ -2889,14 +3173,14 @@ type (
 		Alert, CloudflareDNSOperation, CloudflareResourceOperation, Connection,
 		NocoDBBackupPolicy, NocoDBFile, NocoDBFileSource, NocoDBRestore,
 		NocoDBSnapshot, NocoDBSnapshotFile, NotificationChannel, OAuthState, Session,
-		User, WasabiBucketConfig, WasabiDailyUsage, WasabiSyncState,
-		WorkspaceOperation, WorkspaceTenant []ent.Hook
+		TelegramBinding, TelegramLinkToken, User, WasabiBucketConfig, WasabiDailyUsage,
+		WasabiSyncState, WorkspaceOperation, WorkspaceTenant []ent.Hook
 	}
 	inters struct {
 		Alert, CloudflareDNSOperation, CloudflareResourceOperation, Connection,
 		NocoDBBackupPolicy, NocoDBFile, NocoDBFileSource, NocoDBRestore,
 		NocoDBSnapshot, NocoDBSnapshotFile, NotificationChannel, OAuthState, Session,
-		User, WasabiBucketConfig, WasabiDailyUsage, WasabiSyncState,
-		WorkspaceOperation, WorkspaceTenant []ent.Interceptor
+		TelegramBinding, TelegramLinkToken, User, WasabiBucketConfig, WasabiDailyUsage,
+		WasabiSyncState, WorkspaceOperation, WorkspaceTenant []ent.Interceptor
 	}
 )

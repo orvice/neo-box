@@ -45,6 +45,12 @@ type OAuthState func(*sql.Selector)
 // Session is the predicate function for session builders.
 type Session func(*sql.Selector)
 
+// TelegramBinding is the predicate function for telegrambinding builders.
+type TelegramBinding func(*sql.Selector)
+
+// TelegramLinkToken is the predicate function for telegramlinktoken builders.
+type TelegramLinkToken func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)
 

@@ -1,5 +1,5 @@
 import { Outlet } from '@tanstack/react-router'
-import { Bell, Monitor, Palette } from 'lucide-react'
+import { Bell, Bot, Monitor, Palette } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
@@ -24,6 +24,11 @@ const sidebarNavItems = [
     title: 'Notifications',
     href: '/settings/notifications',
     icon: <Bell size={18} />,
+  },
+  {
+    title: 'Telegram Bot',
+    href: '/settings/telegram',
+    icon: <Bot size={18} />,
   },
 ]
 

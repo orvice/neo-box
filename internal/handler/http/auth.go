@@ -113,6 +113,7 @@ const authServicePrefix = "/api/" + neoboxv1connect.AuthServiceName + "/"
 func isPublicPath(path string) bool {
 	switch path {
 	case "/ping",
+		TelegramWebhookPath,
 		authServicePrefix + "Login",
 		authServicePrefix + "ListOAuthProviders",
 		authServicePrefix + "BeginOAuthFlow",
