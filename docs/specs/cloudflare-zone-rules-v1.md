@@ -1,6 +1,6 @@
 # Cloudflare Zone Rules v1
 
-Status: scope approved in the design interview on 2026-11-06; specification only, not implemented.
+Status: implemented (issue [#55](https://github.com/orvice/neo-box/issues/55)).
 
 ## Problem Statement
 

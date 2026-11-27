@@ -114,8 +114,17 @@ shadcn/ui + Connect-Web on the frontend.
   validation). Reads retry 429/5xx/network errors; writes retry only 429 and
   otherwise return `UncertainError`, never resent. `cftest/` is a stateful
   fake Cloudflare API (tokens with per-account permissions) for client and
-  service tests. `rules.go` models the five Zone Ruleset phases and keeps
-  unknown rule fields through read-modify-write operations.
+  service tests. `rules.go` models the five Zone Ruleset phases
+  (`http_request_dynamic_redirect`, `http_request_transform`,
+  `http_request_late_transform`, `http_response_headers_transform`,
+  `http_request_origin`), reads phase entrypoints, parses/validates typed v1
+  action configs, flags unsupported writable fields as read-only, and keeps
+  unknown rule fields intact through read-modify-write operations.
+- `internal/cloudflareacct/rules.go` — Zone Rules in the Manager: independent
+  per-category live reads, per-phase locking (`rules/<acc>/<zone>/<phase>`),
+  optimistic snapshot conflict checks (`ErrZoneRuleConflict`), bounded
+  reordering around read-only rules, redacted operation logging (header values
+  never logged), and quota/entitlement error classification (`docs/adr/0013`).
 - `internal/cloudflareacct/` — `Manager`: the "cloudflare" Provider
   (`Verify` accepts a token that reaches the Account through any one of
   account / zones / Workers / Pages reads; it never writes), live reads
@@ -231,10 +240,11 @@ Provider registry: `provider-info.ts` (key, label, icon; used by the sidebar)
 and `providers.ts` (each Provider's form, card summary, and detail page from
 its feature folder). Cloudflare's logic lives in `src/features/cloudflare/`
 `addresses.ts`, `dns.ts`, `access.ts`, `tunnels.ts`, `email.ts`,
-`email-logs.ts` and `manage.ts` (input checks, status and log wording), each
+`email-logs.ts`, `zone-rules.ts` and `manage.ts` (input checks, status and log wording), each
 with a Vitest test; Email Routing UI is in `email-routing-tab.tsx`
-(`email-rules.tsx`, `email-addresses.tsx`), and the zone page's Email logs tab
-is `email-logs-tab.tsx`. `worker-page.tsx`
+(`email-rules.tsx`, `email-addresses.tsx`), the zone page's Email logs tab
+is `email-logs-tab.tsx`, and Zone Rules UI is in `zone-rules-tab.tsx`
+(`zone-rule-dialog.tsx`). `worker-page.tsx`
 and `pages-project-page.tsx` are the management pages; they share
 `manage-dialogs.tsx` (`FormDialog`, `ConfirmChangeDialog`).
 

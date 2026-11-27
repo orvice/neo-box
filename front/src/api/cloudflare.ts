@@ -14,7 +14,8 @@ import {
   type CloudflarePagesEnvironment,
   type CloudflareResourceKind,
   type CloudflareZone,
-
+  type CloudflareZoneRuleCategory,
+  type CloudflareZoneRuleSchema,
 } from '@/gen/neobox/v1/cloudflare_pb'
 import type { MessageInitShape } from '@bufbuild/protobuf'
 import { timestampFromDate } from '@bufbuild/protobuf/wkt'
@@ -45,6 +46,16 @@ export {
   CloudflarePagesEnvVarType,
   CloudflareResourceKind,
   CloudflareZoneRuleCategory,
+  CloudflareZoneRulesErrorKind,
+  CloudflareRedirectTargetKind,
+  CloudflareRewritePartMode,
+  CloudflareHeaderOperation,
+  type CloudflareHeaderModification,
+  type CloudflareHeaderTransformConfig,
+  type CloudflareOriginRuleConfig,
+  type CloudflareSingleRedirectConfig,
+  type CloudflareURLRewriteConfig,
+  type CloudflareZoneRule,
   type CloudflareZoneRules,
   type CloudflareChangeResult,
   type CloudflarePagesBuildConfig,
@@ -79,6 +90,11 @@ export type CloudflareEmailRuleInit = MessageInitShape<
   typeof CloudflareEmailRuleInputSchema
 >
 
+/** A Zone Rules HTTP rule as sent on create and update. */
+export type CloudflareZoneRuleInit = MessageInitShape<
+  typeof CloudflareZoneRuleSchema
+>
+
 const client = makeClient(CloudflareService)
 
 /** A search and page of a list. */
@@ -90,8 +106,14 @@ const keys = {
     ['cloudflare', connectionId, 'zones', q] as const,
   zone: (connectionId: string, zoneId: string) =>
     ['cloudflare', connectionId, 'zone', zoneId] as const,
-  zoneRules: (connectionId: string, zoneId: string) =>
-    ['cloudflare', connectionId, 'zone-rules', zoneId] as const,
+  zoneRules: (
+    connectionId: string,
+    zoneId: string,
+    category?: CloudflareZoneRuleCategory
+  ) =>
+    category === undefined
+      ? (['cloudflare', connectionId, 'zone-rules', zoneId] as const)
+      : (['cloudflare', connectionId, 'zone-rules', zoneId, category] as const),
   records: (
     connectionId: string,
     zoneId: string,
@@ -186,17 +208,103 @@ export function useCloudflareZone(connectionId: string, zoneId: string) {
   })
 }
 
-export function useCloudflareZoneRules(connectionId: string, zoneId: string) {
-  return useQuery({ queryKey: keys.zoneRules(connectionId, zoneId), queryFn: async () => (await client.getCloudflareZoneRules({ connectionId, zoneId })).categories, retry: false })
+export function useCloudflareZoneRulesCategory(
+  connectionId: string,
+  zoneId: string,
+  category: CloudflareZoneRuleCategory
+) {
+  return useQuery({
+    queryKey: keys.zoneRules(connectionId, zoneId, category),
+    queryFn: async () => {
+      const resp = await client.getCloudflareZoneRules({
+        connectionId,
+        zoneId,
+        category,
+      })
+      return resp.categories[0]
+    },
+    retry: false,
+  })
 }
-export function useCloudflareZoneRuleMutations(connectionId: string, zoneId: string) {
+
+export function useCloudflareZoneRuleChanges(
+  connectionId: string,
+  zoneId: string,
+  category: CloudflareZoneRuleCategory
+) {
   const qc = useQueryClient()
-  const invalidate = () => qc.invalidateQueries({ queryKey: keys.zoneRules(connectionId, zoneId) })
+  const invalidateLogs = () => {
+    void qc.invalidateQueries({ queryKey: keys.resourceOps(connectionId) })
+  }
+  const refreshCategory = async () => {
+    invalidateLogs()
+    await qc.fetchQuery({
+      queryKey: keys.zoneRules(connectionId, zoneId, category),
+      queryFn: async () => {
+        const resp = await client.getCloudflareZoneRules({
+          connectionId,
+          zoneId,
+          category,
+        })
+        return resp.categories[0]
+      },
+      retry: false,
+    })
+  }
   return {
-    create: useMutation({ mutationFn: (x: any) => client.createCloudflareZoneRule(x), onSuccess: invalidate }),
-    update: useMutation({ mutationFn: (x: any) => client.updateCloudflareZoneRule(x), onSuccess: invalidate }),
-    remove: useMutation({ mutationFn: (x: any) => client.deleteCloudflareZoneRule(x), onSuccess: invalidate }),
-    reorder: useMutation({ mutationFn: (x: any) => client.reorderCloudflareZoneRules(x), onSuccess: invalidate }),
+    refreshCategory,
+    create: useMutation({
+      mutationFn: async (v: {
+        snapshot: string
+        rule: CloudflareZoneRuleInit
+      }) =>
+        await client.createCloudflareZoneRule({
+          connectionId,
+          zoneId,
+          category,
+          snapshot: v.snapshot,
+          rule: v.rule,
+        }),
+      onSuccess: invalidateLogs,
+    }),
+    update: useMutation({
+      mutationFn: async (v: {
+        ruleId: string
+        snapshot: string
+        rule: CloudflareZoneRuleInit
+      }) =>
+        await client.updateCloudflareZoneRule({
+          connectionId,
+          zoneId,
+          category,
+          ruleId: v.ruleId,
+          snapshot: v.snapshot,
+          rule: v.rule,
+        }),
+      onSuccess: invalidateLogs,
+    }),
+    remove: useMutation({
+      mutationFn: async (v: { ruleId: string; snapshot: string }) =>
+        await client.deleteCloudflareZoneRule({
+          connectionId,
+          zoneId,
+          category,
+          ruleId: v.ruleId,
+          snapshot: v.snapshot,
+        }),
+      onSuccess: invalidateLogs,
+    }),
+    reorder: useMutation({
+      mutationFn: async (v: { snapshot: string; ruleIds: string[] }) =>
+        await client.reorderCloudflareZoneRules({
+          connectionId,
+          zoneId,
+          category,
+          snapshot: v.snapshot,
+          ruleIds: v.ruleIds,
+        }),
+      onSuccess: invalidateLogs,
+    }),
   }
 }
 

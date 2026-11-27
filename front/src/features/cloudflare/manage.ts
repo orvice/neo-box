@@ -190,6 +190,12 @@ const actionLabels: Record<string, string> = {
   set_catch_all: 'Changed catch-all',
   create_address: 'Added destination address',
   delete_address: 'Deleted destination address',
+  create_http_rule: 'Added HTTP rule',
+  update_http_rule: 'Changed HTTP rule',
+  enable_http_rule: 'Enabled HTTP rule',
+  disable_http_rule: 'Disabled HTTP rule',
+  delete_http_rule: 'Deleted HTTP rule',
+  reorder_http_rules: 'Reordered HTTP rules',
 }
 
 /** Words for a logged change's action; an unknown action is shown as is. */

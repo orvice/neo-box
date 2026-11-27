@@ -105,6 +105,8 @@ func (s *CloudflareServiceServer) ListCloudflareResourceOperations(ctx context.C
 		kind = cfrepo.KindPages
 	case neoboxv1.CloudflareResourceKind_CLOUDFLARE_RESOURCE_KIND_EMAIL_ROUTING:
 		kind = cfrepo.KindEmailRouting
+	case neoboxv1.CloudflareResourceKind_CLOUDFLARE_RESOURCE_KIND_ZONE_RULES:
+		kind = cfrepo.KindZoneRules
 	}
 	page, size := pageArgs(req.GetPage(), req.GetPageSize(), defaultOperationsSize, 1, maxOperationsSize)
 	ops, total, err := d.repo.ListResourceOperations(ctx, cfrepo.ResourceFilter{

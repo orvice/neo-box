@@ -520,6 +520,8 @@ func mapCloudflareErr(ctx context.Context, err error) error {
 		ferr     *cloudflare.FieldError
 		perm     *cloudflareacct.PermissionError
 		rejected *cloudflareacct.TokenRejectedError
+		feature  *cloudflareacct.FeatureRestrictedError
+		quota    *cloudflareacct.QuotaExceededError
 		apiErr   *cloudflare.APIError
 	)
 	switch {
@@ -529,13 +531,20 @@ func mapCloudflareErr(ctx context.Context, err error) error {
 		return connectx.InvalidArgument(ctx, ferr.Field, ferr.Message)
 	case errors.As(err, &rejected):
 		return connect.NewError(connect.CodeFailedPrecondition, rejected.Error()).WithCause(rejected)
+	case errors.As(err, &quota):
+		return connect.NewError(connect.CodeResourceExhausted, quota.Error()).WithCause(quota)
+	case errors.As(err, &feature):
+		return connect.NewError(connect.CodeFailedPrecondition, feature.Error()).WithCause(feature)
 	case errors.As(err, &perm), errors.Is(err, cloudflareacct.ErrReadOnly):
 		return connect.NewError(connect.CodePermissionDenied, err.Error()).WithCause(err)
+	case errors.Is(err, cloudflareacct.ErrZoneRuleConflict):
+		return connect.NewError(connect.CodeAborted, err.Error()).WithCause(err)
 	case errors.Is(err, cloudflareacct.ErrZoneNotFound), errors.Is(err, cloudflareacct.ErrRecordNotFound),
 		errors.Is(err, cloudflareacct.ErrTunnelNotFound), errors.Is(err, cloudflare.ErrRuleNotFound),
 		errors.Is(err, cloudflareacct.ErrWorkerNotFound), errors.Is(err, cloudflareacct.ErrPagesProjectNotFound),
 		errors.Is(err, cloudflareacct.ErrDeploymentNotFound), errors.Is(err, cloudflareacct.ErrNotAttached),
-		errors.Is(err, cloudflareacct.ErrEmailRuleNotFound), errors.Is(err, cloudflareacct.ErrEmailAddressNotFound):
+		errors.Is(err, cloudflareacct.ErrEmailRuleNotFound), errors.Is(err, cloudflareacct.ErrEmailAddressNotFound),
+		errors.Is(err, cloudflareacct.ErrZoneRuleNotFound):
 		return connectx.NotFound(err.Error())
 	case errors.Is(err, cloudflareacct.ErrInUse):
 		return connect.NewError(connect.CodeAlreadyExists, err.Error()).WithCause(err)
@@ -543,7 +552,7 @@ func mapCloudflareErr(ctx context.Context, err error) error {
 		return connect.NewError(connect.CodeFailedPrecondition, err.Error()).WithCause(err)
 	case errors.Is(err, cloudflareacct.ErrNotEditable), errors.Is(err, cloudflareacct.ErrNotRemotelyManaged),
 		errors.Is(err, cloudflareacct.ErrAddressUnverified), errors.Is(err, cloudflareacct.ErrAddressInUse),
-		errors.Is(err, cloudflareacct.ErrRuleReadOnly):
+		errors.Is(err, cloudflareacct.ErrRuleReadOnly), errors.Is(err, cloudflareacct.ErrZoneRuleReadOnly):
 		return connect.NewError(connect.CodeFailedPrecondition, err.Error()).WithCause(err)
 	case errors.Is(err, cloudflareacct.ErrLogUnavailable):
 		return connect.NewError(connect.CodeUnavailable, err.Error()).WithCause(err)

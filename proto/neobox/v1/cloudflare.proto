@@ -1374,16 +1374,104 @@ enum CloudflareZoneRuleCategory {
   CLOUDFLARE_ZONE_RULE_CATEGORY_ORIGIN = 5;
 }
 
+// CloudflareZoneRulesErrorKind classifies a category read issue so the UI can
+// distinguish missing permissions, rejected tokens, plan restrictions and API
+// failures without treating them as an empty category.
+enum CloudflareZoneRulesErrorKind {
+  CLOUDFLARE_ZONE_RULES_ERROR_KIND_UNSPECIFIED = 0;
+  CLOUDFLARE_ZONE_RULES_ERROR_KIND_PERMISSION_DENIED = 1;
+  CLOUDFLARE_ZONE_RULES_ERROR_KIND_TOKEN_REJECTED = 2;
+  CLOUDFLARE_ZONE_RULES_ERROR_KIND_FEATURE_RESTRICTED = 3;
+  CLOUDFLARE_ZONE_RULES_ERROR_KIND_ERROR = 4;
+}
+
+enum CloudflareRedirectTargetKind {
+  CLOUDFLARE_REDIRECT_TARGET_KIND_UNSPECIFIED = 0;
+  CLOUDFLARE_REDIRECT_TARGET_KIND_STATIC = 1;
+  CLOUDFLARE_REDIRECT_TARGET_KIND_EXPRESSION = 2;
+}
+
+enum CloudflareRewritePartMode {
+  CLOUDFLARE_REWRITE_PART_MODE_UNSPECIFIED = 0;
+  CLOUDFLARE_REWRITE_PART_MODE_KEEP = 1;
+  CLOUDFLARE_REWRITE_PART_MODE_STATIC = 2;
+  CLOUDFLARE_REWRITE_PART_MODE_EXPRESSION = 3;
+}
+
+enum CloudflareHeaderOperation {
+  CLOUDFLARE_HEADER_OPERATION_UNSPECIFIED = 0;
+  CLOUDFLARE_HEADER_OPERATION_SET_STATIC = 1;
+  CLOUDFLARE_HEADER_OPERATION_SET_EXPRESSION = 2;
+  CLOUDFLARE_HEADER_OPERATION_ADD_STATIC = 3;
+  CLOUDFLARE_HEADER_OPERATION_ADD_EXPRESSION = 4;
+  CLOUDFLARE_HEADER_OPERATION_REMOVE = 5;
+}
+
+// CloudflareSingleRedirectConfig is the typed configuration of a Single
+// Redirect rule (http_request_dynamic_redirect).
+message CloudflareSingleRedirectConfig {
+  CloudflareRedirectTargetKind target_kind = 1;
+  string target_value = 2;
+  // HTTP redirect status code: 301, 302, 307 or 308.
+  int32 status_code = 3;
+  bool preserve_query_string = 4;
+}
+
+// CloudflareURLRewriteConfig is the typed configuration of a URL Rewrite rule
+// (http_request_transform). Path and query are configured independently.
+message CloudflareURLRewriteConfig {
+  CloudflareRewritePartMode path_mode = 1;
+  string path_value = 2;
+  CloudflareRewritePartMode query_mode = 3;
+  string query_value = 4;
+}
+
+// CloudflareHeaderModification is one header change in a Request or Response
+// Header Transform rule.
+message CloudflareHeaderModification {
+  string name = 1;
+  CloudflareHeaderOperation operation = 2;
+  // Static value or Cloudflare expression; omitted when operation is REMOVE.
+  string value = 3;
+}
+
+// CloudflareHeaderTransformConfig is the typed configuration of a Request or
+// Response Header Transform rule.
+message CloudflareHeaderTransformConfig {
+  repeated CloudflareHeaderModification headers = 1;
+}
+
+// CloudflareOriginRuleConfig is the typed configuration of an Origin rule
+// (http_request_origin). Each override is independent.
+message CloudflareOriginRuleConfig {
+  optional int32 destination_port = 1;
+  optional string host_header = 2;
+  optional string sni = 3;
+  optional string dns_record = 4;
+}
+
 message CloudflareZoneRule {
   string id = 1;
   string version = 2;
   string description = 3;
   string expression = 4;
   string action = 5;
+  // Display-only copy of Cloudflare's action_parameters. Writes use the typed
+  // config oneof below and reject raw action_parameters.
   google.protobuf.Struct action_parameters = 6;
   optional bool enabled = 7;
   bool read_only = 8;
   string read_only_reason = 9;
+  string last_updated = 10;
+  // Formatted display-only JSON of the original rule when read_only is true.
+  string raw_config_json = 11;
+  oneof config {
+    CloudflareSingleRedirectConfig single_redirect = 12;
+    CloudflareURLRewriteConfig url_rewrite = 13;
+    CloudflareHeaderTransformConfig request_header = 14;
+    CloudflareHeaderTransformConfig response_header = 15;
+    CloudflareOriginRuleConfig origin = 16;
+  }
 }
 
 message CloudflareZoneRules {
@@ -1392,25 +1480,39 @@ message CloudflareZoneRules {
   string snapshot = 3;
   repeated CloudflareZoneRule rules = 4;
   string issue = 5;
+  CloudflareZoneRulesErrorKind issue_kind = 6;
+  // True when Cloudflare confirmed no entrypoint ruleset exists yet for this
+  // category (distinct from an API or permission error).
+  bool ruleset_missing = 7;
 }
 
 message GetCloudflareZoneRulesRequest {
   string connection_id = 1 [(validate.rules).string.min_len = 1];
   string zone_id = 2 [(validate.rules).string.min_len = 1];
+  // Optional: when set, reads only that category; when unspecified, reads all
+  // five categories independently.
+  CloudflareZoneRuleCategory category = 3;
 }
+
 message GetCloudflareZoneRulesResponse {
   repeated CloudflareZoneRules categories = 1;
 }
+
 message CreateCloudflareZoneRuleRequest {
   string connection_id = 1 [(validate.rules).string.min_len = 1];
   string zone_id = 2 [(validate.rules).string.min_len = 1];
   CloudflareZoneRuleCategory category = 3;
   CloudflareZoneRule rule = 4 [(validate.rules).message.required = true];
+  // Optional concurrency snapshot from the last read ("absent" if no ruleset
+  // existed yet). When supplied, stale state is rejected without writing.
+  string snapshot = 5;
 }
+
 message CreateCloudflareZoneRuleResponse {
   CloudflareZoneRule rule = 1;
   CloudflareChangeResult result = 2;
 }
+
 message UpdateCloudflareZoneRuleRequest {
   string connection_id = 1 [(validate.rules).string.min_len = 1];
   string zone_id = 2 [(validate.rules).string.min_len = 1];
@@ -1419,19 +1521,26 @@ message UpdateCloudflareZoneRuleRequest {
   string snapshot = 6 [(validate.rules).string.min_len = 1];
   CloudflareZoneRule rule = 5 [(validate.rules).message.required = true];
 }
+
 message UpdateCloudflareZoneRuleResponse {
   CloudflareZoneRule rule = 1;
   CloudflareChangeResult result = 2;
 }
+
 message DeleteCloudflareZoneRuleRequest {
   string connection_id = 1 [(validate.rules).string.min_len = 1];
   string zone_id = 2 [(validate.rules).string.min_len = 1];
   CloudflareZoneRuleCategory category = 3;
   string rule_id = 4 [(validate.rules).string.min_len = 1];
+  // Optional concurrency snapshot from the last read. When supplied, stale
+  // state is rejected without deleting.
+  string snapshot = 5;
 }
+
 message DeleteCloudflareZoneRuleResponse {
   CloudflareChangeResult result = 1;
 }
+
 message ReorderCloudflareZoneRulesRequest {
   string connection_id = 1 [(validate.rules).string.min_len = 1];
   string zone_id = 2 [(validate.rules).string.min_len = 1];
@@ -1439,6 +1548,7 @@ message ReorderCloudflareZoneRulesRequest {
   repeated string rule_ids = 4 [(validate.rules).repeated = {min_items: 1}];
   string snapshot = 5 [(validate.rules).string.min_len = 1];
 }
+
 message ReorderCloudflareZoneRulesResponse {
   CloudflareChangeResult result = 1;
 }
