@@ -189,9 +189,7 @@ export function UserUsagePanel(props: Ids) {
       </Alert>
     )
 
-  const gmailMb = [...days]
-    .reverse()
-    .find((d) => d.gmailUsedMb !== undefined)?.gmailUsedMb
+  const gmailMb = days.findLast((d) => d.gmailUsedMb !== undefined)?.gmailUsedMb
   const storageTicks = byteTicks(
     Math.max(
       0,
@@ -475,7 +473,7 @@ function ChartCard({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {[...rows].reverse().map((r) => (
+              {rows.toReversed().map((r) => (
                 <TableRow key={r.day}>
                   <TableCell>{formatDayLong(r.day)}</TableCell>
                   {columns.map((c) => (

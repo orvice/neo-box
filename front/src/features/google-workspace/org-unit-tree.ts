@@ -28,9 +28,9 @@ export function orgUnitTreeRows(units: WorkspaceOrgUnit[]) {
   }
   const visited = new Set<string>(['/'])
   function walk(path: string) {
-    for (const unit of (children.get(path) ?? [])
-      .slice()
-      .sort((a, b) => a.name.localeCompare(b.name))) {
+    for (const unit of (children.get(path) ?? []).toSorted((a, b) =>
+      a.name.localeCompare(b.name)
+    )) {
       if (visited.has(unit.path)) continue
       visited.add(unit.path)
       rows.push({ ...unit, depth: unit.path.split('/').filter(Boolean).length })
